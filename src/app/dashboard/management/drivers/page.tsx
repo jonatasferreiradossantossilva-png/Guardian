@@ -12,13 +12,15 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCollection } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
 import { collection, query } from "firebase/firestore";
-import { useFirestore } from "@/firebase";
 
 export default function DriversPage() {
   const firestore = useFirestore();
-  const driversQuery = firestore ? query(collection(firestore, "drivers")) : null;
+  const driversQuery = useMemoFirebase(() =>
+    firestore ? query(collection(firestore, "drivers")) : null,
+    [firestore]
+  );
   const { data: drivers, isLoading } = useCollection<{name: string, status: string, vehicleId: string}>(driversQuery);
 
   return (
