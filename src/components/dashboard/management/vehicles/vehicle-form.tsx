@@ -26,6 +26,7 @@ import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/no
 import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({
   model: z.string().min(1, { message: 'O modelo é obrigatório.' }),
@@ -33,12 +34,14 @@ const formSchema = z.object({
     .string()
     .min(7, { message: 'A placa deve ter pelo menos 7 caracteres.' })
     .max(8, { message: 'A placa deve ter no máximo 8 caracteres.' }),
+  capacity: z.coerce.number().min(1, { message: 'A capacidade deve ser maior que zero.' }),
+  active: z.boolean().default(true),
 });
 
 type VehicleFormValues = z.infer<typeof formSchema>;
 
 interface VehicleFormProps {
-  vehicle?: { id: string } & VehicleFormValues;
+  vehicle?: { id: string } & Partial<VehicleFormValues>;
   onFormSubmit: () => void;
 }
 
@@ -51,16 +54,25 @@ export function VehicleForm({ vehicle, onFormSubmit }: VehicleFormProps) {
     defaultValues: {
       model: '',
       licensePlate: '',
+      capacity: 1,
+      active: true,
     },
   });
 
   useEffect(() => {
     if (vehicle) {
-      form.reset(vehicle);
+      form.reset({
+        model: vehicle.model || '',
+        licensePlate: vehicle.licensePlate || '',
+        capacity: vehicle.capacity || 1,
+        active: vehicle.active ?? true,
+      });
     } else {
       form.reset({
         model: '',
         licensePlate: '',
+        capacity: 1,
+        active: true,
       });
     }
   }, [vehicle, form]);
@@ -113,16 +125,48 @@ export function VehicleForm({ vehicle, onFormSubmit }: VehicleFormProps) {
               </FormItem>
             )}
           />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="licensePlate"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Placa</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: BRA2E19" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="capacity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Capacidade</FormLabel>
+                  <FormControl>
+                    <Input type="number" placeholder="15" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
-            name="licensePlate"
+            name="active"
             render={({ field }) => (
-              <FormItem>
-                <FormLabel>Placa</FormLabel>
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm">
+                <div className="space-y-0.5">
+                  <FormLabel>Veículo Ativo</FormLabel>
+                </div>
                 <FormControl>
-                  <Input placeholder="Ex: BRA2E19" {...field} />
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
                 </FormControl>
-                <FormMessage />
               </FormItem>
             )}
           />

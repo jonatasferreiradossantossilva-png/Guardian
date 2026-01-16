@@ -48,8 +48,9 @@ type Student = {
   name: string;
   schoolId: string;
   parentId: string;
-  shift: string;
+  shift: 'manha' | 'tarde';
   status: string;
+  address: string;
 };
 type School = { id: string; name: string };
 type Parent = { id: string; name: string };
@@ -156,6 +157,7 @@ export default function StudentsPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
+                <TableHead>Endereço</TableHead>
                 <TableHead>Escola</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Turno</TableHead>
@@ -166,7 +168,7 @@ export default function StudentsPage() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -175,9 +177,10 @@ export default function StudentsPage() {
                 students.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell className="font-medium">{student.name}</TableCell>
+                    <TableCell>{student.address}</TableCell>
                     <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
                     <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
-                    <TableCell><Badge variant="outline">{student.shift}</Badge></TableCell>
+                    <TableCell><Badge variant="outline">{student.shift === 'manha' ? 'Manhã' : 'Tarde'}</Badge></TableCell>
                     <TableCell><Badge variant="secondary">{student.status}</Badge></TableCell>
                     <TableCell className="text-right">
                         <DropdownMenu>
@@ -207,7 +210,7 @@ export default function StudentsPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       {!user ? "Faça login para ver os alunos." : "Nenhum aluno cadastrado."}
                     </TableCell>
                   </TableRow>

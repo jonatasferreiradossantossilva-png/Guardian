@@ -1,5 +1,55 @@
 {
   "entities": {
+    "User": {
+      "title": "User",
+      "type": "object",
+      "description": "Represents a user in the system, with a specific profile.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the User entity, from Firebase Auth."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the user."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address for login and communication.",
+          "format": "email"
+        },
+        "profile": {
+          "type": "string",
+          "description": "User's role, determining permissions.",
+          "enum": [
+            "gestor",
+            "motorista",
+            "pai",
+            "auxiliar"
+          ]
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates if the user account is active."
+        },
+        "createdAt": {
+          "type": "string",
+          "description": "Timestamp of user creation.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "profile",
+        "active"
+      ]
+    },
     "School": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "School",
@@ -17,6 +67,14 @@
         "address": {
           "type": "string",
           "description": "Address of the school."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude of the school."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude of the school."
         }
       },
       "required": [
@@ -82,6 +140,18 @@
           "type": "string",
           "description": "Reference to Route. (Relationship: Route 1:N Student)"
         },
+        "address": {
+          "type": "string",
+          "description": "Student's home address."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude of the student's home."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude of the student's home."
+        },
         "status": {
           "type": "string",
           "description": "The boarding status of the student.",
@@ -96,8 +166,8 @@
           "type": "string",
           "description": "The student's school shift.",
           "enum": [
-            "Manhã",
-            "Tarde"
+            "manha",
+            "tarde"
           ]
         }
       },
@@ -107,7 +177,8 @@
         "schoolId",
         "parentId",
         "status",
-        "shift"
+        "shift",
+        "address"
       ]
     },
     "Driver": {
@@ -120,13 +191,22 @@
           "type": "string",
           "description": "Unique identifier for the Driver entity."
         },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User entity for login details."
+        },
         "name": {
           "type": "string",
           "description": "Name of the driver."
         },
         "status": {
           "type": "string",
-          "description": "Status of the driver (e.g., 'inativo', 'em_rota')."
+          "description": "Status of the driver (e.g., 'inativo', 'em_rota', 'pausa').",
+          "enum": [
+            "inativo",
+            "em_rota",
+            "pausa"
+          ]
         },
         "vehicleId": {
           "type": "string",
@@ -136,7 +216,8 @@
       "required": [
         "id",
         "name",
-        "status"
+        "status",
+        "userId"
       ]
     },
     "Vehicle": {
@@ -156,12 +237,22 @@
         "licensePlate": {
           "type": "string",
           "description": "License plate of the vehicle."
+        },
+        "capacity": {
+          "type": "number",
+          "description": "Maximum number of passengers."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates if the vehicle is in operation."
         }
       },
       "required": [
         "id",
         "model",
-        "licensePlate"
+        "licensePlate",
+        "capacity",
+        "active"
       ]
     },
     "Route": {
@@ -196,13 +287,22 @@
         "active": {
           "type": "boolean",
           "description": "Whether the route is currently active."
+        },
+        "shift": {
+          "type": "string",
+          "description": "The route's operating shift.",
+          "enum": [
+            "manha",
+            "tarde"
+          ]
         }
       },
       "required": [
         "id",
         "name",
         "driverId",
-        "active"
+        "active",
+        "shift"
       ]
     },
     "Invoice": {

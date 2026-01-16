@@ -1,7 +1,7 @@
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 import {
   Form,
@@ -44,6 +44,7 @@ const formSchema = z.object({
   assistantId: z.string().optional(),
   studentIds: z.array(z.string()).default([]),
   active: z.boolean().default(true),
+  shift: z.enum(['manha', 'tarde'], { required_error: 'Selecione um turno.' }),
 });
 
 type RouteFormValues = z.infer<typeof formSchema>;
@@ -75,6 +76,7 @@ export function RouteForm({
       assistantId: '',
       studentIds: [],
       active: true,
+      shift: 'manha',
     },
   });
 
@@ -86,6 +88,7 @@ export function RouteForm({
         assistantId: route.assistantId || '',
         studentIds: route.studentIds || [],
         active: route.active ?? true,
+        shift: route.shift || 'manha',
       });
     } else {
       form.reset({
@@ -94,6 +97,7 @@ export function RouteForm({
         assistantId: '',
         studentIds: [],
         active: true,
+        shift: 'manha',
       });
     }
   }, [route, form]);
@@ -142,30 +146,53 @@ export function RouteForm({
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="driverId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Motorista</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um motorista" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {drivers.map(driver => (
-                      <SelectItem key={driver.id} value={driver.id}>
-                        {driver.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="driverId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Motorista</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um motorista" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {drivers.map(driver => (
+                        <SelectItem key={driver.id} value={driver.id}>
+                          {driver.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="shift"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Turno</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o turno" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="manha">Manhã</SelectItem>
+                      <SelectItem value="tarde">Tarde</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
            <FormField
             control={form.control}
             name="assistantId"

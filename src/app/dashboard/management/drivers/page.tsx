@@ -41,10 +41,23 @@ import { useToast } from "@/hooks/use-toast";
 type Driver = {
   id: string;
   name: string;
-  status: string;
+  status: 'inativo' | 'em_rota' | 'pausa';
   vehicleId?: string;
+  userId: string;
 };
 type Vehicle = { id: string; model: string; licensePlate: string };
+
+const statusVariantMap: Record<Driver['status'], 'secondary' | 'default' | 'outline'> = {
+    'inativo': 'secondary',
+    'em_rota': 'default',
+    'pausa': 'outline'
+};
+const statusLabelMap: Record<Driver['status'], string> = {
+    'inativo': 'Inativo',
+    'em_rota': 'Em Rota',
+    'pausa': 'Em Pausa'
+};
+
 
 export default function DriversPage() {
   const { user, isUserLoading } = useUser();
@@ -136,13 +149,14 @@ export default function DriversPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Veículo</TableHead>
+                <TableHead>User ID</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">
+                  <TableCell colSpan={5} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -152,17 +166,12 @@ export default function DriversPage() {
                   <TableRow key={driver.id}>
                     <TableCell>{driver.name}</TableCell>
                     <TableCell>
-                      <Badge
-                        variant={
-                          driver.status === "em_rota" ? "default" : "secondary"
-                        }
-                      >
-                        {driver.status === "em_rota"
-                          ? "Em Rota"
-                          : "Inativo"}
+                      <Badge variant={statusVariantMap[driver.status]}>
+                         {statusLabelMap[driver.status]}
                       </Badge>
                     </TableCell>
                     <TableCell>{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</TableCell>
+                    <TableCell className="font-mono text-xs">{driver.userId}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -191,7 +200,7 @@ export default function DriversPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       {!user ? "Faça login para ver os motoristas." : "Nenhum motorista cadastrado."}
                     </TableCell>
                   </TableRow>

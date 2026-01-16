@@ -36,13 +36,12 @@ import { useEffect } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
+  address: z.string().min(1, { message: 'O endereço é obrigatório.' }),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
-  shift: z.enum(['Manhã', 'Tarde'], { required_error: 'Selecione um turno.' }),
-  status: z.enum(['aguardando', 'a_bordo', 'desembarcado', 'ausente'], {
-    required_error: 'Selecione um status.',
-  }),
-  routeId: z.string().optional(),
+  shift: z.enum(['manha', 'tarde'], { required_error: 'Selecione um turno.' }),
 });
 
 type StudentFormValues = z.infer<typeof formSchema>;
@@ -70,11 +69,12 @@ export function StudentForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      address: '',
+      latitude: undefined,
+      longitude: undefined,
       schoolId: '',
       parentId: '',
-      shift: 'Manhã',
-      status: 'aguardando',
-      routeId: '',
+      shift: 'manha',
     },
   });
 
@@ -82,20 +82,22 @@ export function StudentForm({
     if (student) {
       form.reset({
         name: student.name || '',
+        address: student.address || '',
+        latitude: student.latitude,
+        longitude: student.longitude,
         schoolId: student.schoolId || '',
         parentId: student.parentId || '',
-        shift: student.shift || 'Manhã',
-        status: student.status || 'aguardando',
-        routeId: student.routeId || '',
+        shift: student.shift || 'manha',
       });
     } else {
       form.reset({
         name: '',
+        address: '',
+        latitude: undefined,
+        longitude: undefined,
         schoolId: '',
         parentId: '',
-        shift: 'Manhã',
-        status: 'aguardando',
-        routeId: '',
+        shift: 'manha',
       });
     }
   }, [student, form]);
@@ -103,19 +105,15 @@ export function StudentForm({
   const onSubmit = (data: StudentFormValues) => {
     if (!firestore) return;
 
-    const studentData = { ...data };
-    if (!studentData.routeId) {
-        delete (studentData as Partial<typeof studentData>).routeId; // Do not save empty string
-    }
-
     if (student) {
       const studentRef = doc(firestore, 'students', student.id);
-      updateDocumentNonBlocking(studentRef, studentData);
+      updateDocumentNonBlocking(studentRef, data);
       toast({
         title: 'Aluno atualizado!',
         description: `Os dados de ${data.name} foram atualizados com sucesso.`,
       });
     } else {
+      const studentData = { ...data, status: 'aguardando' };
       const studentsCollection = collection(firestore, 'students');
       addDocumentNonBlocking(studentsCollection, studentData);
       toast({
@@ -127,7 +125,7 @@ export function StudentForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-[425px]">
+    <DialogContent className="sm:max-w-lg">
       <DialogHeader>
         <DialogTitle>{student ? 'Editar Aluno' : 'Adicionar Aluno'}</DialogTitle>
         <DialogDescription>
@@ -149,6 +147,47 @@ export function StudentForm({
               </FormItem>
             )}
           />
+           <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Endereço</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Rua das Palmeiras, 45" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="latitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Latitude</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="any" placeholder="-23.55052" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="longitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Longitude</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="any" placeholder="-46.633308" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <FormField
             control={form.control}
             name="schoolId"
@@ -210,8 +249,8 @@ export function StudentForm({
                     </SelectTrigger>
                   </FormControl>
                   <SelectContent>
-                    <SelectItem value="Manhã">Manhã</SelectItem>
-                    <SelectItem value="Tarde">Tarde</SelectItem>
+                    <SelectItem value="manha">Manhã</SelectItem>
+                    <SelectItem value="tarde">Tarde</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

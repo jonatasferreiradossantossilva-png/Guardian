@@ -44,12 +44,15 @@ import {
 import { VehicleForm } from "@/components/dashboard/management/vehicles/vehicle-form";
 import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 
 type Vehicle = {
   id: string;
   model: string;
   licensePlate: string;
+  capacity: number;
+  active: boolean;
 };
 
 export default function VehiclesPage() {
@@ -128,13 +131,15 @@ export default function VehiclesPage() {
               <TableRow>
                 <TableHead>Modelo</TableHead>
                 <TableHead>Placa</TableHead>
+                <TableHead>Capacidade</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center">
+                  <TableCell colSpan={5} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -144,6 +149,12 @@ export default function VehiclesPage() {
                   <TableRow key={vehicle.id}>
                     <TableCell>{vehicle.model}</TableCell>
                     <TableCell>{vehicle.licensePlate}</TableCell>
+                    <TableCell>{vehicle.capacity}</TableCell>
+                    <TableCell>
+                      <Badge variant={vehicle.active ? 'default' : 'destructive'}>
+                        {vehicle.active ? 'Ativo' : 'Inativo'}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-right">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -172,7 +183,7 @@ export default function VehiclesPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       {!user
                         ? "Faça login para ver os veículos."
                         : "Nenhum veículo cadastrado."}

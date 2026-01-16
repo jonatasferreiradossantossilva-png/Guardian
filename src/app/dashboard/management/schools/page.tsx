@@ -41,6 +41,8 @@ type School = {
   id: string;
   name: string;
   address: string;
+  latitude?: number;
+  longitude?: number;
 };
 
 export default function SchoolsPage() {
@@ -118,13 +120,15 @@ export default function SchoolsPage() {
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>Endereço</TableHead>
+                <TableHead>Latitude</TableHead>
+                <TableHead>Longitude</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center">
+                  <TableCell colSpan={5} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -134,6 +138,8 @@ export default function SchoolsPage() {
                   <TableRow key={school.id}>
                     <TableCell>{school.name}</TableCell>
                     <TableCell>{school.address}</TableCell>
+                    <TableCell>{school.latitude || 'N/A'}</TableCell>
+                    <TableCell>{school.longitude || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -162,7 +168,7 @@ export default function SchoolsPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       {!user ? "Faça login para ver as escolas." : "Nenhuma escola cadastrada."}
                     </TableCell>
                   </TableRow>

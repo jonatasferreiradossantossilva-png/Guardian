@@ -36,7 +36,8 @@ import { useEffect } from 'react';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
-  status: z.enum(['inativo', 'em_rota']),
+  userId: z.string().min(1, { message: 'O ID do usuário é obrigatório.' }),
+  status: z.enum(['inativo', 'em_rota', 'pausa']),
   vehicleId: z.string().optional(),
 });
 
@@ -62,6 +63,7 @@ export function DriverForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
+      userId: '',
       status: 'inativo',
       vehicleId: '',
     },
@@ -71,12 +73,14 @@ export function DriverForm({
     if (driver) {
       form.reset({
         name: driver.name || '',
+        userId: driver.userId || '',
         status: driver.status || 'inativo',
         vehicleId: driver.vehicleId || '',
       });
     } else {
       form.reset({
         name: '',
+        userId: '',
         status: 'inativo',
         vehicleId: '',
       });
@@ -132,6 +136,19 @@ export function DriverForm({
               </FormItem>
             )}
           />
+           <FormField
+            control={form.control}
+            name="userId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ID do Usuário (Auth)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Cole o UID do Firebase Auth" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
           <FormField
             control={form.control}
             name="status"
@@ -147,6 +164,7 @@ export function DriverForm({
                   <SelectContent>
                     <SelectItem value="inativo">Inativo</SelectItem>
                     <SelectItem value="em_rota">Em Rota</SelectItem>
+                    <SelectItem value="pausa">Em Pausa</SelectItem>
                   </SelectContent>
                 </Select>
                 <FormMessage />

@@ -30,12 +30,14 @@ import { useEffect } from 'react';
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   address: z.string().min(1, { message: 'O endereço é obrigatório.' }),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
 });
 
 type SchoolFormValues = z.infer<typeof formSchema>;
 
 interface SchoolFormProps {
-  school?: { id: string } & SchoolFormValues;
+  school?: { id: string } & Partial<SchoolFormValues>;
   onFormSubmit: () => void;
 }
 
@@ -48,16 +50,25 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     defaultValues: {
       name: '',
       address: '',
+      latitude: undefined,
+      longitude: undefined,
     },
   });
 
   useEffect(() => {
     if (school) {
-      form.reset(school);
+      form.reset({
+        name: school.name || '',
+        address: school.address || '',
+        latitude: school.latitude,
+        longitude: school.longitude,
+      });
     } else {
       form.reset({
         name: '',
         address: '',
+        latitude: undefined,
+        longitude: undefined,
       });
     }
   }, [school, form]);
@@ -121,6 +132,34 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
               </FormItem>
             )}
           />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="latitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Latitude</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="any" placeholder="-23.55052" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="longitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Longitude</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="any" placeholder="-46.633308" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           <DialogFooter>
             <DialogClose asChild>
               <Button type="button" variant="outline">

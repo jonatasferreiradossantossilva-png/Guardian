@@ -44,6 +44,7 @@ type Route = {
   driverId: string;
   studentIds: string[];
   active: boolean;
+  shift: 'manha' | 'tarde';
 };
 type Driver = { id: string; name: string };
 type Student = { id: string; name: string };
@@ -144,6 +145,7 @@ export default function RoutesPage() {
                 <TableHead>Nome da Rota</TableHead>
                 <TableHead>Motorista</TableHead>
                 <TableHead>Alunos</TableHead>
+                <TableHead>Turno</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -151,7 +153,7 @@ export default function RoutesPage() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={6} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -162,6 +164,9 @@ export default function RoutesPage() {
                     <TableCell className="font-medium">{route.name}</TableCell>
                     <TableCell>{driversMap.get(route.driverId) || 'N/A'}</TableCell>
                     <TableCell>{route.studentIds?.length || 0}</TableCell>
+                    <TableCell>
+                        <Badge variant="outline">{route.shift === 'manha' ? 'Manhã' : 'Tarde'}</Badge>
+                    </TableCell>
                     <TableCell>
                       <Badge variant={route.active ? 'default' : 'outline'}>
                         {route.active ? 'Ativa' : 'Inativa'}
@@ -195,7 +200,7 @@ export default function RoutesPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
+                    <TableCell colSpan={6} className="text-center">
                       {!user ? "Faça login para ver as rotas." : "Nenhuma rota cadastrada."}
                     </TableCell>
                   </TableRow>
