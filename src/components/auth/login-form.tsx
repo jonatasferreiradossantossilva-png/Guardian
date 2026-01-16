@@ -110,28 +110,30 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <div className="space-y-3">
-                <Label>Entrar como</Label>
-                <RadioGroup
-                    defaultValue="admin"
-                    className="flex pt-2 space-x-4"
-                    onValueChange={(value) => setRole(value as UserRole)}
-                    disabled={isLoading}
-                >
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="admin" id="admin" />
-                        <Label htmlFor="admin">Admin</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="driver" id="driver" />
-                        <Label htmlFor="driver">Motorista</Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                        <RadioGroupItem value="parent" id="parent" />
-                        <Label htmlFor="parent">Pais</Label>
-                    </div>
-                </RadioGroup>
-            </div>
+            <fieldset className="space-y-3">
+              <legend className="text-sm font-medium leading-none">
+                Entrar como
+              </legend>
+              <RadioGroup
+                defaultValue="admin"
+                className="flex pt-2 space-x-4"
+                onValueChange={(value) => setRole(value as UserRole)}
+                disabled={isLoading}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="admin" id="admin" />
+                  <Label htmlFor="admin">Admin</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="driver" id="driver" />
+                  <Label htmlFor="driver">Motorista</Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="parent" id="parent" />
+                  <Label htmlFor="parent">Pais</Label>
+                </div>
+              </RadioGroup>
+            </fieldset>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="animate-spin" />
