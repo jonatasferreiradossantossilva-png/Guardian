@@ -11,8 +11,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { collection, query } from "firebase/firestore";
 
 export default function VehiclesPage() {
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+  
+  const vehiclesQuery = useMemoFirebase(
+    () => (user && firestore ? query(collection(firestore, "vehicles")) : null),
+    [user, firestore]
+  );
+  
+  const { data: vehicles, isLoading: areVehiclesLoading } = useCollection<{
+    model: string;
+    licensePlate: string;
+  }>(vehiclesQuery);
+
+  const isLoading = isUserLoading || areVehiclesLoading;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -38,11 +55,37 @@ export default function VehiclesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell colSpan={3} className="text-center">
-                  Nenhum veículo cadastrado.
-                </TableCell>
-              </TableRow>
+              {isLoading && (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center">
+                    Carregando...
+                  </TableCell>
+                </TableRow>
+              )}
+              {!isLoading && vehicles && vehicles.length > 0 ? (
+                vehicles.map((vehicle) => (
+                  <TableRow key={vehicle.id}>
+                    <TableCell>{vehicle.model}</TableCell>
+                    <TableCell>{vehicle.licensePlate}</TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm" className="mr-2">
+                        Editar
+                      </Button>
+                      <Button variant="destructive" size="sm">
+                        Deletar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                !isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">
+                      {!user ? "Faça login para ver os veículos." : "Nenhum veículo cadastrado."}
+                    </TableCell>
+                  </TableRow>
+                )
+              )}
             </TableBody>
           </Table>
         </CardContent>

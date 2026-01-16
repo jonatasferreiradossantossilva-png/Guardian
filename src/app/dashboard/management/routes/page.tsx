@@ -11,8 +11,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
+import { collection, query } from "firebase/firestore";
 
 export default function RoutesPage() {
+  const { user, isUserLoading } = useUser();
+  const firestore = useFirestore();
+  
+  const routesQuery = useMemoFirebase(
+    () => (user && firestore ? query(collection(firestore, "routes")) : null),
+    [user, firestore]
+  );
+  
+  const { data: routes, isLoading: areRoutesLoading } = useCollection<{
+    name: string;
+    driverId: string;
+  }>(routesQuery);
+
+  const isLoading = isUserLoading || areRoutesLoading;
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -38,11 +55,37 @@ export default function RoutesPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell colSpan={3} className="text-center">
-                  Nenhuma rota cadastrada.
-                </TableCell>
-              </TableRow>
+              {isLoading && (
+                <TableRow>
+                  <TableCell colSpan={3} className="text-center">
+                    Carregando...
+                  </TableCell>
+                </TableRow>
+              )}
+              {!isLoading && routes && routes.length > 0 ? (
+                routes.map((route) => (
+                  <TableRow key={route.id}>
+                    <TableCell>{route.name}</TableCell>
+                    <TableCell>{route.driverId}</TableCell>
+                    <TableCell>
+                      <Button variant="outline" size="sm" className="mr-2">
+                        Editar
+                      </Button>
+                      <Button variant="destructive" size="sm">
+                        Deletar
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                !isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center">
+                      {!user ? "Faça login para ver as rotas." : "Nenhuma rota cadastrada."}
+                    </TableCell>
+                  </TableRow>
+                )
+              )}
             </TableBody>
           </Table>
         </CardContent>
