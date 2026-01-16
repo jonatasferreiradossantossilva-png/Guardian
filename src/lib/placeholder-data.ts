@@ -1,3 +1,5 @@
+import { Siren, Car, Users, Smile } from "lucide-react";
+
 export type Incident = {
   id: string;
   category: 'Trânsito' | 'Acidente' | 'Perigo' | 'Outro';
@@ -30,28 +32,28 @@ export const overviewStats: OverviewStat[] = [
         value: "12",
         change: "+2",
         changeType: "increase",
-        icon: require("lucide-react").Siren,
+        icon: Siren,
     },
     {
         title: "Motoristas Ativos",
         value: "8/10",
         change: "-1",
         changeType: "decrease",
-        icon: require("lucide-react").SteeringWheel,
+        icon: Car,
     },
     {
         title: "Alunos Transportados",
         value: "128",
         change: "+12",
         changeType: "increase",
-        icon: require("lucide-react").Users,
+        icon: Users,
     },
     {
         title: "Satisfação dos Pais",
         value: "98%",
         change: "+0.5%",
         changeType: "increase",
-        icon: require("lucide-react").Smile,
+        icon: Smile,
     },
 ];
 
