@@ -66,13 +66,13 @@ service cloud.firestore {
     /**
      * @description Manages documents for schools in the system.
      * @path /schools/{schoolId}
-     * @allow An authenticated admin (create)s a new school document.
-     * @deny A non-admin user attempts to (get) a school document.
-     * @principle Centralizes control of core business data to trusted administrators.
+     * @allow An authenticated user (get)s a new school document.
+     * @deny A non-admin user attempts to (create) a school document.
+     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /schools/{schoolId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
@@ -81,13 +81,13 @@ service cloud.firestore {
     /**
      * @description Manages documents for parents/guardians.
      * @path /parents/{parentId}
-     * @allow An authenticated admin (update)s an existing parent document.
-     * @deny A regular user attempts to (list) all parents.
-     * @principle Centralizes control of core business data to trusted administrators.
+     * @allow An authenticated user (list)s all parents.
+     * @deny A non-admin user attempts to (delete) a parent.
+     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /parents/{parentId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
@@ -96,13 +96,13 @@ service cloud.firestore {
     /**
      * @description Manages documents for students.
      * @path /students/{studentId}
-     * @allow An authenticated admin (delete)s a student document.
+     * @allow An authenticated user (get)s a student document.
      * @deny A non-admin user attempts to (create) a new student.
-     * @principle Centralizes control of core business data to trusted administrators.
+     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /students/{studentId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
@@ -111,13 +111,13 @@ service cloud.firestore {
     /**
      * @description Manages documents for drivers.
      * @path /drivers/{driverId}
-     * @allow An authenticated admin (get)s a driver's status.
-     * @deny Anonymous users attempting to (list) drivers.
-     * @principle Centralizes control of core business data to trusted administrators.
+     * @allow An authenticated user (get)s a driver's status.
+     * @deny Anonymous users attempting to (create) drivers.
+     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /drivers/{driverId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
@@ -126,13 +126,13 @@ service cloud.firestore {
     /**
      * @description Manages documents for vehicles in the fleet.
      * @path /vehicles/{vehicleId}
-     * @allow An authenticated admin (create)s a new vehicle document.
+     * @allow An authenticated user (list)s vehicles.
      * @deny A non-admin user attempts to (update) a vehicle's license plate.
-     * @principle Centralizes control of core business data to trusted administrators.
+     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /vehicles/{vehicleId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
@@ -141,13 +141,13 @@ service cloud.firestore {
     /**
      * @description Manages transportation route documents.
      * @path /routes/{routeId}
-     * @allow An authenticated admin (update)s a route to add a new stop.
-     * @deny A regular user attempts to (get) route information.
-     * @principle Centralizes control of core business data to trusted administrators.
+     * @allow An authenticated user (get)s route information.
+     * @deny A regular user attempts to (create) a route.
+     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /routes/{routeId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
@@ -156,13 +156,13 @@ service cloud.firestore {
     /**
      * @description Manages invoice documents for billing.
      * @path /invoices/{invoiceId}
-     * @allow An authenticated admin (update)s an invoice status to 'paid'.
-     * @deny A parent user attempts to (list) all invoices in the system.
-     * @principle Centralizes control of core business data to trusted administrators.
+     * @allow An authenticated user (get)s an invoice.
+     * @deny A parent user attempts to (list) all invoices in the system if not an admin.
+     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /invoices/{invoiceId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
@@ -171,13 +171,13 @@ service cloud.firestore {
     /**
      * @description Manages route stop documents.
      * @path /stops/{stopId}
-     * @allow An authenticated admin (create)s a new stop document.
+     * @allow An authenticated user (get)s a stop document.
      * @deny A non-admin user attempts to (delete) a stop.
-     * @principle Centralizes control of core business data to trusted administrators.
+     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /stops/{stopId} {
-      allow get: if isAdmin();
-      allow list: if isAdmin();
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;

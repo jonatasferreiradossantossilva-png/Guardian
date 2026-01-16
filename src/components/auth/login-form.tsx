@@ -20,6 +20,7 @@ import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useAuth, initiateAnonymousSignIn } from "@/firebase";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -36,6 +37,7 @@ export function LoginForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
   const [role, setRole] = useState<UserRole>("admin");
+  const auth = useAuth();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -46,26 +48,31 @@ export function LoginForm() {
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
-    // Simulate API call
     setIsLoading(true);
-    console.log("Login values:", values, "Role:", role);
-    setTimeout(() => {
-      setIsLoading(false);
-      // On successful login, redirect based on role
-      switch (role) {
-        case "admin":
-          router.push("/dashboard");
-          break;
-        case "driver":
-          router.push("/driver/route-plan");
-          break;
-        case "parent":
-          router.push("/parent/tracking");
-          break;
-        default:
-          router.push("/dashboard");
-      }
-    }, 200);
+
+    if (auth) {
+      // Non-blocking anonymous sign-in. The onAuthStateChanged listener will handle the rest.
+      initiateAnonymousSignIn(auth);
+    } else {
+        console.error("Auth service not available");
+        setIsLoading(false);
+        return;
+    }
+
+    // Redirect immediately. The protected pages will handle the auth state.
+    switch (role) {
+      case "admin":
+        router.push("/dashboard");
+        break;
+      case "driver":
+        router.push("/driver/route-plan");
+        break;
+      case "parent":
+        router.push("/parent/tracking");
+        break;
+      default:
+        router.push("/dashboard");
+    }
   }
 
   return (
