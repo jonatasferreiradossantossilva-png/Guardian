@@ -1,41 +1,27 @@
 /**
  * Core Philosophy: This ruleset enforces a strict Role-Based Access Control (RBAC) model.
- * A user's administrative privileges are determined by the existence of a corresponding
- * document in the `/roles_admin` collection. These "admins" or "managers" have full
- * CRUD (Create, Read, Update, Delete) access over all core operational data collections
- * like schools, students, drivers, and invoices. Data that is specific to a user, such
- * as private messages, is stored in a user-owned subcollection and is accessible only
- * by that user or an admin.
+ * A user's administrative or driver privileges are determined by the existence of a corresponding
+ * document in the `/roles_admin` or `/roles_driver` collections. Admins have full CRUD access
+ * over all core data. Drivers have specific, limited write access, such as updating a student's status.
  *
  * Data Structure:
- * - /roles_admin/{userId}: A collection where document existence grants admin rights.
- * - Top-level collections (e.g., /schools, /students, /routes): Contain master data for
- *   the entire operation, managed exclusively by admins.
- * - /users/{userId}/messages/{messageId}: A nested structure for user-specific data,
- *   ensuring private data is partitioned by user.
+ * - /roles_admin/{userId}: Grants admin rights.
+ * - /roles_driver/{userId}: Grants driver rights.
+ * - Top-level collections (e.g., /schools, /students): Master data for the operation.
+ * - /users/{userId}/messages/{messageId}: User-specific private data.
  *
  * Key Security Decisions:
- * - Admin-Only Master Data: All top-level collections containing operational data are
- *   restricted to users with the 'admin' role. This centralizes data management and
- *   prevents unauthorized access or modification by other user types (e.g., parents, drivers).
- * - User Data Ownership: The `/users/{userId}` path tree is strictly owned by the user
- *   identified by `userId`, with admins also granted access for management and support.
- * - No Public Listings: Listing documents in any collection is restricted. Admin collections
- *   cannot be listed at all to prevent enumeration of privileged users. Other collections
- *   require admin or owner authentication.
+ * - Admin-Only Master Data Management: All top-level collections are primarily managed by admins
+ *   to centralize data control.
+ * - Limited Driver Writes: Drivers are granted permission only to modify specific fields necessary
+ *   for their tasks, like updating a student's boarding status. This is enforced using
+ *   `request.resource.data.diff()`.
+ * - User Data Ownership: The `/users/{userId}` path is strictly owned by the user, with
+ *   admins also granted access for support.
  *
  * Denormalization for Authorization:
- * The primary authorization mechanism is role-based, using the `/roles_admin` collection
- * as a lookup. This is efficient and avoids embedding role information in every document.
- * For messages, the `senderId` is denormalized onto the message document itself. This
- * allows rules to verify that a user is not sending a message on behalf of someone else,
- * which is a critical authorization check that doesn't require extra document reads.
- *
- * Structural Segregation:
- * Admin role data (`/roles_admin`) is stored in a separate, dedicated collection. This
- * is more secure and performant than mixing role flags into a general `/users` collection,
- * as it prevents non-admins from even querying for role information and simplifies the
- * security rules for master data collections.
+ * Role-based access is the primary mechanism, using `/roles_admin` and `/roles_driver`
+ * as lookups. This is efficient and avoids embedding roles in every document.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -48,16 +34,20 @@ service cloud.firestore {
 
     /**
      * Checks if the currently authenticated user is an administrator.
-     * Admin status is granted by the existence of a document in the /roles_admin collection
-     * with an ID matching the user's UID. This is a performant and secure way to manage roles.
      */
     function isAdmin() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_admin/$(request.auth.uid));
     }
+    
+    /**
+     * Checks if the currently authenticated user is a driver.
+     */
+    function isDriver() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_driver/$(request.auth.uid));
+    }
 
     /**
      * Checks if the currently authenticated user's UID matches the provided userId.
-     * This is the foundation for enforcing data ownership.
      */
     function isOwner(userId) {
       return isSignedIn() && request.auth.uid == userId;
@@ -65,9 +55,6 @@ service cloud.firestore {
 
     /**
      * @description Manages documents for schools in the system.
-     * @path /schools/{schoolId}
-     * @allow An authenticated user (get)s a new school document.
-     * @deny A non-admin user attempts to (create) a school document.
      * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /schools/{schoolId} {
@@ -80,9 +67,6 @@ service cloud.firestore {
 
     /**
      * @description Manages documents for parents/guardians.
-     * @path /parents/{parentId}
-     * @allow An authenticated user (list)s all parents.
-     * @deny A non-admin user attempts to (delete) a parent.
      * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /parents/{parentId} {
@@ -95,24 +79,21 @@ service cloud.firestore {
 
     /**
      * @description Manages documents for students.
-     * @path /students/{studentId}
-     * @allow An authenticated user (get)s a student document.
-     * @deny A non-admin user attempts to (create) a new student.
-     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
+     * @principle Allows reads for signed-in users. Admins have full write access.
+     * Drivers are only allowed to update the 'status' field of a student, which is essential
+     * for tracking boarding and disembarking.
      */
     match /students/{studentId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
       allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
+      allow update: if (isAdmin() && resource != null) || 
+                     (isDriver() && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
       allow delete: if isAdmin() && resource != null;
     }
 
     /**
      * @description Manages documents for drivers.
-     * @path /drivers/{driverId}
-     * @allow An authenticated user (get)s a driver's status.
-     * @deny Anonymous users attempting to (create) drivers.
      * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /drivers/{driverId} {
@@ -125,9 +106,6 @@ service cloud.firestore {
 
     /**
      * @description Manages documents for vehicles in the fleet.
-     * @path /vehicles/{vehicleId}
-     * @allow An authenticated user (list)s vehicles.
-     * @deny A non-admin user attempts to (update) a vehicle's license plate.
      * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /vehicles/{vehicleId} {
@@ -140,9 +118,6 @@ service cloud.firestore {
 
     /**
      * @description Manages transportation route documents.
-     * @path /routes/{routeId}
-     * @allow An authenticated user (get)s route information.
-     * @deny A regular user attempts to (create) a route.
      * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /routes/{routeId} {
@@ -155,9 +130,6 @@ service cloud.firestore {
 
     /**
      * @description Manages invoice documents for billing.
-     * @path /invoices/{invoiceId}
-     * @allow An authenticated user (get)s an invoice.
-     * @deny A parent user attempts to (list) all invoices in the system if not an admin.
      * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /invoices/{invoiceId} {
@@ -170,9 +142,6 @@ service cloud.firestore {
 
     /**
      * @description Manages route stop documents.
-     * @path /stops/{stopId}
-     * @allow An authenticated user (get)s a stop document.
-     * @deny A non-admin user attempts to (delete) a stop.
      * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
      */
     match /stops/{stopId} {
@@ -184,13 +153,8 @@ service cloud.firestore {
     }
 
     /**
-     * @description Stores messages partitioned by user. Allows a user to access their
-     * own messages and admins to access any user's messages for support.
-     * @path /users/{userId}/messages/{messageId}
-     * @allow A user with uid=`userId` (create)s a new message in their own subcollection.
-     * @deny A user with uid=`user_abc` attempts to (list) messages in `/users/user_xyz/messages`.
+     * @description Stores messages partitioned by user.
      * @principle Restricts access to a user's own data tree, with an override for admins.
-     * Validates relational integrity by ensuring the sender ID on new messages matches the creator.
      */
     match /users/{userId}/messages/{messageId} {
       allow get: if isOwner(userId) || isAdmin();
@@ -201,12 +165,8 @@ service cloud.firestore {
     }
 
     /**
-     * @description Manages administrator roles. The existence of a document grants
-     * a user admin privileges across the application.
-     * @path /roles_admin/{userId}
-     * @allow An existing admin (create)s a document to grant another user admin rights.
-     * @deny Any user, including an admin, attempts to (list) all admin documents to prevent enumeration.
-     * @principle Secures role management by restricting modifications to existing admins and preventing discovery of privileged users.
+     * @description Manages administrator roles.
+     * @principle Secures role management by restricting modifications to existing admins and preventing discovery.
      */
     match /roles_admin/{userId} {
       allow get: if isAdmin();
@@ -215,5 +175,19 @@ service cloud.firestore {
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
     }
+    
+    /**
+     * @description Manages driver roles.
+     * @principle Secures role management by restricting modifications to existing admins and preventing discovery.
+     */
+    match /roles_driver/{userId} {
+      allow get: if isAdmin() || isOwner(userId);
+      allow list: if false;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
+    }
   }
 }
+
+    
