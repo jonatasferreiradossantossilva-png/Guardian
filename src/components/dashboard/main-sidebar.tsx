@@ -15,7 +15,6 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
-  SidebarTrigger,
 } from "@/components/ui/sidebar";
 import {
   Home,
@@ -31,19 +30,21 @@ import {
   Car,
   ShieldCheck,
   LogOut,
+  GraduationCap,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 
 const managementLinks = [
-  { href: "/dashboard/management/drivers", label: "Motoristas", icon: Users },
-  { href: "/dashboard/management/routes", label: "Rotas", icon: Route },
-  { href: "/dashboard/management/vehicles", label: "Veículos", icon: Truck },
   { href: "/dashboard/management/schools", label: "Escolas", icon: School },
+  { href: "/dashboard/management/drivers", label: "Motoristas", icon: Car },
+  { href: "/dashboard/management/vehicles", label: "Veículos", icon: Truck },
+  { href: "/dashboard/management/routes", label: "Rotas", icon: Route },
+  { href: "/dashboard/management/parents", label: "Pais", icon: Users },
   {
-    href: "/dashboard/management/parents",
-    label: "Pais e Alunos",
-    icon: Users,
+    href: "/dashboard/management/students",
+    label: "Alunos",
+    icon: GraduationCap,
   },
 ];
 
@@ -90,35 +91,37 @@ export function MainSidebar() {
             </Link>
           </SidebarMenuItem>
 
-          <Collapsible defaultOpen={isManagementActive}>
-            <CollapsibleTrigger asChild className="w-full">
-              <SidebarMenuButton
-                className="w-full justify-start"
-                isActive={isManagementActive}
-              >
-                <FolderKanban />
-                <span>Gerenciamento</span>
-                <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
-              </SidebarMenuButton>
-            </CollapsibleTrigger>
-            <CollapsibleContent>
-              <SidebarMenu className="pl-6 pt-1">
-                {managementLinks.map((link) => (
-                  <SidebarMenuItem key={link.href}>
-                    <Link href={link.href} passHref>
-                      <SidebarMenuButton
-                        variant="ghost"
-                        size="sm"
-                        isActive={isActive(link.href)}
-                      >
-                        <link.icon />
-                        <span>{link.label}</span>
-                      </SidebarMenuButton>
-                    </Link>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </CollapsibleContent>
+          <Collapsible defaultOpen={isManagementActive} asChild>
+            <SidebarMenuItem>
+              <CollapsibleTrigger asChild>
+                <SidebarMenuButton
+                  className="w-full justify-start"
+                  isActive={isManagementActive}
+                >
+                  <FolderKanban />
+                  <span>Gerenciamento</span>
+                  <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                </SidebarMenuButton>
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarMenu className="pl-6 pt-1">
+                  {managementLinks.map((link) => (
+                    <SidebarMenuItem key={link.href}>
+                      <Link href={link.href} passHref>
+                        <SidebarMenuButton
+                          variant="ghost"
+                          size="sm"
+                          isActive={isActive(link.href)}
+                        >
+                          <link.icon />
+                          <span>{link.label}</span>
+                        </SidebarMenuButton>
+                      </Link>
+                    </SidebarMenuItem>
+                  ))}
+                </SidebarMenu>
+              </CollapsibleContent>
+            </SidebarMenuItem>
           </Collapsible>
 
           <SidebarMenuItem>
