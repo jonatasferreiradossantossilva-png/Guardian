@@ -32,7 +32,13 @@ const formSchema = z.object({
   userId: z.string().min(1, { message: 'O ID de usuário do Firebase é obrigatório.' }),
   cpf: z.string().optional(),
   rg: z.string().optional(),
-  address: z.string().optional(),
+  zipCode: z.string().optional(),
+  street: z.string().optional(),
+  number: z.string().optional(),
+  complement: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
 });
 
 type ParentFormValues = z.infer<typeof formSchema>;
@@ -55,7 +61,13 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
       userId: '',
       cpf: '',
       rg: '',
-      address: '',
+      zipCode: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
     },
   });
 
@@ -68,18 +80,16 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
         userId: parent.userId || '',
         cpf: parent.cpf || '',
         rg: parent.rg || '',
-        address: parent.address || '',
+        zipCode: parent.zipCode || '',
+        street: parent.street || '',
+        number: parent.number || '',
+        complement: parent.complement || '',
+        neighborhood: parent.neighborhood || '',
+        city: parent.city || '',
+        state: parent.state || '',
       });
     } else {
-      form.reset({
-        name: '',
-        email: '',
-        phone: '',
-        userId: '',
-        cpf: '',
-        rg: '',
-        address: '',
-      });
+      form.reset(form.defaultValues);
     }
   }, [parent, form]);
 
@@ -101,7 +111,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
   };
 
   return (
-    <DialogContent className="sm:max-w-md">
+    <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>{parent ? 'Editar Responsável' : 'Adicionar Responsável'}</DialogTitle>
         <DialogDescription>
@@ -109,7 +119,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
           <FormField
             control={form.control}
             name="name"
@@ -179,24 +189,92 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                 )}
                 />
           </div>
-           <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Endereço</FormLabel>
-                <FormControl>
-                  <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          
+           <div className="border-t pt-4 mt-4">
+             <p className="text-sm font-medium mb-2">Endereço</p>
+             <div className="grid grid-cols-3 gap-4">
+                 <FormField
+                    control={form.control} name="zipCode"
+                    render={({ field }) => (
+                        <FormItem className="col-span-1">
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl><Input placeholder="00000-000" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="street"
+                    render={({ field }) => (
+                        <FormItem className="col-span-2">
+                        <FormLabel>Rua</FormLabel>
+                        <FormControl><Input placeholder="Rua das Flores" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+             <div className="grid grid-cols-3 gap-4 mt-4">
+                 <FormField
+                    control={form.control} name="number"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Número</FormLabel>
+                        <FormControl><Input placeholder="123" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="complement"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Complemento</FormLabel>
+                        <FormControl><Input placeholder="Apto 4B" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="neighborhood"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Bairro</FormLabel>
+                        <FormControl><Input placeholder="Centro" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+             <div className="grid grid-cols-2 gap-4 mt-4">
+                 <FormField
+                    control={form.control} name="city"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Cidade</FormLabel>
+                        <FormControl><Input placeholder="São Paulo" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="state"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Estado (UF)</FormLabel>
+                        <FormControl><Input placeholder="SP" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+          </div>
+
            <FormField
             control={form.control}
             name="userId"
             render={({ field }) => (
-              <FormItem>
+              <FormItem className="pt-4">
                 <FormLabel>ID do Usuário (Firebase Auth)</FormLabel>
                 <FormControl>
                   <Input placeholder="Cole o UID do usuário" {...field} />
@@ -205,7 +283,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
               </FormItem>
             )}
           />
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
               <Button type="button" variant="outline">
                 Cancelar
@@ -218,3 +296,5 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
     </DialogContent>
   );
 }
+
+    

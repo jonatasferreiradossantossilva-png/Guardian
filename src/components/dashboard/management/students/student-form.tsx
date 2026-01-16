@@ -34,12 +34,18 @@ import { useMockData } from '@/hooks/use-mock-data';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
-  address: z.string().min(1, { message: 'O endereço é obrigatório.' }),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
   shift: z.enum(['manha', 'tarde', 'Manhã', 'Tarde'], { required_error: 'Selecione um turno.' }),
+  zipCode: z.string().optional(),
+  street: z.string().min(1, { message: 'A rua é obrigatória.' }),
+  number: z.string().optional(),
+  complement: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
 });
 
 type StudentFormValues = z.infer<typeof formSchema>;
@@ -67,12 +73,18 @@ export function StudentForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      address: '',
       latitude: undefined,
       longitude: undefined,
       schoolId: '',
       parentId: '',
       shift: 'manha',
+      zipCode: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
     },
   });
 
@@ -80,30 +92,28 @@ export function StudentForm({
     if (student) {
       form.reset({
         name: student.name || '',
-        address: student.address || '',
         latitude: student.latitude,
         longitude: student.longitude,
         schoolId: student.schoolId || '',
         parentId: student.parentId || '',
         shift: student.shift?.toLowerCase() === 'manhã' ? 'manha' : student.shift?.toLowerCase() === 'tarde' ? 'tarde' : 'manha',
+        zipCode: student.zipCode || '',
+        street: student.street || '',
+        number: student.number || '',
+        complement: student.complement || '',
+        neighborhood: student.neighborhood || '',
+        city: student.city || '',
+        state: student.state || '',
       });
     } else {
-      form.reset({
-        name: '',
-        address: '',
-        latitude: undefined,
-        longitude: undefined,
-        schoolId: '',
-        parentId: '',
-        shift: 'manha',
-      });
+      form.reset(form.defaultValues);
     }
   }, [student, form]);
 
   const onSubmit = (data: StudentFormValues) => {
     const finalData = {
         ...data,
-        shift: data.shift === 'manha' ? 'Manhã' : 'Tarde'
+        shift: data.shift.toLowerCase().startsWith('manh') ? 'Manhã' : 'Tarde'
     }
 
     if (student) {
@@ -124,7 +134,7 @@ export function StudentForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-lg">
+    <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>{student ? 'Editar Aluno' : 'Adicionar Aluno'}</DialogTitle>
         <DialogDescription>
@@ -132,7 +142,7 @@ export function StudentForm({
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
           <FormField
             control={form.control}
             name="name"
@@ -146,20 +156,87 @@ export function StudentForm({
               </FormItem>
             )}
           />
-           <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Endereço</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: Rua das Palmeiras, 45" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-           <div className="grid grid-cols-2 gap-4">
+          <div className="border-t pt-4 mt-4">
+             <p className="text-sm font-medium mb-2">Endereço</p>
+             <div className="grid grid-cols-3 gap-4">
+                 <FormField
+                    control={form.control} name="zipCode"
+                    render={({ field }) => (
+                        <FormItem className="col-span-1">
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl><Input placeholder="00000-000" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="street"
+                    render={({ field }) => (
+                        <FormItem className="col-span-2">
+                        <FormLabel>Rua</FormLabel>
+                        <FormControl><Input placeholder="Rua das Flores" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+             <div className="grid grid-cols-3 gap-4 mt-4">
+                 <FormField
+                    control={form.control} name="number"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Número</FormLabel>
+                        <FormControl><Input placeholder="123" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="complement"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Complemento</FormLabel>
+                        <FormControl><Input placeholder="Apto 4B" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="neighborhood"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Bairro</FormLabel>
+                        <FormControl><Input placeholder="Centro" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+             <div className="grid grid-cols-2 gap-4 mt-4">
+                 <FormField
+                    control={form.control} name="city"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Cidade</FormLabel>
+                        <FormControl><Input placeholder="São Paulo" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="state"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Estado (UF)</FormLabel>
+                        <FormControl><Input placeholder="SP" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+          </div>
+
+           <div className="grid grid-cols-2 gap-4 pt-4">
             <FormField
               control={form.control}
               name="latitude"
@@ -241,7 +318,7 @@ export function StudentForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Turno</FormLabel>
-                 <Select onValueChange={field.onChange} value={field.value}>
+                 <Select onValueChange={field.onChange} value={field.value?.toLowerCase().startsWith('manh') ? 'manha' : 'tarde'}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o turno" />
@@ -257,7 +334,7 @@ export function StudentForm({
             )}
           />
 
-          <DialogFooter>
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
               <Button type="button" variant="outline">
                 Cancelar
@@ -270,3 +347,5 @@ export function StudentForm({
     </DialogContent>
   );
 }
+
+    

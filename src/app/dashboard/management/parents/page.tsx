@@ -44,7 +44,11 @@ type Parent = {
   userId?: string;
   cpf?: string;
   rg?: string;
-  address?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
 };
 
 export default function ParentsPage() {
@@ -83,6 +87,12 @@ export default function ParentsPage() {
     setIsFormOpen(false);
     setSelectedParent(null);
   };
+  
+  const formatAddress = (parent: Parent) => {
+    if (!parent.street) return 'N/A';
+    return `${parent.street}, ${parent.number} - ${parent.city}, ${parent.state}`;
+  }
+
 
   return (
     <div>
@@ -115,7 +125,6 @@ export default function ParentsPage() {
                 <TableHead>Email</TableHead>
                 <TableHead>Telefone</TableHead>
                 <TableHead>CPF</TableHead>
-                <TableHead>RG</TableHead>
                 <TableHead>Endereço</TableHead>
                 <TableHead>User ID</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
@@ -124,7 +133,7 @@ export default function ParentsPage() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -136,8 +145,7 @@ export default function ParentsPage() {
                     <TableCell>{parent.email}</TableCell>
                     <TableCell>{parent.phone}</TableCell>
                     <TableCell>{parent.cpf || 'N/A'}</TableCell>
-                    <TableCell>{parent.rg || 'N/A'}</TableCell>
-                    <TableCell>{parent.address || 'N/A'}</TableCell>
+                    <TableCell>{formatAddress(parent)}</TableCell>
                     <TableCell className="font-mono text-xs">{parent.userId || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
@@ -167,7 +175,7 @@ export default function ParentsPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                        Nenhum pai cadastrado.
                     </TableCell>
                   </TableRow>
@@ -194,3 +202,5 @@ export default function ParentsPage() {
     </div>
   );
 }
+
+    

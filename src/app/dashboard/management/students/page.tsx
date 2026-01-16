@@ -44,7 +44,10 @@ type Student = {
   parentId: string;
   shift: 'manha' | 'tarde';
   status: string;
-  address: string;
+  street?: string;
+  number?: string;
+  city?: string;
+  state?: string;
 };
 type School = { id: string; name: string };
 type Parent = { id: string; name: string };
@@ -103,6 +106,11 @@ export default function StudentsPage() {
     setSelectedStudent(null);
   };
 
+  const formatAddress = (student: Student) => {
+    if (!student.street) return 'N/A';
+    return `${student.street}, ${student.number} - ${student.city}, ${student.state}`;
+  }
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
@@ -156,7 +164,7 @@ export default function StudentsPage() {
                 students.map((student) => (
                   <TableRow key={student.id}>
                     <TableCell className="font-medium">{student.name}</TableCell>
-                    <TableCell>{student.address}</TableCell>
+                    <TableCell>{formatAddress(student)}</TableCell>
                     <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
                     <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
                     <TableCell><Badge variant="outline">{student.shift === 'manha' ? 'Manhã' : 'Tarde'}</Badge></TableCell>
@@ -217,3 +225,5 @@ export default function StudentsPage() {
     </div>
   );
 }
+
+    

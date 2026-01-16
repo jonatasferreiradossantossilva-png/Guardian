@@ -40,7 +40,15 @@ const formSchema = z.object({
   vehicleId: z.string().optional(),
   cpf: z.string().optional(),
   rg: z.string().optional(),
-  address: z.string().optional(),
+  cnh: z.string().optional(),
+  cnhCategory: z.string().optional(),
+  zipCode: z.string().optional(),
+  street: z.string().optional(),
+  number: z.string().optional(),
+  complement: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
 });
 
 type DriverFormValues = z.infer<typeof formSchema>;
@@ -70,7 +78,15 @@ export function DriverForm({
       vehicleId: '',
       cpf: '',
       rg: '',
-      address: '',
+      cnh: '',
+      cnhCategory: '',
+      zipCode: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: '',
+      state: '',
     },
   });
 
@@ -83,18 +99,18 @@ export function DriverForm({
         vehicleId: driver.vehicleId || '',
         cpf: driver.cpf || '',
         rg: driver.rg || '',
-        address: driver.address || '',
+        cnh: driver.cnh || '',
+        cnhCategory: driver.cnhCategory || '',
+        zipCode: driver.zipCode || '',
+        street: driver.street || '',
+        number: driver.number || '',
+        complement: driver.complement || '',
+        neighborhood: driver.neighborhood || '',
+        city: driver.city || '',
+        state: driver.state || '',
       });
     } else {
-      form.reset({
-        name: '',
-        userId: '',
-        status: 'inativo',
-        vehicleId: '',
-        cpf: '',
-        rg: '',
-        address: '',
-      });
+      form.reset(form.defaultValues);
     }
   }, [driver, form]);
 
@@ -121,7 +137,7 @@ export function DriverForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-md">
+    <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>{driver ? 'Editar Motorista' : 'Adicionar Motorista'}</DialogTitle>
         <DialogDescription>
@@ -129,7 +145,7 @@ export function DriverForm({
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
           <FormField
             control={form.control}
             name="name"
@@ -184,68 +200,166 @@ export function DriverForm({
               )}
             />
           </div>
-          <FormField
-            control={form.control}
-            name="address"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Endereço</FormLabel>
-                <FormControl>
-                  <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="status"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Status</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="cnh"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CNH</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um status" />
-                    </SelectTrigger>
+                    <Input placeholder="01234567890" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="inativo">Inativo</SelectItem>
-                    <SelectItem value="em_rota">Em Rota</SelectItem>
-                    <SelectItem value="pausa">Em Pausa</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="vehicleId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Veículo Associado</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="cnhCategory"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Categoria CNH</FormLabel>
                   <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Nenhum veículo associado" />
-                    </SelectTrigger>
+                    <Input placeholder="Ex: D" {...field} />
                   </FormControl>
-                  <SelectContent>
-                    <SelectItem value="">Nenhum</SelectItem>
-                    {vehicles.map(vehicle => (
-                      <SelectItem key={vehicle.id} value={vehicle.id}>
-                        {vehicle.model} ({vehicle.licensePlate})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
-          <DialogFooter>
+          <div className="border-t pt-4 mt-4">
+             <p className="text-sm font-medium mb-2">Endereço</p>
+             <div className="grid grid-cols-3 gap-4">
+                 <FormField
+                    control={form.control} name="zipCode"
+                    render={({ field }) => (
+                        <FormItem className="col-span-1">
+                        <FormLabel>CEP</FormLabel>
+                        <FormControl><Input placeholder="00000-000" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="street"
+                    render={({ field }) => (
+                        <FormItem className="col-span-2">
+                        <FormLabel>Rua</FormLabel>
+                        <FormControl><Input placeholder="Rua das Flores" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+             <div className="grid grid-cols-3 gap-4 mt-4">
+                 <FormField
+                    control={form.control} name="number"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Número</FormLabel>
+                        <FormControl><Input placeholder="123" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="complement"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Complemento</FormLabel>
+                        <FormControl><Input placeholder="Apto 4B" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="neighborhood"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Bairro</FormLabel>
+                        <FormControl><Input placeholder="Centro" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+             <div className="grid grid-cols-2 gap-4 mt-4">
+                 <FormField
+                    control={form.control} name="city"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Cidade</FormLabel>
+                        <FormControl><Input placeholder="São Paulo" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="state"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Estado (UF)</FormLabel>
+                        <FormControl><Input placeholder="SP" {...field} /></FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                />
+             </div>
+          </div>
+          
+          <div className="grid grid-cols-2 gap-4 pt-4">
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Status</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione um status" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="inativo">Inativo</SelectItem>
+                      <SelectItem value="em_rota">Em Rota</SelectItem>
+                      <SelectItem value="pausa">Em Pausa</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="vehicleId"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Veículo Associado</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value || ''}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Nenhum veículo associado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="">Nenhum</SelectItem>
+                      {vehicles.map(vehicle => (
+                        <SelectItem key={vehicle.id} value={vehicle.id}>
+                          {vehicle.model} ({vehicle.licensePlate})
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
               <Button type="button" variant="outline">
                 Cancelar
@@ -258,3 +372,5 @@ export function DriverForm({
     </DialogContent>
   );
 }
+
+    

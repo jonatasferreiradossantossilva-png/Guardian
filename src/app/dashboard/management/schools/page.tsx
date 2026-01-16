@@ -39,10 +39,14 @@ import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 type School = {
   id: string;
   name: string;
-  address: string;
+  cnpj?: string;
   latitude?: number;
   longitude?: number;
-  cnpj?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
 };
 
 export default function SchoolsPage() {
@@ -81,6 +85,11 @@ export default function SchoolsPage() {
     setIsFormOpen(false);
     setSelectedSchool(null);
   };
+  
+  const formatAddress = (school: School) => {
+    if (!school.street) return 'N/A';
+    return `${school.street}, ${school.number} - ${school.city}, ${school.state}`;
+  }
 
   return (
     <div>
@@ -112,15 +121,13 @@ export default function SchoolsPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Endereço</TableHead>
                 <TableHead>CNPJ</TableHead>
-                <TableHead>Latitude</TableHead>
-                <TableHead>Longitude</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={4} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -129,10 +136,8 @@ export default function SchoolsPage() {
                 schools.map((school) => (
                   <TableRow key={school.id}>
                     <TableCell>{school.name}</TableCell>
-                    <TableCell>{school.address}</TableCell>
+                    <TableCell>{formatAddress(school)}</TableCell>
                     <TableCell>{school.cnpj || 'N/A'}</TableCell>
-                    <TableCell>{school.latitude || 'N/A'}</TableCell>
-                    <TableCell>{school.longitude || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -161,7 +166,7 @@ export default function SchoolsPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell colSpan={4} className="text-center">
                       Nenhuma escola cadastrada.
                     </TableCell>
                   </TableRow>
@@ -188,3 +193,5 @@ export default function SchoolsPage() {
     </div>
   );
 }
+
+    

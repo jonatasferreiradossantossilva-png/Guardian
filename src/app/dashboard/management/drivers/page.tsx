@@ -45,7 +45,13 @@ type Driver = {
   userId: string;
   cpf?: string;
   rg?: string;
-  address?: string;
+  cnh?: string;
+  cnhCategory?: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
 };
 type Vehicle = { id: string; model: string; licensePlate: string };
 
@@ -105,6 +111,11 @@ export default function DriversPage() {
     setIsFormOpen(false);
     setSelectedDriver(null);
   };
+  
+  const formatAddress = (driver: Driver) => {
+    if (!driver.street) return 'N/A';
+    return `${driver.street}, ${driver.number} - ${driver.city}, ${driver.state}`;
+  }
 
   return (
     <div>
@@ -139,7 +150,7 @@ export default function DriversPage() {
               <TableRow>
                 <TableHead>Nome</TableHead>
                 <TableHead>CPF</TableHead>
-                <TableHead>RG</TableHead>
+                <TableHead>CNH</TableHead>
                 <TableHead>Endereço</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Veículo</TableHead>
@@ -160,8 +171,8 @@ export default function DriversPage() {
                   <TableRow key={driver.id}>
                     <TableCell>{driver.name}</TableCell>
                     <TableCell>{driver.cpf || 'N/A'}</TableCell>
-                    <TableCell>{driver.rg || 'N/A'}</TableCell>
-                    <TableCell>{driver.address || 'N/A'}</TableCell>
+                    <TableCell>{driver.cnh || 'N/A'}</TableCell>
+                    <TableCell>{formatAddress(driver)}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariantMap[driver.status]}>
                          {statusLabelMap[driver.status]}
@@ -224,3 +235,5 @@ export default function DriversPage() {
     </div>
   );
 }
+
+    
