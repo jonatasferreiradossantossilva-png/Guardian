@@ -1,27 +1,26 @@
 /**
  * Core Philosophy: This ruleset enforces a strict Role-Based Access Control (RBAC) model.
- * A user's administrative or driver privileges are determined by the existence of a corresponding
- * document in the `/roles_admin` or `/roles_driver` collections. Admins have full CRUD access
- * over all core data. Drivers have specific, limited write access, such as updating a student's status.
+ * A user's administrative, driver, or assistant privileges are determined by the existence of a corresponding
+ * document in the `/roles_admin`, `/roles_driver`, or `/roles_assistant` collections. Admins have full CRUD access
+ * over all core data. Drivers and Assistants have specific, limited write access, such as updating a student's status.
  *
  * Data Structure:
  * - /roles_admin/{userId}: Grants admin rights.
  * - /roles_driver/{userId}: Grants driver rights.
+ * - /roles_assistant/{userId}: Grants assistant rights.
  * - Top-level collections (e.g., /schools, /students): Master data for the operation.
  * - /users/{userId}/messages/{messageId}: User-specific private data.
  *
  * Key Security Decisions:
- * - Admin-Only Master Data Management: All top-level collections are primarily managed by admins
- *   to centralize data control.
- * - Limited Driver Writes: Drivers are granted permission only to modify specific fields necessary
- *   for their tasks, like updating a student's boarding status. This is enforced using
+ * - Read Access for Authenticated Users: Most master data is readable by any signed-in user to support
+ *   the functionality of different roles (parents seeing school info, drivers seeing student lists).
+ * - Admin-Only Master Data Management: Write access (create, full update, delete) on top-level collections
+ *   is centralized to administrators.
+ * - Limited Task-Based Writes: Drivers and Assistants are granted permission only to modify specific fields
+ *   necessary for their tasks, like updating a student's boarding status. This is enforced using
  *   `request.resource.data.diff()`.
  * - User Data Ownership: The `/users/{userId}` path is strictly owned by the user, with
  *   admins also granted access for support.
- *
- * Denormalization for Authorization:
- * Role-based access is the primary mechanism, using `/roles_admin` and `/roles_driver`
- * as lookups. This is efficient and avoids embedding roles in every document.
  */
 rules_version = '2';
 service cloud.firestore {
@@ -44,6 +43,13 @@ service cloud.firestore {
      */
     function isDriver() {
       return isSignedIn() && exists(/databases/$(database)/documents/roles_driver/$(request.auth.uid));
+    }
+
+    /**
+     * Checks if the currently authenticated user is an assistant.
+     */
+    function isAssistant() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_assistant/$(request.auth.uid));
     }
 
     /**
@@ -80,7 +86,7 @@ service cloud.firestore {
     /**
      * @description Manages documents for students.
      * @principle Allows reads for signed-in users. Admins have full write access.
-     * Drivers are only allowed to update the 'status' field of a student, which is essential
+     * Drivers and Assistants are only allowed to update the 'status' field, which is essential
      * for tracking boarding and disembarking.
      */
     match /students/{studentId} {
@@ -88,7 +94,7 @@ service cloud.firestore {
       allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if (isAdmin() && resource != null) || 
-                     (isDriver() && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+                     ((isDriver() || isAssistant()) && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
       allow delete: if isAdmin() && resource != null;
     }
 
@@ -191,6 +197,18 @@ service cloud.firestore {
      * @principle Secures role management by restricting modifications to existing admins and preventing discovery.
      */
     match /roles_driver/{userId} {
+      allow get: if isAdmin() || isOwner(userId);
+      allow list: if false;
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
+    }
+
+    /**
+     * @description Manages assistant roles.
+     * @principle Secures role management by restricting modifications to existing admins and preventing discovery.
+     */
+    match /roles_assistant/{userId} {
       allow get: if isAdmin() || isOwner(userId);
       allow list: if false;
       allow create: if isAdmin();

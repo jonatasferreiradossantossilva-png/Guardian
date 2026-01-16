@@ -182,6 +182,10 @@
           "type": "string",
           "description": "Reference to Driver. (Relationship: Driver 1:N Route)"
         },
+        "assistantId": {
+          "type": "string",
+          "description": "Reference to Assistant (User ID)."
+        },
         "studentIds": {
           "type": "array",
           "description": "Ordered references to Students for the route stops.",
@@ -526,6 +530,22 @@
             "$ref": "#/backend/entities/User"
           },
           "description": "Documents in this collection represent driver users. Existence of a document grants driver privileges.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_assistant/{userId}",
+        "definition": {
+          "entityName": "role",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Documents in this collection represent assistant users. Existence of a document grants assistant privileges.",
           "params": [
             {
               "name": "userId",

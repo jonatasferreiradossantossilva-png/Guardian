@@ -31,6 +31,7 @@ import {
   ShieldCheck,
   LogOut,
   GraduationCap,
+  ClipboardCheck,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -55,6 +56,7 @@ const profileLinks = [
     icon: Car,
   },
   { href: "/parent/tracking", label: "Visão dos Pais", icon: UserCheck },
+  { href: "/assistant/route-plan", label: "Visão do Auxiliar", icon: ClipboardCheck },
 ];
 
 export function MainSidebar() {

@@ -31,7 +31,7 @@ const formSchema = z.object({
   }),
 });
 
-type UserRole = "admin" | "driver" | "parent";
+type UserRole = "admin" | "driver" | "parent" | "assistant";
 
 export function LoginForm() {
   const router = useRouter();
@@ -69,6 +69,9 @@ export function LoginForm() {
         break;
       case "parent":
         router.push("/parent/tracking");
+        break;
+      case "assistant":
+        router.push("/assistant/route-plan");
         break;
       default:
         router.push("/dashboard");
@@ -121,7 +124,7 @@ export function LoginForm() {
               <FormLabel>Entrar como</FormLabel>
               <RadioGroup
                 defaultValue="admin"
-                className="flex pt-2 space-x-4"
+                className="grid grid-cols-2 pt-2 gap-4"
                 onValueChange={(value) => setRole(value as UserRole)}
                 disabled={isLoading}
               >
@@ -136,6 +139,10 @@ export function LoginForm() {
                 <div className="flex items-center space-x-2">
                   <RadioGroupItem value="parent" id="parent" />
                   <Label htmlFor="parent">Pais</Label>
+                </div>
+                 <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="assistant" id="assistant" />
+                  <Label htmlFor="assistant">Auxiliar</Label>
                 </div>
               </RadioGroup>
             </div>
