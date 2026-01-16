@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query } from "firebase/firestore";
+import { collection, query, doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,23 +22,73 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { ParentForm } from "@/components/dashboard/management/parents/parent-form";
+import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useToast } from "@/hooks/use-toast";
+
+type Parent = {
+  id: string;
+  name: string;
+  email: string;
+  phone: string;
+};
 
 export default function ParentsPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   
   const parentsQuery = useMemoFirebase(
     () => (user && firestore ? query(collection(firestore, "parents")) : null),
     [user, firestore]
   );
   
-  const { data: parents, isLoading: areParentsLoading } = useCollection<{
-    name: string;
-    email: string;
-    phone: string;
-  }>(parentsQuery);
+  const { data: parents, isLoading: areParentsLoading } = useCollection<Omit<Parent, 'id'>>(parentsQuery);
 
   const isLoading = isUserLoading || areParentsLoading;
+
+  const handleEdit = (parent: Parent) => {
+    setSelectedParent(parent);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (parent: Parent) => {
+    setSelectedParent(parent);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDelete = () => {
+    if (!firestore || !selectedParent) return;
+    const parentRef = doc(firestore, 'parents', selectedParent.id);
+    deleteDocumentNonBlocking(parentRef);
+    toast({
+        title: "Responsável deletado!",
+        description: `${selectedParent.name} foi removido do sistema.`,
+        variant: "destructive"
+    });
+    setIsDeleteDialogOpen(false);
+    setSelectedParent(null);
+  }
+
+  const handleFormSubmit = () => {
+    setIsFormOpen(false);
+    setSelectedParent(null);
+  };
 
   return (
     <div>
@@ -45,10 +96,18 @@ export default function ParentsPage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gerenciamento de Pais
         </h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Adicionar Pai
-        </Button>
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => {
+              setSelectedParent(null);
+              setIsFormOpen(true);
+            }}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Pai
+            </Button>
+          </DialogTrigger>
+          <ParentForm parent={selectedParent || undefined} onFormSubmit={handleFormSubmit} />
+        </Dialog>
       </div>
       <Card>
         <CardHeader>
@@ -88,12 +147,13 @@ export default function ParentsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(parent)}>
                             Editar
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-600"
+                            onClick={() => handleDelete(parent)}
                           >
                             Deletar
                           </DropdownMenuItem>
@@ -115,6 +175,20 @@ export default function ParentsPage() {
           </Table>
         </CardContent>
       </Card>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta ação não pode ser desfeita. Isso irá deletar permanentemente o responsável <span className="font-bold">{selectedParent?.name}</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setSelectedParent(null)}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete}>Deletar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

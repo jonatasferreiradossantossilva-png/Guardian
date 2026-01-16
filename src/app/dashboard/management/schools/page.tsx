@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Table,
   TableBody,
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query } from "firebase/firestore";
+import { collection, query, doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,22 +22,72 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { SchoolForm } from "@/components/dashboard/management/schools/school-form";
+import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useToast } from "@/hooks/use-toast";
+
+type School = {
+  id: string;
+  name: string;
+  address: string;
+};
 
 export default function SchoolsPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
   
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
+
   const schoolsQuery = useMemoFirebase(
     () => (user && firestore ? query(collection(firestore, "schools")) : null),
     [user, firestore]
   );
   
-  const { data: schools, isLoading: areSchoolsLoading } = useCollection<{
-    name: string;
-    address: string;
-  }>(schoolsQuery);
+  const { data: schools, isLoading: areSchoolsLoading } = useCollection<Omit<School, 'id'>>(schoolsQuery);
 
   const isLoading = isUserLoading || areSchoolsLoading;
+
+  const handleEdit = (school: School) => {
+    setSelectedSchool(school);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (school: School) => {
+    setSelectedSchool(school);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDelete = () => {
+    if (!firestore || !selectedSchool) return;
+    const schoolRef = doc(firestore, 'schools', selectedSchool.id);
+    deleteDocumentNonBlocking(schoolRef);
+    toast({
+        title: "Escola deletada!",
+        description: `A escola ${selectedSchool.name} foi removida do sistema.`,
+        variant: "destructive"
+    });
+    setIsDeleteDialogOpen(false);
+    setSelectedSchool(null);
+  }
+
+  const handleFormSubmit = () => {
+    setIsFormOpen(false);
+    setSelectedSchool(null);
+  };
 
   return (
     <div>
@@ -44,10 +95,18 @@ export default function SchoolsPage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gerenciamento de Escolas
         </h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Adicionar Escola
-        </Button>
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => {
+              setSelectedSchool(null);
+              setIsFormOpen(true);
+            }}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Escola
+            </Button>
+          </DialogTrigger>
+          <SchoolForm school={selectedSchool || undefined} onFormSubmit={handleFormSubmit} />
+        </Dialog>
       </div>
       <Card>
         <CardHeader>
@@ -85,12 +144,13 @@ export default function SchoolsPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(school)}>
                             Editar
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-600"
+                            onClick={() => handleDelete(school)}
                           >
                             Deletar
                           </DropdownMenuItem>
@@ -112,6 +172,20 @@ export default function SchoolsPage() {
           </Table>
         </CardContent>
       </Card>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta ação não pode ser desfeita. Isso irá deletar permanentemente a escola <span className="font-bold">{selectedSchool?.name}</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setSelectedSchool(null)}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete}>Deletar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

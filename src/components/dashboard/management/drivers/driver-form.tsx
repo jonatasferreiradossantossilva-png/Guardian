@@ -1,0 +1,194 @@
+'use client';
+
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import {
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+  DialogClose,
+} from '@/components/ui/dialog';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
+import { useFirestore } from '@/firebase';
+import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
+import { collection, doc } from 'firebase/firestore';
+import { useToast } from '@/hooks/use-toast';
+import { useEffect } from 'react';
+
+const formSchema = z.object({
+  name: z.string().min(1, { message: 'O nome é obrigatório.' }),
+  status: z.enum(['inativo', 'em_rota']),
+  vehicleId: z.string().optional(),
+});
+
+type DriverFormValues = z.infer<typeof formSchema>;
+
+type Vehicle = { id: string; model: string; licensePlate: string };
+
+interface DriverFormProps {
+  driver?: { id: string } & Partial<DriverFormValues>;
+  vehicles: Vehicle[];
+  onFormSubmit: () => void;
+}
+
+export function DriverForm({
+  driver,
+  vehicles,
+  onFormSubmit,
+}: DriverFormProps) {
+  const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const form = useForm<DriverFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      status: 'inativo',
+      vehicleId: '',
+    },
+  });
+
+  useEffect(() => {
+    if (driver) {
+      form.reset({
+        name: driver.name || '',
+        status: driver.status || 'inativo',
+        vehicleId: driver.vehicleId || '',
+      });
+    } else {
+      form.reset({
+        name: '',
+        status: 'inativo',
+        vehicleId: '',
+      });
+    }
+  }, [driver, form]);
+
+  const onSubmit = (data: DriverFormValues) => {
+    if (!firestore) return;
+    
+    const driverData = { ...data };
+    if (!driverData.vehicleId) {
+        delete (driverData as Partial<typeof driverData>).vehicleId; // Do not save empty string
+    }
+
+    if (driver) {
+      const driverRef = doc(firestore, 'drivers', driver.id);
+      updateDocumentNonBlocking(driverRef, driverData);
+      toast({
+        title: 'Motorista atualizado!',
+        description: `Os dados de ${data.name} foram atualizados.`,
+      });
+    } else {
+      const driversCollection = collection(firestore, 'drivers');
+      addDocumentNonBlocking(driversCollection, driverData);
+      toast({
+        title: 'Motorista adicionado!',
+        description: `${data.name} foi adicionado ao sistema.`,
+      });
+    }
+    onFormSubmit();
+  };
+
+  return (
+    <DialogContent className="sm:max-w-[425px]">
+      <DialogHeader>
+        <DialogTitle>{driver ? 'Editar Motorista' : 'Adicionar Motorista'}</DialogTitle>
+        <DialogDescription>
+          Preencha as informações do motorista abaixo.
+        </DialogDescription>
+      </DialogHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          <FormField
+            control={form.control}
+            name="name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nome do Motorista</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ex: Carlos Silva" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="status"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Status</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um status" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="inativo">Inativo</SelectItem>
+                    <SelectItem value="em_rota">Em Rota</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="vehicleId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Veículo Associado</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Nenhum veículo associado" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="">Nenhum</SelectItem>
+                    {vehicles.map(vehicle => (
+                      <SelectItem key={vehicle.id} value={vehicle.id}>
+                        {vehicle.model} ({vehicle.licensePlate})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancelar
+              </Button>
+            </DialogClose>
+            <Button type="submit">Salvar</Button>
+          </DialogFooter>
+        </form>
+      </Form>
+    </DialogContent>
+  );
+}

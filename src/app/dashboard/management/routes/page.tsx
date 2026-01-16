@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -12,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query } from "firebase/firestore";
+import { collection, query, doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -21,23 +22,92 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { RouteForm } from "@/components/dashboard/management/routes/route-form";
+import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
+type Route = {
+  id: string;
+  name: string;
+  driverId: string;
+  studentIds: string[];
+  active: boolean;
+};
+type Driver = { id: string; name: string };
+type Student = { id: string; name: string };
 
 export default function RoutesPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   
   const routesQuery = useMemoFirebase(
     () => (user && firestore ? query(collection(firestore, "routes")) : null),
     [user, firestore]
   );
+  const driversQuery = useMemoFirebase(
+    () => (user && firestore ? query(collection(firestore, "drivers")) : null),
+    [user, firestore]
+  );
+  const studentsQuery = useMemoFirebase(
+    () => (user && firestore ? query(collection(firestore, "students")) : null),
+    [user, firestore]
+  );
   
-  const { data: routes, isLoading: areRoutesLoading } = useCollection<{
-    name: string;
-    driverId: string;
-  }>(routesQuery);
+  const { data: routes, isLoading: areRoutesLoading } = useCollection<Omit<Route, 'id'>>(routesQuery);
+  const { data: drivers, isLoading: areDriversLoading } = useCollection<Driver>(driversQuery);
+  const { data: students, isLoading: areStudentsLoading } = useCollection<Student>(studentsQuery);
 
-  const isLoading = isUserLoading || areRoutesLoading;
+  const isLoading = isUserLoading || areRoutesLoading || areDriversLoading || areStudentsLoading;
+
+  const driversMap = useMemo(() => {
+    if (!drivers) return new Map();
+    return new Map(drivers.map(d => [d.id, d.name]));
+  }, [drivers]);
+
+  const handleEdit = (route: Route) => {
+    setSelectedRoute(route);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (route: Route) => {
+    setSelectedRoute(route);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDelete = () => {
+    if (!firestore || !selectedRoute) return;
+    const routeRef = doc(firestore, 'routes', selectedRoute.id);
+    deleteDocumentNonBlocking(routeRef);
+    toast({
+        title: "Rota deletada!",
+        description: `A rota ${selectedRoute.name} foi removida do sistema.`,
+        variant: "destructive"
+    });
+    setIsDeleteDialogOpen(false);
+    setSelectedRoute(null);
+  }
+
+  const handleFormSubmit = () => {
+    setIsFormOpen(false);
+    setSelectedRoute(null);
+  };
 
   return (
     <div>
@@ -45,10 +115,23 @@ export default function RoutesPage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gerenciamento de Rotas
         </h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Adicionar Rota
-        </Button>
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => {
+              setSelectedRoute(null);
+              setIsFormOpen(true);
+            }}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Rota
+            </Button>
+          </DialogTrigger>
+          <RouteForm 
+            route={selectedRoute || undefined} 
+            drivers={drivers || []}
+            students={students || []}
+            onFormSubmit={handleFormSubmit}
+          />
+        </Dialog>
       </div>
       <Card>
         <CardHeader>
@@ -60,13 +143,15 @@ export default function RoutesPage() {
               <TableRow>
                 <TableHead>Nome da Rota</TableHead>
                 <TableHead>Motorista</TableHead>
+                <TableHead>Alunos</TableHead>
+                <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center">
+                  <TableCell colSpan={5} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -74,8 +159,14 @@ export default function RoutesPage() {
               {!isLoading && routes && routes.length > 0 ? (
                 routes.map((route) => (
                   <TableRow key={route.id}>
-                    <TableCell>{route.name}</TableCell>
-                    <TableCell>{route.driverId}</TableCell>
+                    <TableCell className="font-medium">{route.name}</TableCell>
+                    <TableCell>{driversMap.get(route.driverId) || 'N/A'}</TableCell>
+                    <TableCell>{route.studentIds?.length || 0}</TableCell>
+                    <TableCell>
+                      <Badge variant={route.active ? 'default' : 'outline'}>
+                        {route.active ? 'Ativa' : 'Inativa'}
+                      </Badge>
+                    </TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -86,12 +177,13 @@ export default function RoutesPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(route)}>
                             Editar
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-600"
+                            onClick={() => handleDelete(route)}
                           >
                             Deletar
                           </DropdownMenuItem>
@@ -103,7 +195,7 @@ export default function RoutesPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={3} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       {!user ? "Faça login para ver as rotas." : "Nenhuma rota cadastrada."}
                     </TableCell>
                   </TableRow>
@@ -113,6 +205,20 @@ export default function RoutesPage() {
           </Table>
         </CardContent>
       </Card>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta ação não pode ser desfeita. Isso irá deletar permanentemente a rota <span className="font-bold">{selectedRoute?.name}</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setSelectedRoute(null)}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete}>Deletar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

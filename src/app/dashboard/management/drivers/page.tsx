@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -13,7 +14,7 @@ import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query } from "firebase/firestore";
+import { collection, query, doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -22,23 +23,84 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { DriverForm } from "@/components/dashboard/management/drivers/driver-form";
+import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
+import { useToast } from "@/hooks/use-toast";
+
+type Driver = {
+  id: string;
+  name: string;
+  status: string;
+  vehicleId?: string;
+};
+type Vehicle = { id: string; model: string; licensePlate: string };
 
 export default function DriversPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
+  const { toast } = useToast();
   
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
+
   const driversQuery = useMemoFirebase(
     () => (user && firestore ? query(collection(firestore, "drivers")) : null),
     [user, firestore]
   );
+  const vehiclesQuery = useMemoFirebase(
+    () => (user && firestore ? query(collection(firestore, "vehicles")) : null),
+    [user, firestore]
+  );
   
-  const { data: drivers, isLoading: areDriversLoading } = useCollection<{
-    name: string;
-    status: string;
-    vehicleId: string;
-  }>(driversQuery);
+  const { data: drivers, isLoading: areDriversLoading } = useCollection<Omit<Driver, 'id'>>(driversQuery);
+  const { data: vehicles, isLoading: areVehiclesLoading } = useCollection<Vehicle>(vehiclesQuery);
 
-  const isLoading = isUserLoading || areDriversLoading;
+  const isLoading = isUserLoading || areDriversLoading || areVehiclesLoading;
+
+  const vehiclesMap = useMemo(() => {
+    if (!vehicles) return new Map();
+    return new Map(vehicles.map(v => [v.id, `${v.model} (${v.licensePlate})`]));
+  }, [vehicles]);
+
+  const handleEdit = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setIsFormOpen(true);
+  };
+
+  const handleDelete = (driver: Driver) => {
+    setSelectedDriver(driver);
+    setIsDeleteDialogOpen(true);
+  };
+  
+  const confirmDelete = () => {
+    if (!firestore || !selectedDriver) return;
+    const driverRef = doc(firestore, 'drivers', selectedDriver.id);
+    deleteDocumentNonBlocking(driverRef);
+    toast({
+        title: "Motorista deletado!",
+        description: `O motorista ${selectedDriver.name} foi removido do sistema.`,
+        variant: "destructive"
+    });
+    setIsDeleteDialogOpen(false);
+    setSelectedDriver(null);
+  }
+
+  const handleFormSubmit = () => {
+    setIsFormOpen(false);
+    setSelectedDriver(null);
+  };
 
   return (
     <div>
@@ -46,10 +108,22 @@ export default function DriversPage() {
         <h1 className="text-3xl font-bold tracking-tight">
           Gerenciamento de Motoristas
         </h1>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Adicionar Motorista
-        </Button>
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogTrigger asChild>
+            <Button onClick={() => {
+              setSelectedDriver(null);
+              setIsFormOpen(true);
+            }}>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Adicionar Motorista
+            </Button>
+          </DialogTrigger>
+          <DriverForm 
+            driver={selectedDriver || undefined} 
+            vehicles={vehicles || []} 
+            onFormSubmit={handleFormSubmit}
+          />
+        </Dialog>
       </div>
       <Card>
         <CardHeader>
@@ -88,7 +162,7 @@ export default function DriversPage() {
                           : "Inativo"}
                       </Badge>
                     </TableCell>
-                    <TableCell>{driver.vehicleId || "N/A"}</TableCell>
+                    <TableCell>{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -99,12 +173,13 @@ export default function DriversPage() {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleEdit(driver)}>
                             Editar
                           </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem
                             className="text-red-600"
+                            onClick={() => handleDelete(driver)}
                           >
                             Deletar
                           </DropdownMenuItem>
@@ -126,6 +201,20 @@ export default function DriversPage() {
           </Table>
         </CardContent>
       </Card>
+      <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
+        <AlertDialogContent>
+            <AlertDialogHeader>
+                <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
+                <AlertDialogDescription>
+                    Esta ação não pode ser desfeita. Isso irá deletar permanentemente o motorista <span className="font-bold">{selectedDriver?.name}</span>.
+                </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+                <AlertDialogCancel onClick={() => setSelectedDriver(null)}>Cancelar</AlertDialogCancel>
+                <AlertDialogAction onClick={confirmDelete}>Deletar</AlertDialogAction>
+            </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }
