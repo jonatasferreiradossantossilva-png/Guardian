@@ -12,16 +12,25 @@ import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCollection, useFirestore, useMemoFirebase } from "@/firebase";
+import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
 import { collection, query } from "firebase/firestore";
 
 export default function DriversPage() {
+  const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
-  const driversQuery = useMemoFirebase(() =>
-    firestore ? query(collection(firestore, "drivers")) : null,
-    [firestore]
+  
+  const driversQuery = useMemoFirebase(
+    () => (user && firestore ? query(collection(firestore, "drivers")) : null),
+    [user, firestore]
   );
-  const { data: drivers, isLoading } = useCollection<{name: string, status: string, vehicleId: string}>(driversQuery);
+  
+  const { data: drivers, isLoading: areDriversLoading } = useCollection<{
+    name: string;
+    status: string;
+    vehicleId: string;
+  }>(driversQuery);
+
+  const isLoading = isUserLoading || areDriversLoading;
 
   return (
     <div>
@@ -86,7 +95,7 @@ export default function DriversPage() {
                 !isLoading && (
                   <TableRow>
                     <TableCell colSpan={4} className="text-center">
-                      Nenhum motorista cadastrado.
+                      {!user ? "Faça login para ver os motoristas." : "Nenhum motorista cadastrado."}
                     </TableCell>
                   </TableRow>
                 )
