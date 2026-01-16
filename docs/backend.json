@@ -93,6 +93,10 @@
           "type": "string",
           "description": "Unique identifier for the Parent entity."
         },
+        "userId": {
+          "type": "string",
+          "description": "Reference to the User entity for login details."
+        },
         "name": {
           "type": "string",
           "description": "Name of the parent."
@@ -109,6 +113,7 @@
       },
       "required": [
         "id",
+        "userId",
         "name",
         "email",
         "phone"

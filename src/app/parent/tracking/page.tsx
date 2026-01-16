@@ -14,10 +14,11 @@ import {
   query,
   limit,
   doc,
+  where
 } from "firebase/firestore";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -28,6 +29,10 @@ interface Student {
   name: string;
   status: "aguardando" | "a_bordo" | "desembarcado" | "ausente";
   routeId?: string;
+}
+interface Parent {
+    id: string;
+    userId: string;
 }
 interface Route {
   id: string;
@@ -63,10 +68,19 @@ export default function ParentTrackingPage() {
   const firestore = useFirestore();
   const { toast } = useToast();
 
-  // For simulation, we find the first student. In a real app, you'd query by parentId linked to the user's UID.
-  const studentQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "students"), limit(1)) : null),
+  // Step 1: Find the parent document linked to the logged-in user
+  const parentQuery = useMemoFirebase(
+    () => (user && firestore ? query(collection(firestore, "parents"), where("userId", "==", user.uid), limit(1)) : null),
     [user, firestore]
+  );
+  const { data: parents, isLoading: areParentsLoading } = useCollection<Parent>(parentQuery);
+  const parent = useMemo(() => (parents && parents.length > 0 ? parents[0] : null), [parents]);
+
+  // Step 2: Find the student(s) linked to that parent
+  // For now, we'll just track the first student found to keep the UI simple.
+  const studentQuery = useMemoFirebase(
+    () => (parent && firestore ? query(collection(firestore, "students"), where("parentId", "==", parent.id), limit(1)) : null),
+    [parent, firestore]
   );
   const { data: students, isLoading: areStudentsLoading } = useCollection<Student>(studentQuery);
   const student = useMemo(() => (students && students.length > 0 ? students[0] : null), [students]);
@@ -84,15 +98,13 @@ export default function ParentTrackingPage() {
   const { data: location, isLoading: isLocationLoading } = useDoc<LocationUpdate>(locationRef);
 
   const handleCommunicateAbsence = () => {
-    // In a real app, this would write to the 'messages' collection.
-    // For now, we just show a toast notification.
     toast({
       title: "Ausência comunicada",
       description: `O motorista foi notificado que ${student?.name || 'o aluno'} não precisará de transporte hoje.`,
     });
   };
 
-  const isLoading = isUserLoading || areStudentsLoading || isRouteLoading;
+  const isLoading = isUserLoading || areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading;
   
   const studentStatus = student?.status || 'aguardando';
 
@@ -110,13 +122,21 @@ export default function ParentTrackingPage() {
           <div className="flex items-center justify-center h-96">
             <Loader2 className="h-12 w-12 animate-spin text-primary" />
           </div>
-        ) : !student ? (
+        ) : !parent ? (
           <Card className="text-center p-8">
+             <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
+             <CardTitle>Conta de Responsável não encontrada</CardTitle>
+             <CardContent className="mt-2 text-muted-foreground">
+                <p>Não foi possível encontrar uma conta de responsável associada a este login.</p>
+                <p className="text-xs mt-2">(Para fins de simulação, peça ao gestor para cadastrar um responsável com o seu ID de usuário).</p>
+             </CardContent>
+          </Card>
+        ) : !student ? (
+           <Card className="text-center p-8">
              <AlertTriangle className="mx-auto h-12 w-12 text-destructive mb-4" />
              <CardTitle>Nenhum aluno encontrado</CardTitle>
              <CardContent className="mt-2 text-muted-foreground">
-                <p>Não foi possível encontrar dados do aluno para acompanhamento.</p>
-                <p className="text-xs mt-2">(Para fins de simulação, certifique-se de que há pelo menos um aluno na coleção 'students').</p>
+                <p>Não foi possível encontrar nenhum aluno associado a esta conta de responsável.</p>
              </CardContent>
           </Card>
         ) : (
@@ -174,17 +194,23 @@ export default function ParentTrackingPage() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="flex-col sm:flex-row gap-2">
-              <Button className="w-full sm:w-auto">
+            <CardFooter className="grid grid-cols-2 md:flex md:flex-row gap-2">
+              <Button className="w-full">
                 <MessageCircle className="mr-2 h-4 w-4" /> Enviar Mensagem
               </Button>
               <Button
                 variant="destructive"
-                className="w-full sm:w-auto"
+                className="w-full"
                 onClick={handleCommunicateAbsence}
                 disabled={student.status === 'ausente'}
               >
                 <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
+              </Button>
+               <Button variant="outline" className="w-full">
+                <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
+              </Button>
+              <Button variant="outline" className="w-full">
+                <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
               </Button>
             </CardFooter>
           </Card>

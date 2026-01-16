@@ -31,12 +31,13 @@ const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   email: z.string().email({ message: 'Insira um email válido.' }),
   phone: z.string().min(1, { message: 'O telefone é obrigatório.' }),
+  userId: z.string().min(1, { message: 'O ID de usuário do Firebase é obrigatório.' }),
 });
 
 type ParentFormValues = z.infer<typeof formSchema>;
 
 interface ParentFormProps {
-  parent?: { id: string } & ParentFormValues;
+  parent?: { id: string } & Partial<ParentFormValues>;
   onFormSubmit: () => void;
 }
 
@@ -50,17 +51,24 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
       name: '',
       email: '',
       phone: '',
+      userId: '',
     },
   });
 
   useEffect(() => {
     if (parent) {
-      form.reset(parent);
+      form.reset({
+        name: parent.name || '',
+        email: parent.email || '',
+        phone: parent.phone || '',
+        userId: parent.userId || '',
+      });
     } else {
       form.reset({
         name: '',
         email: '',
         phone: '',
+        userId: '',
       });
     }
   }, [parent, form]);
@@ -91,7 +99,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
       <DialogHeader>
         <DialogTitle>{parent ? 'Editar Responsável' : 'Adicionar Responsável'}</DialogTitle>
         <DialogDescription>
-          Preencha as informações do responsável abaixo.
+          Preencha as informações do responsável abaixo. O ID do usuário é necessário para que ele possa acessar o painel.
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
@@ -130,6 +138,19 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                 <FormLabel>Telefone</FormLabel>
                 <FormControl>
                   <Input placeholder="Ex: (11) 98765-4321" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+           <FormField
+            control={form.control}
+            name="userId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>ID do Usuário (Firebase Auth)</FormLabel>
+                <FormControl>
+                  <Input placeholder="Cole o UID do usuário" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

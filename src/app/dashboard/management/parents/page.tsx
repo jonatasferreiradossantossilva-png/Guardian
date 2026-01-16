@@ -42,6 +42,7 @@ type Parent = {
   name: string;
   email: string;
   phone: string;
+  userId?: string;
 };
 
 export default function ParentsPage() {
@@ -120,13 +121,14 @@ export default function ParentsPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Telefone</TableHead>
+                <TableHead>User ID</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">
+                  <TableCell colSpan={5} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -137,6 +139,7 @@ export default function ParentsPage() {
                     <TableCell>{parent.name}</TableCell>
                     <TableCell>{parent.email}</TableCell>
                     <TableCell>{parent.phone}</TableCell>
+                    <TableCell className="font-mono text-xs">{parent.userId || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -165,7 +168,7 @@ export default function ParentsPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={5} className="text-center">
                       {!user ? "Faça login para ver os pais." : "Nenhum pai cadastrado."}
                     </TableCell>
                   </TableRow>
