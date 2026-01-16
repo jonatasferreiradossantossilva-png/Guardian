@@ -28,6 +28,7 @@ import { useMockData } from '@/hooks/use-mock-data';
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   address: z.string().min(1, { message: 'O endereço é obrigatório.' }),
+  cnpj: z.string().optional(),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
 });
@@ -48,6 +49,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     defaultValues: {
       name: '',
       address: '',
+      cnpj: '',
       latitude: undefined,
       longitude: undefined,
     },
@@ -58,6 +60,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       form.reset({
         name: school.name || '',
         address: school.address || '',
+        cnpj: school.cnpj || '',
         latitude: school.latitude,
         longitude: school.longitude,
       });
@@ -65,6 +68,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       form.reset({
         name: '',
         address: '',
+        cnpj: '',
         latitude: undefined,
         longitude: undefined,
       });
@@ -121,6 +125,19 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 <FormLabel>Endereço</FormLabel>
                 <FormControl>
                   <Input placeholder="Ex: Rua das Flores, 123" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="cnpj"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>CNPJ</FormLabel>
+                <FormControl>
+                  <Input placeholder="00.000.000/0001-00" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

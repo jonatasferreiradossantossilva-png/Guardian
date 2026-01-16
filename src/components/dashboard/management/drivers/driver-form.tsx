@@ -38,6 +38,9 @@ const formSchema = z.object({
   userId: z.string().min(1, { message: 'O ID do usuário é obrigatório.' }),
   status: z.enum(['inativo', 'em_rota', 'pausa']),
   vehicleId: z.string().optional(),
+  cpf: z.string().optional(),
+  rg: z.string().optional(),
+  address: z.string().optional(),
 });
 
 type DriverFormValues = z.infer<typeof formSchema>;
@@ -65,6 +68,9 @@ export function DriverForm({
       userId: '',
       status: 'inativo',
       vehicleId: '',
+      cpf: '',
+      rg: '',
+      address: '',
     },
   });
 
@@ -75,6 +81,9 @@ export function DriverForm({
         userId: driver.userId || '',
         status: driver.status || 'inativo',
         vehicleId: driver.vehicleId || '',
+        cpf: driver.cpf || '',
+        rg: driver.rg || '',
+        address: driver.address || '',
       });
     } else {
       form.reset({
@@ -82,6 +91,9 @@ export function DriverForm({
         userId: '',
         status: 'inativo',
         vehicleId: '',
+        cpf: '',
+        rg: '',
+        address: '',
       });
     }
   }, [driver, form]);
@@ -109,7 +121,7 @@ export function DriverForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-[425px]">
+    <DialogContent className="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>{driver ? 'Editar Motorista' : 'Adicionar Motorista'}</DialogTitle>
         <DialogDescription>
@@ -139,6 +151,47 @@ export function DriverForm({
                 <FormLabel>ID do Usuário (Auth)</FormLabel>
                 <FormControl>
                   <Input placeholder="Cole o UID do Firebase Auth" {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="cpf"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>CPF</FormLabel>
+                  <FormControl>
+                    <Input placeholder="000.000.000-00" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="rg"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>RG</FormLabel>
+                  <FormControl>
+                    <Input placeholder="00.000.000-0" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <FormField
+            control={form.control}
+            name="address"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Endereço</FormLabel>
+                <FormControl>
+                  <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

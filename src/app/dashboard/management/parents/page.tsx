@@ -42,6 +42,9 @@ type Parent = {
   email: string;
   phone: string;
   userId?: string;
+  cpf?: string;
+  rg?: string;
+  address?: string;
 };
 
 export default function ParentsPage() {
@@ -111,6 +114,9 @@ export default function ParentsPage() {
                 <TableHead>Nome</TableHead>
                 <TableHead>Email</TableHead>
                 <TableHead>Telefone</TableHead>
+                <TableHead>CPF</TableHead>
+                <TableHead>RG</TableHead>
+                <TableHead>Endereço</TableHead>
                 <TableHead>User ID</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -118,7 +124,7 @@ export default function ParentsPage() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={8} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -129,6 +135,9 @@ export default function ParentsPage() {
                     <TableCell>{parent.name}</TableCell>
                     <TableCell>{parent.email}</TableCell>
                     <TableCell>{parent.phone}</TableCell>
+                    <TableCell>{parent.cpf || 'N/A'}</TableCell>
+                    <TableCell>{parent.rg || 'N/A'}</TableCell>
+                    <TableCell>{parent.address || 'N/A'}</TableCell>
                     <TableCell className="font-mono text-xs">{parent.userId || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
@@ -158,7 +167,7 @@ export default function ParentsPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                        Nenhum pai cadastrado.
                     </TableCell>
                   </TableRow>

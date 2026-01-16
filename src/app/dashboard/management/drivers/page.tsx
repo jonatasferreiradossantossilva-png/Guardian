@@ -43,6 +43,9 @@ type Driver = {
   status: 'inativo' | 'em_rota' | 'pausa';
   vehicleId?: string;
   userId: string;
+  cpf?: string;
+  rg?: string;
+  address?: string;
 };
 type Vehicle = { id: string; model: string; licensePlate: string };
 
@@ -135,6 +138,9 @@ export default function DriversPage() {
             <TableHeader>
               <TableRow>
                 <TableHead>Nome</TableHead>
+                <TableHead>CPF</TableHead>
+                <TableHead>RG</TableHead>
+                <TableHead>Endereço</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Veículo</TableHead>
                 <TableHead>User ID</TableHead>
@@ -144,7 +150,7 @@ export default function DriversPage() {
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
+                  <TableCell colSpan={8} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -153,6 +159,9 @@ export default function DriversPage() {
                 drivers.map((driver) => (
                   <TableRow key={driver.id}>
                     <TableCell>{driver.name}</TableCell>
+                    <TableCell>{driver.cpf || 'N/A'}</TableCell>
+                    <TableCell>{driver.rg || 'N/A'}</TableCell>
+                    <TableCell>{driver.address || 'N/A'}</TableCell>
                     <TableCell>
                       <Badge variant={statusVariantMap[driver.status]}>
                          {statusLabelMap[driver.status]}
@@ -188,7 +197,7 @@ export default function DriversPage() {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                       Nenhum motorista cadastrado.
                     </TableCell>
                   </TableRow>

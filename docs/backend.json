@@ -18,6 +18,14 @@
           "description": "Email address for login and communication.",
           "format": "email"
         },
+        "cpf": {
+          "type": "string",
+          "description": "CPF do usuário."
+        },
+        "rg": {
+          "type": "string",
+          "description": "RG do usuário."
+        },
         "profile": {
           "type": "string",
           "description": "User's role, determining permissions.",
@@ -64,6 +72,10 @@
           "type": "string",
           "description": "Name of the school."
         },
+        "cnpj": {
+          "type": "string",
+          "description": "CNPJ da escola."
+        },
         "address": {
           "type": "string",
           "description": "Address of the school."
@@ -109,6 +121,18 @@
         "phone": {
           "type": "string",
           "description": "Phone number of the parent."
+        },
+        "cpf": {
+          "type": "string",
+          "description": "CPF do responsável."
+        },
+        "rg": {
+          "type": "string",
+          "description": "RG do responsável."
+        },
+        "address": {
+          "type": "string",
+          "description": "Endereço do responsável."
         }
       },
       "required": [
@@ -203,6 +227,18 @@
         "name": {
           "type": "string",
           "description": "Name of the driver."
+        },
+        "cpf": {
+          "type": "string",
+          "description": "CPF do motorista."
+        },
+        "rg": {
+          "type": "string",
+          "description": "RG do motorista."
+        },
+        "address": {
+          "type": "string",
+          "description": "Endereço do motorista."
         },
         "status": {
           "type": "string",

@@ -30,6 +30,9 @@ const formSchema = z.object({
   email: z.string().email({ message: 'Insira um email válido.' }),
   phone: z.string().min(1, { message: 'O telefone é obrigatório.' }),
   userId: z.string().min(1, { message: 'O ID de usuário do Firebase é obrigatório.' }),
+  cpf: z.string().optional(),
+  rg: z.string().optional(),
+  address: z.string().optional(),
 });
 
 type ParentFormValues = z.infer<typeof formSchema>;
@@ -50,6 +53,9 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
       email: '',
       phone: '',
       userId: '',
+      cpf: '',
+      rg: '',
+      address: '',
     },
   });
 
@@ -60,6 +66,9 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
         email: parent.email || '',
         phone: parent.phone || '',
         userId: parent.userId || '',
+        cpf: parent.cpf || '',
+        rg: parent.rg || '',
+        address: parent.address || '',
       });
     } else {
       form.reset({
@@ -67,6 +76,9 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
         email: '',
         phone: '',
         userId: '',
+        cpf: '',
+        rg: '',
+        address: '',
       });
     }
   }, [parent, form]);
@@ -89,7 +101,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
   };
 
   return (
-    <DialogContent>
+    <DialogContent className="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>{parent ? 'Editar Responsável' : 'Adicionar Responsável'}</DialogTitle>
         <DialogDescription>
@@ -111,27 +123,70 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
               </FormItem>
             )}
           />
-          <FormField
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="email"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Email</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: maria.souza@email.com" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="phone"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Telefone</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: (11) 98765-4321" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-4">
+             <FormField
+                control={form.control}
+                name="cpf"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>CPF</FormLabel>
+                    <FormControl>
+                        <Input placeholder="000.000.000-00" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+            <FormField
+                control={form.control}
+                name="rg"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>RG</FormLabel>
+                    <FormControl>
+                        <Input placeholder="00.000.000-0" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+          </div>
+           <FormField
             control={form.control}
-            name="email"
+            name="address"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Email</FormLabel>
+                <FormLabel>Endereço</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: maria.souza@email.com" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <FormField
-            control={form.control}
-            name="phone"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Telefone</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: (11) 98765-4321" {...field} />
+                  <Input placeholder="Rua, Número, Bairro, Cidade - Estado" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
