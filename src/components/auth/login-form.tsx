@@ -65,7 +65,7 @@ export function LoginForm() {
         default:
           router.push("/dashboard");
       }
-    }, 1500);
+    }, 200);
   }
 
   return (
