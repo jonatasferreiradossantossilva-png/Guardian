@@ -18,6 +18,8 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   email: z.string().email({
@@ -28,9 +30,12 @@ const formSchema = z.object({
   }),
 });
 
+type UserRole = "admin" | "driver" | "parent";
+
 export function LoginForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
+  const [role, setRole] = useState<UserRole>("admin");
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -43,11 +48,23 @@ export function LoginForm() {
   function onSubmit(values: z.infer<typeof formSchema>) {
     // Simulate API call
     setIsLoading(true);
-    console.log("Login values:", values);
+    console.log("Login values:", values, "Role:", role);
     setTimeout(() => {
       setIsLoading(false);
-      // On successful login, redirect to dashboard
-      router.push("/dashboard");
+      // On successful login, redirect based on role
+      switch (role) {
+        case "admin":
+          router.push("/dashboard");
+          break;
+        case "driver":
+          router.push("/driver/route-plan");
+          break;
+        case "parent":
+          router.push("/parent/tracking");
+          break;
+        default:
+          router.push("/dashboard");
+      }
     }, 1500);
   }
 
@@ -93,6 +110,28 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+            <div className="space-y-3">
+                <Label>Entrar como</Label>
+                <RadioGroup
+                    defaultValue="admin"
+                    className="flex pt-2 space-x-4"
+                    onValueChange={(value) => setRole(value as UserRole)}
+                    disabled={isLoading}
+                >
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="admin" id="admin" />
+                        <Label htmlFor="admin">Admin</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="driver" id="driver" />
+                        <Label htmlFor="driver">Motorista</Label>
+                    </div>
+                    <div className="flex items-center space-x-2">
+                        <RadioGroupItem value="parent" id="parent" />
+                        <Label htmlFor="parent">Pais</Label>
+                    </div>
+                </RadioGroup>
+            </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="animate-spin" />
