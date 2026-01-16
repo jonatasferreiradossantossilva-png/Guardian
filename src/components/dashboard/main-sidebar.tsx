@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/sidebar";
 import {
   Home,
-  Siren,
   Users,
   Route,
   Truck,
@@ -29,10 +28,9 @@ import {
   MessageSquare,
   DollarSign,
   UserCheck,
-  SteeringWheel,
+  Car,
   ShieldCheck,
   LogOut,
-  Settings,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -53,7 +51,7 @@ const profileLinks = [
   {
     href: "/driver/route-plan",
     label: "Visão do Motorista",
-    icon: SteeringWheel,
+    icon: Car,
   },
   { href: "/parent/tracking", label: "Visão dos Pais", icon: UserCheck },
 ];
