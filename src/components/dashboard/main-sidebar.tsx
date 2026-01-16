@@ -91,8 +91,8 @@ export function MainSidebar() {
             </Link>
           </SidebarMenuItem>
 
-          <Collapsible defaultOpen={isManagementActive} asChild>
-            <SidebarMenuItem>
+          <SidebarMenuItem>
+            <Collapsible defaultOpen={isManagementActive}>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton
                   className="w-full justify-start"
@@ -121,8 +121,8 @@ export function MainSidebar() {
                   ))}
                 </SidebarMenu>
               </CollapsibleContent>
-            </SidebarMenuItem>
-          </Collapsible>
+            </Collapsible>
+          </SidebarMenuItem>
 
           <SidebarMenuItem>
             <Link href="/dashboard/messages" passHref>
