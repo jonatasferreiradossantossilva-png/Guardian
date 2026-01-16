@@ -1,0 +1,457 @@
+{
+  "entities": {
+    "School": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "School",
+      "type": "object",
+      "description": "Represents a school within the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the School entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the school."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the school."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "address"
+      ]
+    },
+    "Parent": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Parent",
+      "type": "object",
+      "description": "Represents a parent or guardian of a student.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Parent entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the parent."
+        },
+        "email": {
+          "type": "string",
+          "description": "Email address of the parent.",
+          "format": "email"
+        },
+        "phone": {
+          "type": "string",
+          "description": "Phone number of the parent."
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "email",
+        "phone"
+      ]
+    },
+    "Student": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Student",
+      "type": "object",
+      "description": "Represents a student in the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Student entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the student."
+        },
+        "schoolId": {
+          "type": "string",
+          "description": "Reference to School. (Relationship: School 1:N Student)"
+        },
+        "parentId": {
+          "type": "string",
+          "description": "Reference to Parent. (Relationship: Parent 1:N Student)"
+        },
+        "routeId": {
+          "type": "string",
+          "description": "Reference to Route. (Relationship: Route 1:N Student)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "schoolId",
+        "parentId"
+      ]
+    },
+    "Driver": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Driver",
+      "type": "object",
+      "description": "Represents a driver of a vehicle.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Driver entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the driver."
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the driver (e.g., 'inactive', 'em_rota')."
+        },
+        "vehicleId": {
+          "type": "string",
+          "description": "Reference to Vehicle. (Relationship: Vehicle 1:1 Driver)"
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "status"
+      ]
+    },
+    "Vehicle": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Vehicle",
+      "type": "object",
+      "description": "Represents a vehicle in the fleet.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Vehicle entity."
+        },
+        "model": {
+          "type": "string",
+          "description": "Model of the vehicle."
+        },
+        "licensePlate": {
+          "type": "string",
+          "description": "License plate of the vehicle."
+        }
+      },
+      "required": [
+        "id",
+        "model",
+        "licensePlate"
+      ]
+    },
+    "Route": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Route",
+      "type": "object",
+      "description": "Represents a route for transporting students.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Route entity."
+        },
+        "name": {
+          "type": "string",
+          "description": "Name of the route."
+        },
+        "driverId": {
+          "type": "string",
+          "description": "Reference to Driver. (Relationship: Driver 1:N Route)"
+        },
+        "stopIds": {
+          "type": "array",
+          "description": "References to Stops. (Relationship: Route 1:N Stop)",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "required": [
+        "id",
+        "name",
+        "driverId"
+      ]
+    },
+    "Invoice": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Invoice",
+      "type": "object",
+      "description": "Represents an invoice for a student's transportation services.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Invoice entity."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "Reference to Student. (Relationship: Student 1:N Invoice)"
+        },
+        "amount": {
+          "type": "number",
+          "description": "Amount due on the invoice."
+        },
+        "dueDate": {
+          "type": "string",
+          "description": "Due date for the invoice.",
+          "format": "date-time"
+        },
+        "status": {
+          "type": "string",
+          "description": "Status of the invoice (e.g., 'paid', 'pending')."
+        }
+      },
+      "required": [
+        "id",
+        "studentId",
+        "amount",
+        "dueDate",
+        "status"
+      ]
+    },
+    "Message": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Message",
+      "type": "object",
+      "description": "Represents a message between a parent and the system.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Message entity."
+        },
+        "senderId": {
+          "type": "string",
+          "description": "Identifier of the sender (either Parent or System)."
+        },
+        "recipientId": {
+          "type": "string",
+          "description": "Identifier of the recipient (either Parent or System)."
+        },
+        "text": {
+          "type": "string",
+          "description": "Text content of the message."
+        },
+        "timestamp": {
+          "type": "string",
+          "description": "Timestamp of when the message was sent.",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "id",
+        "senderId",
+        "recipientId",
+        "text",
+        "timestamp"
+      ]
+    },
+    "Stop": {
+      "$schema": "http://json-schema.org/draft-07/schema#",
+      "title": "Stop",
+      "type": "object",
+      "description": "Represents a stop along a route",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the Stop entity."
+        },
+        "address": {
+          "type": "string",
+          "description": "Address of the stop."
+        },
+        "latitude": {
+          "type": "number",
+          "description": "Latitude of the stop."
+        },
+        "longitude": {
+          "type": "number",
+          "description": "Longitude of the stop."
+        }
+      },
+      "required": [
+        "id",
+        "address",
+        "latitude",
+        "longitude"
+      ]
+    }
+  },
+  "auth": {
+    "providers": [
+      "password",
+      "anonymous"
+    ]
+  },
+  "firestore": {
+    "structure": [
+      {
+        "path": "/schools/{schoolId}",
+        "definition": {
+          "entityName": "School",
+          "schema": {
+            "$ref": "#/backend/entities/School"
+          },
+          "description": "Stores information about schools.  Managers have full CRUD access.",
+          "params": [
+            {
+              "name": "schoolId",
+              "description": "The unique identifier for the school."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/parents/{parentId}",
+        "definition": {
+          "entityName": "Parent",
+          "schema": {
+            "$ref": "#/backend/entities/Parent"
+          },
+          "description": "Stores information about parents. Managers have full CRUD access.",
+          "params": [
+            {
+              "name": "parentId",
+              "description": "The unique identifier for the parent."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/students/{studentId}",
+        "definition": {
+          "entityName": "Student",
+          "schema": {
+            "$ref": "#/backend/entities/Student"
+          },
+          "description": "Stores information about students. Managers have full CRUD access.",
+          "params": [
+            {
+              "name": "studentId",
+              "description": "The unique identifier for the student."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/drivers/{driverId}",
+        "definition": {
+          "entityName": "Driver",
+          "schema": {
+            "$ref": "#/backend/entities/Driver"
+          },
+          "description": "Stores information about drivers. Managers have full CRUD access.",
+          "params": [
+            {
+              "name": "driverId",
+              "description": "The unique identifier for the driver."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/vehicles/{vehicleId}",
+        "definition": {
+          "entityName": "Vehicle",
+          "schema": {
+            "$ref": "#/backend/entities/Vehicle"
+          },
+          "description": "Stores information about vehicles. Managers have full CRUD access.",
+          "params": [
+            {
+              "name": "vehicleId",
+              "description": "The unique identifier for the vehicle."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/routes/{routeId}",
+        "definition": {
+          "entityName": "Route",
+          "schema": {
+            "$ref": "#/backend/entities/Route"
+          },
+          "description": "Stores information about routes. Managers have full CRUD access.",
+          "params": [
+            {
+              "name": "routeId",
+              "description": "The unique identifier for the route."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/invoices/{invoiceId}",
+        "definition": {
+          "entityName": "Invoice",
+          "schema": {
+            "$ref": "#/backend/entities/Invoice"
+          },
+          "description": "Stores invoice data. Managers have full CRUD access.",
+          "params": [
+            {
+              "name": "invoiceId",
+              "description": "The unique identifier for the invoice."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/users/{userId}/messages/{messageId}",
+        "definition": {
+          "entityName": "Message",
+          "schema": {
+            "$ref": "#/backend/entities/Message"
+          },
+          "description": "Stores messages between users (parents) and the system. Includes denormalized 'senderId' and 'recipientId' for authorization independence.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user (parent)."
+            },
+            {
+              "name": "messageId",
+              "description": "The unique identifier for the message."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/stops/{stopId}",
+        "definition": {
+          "entityName": "Stop",
+          "schema": {
+            "$ref": "#/backend/entities/Stop"
+          },
+          "description": "Stores information about stops. Managers have full CRUD access.",
+          "params": [
+            {
+              "name": "stopId",
+              "description": "The unique identifier for the stop."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/roles_admin/{userId}",
+        "definition": {
+          "entityName": "role",
+          "schema": {
+            "$ref": "#/backend/entities/User"
+          },
+          "description": "Documents in this collection represent admin users. Existence of a document grants admin privileges.",
+          "params": [
+            {
+              "name": "userId",
+              "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      }
+    ],
+    "reasoning": "The Firestore data structure is designed to support the 'Rota Segura Mobile' application, focusing on real-time incident reporting, route optimization, and communication. The design prioritizes Authorization Independence by denormalizing authorization data where necessary. It utilizes structural segregation to maintain a homogeneous security posture within collections. Access Modeling follows consistent patterns for user-owned data and collaborative scenarios.\n\n**Authorization Independence:**\n\n*   For entities where authorization depends on parent data, like messages between parents and the system, the relevant authorization context (e.g., parent ID, system ID) is included directly within each message document. This avoids `get()` calls in security rules and enables atomic operations.\n*   For collaborative entities like routes, the `driverId` is denormalized to allow direct association and simplified security rules.\n\n**Structural Segregation:**\n\n*   Data with different access requirements are stored in separate collections. For example, global roles for admins are stored in `/roles_admin/{uid}` rather than mixing admin and non-admin user data in a single `/users` collection.\n*   User-specific data, like parent-student messages, is stored within a hierarchical path (`/users/{userId}/messages/{messageId}`) to ensure clear ownership and simplified security rules.\n\n**Access Modeling:**\n\n*   Private data is managed using path-based ownership (e.g., `/users/{userId}/invoices/{invoiceId}`).\n*   User-owned data is organized hierarchically (e.g., `/users/{userId}/routes/{routeId}`).\n*   Collaborative data (if any) would typically use a membership map (`members: {uid1: \"role\", uid2: \"role\"}`), but it's not explicitly needed in the current feature set. If future features require it (e.g., shared routes), this model should be implemented.\n\n**QAPs (Rules are not Filters):**\n\n*   The structure enables secure `list` operations by ensuring all documents within a collection share the same security requirements. For example, listing routes is secure because only authorized users can access the `/routes` collection, and all documents within that collection adhere to the same authorization rules (e.g., admin access). The alternative is to implement filtering in security rules, which is avoided."
+  }
+}
