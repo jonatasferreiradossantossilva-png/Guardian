@@ -1,23 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import {
-  useUser,
-  useFirestore,
-  useCollection,
-  useDoc,
-  useMemoFirebase,
-  updateDocumentNonBlocking,
-  setDocumentNonBlocking,
-} from "@/firebase";
-import {
-  collection,
-  query,
-  where,
-  limit,
-  doc,
-  documentId,
-} from "firebase/firestore";
+import { useUser } from "@/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   List,
@@ -34,6 +18,8 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
+import { useMockCollection, useMockData, useMockDoc, useMockNestedDoc } from "@/hooks/use-mock-data";
+
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -88,38 +74,23 @@ const statusPinColor: Record<StudentStatus, string> = {
 
 
 export default function RoutePlanPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { user, isUserLoading } = useUser(); // Still use for auth context
+  const { updateDoc, setDoc } = useMockData();
   const [shift, setShift] = useState<Shift>("Manhã");
+  
+  const mockUserId = "user-motorista-1";
 
   // 1. Fetch current driver's active route
-  const routeQuery = useMemoFirebase(
-    () =>
-      user && firestore
-        ? query(
-            collection(firestore, "routes"),
-            where("driverId", "==", user.uid),
-            where("active", "==", true),
-            limit(1)
-          )
-        : null,
-    [user, firestore]
-  );
-  const { data: routes, isLoading: isRouteLoading } = useCollection(routeQuery);
+  const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", [
+    { field: "driverId", op: "==", value: mockUserId },
+    { field: "active", op: "==", value: true },
+  ]);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
   // 2. Fetch students for the current route
-  const studentsQuery = useMemoFirebase(
-    () =>
-      route && route.studentIds && route.studentIds.length > 0
-        ? query(
-            collection(firestore, "students"),
-            where(documentId(), "in", route.studentIds)
-          )
-        : null,
-    [route]
-  );
-  const { data: students, isLoading: areStudentsLoading } = useCollection<Student>(studentsQuery);
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route?.studentIds ? [
+    { field: 'id', op: 'in', value: route.studentIds }
+  ] : []);
 
   // 3. Order students according to the route plan
   const orderedStudents = useMemo(() => {
@@ -132,51 +103,38 @@ export default function RoutePlanPage() {
   
   // 4. Fetch School data from the first student
   const schoolId = useMemo(() => orderedStudents.length > 0 ? orderedStudents[0].schoolId : null, [orderedStudents]);
-  const schoolRef = useMemoFirebase(
-      () => (firestore && schoolId) ? doc(firestore, 'schools', schoolId) : null,
-      [firestore, schoolId]
-  );
-  const { data: school, isLoading: isSchoolLoading } = useDoc<School>(schoolRef);
+  const { data: school, isLoading: isSchoolLoading } = useMockDoc('schools', schoolId);
 
   // 5. Fetch driver's live location
-  const locationRef = useMemoFirebase(
-      () => (firestore && user) ? doc(firestore, "locations", user.uid) : null,
-      [firestore, user]
-  );
-  const { data: driverLocation, isLoading: isLocationLoading } = useDoc<LocationUpdate>(locationRef);
+  const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDoc(`locations/${mockUserId}`);
 
   // Function to update a student's status
   const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
-    if (!firestore) return;
-    const studentRef = doc(firestore, "students", studentId);
-    updateDocumentNonBlocking(studentRef, { status: newStatus });
+    updateDoc("students", studentId, { status: newStatus });
   };
   
   // Effect to simulate GPS location updates while route is active
   useEffect(() => {
-    if (!firestore || !user || !route || route.driverId !== user.uid) {
-      return;
-    }
+    if (!route || route.driverId !== mockUserId) return;
 
     const isRouteActive = orderedStudents.some(s => s.status === 'a_bordo');
     if (!isRouteActive) return;
 
-    const locationUpdateRef = doc(firestore, "locations", user.uid);
     const intervalId = setInterval(() => {
       // Simulate location change
       const newLat = (driverLocation?.latitude || -23.55052) + (Math.random() - 0.5) * 0.005;
       const newLng = (driverLocation?.longitude || -46.633308) + (Math.random() - 0.5) * 0.005;
       
-      setDocumentNonBlocking(locationUpdateRef, {
+      setDoc(`locations/${mockUserId}`, {
         latitude: newLat,
         longitude: newLng,
         timestamp: new Date().toISOString(),
-      }, { merge: true });
+      });
 
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId);
-  }, [firestore, user, route, orderedStudents, driverLocation]);
+  }, [route, orderedStudents, driverLocation, setDoc]);
 
   const isLoading = isUserLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
   const filteredStudents = orderedStudents.filter((student) => student.shift === shift);

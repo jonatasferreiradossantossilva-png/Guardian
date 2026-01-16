@@ -21,12 +21,10 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useFirestore } from '@/firebase';
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
+import { useMockData } from '@/hooks/use-mock-data';
 
 const formSchema = z.object({
   model: z.string().min(1, { message: 'O modelo é obrigatório.' }),
@@ -46,8 +44,8 @@ interface VehicleFormProps {
 }
 
 export function VehicleForm({ vehicle, onFormSubmit }: VehicleFormProps) {
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { addDoc, updateDoc } = useMockData();
 
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(formSchema),
@@ -78,20 +76,14 @@ export function VehicleForm({ vehicle, onFormSubmit }: VehicleFormProps) {
   }, [vehicle, form]);
 
   const onSubmit = (data: VehicleFormValues) => {
-    if (!firestore) return;
-
     if (vehicle) {
-      // Update existing vehicle
-      const vehicleRef = doc(firestore, 'vehicles', vehicle.id);
-      updateDocumentNonBlocking(vehicleRef, data);
+      updateDoc('vehicles', vehicle.id, data);
       toast({
         title: 'Veículo atualizado!',
         description: `O veículo ${data.model} foi atualizado com sucesso.`,
       });
     } else {
-      // Create new vehicle
-      const vehiclesCollection = collection(firestore, 'vehicles');
-      addDocumentNonBlocking(vehiclesCollection, data);
+      addDoc('vehicles', data);
       toast({
         title: 'Veículo adicionado!',
         description: `O veículo ${data.model} foi adicionado à frota.`,

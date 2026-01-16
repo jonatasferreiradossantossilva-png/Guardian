@@ -21,11 +21,9 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useFirestore } from '@/firebase';
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { useMockData } from '@/hooks/use-mock-data';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -42,8 +40,8 @@ interface ParentFormProps {
 }
 
 export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { addDoc, updateDoc } = useMockData();
 
   const form = useForm<ParentFormValues>({
     resolver: zodResolver(formSchema),
@@ -74,18 +72,14 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
   }, [parent, form]);
 
   const onSubmit = (data: ParentFormValues) => {
-    if (!firestore) return;
-
     if (parent) {
-      const parentRef = doc(firestore, 'parents', parent.id);
-      updateDocumentNonBlocking(parentRef, data);
+      updateDoc('parents', parent.id, data);
       toast({
         title: 'Responsável atualizado!',
         description: `Os dados de ${data.name} foram atualizados com sucesso.`,
       });
     } else {
-      const parentsCollection = collection(firestore, 'parents');
-      addDocumentNonBlocking(parentsCollection, data);
+      addDoc('parents', data);
       toast({
         title: 'Responsável adicionado!',
         description: `${data.name} foi adicionado com sucesso.`,

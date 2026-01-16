@@ -2,20 +2,12 @@
 
 import { useMemo } from "react";
 import Link from "next/link";
+import { useUser } from "@/firebase";
 import {
-  useUser,
-  useFirestore,
-  useCollection,
-  useDoc,
-  useMemoFirebase,
-} from "@/firebase";
-import {
-  collection,
-  query,
-  limit,
-  doc,
-  where
-} from "firebase/firestore";
+  useMockCollection,
+  useMockDoc,
+  useMockNestedDoc,
+} from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign } from "lucide-react";
@@ -23,7 +15,7 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 
-// Types matching Firestore data
+// Types matching mock data
 interface Student {
   id: string;
   name: string;
@@ -64,39 +56,27 @@ const statusBadgeVariant: Record<
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 export default function ParentTrackingPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { user, isUserLoading: isAuthLoading } = useUser();
   const { toast } = useToast();
 
+  const mockUserId = "user-pai-1";
+
   // Step 1: Find the parent document linked to the logged-in user
-  const parentQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "parents"), where("userId", "==", user.uid), limit(1)) : null),
-    [user, firestore]
-  );
-  const { data: parents, isLoading: areParentsLoading } = useCollection<Parent>(parentQuery);
+  const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", [
+    { field: "userId", op: "==", value: mockUserId },
+  ]);
   const parent = useMemo(() => (parents && parents.length > 0 ? parents[0] : null), [parents]);
 
   // Step 2: Find the student(s) linked to that parent
-  // For now, we'll just track the first student found to keep the UI simple.
-  const studentQuery = useMemoFirebase(
-    () => (parent && firestore ? query(collection(firestore, "students"), where("parentId", "==", parent.id), limit(1)) : null),
-    [parent, firestore]
-  );
-  const { data: students, isLoading: areStudentsLoading } = useCollection<Student>(studentQuery);
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", parent ? [
+    { field: "parentId", op: "==", value: parent.id },
+  ] : []);
   const student = useMemo(() => (students && students.length > 0 ? students[0] : null), [students]);
+  
+  const { data: route, isLoading: isRouteLoading } = useMockDoc("routes", student?.routeId);
 
-  const routeRef = useMemoFirebase(
-    () => (firestore && student?.routeId ? doc(firestore, "routes", student.routeId) : null),
-    [firestore, student]
-  );
-  const { data: route, isLoading: isRouteLoading } = useDoc<Route>(routeRef);
-
-  const locationRef = useMemoFirebase(
-    () => (firestore && route?.driverId ? doc(firestore, "locations", route.driverId) : null),
-    [firestore, route]
-  );
-  const { data: location, isLoading: isLocationLoading } = useDoc<LocationUpdate>(locationRef);
-
+  const { data: location, isLoading: isLocationLoading } = useMockNestedDoc(route?.driverId ? `locations/${route.driverId}`: null);
+  
   const handleCommunicateAbsence = () => {
     toast({
       title: "Ausência comunicada",
@@ -104,7 +84,7 @@ export default function ParentTrackingPage() {
     });
   };
 
-  const isLoading = isUserLoading || areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading;
+  const isLoading = isAuthLoading || areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading;
   
   const studentStatus = student?.status || 'aguardando';
 
@@ -128,7 +108,7 @@ export default function ParentTrackingPage() {
              <CardTitle>Conta de Responsável não encontrada</CardTitle>
              <CardContent className="mt-2 text-muted-foreground">
                 <p>Não foi possível encontrar uma conta de responsável associada a este login.</p>
-                <p className="text-xs mt-2">(Para fins de simulação, peça ao gestor para cadastrar um responsável com o seu ID de usuário).</p>
+                <p className="text-xs mt-2">(Modo de apresentação: usando ID de pai "user-pai-1".)</p>
              </CardContent>
           </Card>
         ) : !student ? (

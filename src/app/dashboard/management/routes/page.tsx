@@ -12,8 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query, doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,9 +32,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { RouteForm } from "@/components/dashboard/management/routes/route-form";
-import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+
 
 type Route = {
   id: string;
@@ -50,32 +49,18 @@ type Driver = { id: string; name: string };
 type Student = { id: string; name: string };
 
 export default function RoutesPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { deleteDoc } = useMockData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
   
-  const routesQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "routes")) : null),
-    [user, firestore]
-  );
-  const driversQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "drivers")) : null),
-    [user, firestore]
-  );
-  const studentsQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "students")) : null),
-    [user, firestore]
-  );
-  
-  const { data: routes, isLoading: areRoutesLoading } = useCollection<Omit<Route, 'id'>>(routesQuery);
-  const { data: drivers, isLoading: areDriversLoading } = useCollection<Driver>(driversQuery);
-  const { data: students, isLoading: areStudentsLoading } = useCollection<Student>(studentsQuery);
+  const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes');
+  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers');
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
 
-  const isLoading = isUserLoading || areRoutesLoading || areDriversLoading || areStudentsLoading;
+  const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading;
 
   const driversMap = useMemo(() => {
     if (!drivers) return new Map();
@@ -93,9 +78,8 @@ export default function RoutesPage() {
   };
   
   const confirmDelete = () => {
-    if (!firestore || !selectedRoute) return;
-    const routeRef = doc(firestore, 'routes', selectedRoute.id);
-    deleteDocumentNonBlocking(routeRef);
+    if (!selectedRoute) return;
+    deleteDoc('routes', selectedRoute.id);
     toast({
         title: "Rota deletada!",
         description: `A rota ${selectedRoute.name} foi removida do sistema.`,
@@ -201,7 +185,7 @@ export default function RoutesPage() {
                 !isLoading && (
                   <TableRow>
                     <TableCell colSpan={6} className="text-center">
-                      {!user ? "Faça login para ver as rotas." : "Nenhuma rota cadastrada."}
+                      Nenhuma rota cadastrada.
                     </TableCell>
                   </TableRow>
                 )

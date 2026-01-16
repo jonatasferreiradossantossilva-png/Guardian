@@ -13,13 +13,6 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
-  useCollection,
-  useFirestore,
-  useMemoFirebase,
-  useUser,
-} from "@/firebase";
-import { collection, query, doc } from "firebase/firestore";
-import {
   Dialog,
   DialogTrigger,
 } from "@/components/ui/dialog";
@@ -42,9 +35,9 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { VehicleForm } from "@/components/dashboard/management/vehicles/vehicle-form";
-import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 
 
 type Vehicle = {
@@ -56,23 +49,14 @@ type Vehicle = {
 };
 
 export default function VehiclesPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { deleteDoc } = useMockData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
-  const vehiclesQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "vehicles")) : null),
-    [user, firestore]
-  );
-
-  const { data: vehicles, isLoading: areVehiclesLoading } =
-    useCollection<Omit<Vehicle, 'id'>>(vehiclesQuery);
-
-  const isLoading = isUserLoading || areVehiclesLoading;
+  const { data: vehicles, isLoading } = useMockCollection('vehicles');
 
   const handleEdit = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
@@ -85,9 +69,8 @@ export default function VehiclesPage() {
   };
   
   const confirmDelete = () => {
-    if (!firestore || !selectedVehicle) return;
-    const vehicleRef = doc(firestore, 'vehicles', selectedVehicle.id);
-    deleteDocumentNonBlocking(vehicleRef);
+    if (!selectedVehicle) return;
+    deleteDoc('vehicles', selectedVehicle.id);
     toast({
         title: "Veículo deletado!",
         description: `O veículo ${selectedVehicle.model} foi removido da frota.`,
@@ -184,9 +167,7 @@ export default function VehiclesPage() {
                 !isLoading && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center">
-                      {!user
-                        ? "Faça login para ver os veículos."
-                        : "Nenhum veículo cadastrado."}
+                        Nenhum veículo cadastrado.
                     </TableCell>
                   </TableRow>
                 )

@@ -1,21 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
-import {
-  useUser,
-  useFirestore,
-  useCollection,
-  useMemoFirebase,
-  updateDocumentNonBlocking,
-} from "@/firebase";
-import {
-  collection,
-  query,
-  where,
-  limit,
-  doc,
-  documentId,
-} from "firebase/firestore";
+import { useUser } from "@/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   List,
@@ -30,6 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
+import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+
 
 type Shift = "Manhã" | "Tarde";
 type StudentStatus = "aguardando" | "a_bordo" | "desembarcado" | "ausente";
@@ -59,36 +47,20 @@ const statusBadgeVariant: Record<
 
 export default function AssistantRoutePlanPage() {
   const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { updateDoc } = useMockData();
   const [shift, setShift] = useState<Shift>("Manhã");
 
-  const routeQuery = useMemoFirebase(
-    () =>
-      user && firestore
-        ? query(
-            collection(firestore, "routes"),
-            where("assistantId", "==", user.uid),
-            where("active", "==", true),
-            limit(1)
-          )
-        : null,
-    [user, firestore]
-  );
-  const { data: routes, isLoading: isRouteLoading } = useCollection(routeQuery);
+  const mockUserId = "user-aux-1";
+
+  const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", [
+      { field: 'assistantId', op: '==', value: mockUserId },
+      { field: 'active', op: '==', value: true }
+  ]);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
-  const studentsQuery = useMemoFirebase(
-    () =>
-      route && route.studentIds && route.studentIds.length > 0
-        ? query(
-            collection(firestore, "students"),
-            where(documentId(), "in", route.studentIds)
-          )
-        : null,
-    [route]
-  );
-
-  const { data: students, isLoading: areStudentsLoading } = useCollection<Student>(studentsQuery);
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route ? [
+      { field: 'id', op: 'in', value: route.studentIds }
+  ] : []);
 
   const orderedStudents = useMemo(() => {
     if (!route?.studentIds || !students) return [];
@@ -99,9 +71,7 @@ export default function AssistantRoutePlanPage() {
   }, [route?.studentIds, students]);
 
   const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
-    if (!firestore) return;
-    const studentRef = doc(firestore, "students", studentId);
-    updateDocumentNonBlocking(studentRef, { status: newStatus });
+    updateDoc("students", studentId, { status: newStatus });
   };
   
   const isLoading = isUserLoading || isRouteLoading || areStudentsLoading;

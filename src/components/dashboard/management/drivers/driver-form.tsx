@@ -28,11 +28,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useFirestore } from '@/firebase';
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { useMockData } from '@/hooks/use-mock-data';
+
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -56,8 +55,8 @@ export function DriverForm({
   vehicles,
   onFormSubmit,
 }: DriverFormProps) {
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { addDoc, updateDoc } = useMockData();
 
   const form = useForm<DriverFormValues>({
     resolver: zodResolver(formSchema),
@@ -88,23 +87,19 @@ export function DriverForm({
   }, [driver, form]);
 
   const onSubmit = (data: DriverFormValues) => {
-    if (!firestore) return;
-    
     const driverData = { ...data };
     if (!driverData.vehicleId) {
         delete (driverData as Partial<typeof driverData>).vehicleId; // Do not save empty string
     }
 
     if (driver) {
-      const driverRef = doc(firestore, 'drivers', driver.id);
-      updateDocumentNonBlocking(driverRef, driverData);
+      updateDoc('drivers', driver.id, driverData);
       toast({
         title: 'Motorista atualizado!',
         description: `Os dados de ${data.name} foram atualizados.`,
       });
     } else {
-      const driversCollection = collection(firestore, 'drivers');
-      addDocumentNonBlocking(driversCollection, driverData);
+      addDoc('drivers', driverData);
       toast({
         title: 'Motorista adicionado!',
         description: `${data.name} foi adicionado ao sistema.`,

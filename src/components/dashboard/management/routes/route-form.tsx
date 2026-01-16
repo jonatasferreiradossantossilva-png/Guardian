@@ -29,14 +29,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useFirestore } from '@/firebase';
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
+import { useMockData } from '@/hooks/use-mock-data';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -65,8 +63,8 @@ export function RouteForm({
   students,
   onFormSubmit,
 }: RouteFormProps) {
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { addDoc, updateDoc } = useMockData();
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
@@ -103,18 +101,14 @@ export function RouteForm({
   }, [route, form]);
 
   const onSubmit = (data: RouteFormValues) => {
-    if (!firestore) return;
-
     if (route) {
-      const routeRef = doc(firestore, 'routes', route.id);
-      updateDocumentNonBlocking(routeRef, data);
+      updateDoc('routes', route.id, data);
       toast({
         title: 'Rota atualizada!',
         description: `A rota ${data.name} foi atualizada.`,
       });
     } else {
-      const routesCollection = collection(firestore, 'routes');
-      addDocumentNonBlocking(routesCollection, data);
+      addDoc('routes', data);
       toast({
         title: 'Rota adicionada!',
         description: `A rota ${data.name} foi adicionada ao sistema.`,

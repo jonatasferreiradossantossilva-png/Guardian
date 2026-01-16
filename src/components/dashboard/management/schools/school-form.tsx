@@ -21,11 +21,9 @@ import {
   DialogFooter,
   DialogClose,
 } from '@/components/ui/dialog';
-import { useFirestore } from '@/firebase';
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { useMockData } from '@/hooks/use-mock-data';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -42,8 +40,8 @@ interface SchoolFormProps {
 }
 
 export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { addDoc, updateDoc } = useMockData();
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -74,18 +72,14 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   }, [school, form]);
 
   const onSubmit = (data: SchoolFormValues) => {
-    if (!firestore) return;
-
     if (school) {
-      const schoolRef = doc(firestore, 'schools', school.id);
-      updateDocumentNonBlocking(schoolRef, data);
+      updateDoc('schools', school.id, data);
       toast({
         title: 'Escola atualizada!',
         description: `Os dados da escola ${data.name} foram atualizados.`,
       });
     } else {
-      const schoolsCollection = collection(firestore, 'schools');
-      addDocumentNonBlocking(schoolsCollection, data);
+      addDoc('schools', data);
       toast({
         title: 'Escola adicionada!',
         description: `A escola ${data.name} foi adicionada ao sistema.`,

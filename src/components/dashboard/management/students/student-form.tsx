@@ -28,11 +28,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { useFirestore } from '@/firebase';
-import { addDocumentNonBlocking, updateDocumentNonBlocking } from '@/firebase/non-blocking-updates';
-import { collection, doc } from 'firebase/firestore';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
+import { useMockData } from '@/hooks/use-mock-data';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -41,7 +39,7 @@ const formSchema = z.object({
   longitude: z.coerce.number().optional(),
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
-  shift: z.enum(['manha', 'tarde'], { required_error: 'Selecione um turno.' }),
+  shift: z.enum(['manha', 'tarde', 'Manhã', 'Tarde'], { required_error: 'Selecione um turno.' }),
 });
 
 type StudentFormValues = z.infer<typeof formSchema>;
@@ -62,8 +60,8 @@ export function StudentForm({
   parents,
   onFormSubmit,
 }: StudentFormProps) {
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { addDoc, updateDoc } = useMockData();
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(formSchema),
@@ -87,7 +85,7 @@ export function StudentForm({
         longitude: student.longitude,
         schoolId: student.schoolId || '',
         parentId: student.parentId || '',
-        shift: student.shift || 'manha',
+        shift: student.shift?.toLowerCase() === 'manhã' ? 'manha' : student.shift?.toLowerCase() === 'tarde' ? 'tarde' : 'manha',
       });
     } else {
       form.reset({
@@ -103,19 +101,20 @@ export function StudentForm({
   }, [student, form]);
 
   const onSubmit = (data: StudentFormValues) => {
-    if (!firestore) return;
+    const finalData = {
+        ...data,
+        shift: data.shift === 'manha' ? 'Manhã' : 'Tarde'
+    }
 
     if (student) {
-      const studentRef = doc(firestore, 'students', student.id);
-      updateDocumentNonBlocking(studentRef, data);
+      updateDoc('students', student.id, finalData);
       toast({
         title: 'Aluno atualizado!',
         description: `Os dados de ${data.name} foram atualizados com sucesso.`,
       });
     } else {
-      const studentData = { ...data, status: 'aguardando' };
-      const studentsCollection = collection(firestore, 'students');
-      addDocumentNonBlocking(studentsCollection, studentData);
+      const studentData = { ...finalData, status: 'aguardando' };
+      addDoc('students', studentData);
       toast({
         title: 'Aluno adicionado!',
         description: `${data.name} foi adicionado com sucesso.`,

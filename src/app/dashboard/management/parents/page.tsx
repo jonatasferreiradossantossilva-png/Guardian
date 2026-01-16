@@ -12,8 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query, doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,8 +32,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { ParentForm } from "@/components/dashboard/management/parents/parent-form";
-import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
+import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+
 
 type Parent = {
   id: string;
@@ -46,22 +45,14 @@ type Parent = {
 };
 
 export default function ParentsPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { deleteDoc } = useMockData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   
-  const parentsQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "parents")) : null),
-    [user, firestore]
-  );
-  
-  const { data: parents, isLoading: areParentsLoading } = useCollection<Omit<Parent, 'id'>>(parentsQuery);
-
-  const isLoading = isUserLoading || areParentsLoading;
+  const { data: parents, isLoading } = useMockCollection('parents');
 
   const handleEdit = (parent: Parent) => {
     setSelectedParent(parent);
@@ -74,9 +65,8 @@ export default function ParentsPage() {
   };
   
   const confirmDelete = () => {
-    if (!firestore || !selectedParent) return;
-    const parentRef = doc(firestore, 'parents', selectedParent.id);
-    deleteDocumentNonBlocking(parentRef);
+    if (!selectedParent) return;
+    deleteDoc('parents', selectedParent.id);
     toast({
         title: "Responsável deletado!",
         description: `${selectedParent.name} foi removido do sistema.`,
@@ -169,7 +159,7 @@ export default function ParentsPage() {
                 !isLoading && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center">
-                      {!user ? "Faça login para ver os pais." : "Nenhum pai cadastrado."}
+                       Nenhum pai cadastrado.
                     </TableCell>
                   </TableRow>
                 )

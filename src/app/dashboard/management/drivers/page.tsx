@@ -13,8 +13,6 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query, doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -35,8 +33,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { DriverForm } from "@/components/dashboard/management/drivers/driver-form";
-import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
+import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+
 
 type Driver = {
   id: string;
@@ -60,27 +59,17 @@ const statusLabelMap: Record<Driver['status'], string> = {
 
 
 export default function DriversPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { deleteDoc } = useMockData();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
-  const driversQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "drivers")) : null),
-    [user, firestore]
-  );
-  const vehiclesQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "vehicles")) : null),
-    [user, firestore]
-  );
-  
-  const { data: drivers, isLoading: areDriversLoading } = useCollection<Omit<Driver, 'id'>>(driversQuery);
-  const { data: vehicles, isLoading: areVehiclesLoading } = useCollection<Vehicle>(vehiclesQuery);
+  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers');
+  const { data: vehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
 
-  const isLoading = isUserLoading || areDriversLoading || areVehiclesLoading;
+  const isLoading = areDriversLoading || areVehiclesLoading;
 
   const vehiclesMap = useMemo(() => {
     if (!vehicles) return new Map();
@@ -98,9 +87,8 @@ export default function DriversPage() {
   };
   
   const confirmDelete = () => {
-    if (!firestore || !selectedDriver) return;
-    const driverRef = doc(firestore, 'drivers', selectedDriver.id);
-    deleteDocumentNonBlocking(driverRef);
+    if (!selectedDriver) return;
+    deleteDoc('drivers', selectedDriver.id);
     toast({
         title: "Motorista deletado!",
         description: `O motorista ${selectedDriver.name} foi removido do sistema.`,
@@ -201,7 +189,7 @@ export default function DriversPage() {
                 !isLoading && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center">
-                      {!user ? "Faça login para ver os motoristas." : "Nenhum motorista cadastrado."}
+                      Nenhum motorista cadastrado.
                     </TableCell>
                   </TableRow>
                 )

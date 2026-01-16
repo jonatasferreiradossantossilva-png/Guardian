@@ -12,8 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query, doc } from "firebase/firestore";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,8 +32,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { SchoolForm } from "@/components/dashboard/management/schools/school-form";
-import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
+import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+
 
 type School = {
   id: string;
@@ -46,22 +45,14 @@ type School = {
 };
 
 export default function SchoolsPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { deleteDoc } = useMockData();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
-
-  const schoolsQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "schools")) : null),
-    [user, firestore]
-  );
   
-  const { data: schools, isLoading: areSchoolsLoading } = useCollection<Omit<School, 'id'>>(schoolsQuery);
-
-  const isLoading = isUserLoading || areSchoolsLoading;
+  const { data: schools, isLoading } = useMockCollection('schools');
 
   const handleEdit = (school: School) => {
     setSelectedSchool(school);
@@ -74,9 +65,8 @@ export default function SchoolsPage() {
   };
   
   const confirmDelete = () => {
-    if (!firestore || !selectedSchool) return;
-    const schoolRef = doc(firestore, 'schools', selectedSchool.id);
-    deleteDocumentNonBlocking(schoolRef);
+    if (!selectedSchool) return;
+    deleteDoc('schools', selectedSchool.id);
     toast({
         title: "Escola deletada!",
         description: `A escola ${selectedSchool.name} foi removida do sistema.`,
@@ -169,7 +159,7 @@ export default function SchoolsPage() {
                 !isLoading && (
                   <TableRow>
                     <TableCell colSpan={5} className="text-center">
-                      {!user ? "Faça login para ver as escolas." : "Nenhuma escola cadastrada."}
+                      Nenhuma escola cadastrada.
                     </TableCell>
                   </TableRow>
                 )

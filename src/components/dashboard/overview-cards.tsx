@@ -3,32 +3,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { ArrowDown, ArrowUp, Smile, GraduationCap, Truck, FileText } from "lucide-react";
-import { useCollection, useFirestore, useMemoFirebase, useUser } from "@/firebase";
-import { collection, query, where } from "firebase/firestore";
+import { useMockCollection } from "@/hooks/use-mock-data";
+
 
 export function OverviewCards() {
-  const { user, isUserLoading: isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
+  const { data: activeVehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles', [{ field: 'active', op: '==', value: true }]);
+  const { data: pendingInvoices, isLoading: areInvoicesLoading } = useMockCollection('invoices', [{ field: 'status', op: '==', value: 'pending' }]);
 
-  const studentsQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, 'students')) : null),
-    [user, firestore]
-  );
-  const { data: students, isLoading: areStudentsLoading } = useCollection(studentsQuery);
-
-  const activeVehiclesQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, 'vehicles'), where('active', '==', true)) : null),
-    [user, firestore]
-  );
-  const { data: activeVehicles, isLoading: areVehiclesLoading } = useCollection(activeVehiclesQuery);
-
-  const pendingInvoicesQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, 'invoices'), where('status', '==', 'pending')) : null),
-    [user, firestore]
-  );
-  const { data: pendingInvoices, isLoading: areInvoicesLoading } = useCollection(pendingInvoicesQuery);
-
-  const isLoading = isUserLoading || areStudentsLoading || areVehiclesLoading || areInvoicesLoading;
+  const isLoading = areStudentsLoading || areVehiclesLoading || areInvoicesLoading;
 
   const overviewStats = [
     {

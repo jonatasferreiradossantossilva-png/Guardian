@@ -1,14 +1,13 @@
 'use client';
 
 import { useMemo } from 'react';
-import { useCollection, useFirestore, useMemoFirebase, useUser } from '@/firebase';
-import { collection, query } from 'firebase/firestore';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, MessageSquareWarning, Loader2 } from 'lucide-react';
 import Link from 'next/link';
+import { useMockCollection } from '@/hooks/use-mock-data';
 
 type Driver = {
   id: string;
@@ -33,22 +32,10 @@ const statusLabelMap: Record<Driver['status'], string> = {
 };
 
 export function DriverStatusList() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
+  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers');
+  const { data: vehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
 
-  const driversQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, 'drivers')) : null),
-    [user, firestore]
-  );
-  const vehiclesQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, 'vehicles')) : null),
-    [user, firestore]
-  );
-
-  const { data: drivers, isLoading: areDriversLoading } = useCollection<Driver>(driversQuery);
-  const { data: vehicles, isLoading: areVehiclesLoading } = useCollection<Vehicle>(vehiclesQuery);
-
-  const isLoading = isUserLoading || areDriversLoading || areVehiclesLoading;
+  const isLoading = areDriversLoading || areVehiclesLoading;
 
   const vehiclesMap = useMemo(() => {
     if (!vehicles) return new Map();
@@ -84,7 +71,7 @@ export function DriverStatusList() {
                   {statusLabelMap[driver.status]}
                 </Badge>
                 <div className="flex gap-1">
-                   <Button variant="ghost" size="icon" className="h-8 w-8" disabled>
+                   <Button variant="ghost" size="icon" className="h-8 w-8">
                      <MapPin className="h-4 w-4" />
                    </Button>
                    <Link href="/dashboard/messages" passHref>

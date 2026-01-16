@@ -12,13 +12,6 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import {
-  useCollection,
-  useFirestore,
-  useMemoFirebase,
-  useUser,
-} from "@/firebase";
-import { collection, query, doc } from "firebase/firestore";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -39,9 +32,10 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { StudentForm } from "@/components/dashboard/management/students/student-form";
-import { deleteDocumentNonBlocking } from "@/firebase/non-blocking-updates";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+
 
 type Student = {
   id: string;
@@ -56,35 +50,21 @@ type School = { id: string; name: string };
 type Parent = { id: string; name: string };
 
 export default function StudentsPage() {
-  const { user, isUserLoading } = useUser();
-  const firestore = useFirestore();
   const { toast } = useToast();
+  const { deleteDoc } = useMockData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
 
   // Queries for all necessary collections
-  const studentsQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "students")) : null),
-    [user, firestore]
-  );
-  const schoolsQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "schools")) : null),
-    [user, firestore]
-  );
-  const parentsQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, "parents")) : null),
-    [user, firestore]
-  );
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
+  const { data: schools, isLoading: areSchoolsLoading } = useMockCollection('schools');
+  const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
 
-  const { data: students, isLoading: areStudentsLoading } = useCollection<Omit<Student, 'id'>>(studentsQuery);
-  const { data: schools, isLoading: areSchoolsLoading } = useCollection<School>(schoolsQuery);
-  const { data: parents, isLoading: areParentsLoading } = useCollection<Parent>(parentsQuery);
-
-  const isLoading = isUserLoading || areStudentsLoading || areSchoolsLoading || areParentsLoading;
+  const isLoading = areStudentsLoading || areSchoolsLoading || areParentsLoading;
   
-  // Memoized maps for quick lookups (the "join" on the frontend)
+  // Memoized maps for quick lookups
   const schoolsMap = useMemo(() => {
     if (!schools) return new Map();
     return new Map(schools.map(s => [s.id, s.name]));
@@ -107,9 +87,8 @@ export default function StudentsPage() {
   };
   
   const confirmDelete = () => {
-    if (!firestore || !selectedStudent) return;
-    const studentRef = doc(firestore, 'students', selectedStudent.id);
-    deleteDocumentNonBlocking(studentRef);
+    if (!selectedStudent) return;
+    deleteDoc('students', selectedStudent.id);
     toast({
         title: "Aluno deletado!",
         description: `O aluno ${selectedStudent.name} foi removido do sistema.`,
@@ -211,7 +190,7 @@ export default function StudentsPage() {
                 !isLoading && (
                   <TableRow>
                     <TableCell colSpan={7} className="text-center">
-                      {!user ? "Faça login para ver os alunos." : "Nenhum aluno cadastrado."}
+                      Nenhum aluno cadastrado.
                     </TableCell>
                   </TableRow>
                 )
