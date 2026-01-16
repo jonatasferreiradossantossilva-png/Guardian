@@ -151,6 +151,16 @@ service cloud.firestore {
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
     }
+    
+    /**
+     * @description Stores real-time location updates for drivers.
+     * @principle Allows reads for any signed-in user for tracking, but writes are restricted
+     * to the specific driver to ensure data integrity.
+     */
+    match /locations/{driverId} {
+      allow get: if isSignedIn();
+      allow update, create: if isDriver() && request.auth.uid == driverId;
+    }
 
     /**
      * @description Stores messages partitioned by user.
@@ -189,5 +199,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

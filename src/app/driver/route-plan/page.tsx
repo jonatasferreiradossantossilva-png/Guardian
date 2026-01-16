@@ -1,12 +1,13 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   useUser,
   useFirestore,
   useCollection,
   useMemoFirebase,
   updateDocumentNonBlocking,
+  setDocumentNonBlocking,
 } from "@/firebase";
 import {
   collection,
@@ -104,6 +105,36 @@ export default function RoutePlanPage() {
     updateDocumentNonBlocking(studentRef, { status: newStatus });
   };
   
+  // Effect to simulate GPS location updates while route is active
+  useEffect(() => {
+    if (!firestore || !user || !route || route.driverId !== user.uid) {
+      return;
+    }
+
+    const isRouteActive = orderedStudents.some(s => s.status === 'a_bordo');
+
+    if (!isRouteActive) {
+      return; 
+    }
+
+    const locationRef = doc(firestore, "locations", user.uid);
+
+    const intervalId = setInterval(() => {
+      // Simulate location change around a central point
+      const newLat = -23.55052 + (Math.random() - 0.5) * 0.05;
+      const newLng = -46.633308 + (Math.random() - 0.5) * 0.05;
+      
+      setDocumentNonBlocking(locationRef, {
+        latitude: newLat,
+        longitude: newLng,
+        timestamp: new Date().toISOString(),
+      }, { merge: true });
+
+    }, 10000); // Update every 10 seconds
+
+    return () => clearInterval(intervalId);
+  }, [firestore, user, route, orderedStudents]);
+
   const isLoading = isUserLoading || isRouteLoading || areStudentsLoading;
 
   return (
@@ -215,5 +246,3 @@ export default function RoutePlanPage() {
     </div>
   );
 }
-
-    
