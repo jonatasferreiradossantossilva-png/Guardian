@@ -91,7 +91,7 @@ export function MainSidebar() {
           </SidebarMenuItem>
 
           <Collapsible defaultOpen={isManagementActive}>
-            <CollapsibleTrigger className="w-full">
+            <CollapsibleTrigger asChild className="w-full">
               <SidebarMenuButton
                 className="w-full justify-start"
                 isActive={isManagementActive}
