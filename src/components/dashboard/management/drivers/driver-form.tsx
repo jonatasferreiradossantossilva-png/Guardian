@@ -116,7 +116,7 @@ export function DriverForm({
 
   const onSubmit = (data: DriverFormValues) => {
     const driverData = { ...data };
-    if (!driverData.vehicleId) {
+    if (!driverData.vehicleId || driverData.vehicleId === 'none') {
         delete (driverData as Partial<typeof driverData>).vehicleId; // Do not save empty string
     }
 
@@ -345,7 +345,7 @@ export function DriverForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="">Nenhum</SelectItem>
+                      <SelectItem value="none">Nenhum</SelectItem>
                       {vehicles.map(vehicle => (
                         <SelectItem key={vehicle.id} value={vehicle.id}>
                           {vehicle.model} ({vehicle.licensePlate})
@@ -372,5 +372,3 @@ export function DriverForm({
     </DialogContent>
   );
 }
-
-    
