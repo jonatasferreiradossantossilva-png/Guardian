@@ -5,6 +5,7 @@ import {
   useUser,
   useFirestore,
   useCollection,
+  useDoc,
   useMemoFirebase,
   updateDocumentNonBlocking,
   setDocumentNonBlocking,
@@ -26,21 +27,41 @@ import {
   User,
   Loader2,
   AlertTriangle,
+  MapPin,
+  School as SchoolIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
 
+const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+// Types
 type Shift = "Manhã" | "Tarde";
 type StudentStatus = "aguardando" | "a_bordo" | "desembarcado" | "ausente";
+
 interface Student {
   id: string;
   name: string;
   status: StudentStatus;
   shift: Shift;
+  latitude?: number;
+  longitude?: number;
+  schoolId: string;
+}
+interface School {
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
+}
+interface LocationUpdate {
+    latitude: number;
+    longitude: number;
 }
 
+// Status mappings
 const statusText: Record<StudentStatus, string> = {
   aguardando: "Aguardando",
   a_bordo: "A Bordo",
@@ -58,11 +79,20 @@ const statusBadgeVariant: Record<
   ausente: "destructive",
 };
 
+const statusPinColor: Record<StudentStatus, string> = {
+    aguardando: '#6c757d', // secondary
+    a_bordo: '#28a745', // green
+    desembarcado: '#17a2b8', // info/blue
+    ausente: '#dc3545', // destructive
+};
+
+
 export default function RoutePlanPage() {
   const { user, isUserLoading } = useUser();
   const firestore = useFirestore();
   const [shift, setShift] = useState<Shift>("Manhã");
 
+  // 1. Fetch current driver's active route
   const routeQuery = useMemoFirebase(
     () =>
       user && firestore
@@ -78,6 +108,7 @@ export default function RoutePlanPage() {
   const { data: routes, isLoading: isRouteLoading } = useCollection(routeQuery);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
+  // 2. Fetch students for the current route
   const studentsQuery = useMemoFirebase(
     () =>
       route && route.studentIds && route.studentIds.length > 0
@@ -88,9 +119,9 @@ export default function RoutePlanPage() {
         : null,
     [route]
   );
-
   const { data: students, isLoading: areStudentsLoading } = useCollection<Student>(studentsQuery);
 
+  // 3. Order students according to the route plan
   const orderedStudents = useMemo(() => {
     if (!route?.studentIds || !students) return [];
     const studentMap = new Map(students.map((s) => [s.id, s]));
@@ -98,7 +129,23 @@ export default function RoutePlanPage() {
       .map((id) => studentMap.get(id))
       .filter((s): s is Student => !!s);
   }, [route?.studentIds, students]);
+  
+  // 4. Fetch School data from the first student
+  const schoolId = useMemo(() => orderedStudents.length > 0 ? orderedStudents[0].schoolId : null, [orderedStudents]);
+  const schoolRef = useMemoFirebase(
+      () => (firestore && schoolId) ? doc(firestore, 'schools', schoolId) : null,
+      [firestore, schoolId]
+  );
+  const { data: school, isLoading: isSchoolLoading } = useDoc<School>(schoolRef);
 
+  // 5. Fetch driver's live location
+  const locationRef = useMemoFirebase(
+      () => (firestore && user) ? doc(firestore, "locations", user.uid) : null,
+      [firestore, user]
+  );
+  const { data: driverLocation, isLoading: isLocationLoading } = useDoc<LocationUpdate>(locationRef);
+
+  // Function to update a student's status
   const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
     if (!firestore) return;
     const studentRef = doc(firestore, "students", studentId);
@@ -112,19 +159,15 @@ export default function RoutePlanPage() {
     }
 
     const isRouteActive = orderedStudents.some(s => s.status === 'a_bordo');
+    if (!isRouteActive) return;
 
-    if (!isRouteActive) {
-      return; 
-    }
-
-    const locationRef = doc(firestore, "locations", user.uid);
-
+    const locationUpdateRef = doc(firestore, "locations", user.uid);
     const intervalId = setInterval(() => {
-      // Simulate location change around a central point
-      const newLat = -23.55052 + (Math.random() - 0.5) * 0.05;
-      const newLng = -46.633308 + (Math.random() - 0.5) * 0.05;
+      // Simulate location change
+      const newLat = (driverLocation?.latitude || -23.55052) + (Math.random() - 0.5) * 0.005;
+      const newLng = (driverLocation?.longitude || -46.633308) + (Math.random() - 0.5) * 0.005;
       
-      setDocumentNonBlocking(locationRef, {
+      setDocumentNonBlocking(locationUpdateRef, {
         latitude: newLat,
         longitude: newLng,
         timestamp: new Date().toISOString(),
@@ -133,57 +176,117 @@ export default function RoutePlanPage() {
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId);
-  }, [firestore, user, route, orderedStudents]);
+  }, [firestore, user, route, orderedStudents, driverLocation]);
 
-  const isLoading = isUserLoading || isRouteLoading || areStudentsLoading;
+  const isLoading = isUserLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
+  const filteredStudents = orderedStudents.filter((student) => student.shift === shift);
+  
+  const mapCenter = useMemo(() => {
+      if (driverLocation) return { lat: driverLocation.latitude, lng: driverLocation.longitude };
+      if (school) return { lat: school.latitude, lng: school.longitude };
+      return { lat: -23.55052, lng: -46.633308 }; // Default to São Paulo
+  }, [driverLocation, school]);
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">Plano de Rota</h1>
-          <Link href="/" passHref>
+      <div className="flex justify-between items-center mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">Plano de Rota do Motorista</h1>
+         <Link href="/" passHref>
              <Button variant="outline">Voltar ao Login</Button>
           </Link>
-        </div>
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <List />
-              Controle de Embarque/Desembarque
-            </CardTitle>
-            <p className="text-muted-foreground text-sm pt-2">
-              {route ? route.name : "Carregando rota..."}
-            </p>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 mb-6">
-                <Button onClick={() => setShift("Manhã")} variant={shift === 'Manhã' ? 'default' : 'outline'}>Manhã</Button>
-                <Button onClick={() => setShift("Tarde")} variant={shift === 'Tarde' ? 'default' : 'outline'}>Tarde</Button>
-            </div>
-            
-            {isLoading && (
-                 <div className="flex items-center justify-center h-40">
-                    <Loader2 className="h-8 w-8 animate-spin text-primary" />
-                 </div>
-            )}
+      </div>
 
-            {!isLoading && !route && (
-                 <div className="flex flex-col items-center justify-center h-40 text-center">
-                    <AlertTriangle className="h-8 w-8 text-destructive mb-2" />
-                    <p className="font-semibold">Nenhuma rota ativa encontrada.</p>
-                    <p className="text-muted-foreground text-sm">Verifique com o administrador se uma rota foi atribuída a você.</p>
-                 </div>
-            )}
+       {isLoading && (
+         <div className="flex items-center justify-center h-[calc(100vh-200px)]">
+            <Loader2 className="h-12 w-12 animate-spin text-primary" />
+            <p className="ml-4 text-muted-foreground">Carregando dados da rota...</p>
+         </div>
+       )}
 
-            {!isLoading && route && (
-              <div className="space-y-4">
-                {orderedStudents
-                  .filter((student) => student.shift === shift)
-                  .map((student) => (
+      {!isLoading && !route && (
+         <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center">
+            <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
+            <p className="font-semibold text-xl">Nenhuma rota ativa encontrada.</p>
+            <p className="text-muted-foreground">Verifique com o administrador se uma rota foi atribuída a você.</p>
+         </div>
+      )}
+
+      {!isLoading && route && (
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Map Column */}
+          <div className="lg:col-span-2">
+             <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><MapPin /> Mapa da Rota</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <div className="aspect-video w-full bg-secondary rounded-lg flex items-center justify-center overflow-hidden">
+                        {!API_KEY ? (
+                             <div className="text-center p-4">
+                                <p className="font-semibold text-lg">Mapa Indisponível</p>
+                                <p className="text-muted-foreground text-sm">A chave da API do Google Maps não foi configurada.</p>
+                            </div>
+                        ) : (
+                            <APIProvider apiKey={API_KEY}>
+                                <Map
+                                    center={mapCenter}
+                                    zoom={14}
+                                    mapId="rota_segura_driver_map"
+                                    disableDefaultUI={true}
+                                    gestureHandling={'greedy'}
+                                    className="w-full h-full"
+                                >
+                                    {/* School Marker */}
+                                    {school && <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
+                                        <div className="p-2 bg-primary rounded-full shadow-lg border-2 border-white">
+                                            <SchoolIcon className="h-5 w-5 text-primary-foreground" />
+                                        </div>
+                                    </AdvancedMarker>}
+                                    
+                                    {/* Student Markers */}
+                                    {filteredStudents.map(student => student.latitude && student.longitude && (
+                                        <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
+                                            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: statusPinColor[student.status] }} />
+                                        </AdvancedMarker>
+                                    ))}
+
+                                    {/* Driver Marker */}
+                                    {driverLocation && <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição">
+                                         <div className="p-1 bg-blue-500 rounded-full shadow-lg animate-pulse">
+                                            <Bus className="h-6 w-6 text-white" />
+                                         </div>
+                                    </AdvancedMarker>}
+                                </Map>
+                            </APIProvider>
+                        )}
+                    </div>
+                </CardContent>
+             </Card>
+          </div>
+          
+          {/* Student List Column */}
+          <div className="lg:col-span-1">
+             <Card>
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <List />
+                  Controle de Embarque
+                </CardTitle>
+                <p className="text-muted-foreground text-sm pt-2">
+                  {route.name}
+                </p>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 mb-6">
+                    <Button onClick={() => setShift("Manhã")} variant={shift === 'Manhã' ? 'default' : 'outline'}>Manhã</Button>
+                    <Button onClick={() => setShift("Tarde")} variant={shift === 'Tarde' ? 'default' : 'outline'}>Tarde</Button>
+                </div>
+                
+                <div className="space-y-4">
+                  {filteredStudents.map((student) => (
                     <div
                       key={student.id}
-                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-secondary"
+                      className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary"
                     >
                       <div className="flex items-center gap-3 mb-3 sm:mb-0">
                         <User className="h-5 w-5 text-muted-foreground" />
@@ -192,57 +295,38 @@ export default function RoutePlanPage() {
                       <div className="flex items-center gap-2 w-full sm:w-auto">
                         {student.status === "aguardando" && (
                           <>
-                            <Button
-                              size="sm"
-                              className="bg-green-600 hover:bg-green-700 flex-1"
-                              onClick={() => handleStatusChange(student.id, "a_bordo")}
-                            >
-                              <CheckCircle className="mr-2 h-4 w-4" />
-                              Embarcar
+                            <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => handleStatusChange(student.id, "a_bordo")}>
+                              <CheckCircle className="mr-2 h-4 w-4" /> Embarcar
                             </Button>
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              className="flex-1"
-                              onClick={() => handleStatusChange(student.id, "ausente")}
-                            >
-                              <XCircle className="mr-2 h-4 w-4" />
-                              Ausente
+                            <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleStatusChange(student.id, "ausente")}>
+                              <XCircle className="mr-2 h-4 w-4" /> Ausente
                             </Button>
                           </>
                         )}
                         {student.status === "a_bordo" && (
-                          <Button
-                            size="sm"
-                            className="w-full"
-                             onClick={() => handleStatusChange(student.id, "desembarcado")}
-                          >
-                            <Bus className="mr-2 h-4 w-4" />
-                            Desembarcar
+                          <Button size="sm" className="w-full" onClick={() => handleStatusChange(student.id, "desembarcado")}>
+                            <Bus className="mr-2 h-4 w-4" /> Desembarcar
                           </Button>
                         )}
-                        {(student.status === "desembarcado" ||
-                          student.status === "ausente") && (
-                          <Badge
-                            variant={statusBadgeVariant[student.status]}
-                            className="w-full justify-center py-1 text-xs"
-                          >
+                        {(student.status === "desembarcado" || student.status === "ausente") && (
+                          <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1 text-xs">
                             {statusText[student.status]}
                           </Badge>
                         )}
                       </div>
                     </div>
                   ))}
-                   {orderedStudents.filter((student) => student.shift === shift).length === 0 && (
+                   {filteredStudents.length === 0 && (
                      <div className="text-center text-muted-foreground py-10">
                         <p>Nenhum aluno para o turno da {shift.toLowerCase()}.</p>
                     </div>
                    )}
-              </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
