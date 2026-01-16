@@ -40,8 +40,8 @@ export function LoginForm() {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "",
-      password: "",
+      email: "usuario@exemplo.com",
+      password: "senha123",
     },
   });
 
@@ -110,10 +110,8 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <fieldset className="space-y-3">
-              <legend className="text-sm font-medium leading-none">
-                Entrar como
-              </legend>
+            <div className="space-y-3">
+              <FormLabel>Entrar como</FormLabel>
               <RadioGroup
                 defaultValue="admin"
                 className="flex pt-2 space-x-4"
@@ -133,7 +131,7 @@ export function LoginForm() {
                   <Label htmlFor="parent">Pais</Label>
                 </div>
               </RadioGroup>
-            </fieldset>
+            </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="animate-spin" />

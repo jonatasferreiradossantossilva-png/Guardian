@@ -10,7 +10,7 @@ export default function Home() {
         </div>
         <h1 className="text-4xl font-bold text-foreground">Rota Segura</h1>
         <p className="max-w-md text-muted-foreground">
-          Acesse sua conta para gerenciar o transporte escolar com segurança e eficiência.
+          Acesse sua conta para gerenciar o transporte escolar. Para simular o acesso, selecione um perfil e clique no botão para entrar.
         </p>
       </div>
       <LoginForm />
