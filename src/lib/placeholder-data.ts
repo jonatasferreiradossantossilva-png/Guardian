@@ -10,14 +10,6 @@ export type Incident = {
   reporter: string;
 };
 
-export type DriverStatus = {
-  id: string;
-  name: string;
-  status: 'Online' | 'Offline' | 'Em Rota';
-  vehicle: string;
-  avatarUrl: string;
-};
-
 export type OverviewStat = {
   title: string;
   value: string;
@@ -93,29 +85,5 @@ export const incidents: Incident[] = [
     location: { lat: -23.5869, lng: -46.6823 },
     description: 'Semáforo com defeito na Av. Brigadeiro Faria Lima. Trânsito lento mas fluindo.',
     reporter: 'Mariana Costa',
-  },
-];
-
-export const driverStatuses: DriverStatus[] = [
-  {
-    id: 'DRV-01',
-    name: 'João Almeida',
-    status: 'Em Rota',
-    vehicle: 'Van-01 (ABC-1234)',
-    avatarUrl: 'https://picsum.photos/seed/user1/100/100',
-  },
-  {
-    id: 'DRV-02',
-    name: 'Fernanda Lima',
-    status: 'Online',
-    vehicle: 'Van-02 (DEF-5678)',
-    avatarUrl: 'https://picsum.photos/seed/user2/100/100',
-  },
-  {
-    id: 'DRV-03',
-    name: 'Ricardo Souza',
-    status: 'Offline',
-    vehicle: 'Van-03 (GHI-9012)',
-    avatarUrl: 'https://picsum.photos/seed/user3/100/100',
   },
 ];

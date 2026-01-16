@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -16,11 +16,11 @@ export function OverviewCards() {
   );
   const { data: students, isLoading: areStudentsLoading } = useCollection(studentsQuery);
 
-  const vehiclesQuery = useMemoFirebase(
-    () => (user && firestore ? query(collection(firestore, 'vehicles')) : null),
+  const activeVehiclesQuery = useMemoFirebase(
+    () => (user && firestore ? query(collection(firestore, 'vehicles'), where('active', '==', true)) : null),
     [user, firestore]
   );
-  const { data: vehicles, isLoading: areVehiclesLoading } = useCollection(vehiclesQuery);
+  const { data: activeVehicles, isLoading: areVehiclesLoading } = useCollection(activeVehiclesQuery);
 
   const pendingInvoicesQuery = useMemoFirebase(
     () => (user && firestore ? query(collection(firestore, 'invoices'), where('status', '==', 'pending')) : null),
@@ -38,10 +38,10 @@ export function OverviewCards() {
       changeText: "Total de alunos cadastrados"
     },
     {
-      title: "Total de Veículos",
-      value: isLoading ? "-" : vehicles?.length.toString() ?? "0",
+      title: "Veículos em Operação",
+      value: isLoading ? "-" : activeVehicles?.length.toString() ?? "0",
       icon: Truck,
-      changeText: "Total de veículos na frota"
+      changeText: "Veículos com status 'Ativo'"
     },
     {
       title: "Faturas Pendentes",
