@@ -1,7 +1,7 @@
 // @ts-nocheck
 'use client';
 
-import React, { createContext, useContext, useState, useMemo } from 'react';
+import React, { createContext, useContext, useState, useMemo, useCallback } from 'react';
 import { initialMockData } from '@/lib/mock-data';
 
 const MockDataContext = createContext(null);
@@ -10,7 +10,7 @@ const MockDataContext = createContext(null);
 export function MockDataProvider({ children }) {
   const [db, setDb] = useState(initialMockData);
 
-  const getCollection = (collectionName, filters) => {
+  const getCollection = useCallback((collectionName, filters) => {
     let results = db[collectionName] || [];
     if (filters) {
       results = results.filter(doc => {
@@ -27,19 +27,19 @@ export function MockDataProvider({ children }) {
       });
     }
     return results;
-  };
+  }, [db]);
 
-  const getDoc = (collectionName, docId) => {
+  const getDoc = useCallback((collectionName, docId) => {
     return (db[collectionName] || []).find(doc => doc.id === docId) || null;
-  }
+  }, [db]);
   
-  const getNestedDoc = (path) => {
+  const getNestedDoc = useCallback((path) => {
       const [collectionName, docId] = path.split('/');
       if (collectionName === 'locations' && docId) {
           return db.locations[docId] || null;
       }
       return null;
-  }
+  }, [db]);
 
   const addDoc = (collectionName, data) => {
     const newDoc = { ...data, id: `${collectionName}-${Date.now()}` };
@@ -87,7 +87,7 @@ export function MockDataProvider({ children }) {
     deleteDoc,
     getNestedDoc,
     setDoc,
-  }), [db]);
+  }), [db, getCollection, getDoc, getNestedDoc]);
 
   return (
     <MockDataContext.Provider value={value}>
@@ -107,24 +107,34 @@ export const useMockData = () => {
 
 // A hook that simulates useCollection
 export const useMockCollection = (collectionName, filters) => {
-    const { getCollection } = useMockData();
-    const data = getCollection(collectionName, filters);
+    const { getCollection, db } = useMockData();
+    // By depending on `db`, this hook will re-run when the database state changes,
+    // which simulates the real-time nature of onSnapshot.
+    const data = useMemo(() => getCollection(collectionName, filters), [db, collectionName, filters, getCollection]);
     return { data, isLoading: false, error: null };
 }
 
 // A hook that simulates useDoc
 export const useMockDoc = (collectionName, docId) => {
-    const { getDoc } = useMockData();
-    const data = docId ? getDoc(collectionName, docId) : null;
-    return { data, isLoading: false, error: null };
+    const { getDoc, db, getNestedDoc } = useMockData();
+    // By depending on `db`, this hook will re-run when the document data changes.
+    const data = useMemo(() => {
+      if (collectionName && docId) {
+        return getDoc(collectionName, docId);
+      }
+      return null;
+    }, [db, collectionName, docId, getDoc]);
+
+    return { data, isLoading: false, error: null, getNestedDoc, db };
 }
 
 // A hook that simulates useDoc for nested structures like locations
 export const useMockNestedDoc = (path) => {
-    const { getNestedDoc } = useMockData();
-    const data = path ? getNestedDoc(path) : null;
+    const { getNestedDoc, db } = useMockData();
+     const data = useMemo(() => path ? getNestedDoc(path) : null, [db, path, getNestedDoc]);
     return { data, isLoading: false, error: null };
 }
+
 
 // Mocks for non-blocking updates
 export const addDocumentNonBlocking = (collectionRef, data) => {

@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { useMockCollection, useMockData, useMockDoc, useMockNestedDoc } from "@/hooks/use-mock-data";
+import { useMockCollection, useMockData, useMockDoc } from "@/hooks/use-mock-data";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -75,10 +75,10 @@ const statusPinColor: Record<StudentStatus, string> = {
 
 export default function RoutePlanPage() {
   const { user, isUserLoading } = useUser(); // Still use for auth context
-  const { updateDoc, setDoc } = useMockData();
+  const { updateDoc, setDoc, getNestedDoc } = useMockData();
   const [shift, setShift] = useState<Shift>("Manhã");
   
-  const mockUserId = "user-motorista-1";
+  const mockUserId = "driver-1";
 
   // 1. Fetch current driver's active route
   const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", [
@@ -106,7 +106,7 @@ export default function RoutePlanPage() {
   const { data: school, isLoading: isSchoolLoading } = useMockDoc('schools', schoolId);
 
   // 5. Fetch driver's live location
-  const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDoc(`locations/${mockUserId}`);
+  const [driverLocation, setDriverLocation] = useState(getNestedDoc(`locations/${mockUserId}`));
 
   // Function to update a student's status
   const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
@@ -117,24 +117,30 @@ export default function RoutePlanPage() {
   useEffect(() => {
     if (!route || route.driverId !== mockUserId) return;
 
-    const isRouteActive = orderedStudents.some(s => s.status === 'a_bordo');
+    // A route is considered active if at least one student is on board.
+    const isRouteActive = students?.some(s => s.status === 'a_bordo');
     if (!isRouteActive) return;
 
     const intervalId = setInterval(() => {
       // Simulate location change
-      const newLat = (driverLocation?.latitude || -23.55052) + (Math.random() - 0.5) * 0.005;
-      const newLng = (driverLocation?.longitude || -46.633308) + (Math.random() - 0.5) * 0.005;
-      
-      setDoc(`locations/${mockUserId}`, {
-        latitude: newLat,
-        longitude: newLng,
-        timestamp: new Date().toISOString(),
+      setDriverLocation(currentLocation => {
+        const newLat = (currentLocation?.latitude || -23.55052) + (Math.random() - 0.5) * 0.001;
+        const newLng = (currentLocation?.longitude || -46.633308) + (Math.random() - 0.5) * 0.001;
+        
+        const newLocation = {
+            latitude: newLat,
+            longitude: newLng,
+            timestamp: new Date().toISOString(),
+        };
+
+        setDoc(`locations/${mockUserId}`, newLocation);
+        return newLocation;
       });
 
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId);
-  }, [route, orderedStudents, driverLocation, setDoc]);
+  }, [route, students, mockUserId, setDoc]);
 
   const isLoading = isUserLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
   const filteredStudents = orderedStudents.filter((student) => student.shift === shift);
@@ -204,7 +210,9 @@ export default function RoutePlanPage() {
                                     {/* Student Markers */}
                                     {filteredStudents.map(student => student.latitude && student.longitude && (
                                         <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                                            <div className="h-3 w-3 rounded-full" style={{ backgroundColor: statusPinColor[student.status] }} />
+                                            <div className="p-1 rounded-full border-2 border-white shadow" style={{ backgroundColor: statusPinColor[student.status] }}>
+                                                <User className="h-4 w-4 text-white" />
+                                            </div>
                                         </AdvancedMarker>
                                     ))}
 

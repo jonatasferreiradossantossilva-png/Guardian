@@ -1,12 +1,11 @@
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import { useUser } from "@/firebase";
 import {
   useMockCollection,
   useMockDoc,
-  useMockNestedDoc,
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
@@ -55,6 +54,24 @@ const statusBadgeVariant: Record<
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+// A simple hook to simulate onSnapshot for a single nested doc
+const useMockNestedDocSnapshot = (path) => {
+    const { getNestedDoc, db } = useMockDoc(); // Assuming useMockDoc provides access to the whole db
+    const [data, setData] = useState(() => path ? getNestedDoc(path) : null);
+
+    useEffect(() => {
+        // This effect simulates the real-time update. 
+        // In a real app, onSnapshot would handle this.
+        // Here, we just rely on the fact that db state changes will trigger re-renders in components using this hook.
+        if (path) {
+            setData(getNestedDoc(path));
+        }
+    }, [db, path, getNestedDoc]);
+
+    return { data, isLoading: false, error: null };
+}
+
+
 export default function ParentTrackingPage() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { toast } = useToast();
@@ -73,9 +90,11 @@ export default function ParentTrackingPage() {
   ] : []);
   const student = useMemo(() => (students && students.length > 0 ? students[0] : null), [students]);
   
+  // Step 3: Get the student's route
   const { data: route, isLoading: isRouteLoading } = useMockDoc("routes", student?.routeId);
 
-  const { data: location, isLoading: isLocationLoading } = useMockNestedDoc(route?.driverId ? `locations/${route.driverId}`: null);
+  // Step 4: Listen to the driver's location from that route
+  const { data: location, isLoading: isLocationLoading } = useMockNestedDocSnapshot(route?.driverId ? `locations/${route.driverId}`: null);
   
   const handleCommunicateAbsence = () => {
     toast({
@@ -166,7 +185,9 @@ export default function ParentTrackingPage() {
                           </AdvancedMarker>
                         ) : (
                            !isLocationLoading && 
-                           <div className="text-muted-foreground text-sm">Localização da van indisponível no momento.</div>
+                           <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
+                              Localização da van indisponível no momento.
+                           </div>
                         )}
                       </Map>
                     </APIProvider>
