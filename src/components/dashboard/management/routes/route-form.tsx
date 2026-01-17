@@ -35,6 +35,7 @@ import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users } from 'lucide-react';
+import { Card } from '@/components/ui/card';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
