@@ -74,11 +74,11 @@ export function DriverStatusList() {
                    <Button variant="ghost" size="icon" className="h-8 w-8">
                      <MapPin className="h-4 w-4" />
                    </Button>
-                   <Link href="/dashboard/messages" passHref>
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8">
-                        <a><MessageSquareWarning className="h-4 w-4" /></a>
-                    </Button>
-                   </Link>
+                   <Button asChild variant="ghost" size="icon" className="h-8 w-8">
+                    <Link href="/dashboard/messages">
+                      <MessageSquareWarning className="h-4 w-4" />
+                    </Link>
+                   </Button>
                 </div>
               </div>
             ))}
