@@ -69,7 +69,18 @@ const optimizeSchoolVanRouteFlow = ai.defineFlow(
   async input => {
     // For the simulation, add a delay to mimic processing time
     await new Promise(resolve => setTimeout(resolve, 2000));
-    const {output} = await prompt(input);
-    return output!;
+    
+    // Hardcoded simulation for presentation
+    const originalIds = input.students.map(s => s.id);
+    const optimizedIds = [...originalIds].reverse(); // Simple reversal for demonstration
+
+    const simulatedOutput: OptimizeSchoolVanRouteOutput = {
+        optimizedStudentIds: optimizedIds,
+        summary: "Rota reordenada para evitar o trânsito da manhã na região central, resultando em um percurso mais rápido.",
+        estimatedTimeMinutes: 28,
+        estimatedDistanceKm: 7.5
+    };
+    
+    return simulatedOutput;
   }
 );
