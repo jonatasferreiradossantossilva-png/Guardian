@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useUser } from "@/firebase";
 import {
@@ -9,7 +9,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -20,6 +20,9 @@ interface Student {
   name: string;
   status: "aguardando" | "a_bordo" | "desembarcado" | "ausente";
   routeId?: string;
+  schoolId: string;
+  latitude: number;
+  longitude: number;
 }
 interface Parent {
     id: string;
@@ -28,6 +31,7 @@ interface Parent {
 interface Route {
   id: string;
   driverId: string;
+  studentIds: string[];
 }
 interface LocationUpdate {
   latitude: number;
@@ -56,13 +60,10 @@ const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 // A simple hook to simulate onSnapshot for a single nested doc
 const useMockNestedDocSnapshot = (path) => {
-    const { getNestedDoc, db } = useMockDoc(); // Assuming useMockDoc provides access to the whole db
+    const { getNestedDoc, db } = useMockDoc(); 
     const [data, setData] = useState(() => path ? getNestedDoc(path) : null);
 
     useEffect(() => {
-        // This effect simulates the real-time update. 
-        // In a real app, onSnapshot would handle this.
-        // Here, we just rely on the fact that db state changes will trigger re-renders in components using this hook.
         if (path) {
             setData(getNestedDoc(path));
         }
@@ -71,30 +72,101 @@ const useMockNestedDocSnapshot = (path) => {
     return { data, isLoading: false, error: null };
 }
 
+// Function to interpolate points on a straight line
+const interpolate = (start, end, factor) => {
+    return start + (end - start) * factor;
+};
 
 export default function ParentTrackingPage() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { toast } = useToast();
+  const simulationTimer = useRef(null);
+  const [simulatedLocation, setSimulatedLocation] = useState(null);
 
   const mockUserId = "user-pai-1";
 
-  // Step 1: Find the parent document linked to the logged-in user
   const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", [
     { field: "userId", op: "==", value: mockUserId },
   ]);
   const parent = useMemo(() => (parents && parents.length > 0 ? parents[0] : null), [parents]);
 
-  // Step 2: Find the student(s) linked to that parent
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", parent ? [
     { field: "parentId", op: "==", value: parent.id },
   ] : []);
   const student = useMemo(() => (students && students.length > 0 ? students[0] : null), [students]);
   
-  // Step 3: Get the student's route
   const { data: route, isLoading: isRouteLoading } = useMockDoc("routes", student?.routeId);
 
-  // Step 4: Listen to the driver's location from that route
-  const { data: location, isLoading: isLocationLoading } = useMockNestedDocSnapshot(route?.driverId ? `locations/${route.driverId}`: null);
+  // Real location from DB
+  const { data: realLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(route?.driverId ? `locations/${route.driverId}`: null);
+
+  const { data: school } = useMockDoc('schools', student?.schoolId);
+  const { data: allStudents } = useMockCollection('students');
+  const allStudentsMap = useMemo(() => new Map(allStudents?.map(s => [s.id, s])), [allStudents]);
+
+
+  // Simulation Logic Effect
+  useEffect(() => {
+    const startSimulation = () => {
+        if (!route || !allStudentsMap.size || !school || !student) return;
+
+        let lastKnownPosition = realLocation ? { lat: realLocation.latitude, lng: realLocation.longitude } : null;
+
+        // Find next stop
+        const currentStopIndex = route.studentIds.findIndex(id => id === student.id);
+        const nextStopId = route.studentIds[currentStopIndex + 1] || school.id;
+        const nextStop = nextStopId === school.id ? school : allStudentsMap.get(nextStopId);
+        
+        if (!nextStop) return;
+
+        const endPoint = { lat: nextStop.latitude, lng: nextStop.longitude };
+        
+        // If there's no driver location, start simulation from student's home
+        if(!lastKnownPosition) {
+            lastKnownPosition = { lat: student.latitude, lng: student.longitude };
+        }
+        
+        const startPoint = lastKnownPosition;
+        let step = 0;
+        const totalSteps = 20; // 5s * 20 = 100s to reach next stop
+
+        simulationTimer.current = setInterval(() => {
+            step++;
+            if (step > totalSteps) {
+                clearInterval(simulationTimer.current);
+                return;
+            }
+            const factor = step / totalSteps;
+            const newLat = interpolate(startPoint.lat, endPoint.lat, factor);
+            const newLng = interpolate(startPoint.lng, endPoint.lng, factor);
+            setSimulatedLocation({ latitude: newLat, longitude: newLng });
+        }, 5000);
+    };
+
+    const fallbackTimeout = setTimeout(() => {
+        // If after 3 seconds we have no real location, but we have a route, start simulation
+        if (!realLocation && route) {
+            startSimulation();
+        }
+    }, 3000);
+
+    // If real location appears, stop simulation
+    if (realLocation && simulationTimer.current) {
+        clearInterval(simulationTimer.current);
+        setSimulatedLocation(null);
+    }
+    
+    // Cleanup
+    return () => {
+        clearTimeout(fallbackTimeout);
+        if (simulationTimer.current) {
+            clearInterval(simulationTimer.current);
+        }
+    };
+
+  }, [realLocation, route, allStudentsMap, school, student]);
+
+  const displayLocation = realLocation || simulatedLocation;
   
   const handleCommunicateAbsence = () => {
     toast({
@@ -104,7 +176,6 @@ export default function ParentTrackingPage() {
   };
 
   const isLoading = isAuthLoading || areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading;
-  
   const studentStatus = student?.status || 'aguardando';
 
   return (
@@ -155,7 +226,7 @@ export default function ParentTrackingPage() {
             <CardContent className="space-y-6">
               <div>
                 <h3 className="font-semibold flex items-center gap-2 mb-2">
-                  <MapPin /> Localização da Van
+                  <MapPin /> Localização da Van {simulatedLocation && <Badge variant="outline">Simulação</Badge>}
                 </h3>
                 <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center overflow-hidden">
                   {!API_KEY ? (
@@ -168,16 +239,16 @@ export default function ParentTrackingPage() {
                   ) : (
                     <APIProvider apiKey={API_KEY}>
                       <Map
-                        center={location ? { lat: location.latitude, lng: location.longitude } : { lat: -23.55052, lng: -46.633308 }}
-                        zoom={location ? 15 : 12}
+                        center={displayLocation ? { lat: displayLocation.latitude, lng: displayLocation.longitude } : { lat: -23.55052, lng: -46.633308 }}
+                        zoom={displayLocation ? 15 : 12}
                         mapId="rota_segura_parent_map"
                         disableDefaultUI={true}
                         gestureHandling={'greedy'}
                         className="w-full h-full"
                       >
-                        {location ? (
+                        {displayLocation ? (
                           <AdvancedMarker
-                            position={{ lat: location.latitude, lng: location.longitude }}
+                            position={{ lat: displayLocation.latitude, lng: displayLocation.longitude }}
                           >
                              <div className="p-1 bg-primary rounded-full shadow-lg">
                                 <Bus className="h-6 w-6 text-primary-foreground" />
@@ -186,9 +257,19 @@ export default function ParentTrackingPage() {
                         ) : (
                            !isLocationLoading && 
                            <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
-                              Localização da van indisponível no momento.
+                              Aguardando localização da van...
                            </div>
                         )}
+                        {student && <AdvancedMarker position={{lat: student.latitude, lng: student.longitude}} title={student.name}>
+                             <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
+                                <User className="h-4 w-4 text-white" />
+                             </div>
+                        </AdvancedMarker>}
+                         {school && <AdvancedMarker position={{lat: school.latitude, lng: school.longitude}} title={school.name}>
+                             <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+                                <School className="h-5 w-5 text-white" />
+                             </div>
+                        </AdvancedMarker>}
                       </Map>
                     </APIProvider>
                   )}

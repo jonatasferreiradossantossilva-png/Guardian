@@ -32,6 +32,7 @@ import {
   LogOut,
   GraduationCap,
   ClipboardCheck,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -124,6 +125,18 @@ export function MainSidebar() {
                 </SidebarMenu>
               </CollapsibleContent>
             </Collapsible>
+          </SidebarMenuItem>
+
+           <SidebarMenuItem>
+            <Link href="/dashboard/optimizer" passHref>
+              <SidebarMenuButton
+                isActive={isActive("/dashboard/optimizer")}
+                tooltip="Otimizador de Rotas (IA)"
+              >
+                <Sparkles />
+                <span>Otimizador (IA)</span>
+              </SidebarMenuButton>
+            </Link>
           </SidebarMenuItem>
 
           <SidebarMenuItem>
