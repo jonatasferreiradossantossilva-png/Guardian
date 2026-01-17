@@ -17,7 +17,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
-import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
+import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
 import { useMockCollection, useMockData, useMockDoc } from "@/hooks/use-mock-data";
 
 
@@ -192,7 +192,7 @@ export default function RoutePlanPage() {
                             </div>
                         ) : (
                             <APIProvider apiKey={API_KEY}>
-                                <Map
+                                <GoogleMap
                                     center={mapCenter}
                                     zoom={14}
                                     mapId="rota_segura_driver_map"
@@ -222,7 +222,7 @@ export default function RoutePlanPage() {
                                             <Bus className="h-6 w-6 text-white" />
                                          </div>
                                     </AdvancedMarker>}
-                                </Map>
+                                </GoogleMap>
                             </APIProvider>
                         )}
                     </div>

@@ -2,7 +2,7 @@
 
 import {
   APIProvider,
-  Map,
+  Map as GoogleMap,
   AdvancedMarker,
   Pin,
   InfoWindow,
@@ -43,7 +43,7 @@ export function IncidentMap({ incidents }: { incidents: Incident[] }) {
 
   return (
     <APIProvider apiKey={API_KEY}>
-      <Map
+      <GoogleMap
         defaultCenter={position}
         defaultZoom={12}
         mapId="rota_segura_map"
@@ -77,7 +77,7 @@ export function IncidentMap({ incidents }: { incidents: Incident[] }) {
             </div>
           </InfoWindow>
         )}
-      </Map>
+      </GoogleMap>
     </APIProvider>
   );
 }

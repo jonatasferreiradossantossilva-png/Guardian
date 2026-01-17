@@ -9,7 +9,7 @@ import {
   useMockData,
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
-import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
+import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
 import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -241,7 +241,7 @@ export default function ParentTrackingPage() {
                      </div>
                   ) : (
                     <APIProvider apiKey={API_KEY}>
-                      <Map
+                      <GoogleMap
                         center={displayLocation ? { lat: displayLocation.latitude, lng: displayLocation.longitude } : { lat: -23.55052, lng: -46.633308 }}
                         zoom={displayLocation ? 15 : 12}
                         mapId="rota_segura_parent_map"
@@ -273,7 +273,7 @@ export default function ParentTrackingPage() {
                                 <School className="h-5 w-5 text-white" />
                              </div>
                         </AdvancedMarker>}
-                      </Map>
+                      </GoogleMap>
                     </APIProvider>
                   )}
                 </div>
