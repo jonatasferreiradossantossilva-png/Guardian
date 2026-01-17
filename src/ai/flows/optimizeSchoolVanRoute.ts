@@ -17,14 +17,14 @@ const StudentStopSchema = z.object({
   address: z.string(),
 });
 
-export const OptimizeSchoolVanRouteInputSchema = z.object({
+const OptimizeSchoolVanRouteInputSchema = z.object({
   students: z.array(StudentStopSchema).describe("List of students with their addresses to be included in the route."),
   schoolAddress: z.string().describe("The address of the school, which is the final destination."),
   context: z.string().optional().describe("Additional context for the AI to consider, like traffic conditions or road closures."),
 });
 export type OptimizeSchoolVanRouteInput = z.infer<typeof OptimizeSchoolVanRouteInputSchema>;
 
-export const OptimizeSchoolVanRouteOutputSchema = z.object({
+const OptimizeSchoolVanRouteOutputSchema = z.object({
   optimizedStudentIds: z.array(z.string()).describe('An ordered list of student IDs representing the most efficient route.'),
   summary: z.string().describe('A summary of the optimization, explaining the benefits (e.g., time/distance saved).'),
   estimatedTimeMinutes: z.number().describe('The estimated total time for the optimized route in minutes.'),
