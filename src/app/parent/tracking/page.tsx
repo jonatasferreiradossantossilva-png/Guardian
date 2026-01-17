@@ -6,6 +6,7 @@ import { useUser } from "@/firebase";
 import {
   useMockCollection,
   useMockDoc,
+  useMockData,
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map, AdvancedMarker } from "@vis.gl/react-google-maps";
@@ -60,12 +61,14 @@ const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 // A simple hook to simulate onSnapshot for a single nested doc
 const useMockNestedDocSnapshot = (path) => {
-    const { getNestedDoc, db } = useMockDoc(); 
+    const { getNestedDoc, db } = useMockData();
     const [data, setData] = useState(() => path ? getNestedDoc(path) : null);
 
     useEffect(() => {
         if (path) {
             setData(getNestedDoc(path));
+        } else {
+            setData(null);
         }
     }, [db, path, getNestedDoc]);
 
