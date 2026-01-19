@@ -1,9 +1,8 @@
-// This is a new file
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useMockCollection } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -13,49 +12,84 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function DriverMessagesPage() {
   const { user } = useUser();
-  const { data: drivers } = useMockCollection('drivers', user ? [{ field: 'userId', op: '==', value: user.uid }] : []);
-  const driver = useMemo(() => drivers?.[0], [drivers]);
   
-  const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
+  // Memoize filters to prevent re-renders
+  const driverFilter = useMemo(() => (user ? [{ field: 'userId', op: '==', value: user.uid }] : undefined), [user]);
+  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', driverFilter);
+  const driver = useMemo(() => drivers?.[0], [drivers]);
+
+  // Find active route for this driver
+  const activeRouteFilter = useMemo(() => (driver ? [
+      { field: 'driverId', op: '==', value: driver.id },
+      { field: 'active', op: '==', value: true }
+  ] : undefined), [driver]);
+  const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes', activeRouteFilter);
+  const activeRoute = useMemo(() => routes?.[0], [routes]);
+
+  // Get students on that route
+  const studentsOnRouteFilter = useMemo(() => (activeRoute ? [
+      { field: 'id', op: 'in', value: activeRoute.studentIds }
+  ] : undefined), [activeRoute]);
+  const { data: studentsOnRoute, isLoading: areStudentsLoading } = useMockCollection('students', studentsOnRouteFilter);
+  
+  const { data: allParents, isLoading: areParentsLoading } = useMockCollection('parents');
   const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
   const { data: predefinedMessages } = useMockCollection('predefined_messages');
 
-  const [selectedParentId, setSelectedParentId] = useState(null);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [currentMessage, setCurrentMessage] = useState('');
 
+  // SIMPLIFIED LOGIC: Show only parents of students on the current active route
   const relevantParents = useMemo(() => {
-    if (!messages || !parents || !driver) return [];
-    const parentIds = new Set(
-        messages.filter(m => m.recipientId === driver.id || m.senderId === driver.id)
-                .map(m => m.senderId === driver.id ? m.recipientId : m.senderId)
-    );
-    return parents.filter(p => parentIds.has(p.id));
-  }, [messages, parents, driver]);
+    if (!studentsOnRoute || !allParents) return [];
+    const parentIdsOnRoute = new Set(studentsOnRoute.map(s => s.parentId));
+    return allParents.filter(p => parentIdsOnRoute.has(p.id));
+  }, [studentsOnRoute, allParents]);
   
-
   const chatMessages = useMemo(() => {
     if (!selectedParentId || !messages || !driver) return [];
-    return messages.filter(m => (m.senderId === selectedParentId && m.recipientId === driver.id) || (m.senderId === driver.id && m.recipientId === selectedParentId))
-      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
+    return messages
+      .filter(m => (m.senderId === selectedParentId && m.recipientId === driver.id) || (m.senderId === driver.id && m.recipientId === selectedParentId))
+      .sort((a, b) => new Date(a.timestamp).valueOf() - new Date(b.timestamp).valueOf());
   }, [messages, selectedParentId, driver]);
   
   const driverPredefinedMessages = useMemo(() => {
       return predefinedMessages?.filter(pm => pm.for === 'driver' || pm.for === 'all') || [];
   }, [predefinedMessages]);
 
-  const handleSendMessage = (text) => {
+  const handleSendMessage = (text: string) => {
     if (!text.trim() || !selectedParentId) return;
     console.log(`Message to ${selectedParentId}: ${text}`);
     setCurrentMessage('');
-    // Mock: Add message to db state
+    // Mock: In a real app, this would add a new message to the 'messages' collection
   };
   
-  const isLoading = areParentsLoading || areMessagesLoading;
+  const isLoading = areDriversLoading || areRoutesLoading || areStudentsLoading || areParentsLoading || areMessagesLoading;
+
+  // UX Improvement: Select the first parent by default
+  useEffect(() => {
+    if (!selectedParentId && relevantParents.length > 0) {
+      setSelectedParentId(relevantParents[0].id);
+    }
+  }, [relevantParents, selectedParentId]);
+
+  if (isLoading) {
+    return (
+        <div className="flex items-center justify-center h-screen">
+            <Loader2 className="animate-spin h-8 w-8 text-primary" /> <span className="ml-2 text-muted-foreground">Carregando mensagens...</span>
+        </div>
+    );
+  }
 
   if (!driver) {
       return (
-          <div className="flex items-center justify-center h-screen">
-              <Loader2 className="animate-spin" /> <span className="ml-2">Carregando dados do motorista...</span>
+          <div className="flex flex-col items-center justify-center h-screen text-center p-4">
+              <User className="h-12 w-12 text-muted-foreground mb-4"/>
+              <h2 className="text-xl font-semibold">Perfil de Motorista não Encontrado</h2>
+              <p className="text-muted-foreground max-w-md">Não foi possível carregar os dados. Verifique se seu usuário está associado a um perfil de motorista ativo.</p>
+              <Button asChild variant="outline" className="mt-4">
+                <Link href="/driver/route-plan">Voltar para o Plano de Rota</Link>
+              </Button>
           </div>
       );
   }
@@ -73,12 +107,11 @@ export default function DriverMessagesPage() {
           {/* Parent List */}
           <div className="flex flex-col border-r">
             <CardHeader>
-              <CardTitle>Conversas com Pais</CardTitle>
+              <CardTitle className="text-base">Pais na sua rota ativa</CardTitle>
             </CardHeader>
             <ScrollArea className="flex-1">
               <CardContent className="p-2">
-                {isLoading && <Loader2 className="animate-spin mx-auto mt-10" />}
-                {!isLoading && relevantParents?.map(parent => (
+                {relevantParents.map(parent => (
                   <button
                     key={parent.id}
                     onClick={() => setSelectedParentId(parent.id)}
@@ -88,10 +121,10 @@ export default function DriverMessagesPage() {
                       <AvatarImage src={`https://picsum.photos/seed/parent${parent.id}/100/100`} alt={parent.name} />
                       <AvatarFallback>{parent.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <span className="font-medium">{parent.name}</span>
+                    <span className="font-medium text-sm">{parent.name}</span>
                   </button>
                 ))}
-                 {!isLoading && relevantParents.length === 0 && <p className="p-4 text-sm text-muted-foreground text-center">Nenhuma conversa encontrada.</p>}
+                 {relevantParents.length === 0 && <p className="p-4 text-sm text-muted-foreground text-center">Nenhum pai encontrado na sua rota ativa.</p>}
               </CardContent>
             </ScrollArea>
           </div>
@@ -103,7 +136,7 @@ export default function DriverMessagesPage() {
                 <CardHeader className="border-b">
                   <CardTitle className="flex items-center gap-3">
                     <User />
-                    {parents?.find(p => p.id === selectedParentId)?.name || 'Selecione uma conversa'}
+                    {allParents?.find(p => p.id === selectedParentId)?.name || 'Selecione uma conversa'}
                   </CardTitle>
                 </CardHeader>
                 <ScrollArea className="flex-1 p-4 bg-secondary/20">
@@ -123,26 +156,27 @@ export default function DriverMessagesPage() {
                     ))}
                   </div>
                 </ScrollArea>
-                 <div className="p-2 border-t flex flex-wrap gap-2">
+                 <div className="p-2 border-t flex flex-wrap gap-2 bg-background">
                     {driverPredefinedMessages.map(pm => (
                         <Button key={pm.id} variant="outline" size="sm" onClick={() => handleSendMessage(pm.text)}>
                             {pm.text}
                         </Button>
                     ))}
                 </div>
-                <CardFooter className="p-4 border-t">
+                <CardFooter className="p-4 border-t bg-background">
                   <div className="relative w-full">
                     <Input
                       placeholder="Digite sua mensagem..."
                       value={currentMessage}
                       onChange={e => setCurrentMessage(e.target.value)}
                       onKeyPress={e => e.key === 'Enter' && handleSendMessage(currentMessage)}
+                      disabled={!selectedParentId}
                     />
                     <Button
                       size="icon"
                       className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
                       onClick={() => handleSendMessage(currentMessage)}
-                      disabled={!currentMessage.trim()}
+                      disabled={!currentMessage.trim() || !selectedParentId}
                     >
                       <Send />
                     </Button>
@@ -151,7 +185,7 @@ export default function DriverMessagesPage() {
               </>
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
-                <p>Selecione uma conversa para começar.</p>
+                <p>Nenhuma conversa para exibir.</p>
               </div>
             )}
           </div>
