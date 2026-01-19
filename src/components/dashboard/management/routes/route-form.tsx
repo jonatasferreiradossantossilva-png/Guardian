@@ -93,8 +93,7 @@ export function RouteForm({
         .filter(Boolean);
 
     const availableStudents = db.students.filter(s => {
-        const studentShift = s.shift === 'manha' ? 'Manhã' : 'Tarde';
-        const isSameShift = studentShift === shiftInForm;
+        const isSameShift = s.shift === shiftInForm;
         const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
         const isAlreadyInThisRoute = studentIdsInForm.includes(s.id);
         return isSameShift && !isInAnotherRoute && !isAlreadyInThisRoute;
