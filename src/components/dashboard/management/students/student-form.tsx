@@ -31,6 +31,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
+import { Copy } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -51,7 +52,17 @@ const formSchema = z.object({
 type StudentFormValues = z.infer<typeof formSchema>;
 
 type School = { id: string; name: string };
-type Parent = { id: string; name: string };
+type Parent = { 
+  id: string; 
+  name: string;
+  zipCode?: string;
+  street?: string;
+  number?: string;
+  complement?: string;
+  neighborhood?: string;
+  city?: string;
+  state?: string;
+};
 
 interface StudentFormProps {
   student?: { id: string } & Partial<StudentFormValues>;
@@ -109,6 +120,42 @@ export function StudentForm({
       form.reset(form.defaultValues);
     }
   }, [student, form]);
+  
+  const parentId = form.watch('parentId');
+
+  const handleCopyAddress = () => {
+    if (!parentId) {
+      toast({
+        title: 'Selecione um responsável',
+        description:
+          'Você precisa selecionar um responsável primeiro para copiar o endereço.',
+        variant: 'destructive',
+      });
+      return;
+    }
+    const selectedParent = parents.find((p) => p.id === parentId);
+    if (selectedParent) {
+      form.setValue('zipCode', selectedParent.zipCode || '');
+      form.setValue('street', selectedParent.street || '');
+      form.setValue('number', selectedParent.number || '');
+      form.setValue('complement', selectedParent.complement || '');
+      form.setValue('neighborhood', selectedParent.neighborhood || '');
+      form.setValue('city', selectedParent.city || '');
+      form.setValue('state', selectedParent.state || '');
+      toast({
+        title: 'Endereço copiado!',
+        description: `O endereço de ${selectedParent.name} foi preenchido.`,
+      });
+    } else {
+      toast({
+        title: 'Responsável não encontrado',
+        description:
+          'Não foi possível encontrar os dados do responsável selecionado.',
+        variant: 'destructive',
+      });
+    }
+  };
+
 
   const onSubmit = (data: StudentFormValues) => {
     const finalData = {
@@ -156,8 +203,40 @@ export function StudentForm({
               </FormItem>
             )}
           />
+
+           <FormField
+            control={form.control}
+            name="parentId"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Responsável</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um responsável" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {parents.map(parent => (
+                      <SelectItem key={parent.id} value={parent.id}>
+                        {parent.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="border-t pt-4 mt-4">
-             <p className="text-sm font-medium mb-2">Endereço</p>
+             <div className="flex justify-between items-center mb-2">
+                <p className="text-sm font-medium">Endereço do Aluno</p>
+                <Button type="button" variant="outline" size="sm" onClick={handleCopyAddress} disabled={!parentId}>
+                    <Copy className="mr-2 h-3 w-3"/>
+                    Usar endereço do responsável
+                </Button>
+            </div>
              <div className="grid grid-cols-3 gap-4">
                  <FormField
                     control={form.control} name="zipCode"
@@ -288,30 +367,7 @@ export function StudentForm({
               </FormItem>
             )}
           />
-          <FormField
-            control={form.control}
-            name="parentId"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Responsável</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione um responsável" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {parents.map(parent => (
-                      <SelectItem key={parent.id} value={parent.id}>
-                        {parent.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          
           <FormField
             control={form.control}
             name="shift"
@@ -347,5 +403,3 @@ export function StudentForm({
     </DialogContent>
   );
 }
-
-    
