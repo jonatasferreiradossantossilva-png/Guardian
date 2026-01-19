@@ -157,12 +157,8 @@ export default function RoutePlanPage() {
 
   const isLoading = isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
   
-  // Derive shift from the active route
+  // Derive shift from the active route for display purposes
   const activeShift = useMemo(() => (route?.shift === 'manha' ? 'Manhã' : 'Tarde'), [route]);
-  
-  const filteredStudents = useMemo(() => {
-    return orderedStudents.filter((student) => student.shift === activeShift);
-  }, [orderedStudents, activeShift]);
   
   const mapCenter = useMemo(() => {
       if (driverLocation) return { lat: driverLocation.latitude, lng: driverLocation.longitude };
@@ -227,7 +223,7 @@ export default function RoutePlanPage() {
                                     </AdvancedMarker>}
                                     
                                     {/* Student Markers */}
-                                    {filteredStudents.map(student => student.latitude && student.longitude && (
+                                    {orderedStudents.map(student => student.latitude && student.longitude && (
                                         <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
                                             <div className="p-1 rounded-full border-2 border-white shadow" style={{ backgroundColor: statusPinColor[student.status] }}>
                                                 <User className="h-4 w-4 text-white" />
@@ -266,7 +262,7 @@ export default function RoutePlanPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
-                  {filteredStudents.map((student) => (
+                  {orderedStudents.map((student) => (
                     <div
                       key={student.id}
                       className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary"
@@ -299,9 +295,9 @@ export default function RoutePlanPage() {
                       </div>
                     </div>
                   ))}
-                   {filteredStudents.length === 0 && (
+                   {orderedStudents.length === 0 && (
                      <div className="text-center text-muted-foreground py-10">
-                        <p>Nenhum aluno para o turno da {activeShift.toLowerCase()}.</p>
+                        <p>Nenhum aluno para o turno da {activeShift?.toLowerCase()}.</p>
                     </div>
                    )}
                 </div>
