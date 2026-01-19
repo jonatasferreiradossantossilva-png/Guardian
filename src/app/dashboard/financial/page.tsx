@@ -167,7 +167,7 @@ export default function FinancialPage() {
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
                     <TableCell>{parentsMap.get(invoice.studentId) || 'Responsável não encontrado'}</TableCell>
-                    <TableCell>{format(new Date(invoice.dueDate), 'dd/MM/yyyy')}</TableCell>
+                    <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
                     <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                     <TableCell>
                         <Badge variant={statusVariantMap[invoice.status]}>

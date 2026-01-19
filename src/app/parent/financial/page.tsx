@@ -16,7 +16,6 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
 
 type Invoice = {
   id: string;
@@ -100,7 +99,7 @@ export default function ParentFinancialPage() {
                     sortedInvoices.map((invoice) => (
                       <TableRow key={invoice.id}>
                         <TableCell>Mensalidade Transporte</TableCell>
-                        <TableCell>{format(new Date(invoice.dueDate), 'dd/MM/yyyy')}</TableCell>
+                        <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
                         <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                         <TableCell>
                           <Badge variant={statusVariantMap[invoice.status]}>
