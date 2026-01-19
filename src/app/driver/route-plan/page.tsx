@@ -76,7 +76,6 @@ const statusPinColor: Record<StudentStatus, string> = {
 export default function RoutePlanPage() {
   const { user, isUserLoading } = useUser();
   const { updateDoc, setDoc } = useMockData();
-  const [shift, setShift] = useState<Shift>("Manhã");
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -98,13 +97,6 @@ export default function RoutePlanPage() {
     { field: "active", op: "==", value: true },
   ] : []);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
-  
-  // Auto-select the shift based on the active route
-  useEffect(() => {
-    if (route?.shift) {
-      setShift(route.shift === 'manha' ? 'Manhã' : 'Tarde');
-    }
-  }, [route]);
 
   // 3. Fetch students for the current route
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route?.studentIds ? [
@@ -164,7 +156,13 @@ export default function RoutePlanPage() {
   }, [route, students, driverId, setDoc]);
 
   const isLoading = isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
-  const filteredStudents = orderedStudents.filter((student) => student.shift === shift);
+  
+  // Derive shift from the active route
+  const activeShift = useMemo(() => (route?.shift === 'manha' ? 'Manhã' : 'Tarde'), [route]);
+  
+  const filteredStudents = useMemo(() => {
+    return orderedStudents.filter((student) => student.shift === activeShift);
+  }, [orderedStudents, activeShift]);
   
   const mapCenter = useMemo(() => {
       if (driverLocation) return { lat: driverLocation.latitude, lng: driverLocation.longitude };
@@ -255,20 +253,18 @@ export default function RoutePlanPage() {
           <div className="lg:col-span-1">
              <Card>
               <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <List />
-                  Controle de Embarque
-                </CardTitle>
+                <div className="flex justify-between items-start">
+                    <CardTitle className="flex items-center gap-2">
+                        <List />
+                        Controle de Embarque
+                    </CardTitle>
+                    <Badge variant="outline">{activeShift}</Badge>
+                </div>
                 <p className="text-muted-foreground text-sm pt-2">
                   {route.name}
                 </p>
               </CardHeader>
               <CardContent>
-                <div className="flex items-center gap-2 mb-6">
-                    <Button onClick={() => setShift("Manhã")} variant={shift === 'Manhã' ? 'default' : 'outline'}>Manhã</Button>
-                    <Button onClick={() => setShift("Tarde")} variant={shift === 'Tarde' ? 'default' : 'outline'}>Tarde</Button>
-                </div>
-                
                 <div className="space-y-4">
                   {filteredStudents.map((student) => (
                     <div
@@ -305,7 +301,7 @@ export default function RoutePlanPage() {
                   ))}
                    {filteredStudents.length === 0 && (
                      <div className="text-center text-muted-foreground py-10">
-                        <p>Nenhum aluno para o turno da {shift.toLowerCase()}.</p>
+                        <p>Nenhum aluno para o turno da {activeShift.toLowerCase()}.</p>
                     </div>
                    )}
                 </div>

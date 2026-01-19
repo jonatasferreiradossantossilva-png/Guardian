@@ -48,7 +48,6 @@ const statusBadgeVariant: Record<
 export default function AssistantRoutePlanPage() {
   const { user, isUserLoading } = useUser();
   const { updateDoc } = useMockData();
-  const [shift, setShift] = useState<Shift>("Manhã");
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -62,14 +61,7 @@ export default function AssistantRoutePlanPage() {
       { field: 'active', op: '==', value: true }
   ] : []);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
-
-  // Auto-select the shift based on the active route
-  useEffect(() => {
-    if (route?.shift) {
-      setShift(route.shift === 'manha' ? 'Manhã' : 'Tarde');
-    }
-  }, [route]);
-
+  
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route ? [
       { field: 'id', op: 'in', value: route.studentIds }
   ] : []);
@@ -87,6 +79,14 @@ export default function AssistantRoutePlanPage() {
   };
   
   const isLoading = isUserLoading || isRouteLoading || areStudentsLoading;
+  
+  // Derive shift from the active route
+  const activeShift = useMemo(() => (route?.shift === 'manha' ? 'Manhã' : 'Tarde'), [route]);
+  
+  const filteredStudents = useMemo(() => {
+    if (!orderedStudents) return [];
+    return orderedStudents.filter((student) => student.shift === activeShift);
+  }, [orderedStudents, activeShift]);
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
@@ -99,20 +99,18 @@ export default function AssistantRoutePlanPage() {
         </div>
         <Card>
           <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <ClipboardCheck />
-              Controle de Embarque/Desembarque
-            </CardTitle>
+            <div className="flex justify-between items-start">
+              <CardTitle className="flex items-center gap-2">
+                <ClipboardCheck />
+                Controle de Embarque/Desembarque
+              </CardTitle>
+               {route && <Badge variant="outline">{activeShift}</Badge>}
+            </div>
             <p className="text-muted-foreground text-sm pt-2">
               {route ? route.name : "Carregando rota..."}
             </p>
           </CardHeader>
           <CardContent>
-            <div className="flex items-center gap-2 mb-6">
-                <Button onClick={() => setShift("Manhã")} variant={shift === 'Manhã' ? 'default' : 'outline'}>Manhã</Button>
-                <Button onClick={() => setShift("Tarde")} variant={shift === 'Tarde' ? 'default' : 'outline'}>Tarde</Button>
-            </div>
-            
             {isLoading && (
                  <div className="flex items-center justify-center h-40">
                     <Loader2 className="h-8 w-8 animate-spin text-primary" />
@@ -129,8 +127,7 @@ export default function AssistantRoutePlanPage() {
 
             {!isLoading && route && (
               <div className="space-y-4">
-                {orderedStudents
-                  .filter((student) => student.shift === shift)
+                {filteredStudents
                   .map((student) => (
                     <div
                       key={student.id}
@@ -184,9 +181,9 @@ export default function AssistantRoutePlanPage() {
                       </div>
                     </div>
                   ))}
-                   {orderedStudents.filter((student) => student.shift === shift).length === 0 && (
+                   {filteredStudents.length === 0 && (
                      <div className="text-center text-muted-foreground py-10">
-                        <p>Nenhum aluno para o turno da {shift.toLowerCase()}.</p>
+                        <p>Nenhum aluno para o turno da {activeShift.toLowerCase()}.</p>
                     </div>
                    )}
               </div>
