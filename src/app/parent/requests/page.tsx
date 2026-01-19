@@ -18,8 +18,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { TripRequestForm } from '@/components/parent/requests/request-form';
 import { Badge } from '@/components/ui/badge';
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 type TripRequest = {
   id: string;
@@ -153,7 +151,7 @@ export default function TripRequestsPage() {
                 {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
                   sortedRequests.map((request) => (
                     <TableRow key={request.id}>
-                      <TableCell>{format(new Date(request.date.replace(/-/g, '/')), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                      <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
                       <TableCell>{typeMap[request.type]}</TableCell>
                       <TableCell>{request.shift === 'manha' ? 'Manhã' : 'Tarde'}</TableCell>
                       <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>

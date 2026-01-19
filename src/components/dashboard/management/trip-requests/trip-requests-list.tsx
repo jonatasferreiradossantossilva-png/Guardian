@@ -39,8 +39,6 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { Badge } from "@/components/ui/badge";
-import { format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 type TripRequest = {
   id: string;
@@ -186,7 +184,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                         )}
                     </TableCell>
                     <TableCell>{parentsMap.get(request.parentUserId) || 'Responsável não encontrado'}</TableCell>
-                    <TableCell>{format(new Date(request.date.replace(/-/g, '/')), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
+                    <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
                     <TableCell>{typeMap[request.type]}</TableCell>
                     <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
                     <TableCell><Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge></TableCell>
@@ -232,7 +230,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
             <DialogHeader>
                 <DialogTitle>Atribuir Valor à Viagem Avulsa</DialogTitle>
                 <DialogDescription>
-                    Defina o custo para a solicitação de {studentsMap.get(priceDialogRequest?.studentId || '')} para o dia {priceDialogRequest?.date ? format(new Date(priceDialogRequest.date.replace(/-/g, '/')), "dd/MM/yyyy", { locale: ptBR }) : ''}. O responsável precisará aprovar este valor.
+                    Defina o custo para a solicitação de {studentsMap.get(priceDialogRequest?.studentId || '')} para o dia {priceDialogRequest?.date ? priceDialogRequest.date.split('-').reverse().join('/') : ''}. O responsável precisará aprovar este valor.
                 </DialogDescription>
             </DialogHeader>
             <div className="py-4">
