@@ -44,7 +44,9 @@ export function MockDataProvider({ children }) {
   }, [db]);
 
   const addDoc = (collectionName, data) => {
-    const newDoc = { ...data, id: `${collectionName.slice(0, 3)}-${Date.now()}` };
+    // Add a random component to ensure unique IDs even in rapid succession.
+    const newId = `${collectionName.slice(0, 3)}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    const newDoc = { ...data, id: newId };
     setDb(prevDb => ({
       ...prevDb,
       [collectionName]: [...(prevDb[collectionName] || []), newDoc],
