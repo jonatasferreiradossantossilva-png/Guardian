@@ -72,13 +72,13 @@ export function PredefinedMessageForm({ message, onFormSubmit }: PredefinedMessa
       updateDoc('predefined_messages', message.id, data);
       toast({
         title: 'Mensagem atualizada!',
-        description: 'A mensagem rápida foi atualizada.',
+        description: 'A mensagem predefinida foi atualizada.',
       });
     } else {
       addDoc('predefined_messages', data);
       toast({
         title: 'Mensagem adicionada!',
-        description: 'A nova mensagem rápida foi salva.',
+        description: 'A nova mensagem predefinida foi salva.',
       });
     }
     onFormSubmit();
@@ -96,7 +96,7 @@ export function PredefinedMessageForm({ message, onFormSubmit }: PredefinedMessa
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>{message ? 'Editar Mensagem Rápida' : 'Adicionar Mensagem Rápida'}</DialogTitle>
+        <DialogTitle>{message ? 'Editar Mensagem Predefinida' : 'Adicionar Mensagem Predefinida'}</DialogTitle>
         <DialogDescription>
           Crie ou edite uma mensagem para uso rápido nos chats.
         </DialogDescription>

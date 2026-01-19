@@ -80,7 +80,7 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
     deleteDoc('predefined_messages', selectedMessage.id);
     toast({
         title: "Mensagem deletada!",
-        description: `A mensagem rápida foi removida do sistema.`,
+        description: `A mensagem predefinida foi removida do sistema.`,
         variant: "destructive"
     });
     setIsDeleteDialogOpen(false);
@@ -96,7 +96,7 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
-          Gerenciar Mensagens Rápidas
+          Cadastro de Mensagens Predefinidas
         </h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
