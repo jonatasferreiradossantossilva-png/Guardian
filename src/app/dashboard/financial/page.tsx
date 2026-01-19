@@ -24,6 +24,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { format, startOfMonth, endOfMonth, set } from 'date-fns';
+import { cn } from '@/lib/utils';
 
 type Invoice = {
   id: string;
@@ -31,19 +32,21 @@ type Invoice = {
   parentUserId: string;
   amount: number;
   dueDate: string;
-  status: 'pending' | 'paid' | 'overdue';
+  status: 'pending' | 'paid' | 'overdue' | 'pagamento_em_analise';
 };
 
-const statusVariantMap: Record<Invoice['status'], 'secondary' | 'default' | 'destructive'> = {
+const statusVariantMap: Record<Invoice['status'], 'secondary' | 'default' | 'destructive' | 'outline'> = {
   pending: 'secondary',
   paid: 'default',
   overdue: 'destructive',
+  pagamento_em_analise: 'outline',
 };
 
 const statusTextMap: Record<Invoice['status'], string> = {
   pending: 'Pendente',
   paid: 'Pago',
   overdue: 'Vencida',
+  pagamento_em_analise: 'Pagto. em Análise',
 };
 
 export default function FinancialPage() {
@@ -73,7 +76,19 @@ export default function FinancialPage() {
 
   const sortedInvoices = useMemo(() => {
     if (!invoices) return [];
-    return [...invoices].sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+    const statusOrder: Record<Invoice['status'], number> = {
+      pagamento_em_analise: 1,
+      pending: 2,
+      overdue: 3,
+      paid: 4,
+    };
+    return [...invoices].sort((a, b) => {
+      const statusComparison = (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
+      if (statusComparison !== 0) {
+        return statusComparison;
+      }
+      return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+    });
   }, [invoices]);
 
   const handleGenerateInvoices = () => {
@@ -184,10 +199,10 @@ export default function FinancialPage() {
                   <TableRow key={invoice.id}>
                     <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
                     <TableCell>{parentsMap.get(invoice.studentId) || 'Responsável não encontrado'}</TableCell>
-                    <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
+                    <TableCell>{new Date(invoice.dueDate).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
                     <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                     <TableCell>
-                        <Badge variant={statusVariantMap[invoice.status]}>
+                        <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
                             {statusTextMap[invoice.status]}
                         </Badge>
                     </TableCell>
@@ -230,3 +245,5 @@ export default function FinancialPage() {
     </div>
   );
 }
+
+    

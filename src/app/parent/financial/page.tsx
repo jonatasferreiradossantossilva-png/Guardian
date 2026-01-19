@@ -23,19 +23,21 @@ type Invoice = {
   parentUserId: string;
   amount: number;
   dueDate: string;
-  status: 'pending' | 'paid' | 'overdue';
+  status: 'pending' | 'paid' | 'overdue' | 'pagamento_em_analise';
 };
 
-const statusVariantMap: Record<Invoice['status'], 'secondary' | 'default' | 'destructive'> = {
+const statusVariantMap: Record<Invoice['status'], 'secondary' | 'default' | 'destructive' | 'outline'> = {
   pending: 'secondary',
   paid: 'default',
   overdue: 'destructive',
+  pagamento_em_analise: 'outline',
 };
 
 const statusTextMap: Record<Invoice['status'], string> = {
   pending: 'Pendente',
   paid: 'Pago',
   overdue: 'Vencida',
+  pagamento_em_analise: 'Em Análise',
 };
 
 
@@ -51,11 +53,11 @@ export default function ParentFinancialPage() {
 
   const { data: invoices, isLoading } = useMockCollection('invoices', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
 
-  const handlePay = (invoiceId: string) => {
-    updateDoc('invoices', invoiceId, { status: 'paid' });
+  const handleInformPayment = (invoiceId: string) => {
+    updateDoc('invoices', invoiceId, { status: 'pagamento_em_analise' });
     toast({
-      title: 'Pagamento Simulado!',
-      description: 'A fatura foi marcada como paga.',
+      title: 'Pagamento Informado!',
+      description: 'Seu pagamento foi enviado para análise e será confirmado pelo gestor.',
     });
   };
 
@@ -99,7 +101,7 @@ export default function ParentFinancialPage() {
                     sortedInvoices.map((invoice) => (
                       <TableRow key={invoice.id}>
                         <TableCell>Mensalidade Transporte</TableCell>
-                        <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
+                        <TableCell>{new Date(invoice.dueDate).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
                         <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                         <TableCell>
                           <Badge variant={statusVariantMap[invoice.status]}>
@@ -107,8 +109,8 @@ export default function ParentFinancialPage() {
                           </Badge>
                         </TableCell>
                         <TableCell className="text-right">
-                          {invoice.status === 'pending' && (
-                            <Button size="sm" onClick={() => handlePay(invoice.id)}>Pagar</Button>
+                          {(invoice.status === 'pending' || invoice.status === 'overdue') && (
+                            <Button size="sm" onClick={() => handleInformPayment(invoice.id)}>Informar Pagamento</Button>
                           )}
                         </TableCell>
                       </TableRow>
@@ -128,3 +130,5 @@ export default function ParentFinancialPage() {
     </div>
   );
 }
+
+    
