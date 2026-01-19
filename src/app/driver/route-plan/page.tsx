@@ -13,12 +13,13 @@ import {
   AlertTriangle,
   MapPin,
   School as SchoolIcon,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { useMockCollection, useMockData, useMockDoc, useMockNestedDoc } from "@/hooks/use-mock-data";
+import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -129,12 +130,14 @@ export default function RoutePlanPage() {
   };
   
   const isRouteActive = useMemo(() => {
-    return students?.some(s => s.status === 'a_bordo');
+    if (!students) return false;
+    // Activate simulation if any student is 'a_bordo' or 'aguardando'
+    return students.some(s => s.status === 'a_bordo' || s.status === 'aguardando');
   }, [students]);
 
   // Effect to simulate GPS location updates while route is active
   useEffect(() => {
-    if (!route || !driverId || !isRouteActive) return;
+    if (!route || !driverId || !isRouteActive) return () => {};
 
     const intervalId = setInterval(() => {
       const currentLocation = locationRef.current || { latitude: -23.55052, longitude: -46.633308 };
@@ -171,9 +174,17 @@ export default function RoutePlanPage() {
     <div className="min-h-screen bg-background text-foreground p-4">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Plano de Rota do Motorista</h1>
-         <Link href="/" passHref>
-             <Button variant="outline">Voltar ao Login</Button>
-          </Link>
+         <div className="flex items-center gap-2">
+            <Button asChild variant="outline" size="icon">
+                <Link href="/driver/messages">
+                    <MessageSquare />
+                    <span className="sr-only">Mensagens</span>
+                </Link>
+            </Button>
+            <Link href="/" passHref>
+                <Button variant="outline">Voltar ao Login</Button>
+            </Link>
+        </div>
       </div>
 
        {isLoading && (
