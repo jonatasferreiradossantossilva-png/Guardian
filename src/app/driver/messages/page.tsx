@@ -2,7 +2,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,6 +12,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function DriverMessagesPage() {
   const { user } = useUser();
+  const { addDoc } = useMockData();
   
   // Memoize filters to prevent re-renders
   const driverFilter = useMemo(() => (user ? [{ field: 'userId', op: '==', value: user.uid }] : undefined), [user]);
@@ -58,10 +59,16 @@ export default function DriverMessagesPage() {
   }, [predefinedMessages]);
 
   const handleSendMessage = (text: string) => {
-    if (!text.trim() || !selectedParentId) return;
-    console.log(`Message to ${selectedParentId}: ${text}`);
+    if (!text.trim() || !selectedParentId || !driver) return;
+    
+    addDoc('messages', {
+        senderId: driver.id,
+        recipientId: selectedParentId,
+        text: text,
+        timestamp: new Date().toISOString()
+    });
+
     setCurrentMessage('');
-    // Mock: In a real app, this would add a new message to the 'messages' collection
   };
   
   const isLoading = areDriversLoading || areRoutesLoading || areStudentsLoading || areParentsLoading || areMessagesLoading;

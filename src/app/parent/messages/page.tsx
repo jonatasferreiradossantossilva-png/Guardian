@@ -1,9 +1,8 @@
-// This is a new file
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { useUser } from '@/firebase';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData, useMockDoc } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -12,8 +11,14 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function ParentMessagesPage() {
   const { user } = useUser();
+  const { addDoc } = useMockData();
   const { data: parents } = useMockCollection('parents', user ? [{ field: 'userId', op: '==', value: user.uid }] : []);
   const parent = useMemo(() => parents?.[0], [parents]);
+  
+  const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : []);
+  const student = useMemo(() => students?.[0], [students]);
+  const { data: route } = useMockDoc('routes', student?.routeId);
+  const driverId = useMemo(() => route?.driverId, [route]);
 
   const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
   const { data: predefinedMessages } = useMockCollection('predefined_messages');
@@ -21,22 +26,26 @@ export default function ParentMessagesPage() {
   const [currentMessage, setCurrentMessage] = useState('');
 
   const chatMessages = useMemo(() => {
-    if (!parent || !messages) return [];
-    // Assuming parent talks to admin or a specific driver, for this mock we'll use 'admin'
-    const recipientId = 'driver-1'; // This should be dynamic based on the student's route driver
-    return messages.filter(m => (m.senderId === parent.id && m.recipientId === recipientId) || (m.senderId === recipientId && m.recipientId === parent.id))
+    if (!parent || !messages || !driverId) return [];
+    return messages.filter(m => (m.senderId === parent.id && m.recipientId === driverId) || (m.senderId === driverId && m.recipientId === parent.id))
       .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  }, [messages, parent]);
+  }, [messages, parent, driverId]);
   
   const parentPredefinedMessages = useMemo(() => {
       return predefinedMessages?.filter(pm => pm.for === 'parent' || pm.for === 'all') || [];
   }, [predefinedMessages]);
 
-  const handleSendMessage = (text) => {
-    if (!text.trim()) return;
-    console.log(`Message from parent: ${text}`);
+  const handleSendMessage = (text: string) => {
+    if (!text.trim() || !parent || !driverId) return;
+    
+    addDoc('messages', {
+        senderId: parent.id,
+        recipientId: driverId,
+        text: text,
+        timestamp: new Date().toISOString()
+    });
+
     setCurrentMessage('');
-    // Mock: In a real app, you would add the message to the Firestore collection
   };
 
   if (!parent) {
