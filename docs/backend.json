@@ -516,7 +516,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Message",
       "type": "object",
-      "description": "Represents a message between users (parents, drivers, admins).",
+      "description": "Represents a message between users (parents, drivers, assistants, admins).",
       "properties": {
         "id": {
           "type": "string",
@@ -524,11 +524,11 @@
         },
         "senderId": {
           "type": "string",
-          "description": "Identifier of the sender (can be a Parent, Driver, or Admin user ID)."
+          "description": "Identifier of the sender (user ID from Firebase Auth)."
         },
         "recipientId": {
           "type": "string",
-          "description": "Identifier of the recipient (can be a Parent, Driver, or Admin user ID)."
+          "description": "Identifier of the recipient (user ID from Firebase Auth)."
         },
         "text": {
           "type": "string",
@@ -563,8 +563,8 @@
         },
         "for": {
           "type": "string",
-          "description": "Who can use this message ('parent', 'driver', 'all').",
-          "enum": ["parent", "driver", "all"]
+          "description": "Who can use this message ('parent', 'driver', 'assistant', 'all').",
+          "enum": ["parent", "driver", "auxiliar", "all"]
         }
       },
       "required": ["id", "text", "for"]

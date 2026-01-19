@@ -11,10 +11,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export default function MessagesPage() {
   const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
   const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
-  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers');
   const { addDoc } = useMockData();
 
-  const [selectedParentId, setSelectedParentId] = useState(null);
+  const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [currentMessage, setCurrentMessage] = useState('');
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
@@ -23,34 +22,33 @@ export default function MessagesPage() {
     setMockUserId(storedUserId);
   }, []);
   
-  // The admin user also has a driver profile, which is used for messaging.
-  const adminDriverProfile = useMemo(() => {
-    if (!mockUserId || !drivers) return null;
-    return drivers.find(d => d.userId === mockUserId);
-  }, [mockUserId, drivers]);
+  const selectedParent = useMemo(() => {
+    if (!selectedParentId || !parents) return null;
+    return parents.find(p => p.id === selectedParentId);
+  }, [parents, selectedParentId]);
 
 
   const parentMessages = useMemo(() => {
-    if (!selectedParentId || !messages) return [];
-
-    const adminId = adminDriverProfile?.id;
+    if (!selectedParent || !messages || !mockUserId) return [];
     
-    return messages.filter(m => {
-        const isAdminSender = m.senderId === adminId || m.senderId === 'admin';
-        const isAdminRecipient = m.recipientId === adminId || m.recipientId === 'admin';
-        const isParentSender = m.senderId === selectedParentId;
-        const isParentRecipient = m.recipientId === selectedParentId;
+    const parentUserId = selectedParent.userId;
 
-        return (isAdminSender && isParentRecipient) || (isParentSender && isAdminRecipient);
+    return messages.filter(m => {
+      const isUserSender = m.senderId === mockUserId;
+      const isUserRecipient = m.recipientId === mockUserId;
+      const isParentSender = m.senderId === parentUserId;
+      const isParentRecipient = m.recipientId === parentUserId;
+
+      return (isUserSender && isParentRecipient) || (isParentSender && isUserRecipient);
     }).sort((a, b) => new Date(a.timestamp).valueOf() - new Date(b.timestamp).valueOf());
-  }, [messages, selectedParentId, adminDriverProfile]);
+  }, [messages, selectedParent, mockUserId]);
 
   const handleSendMessage = () => {
-    if (!currentMessage.trim() || !selectedParentId || !adminDriverProfile) return;
+    if (!currentMessage.trim() || !selectedParent || !mockUserId) return;
     
     addDoc('messages', {
-        senderId: adminDriverProfile.id,
-        recipientId: selectedParentId,
+        senderId: mockUserId,
+        recipientId: selectedParent.userId,
         text: currentMessage,
         timestamp: new Date().toISOString()
     });
@@ -58,10 +56,10 @@ export default function MessagesPage() {
     setCurrentMessage('');
   };
   
-  const isLoading = areParentsLoading || areMessagesLoading || areDriversLoading;
+  const isLoading = areParentsLoading || areMessagesLoading;
   
   const isAdminMessage = (senderId: string) => {
-    return senderId === adminDriverProfile?.id || senderId === 'admin';
+    return senderId === mockUserId;
   };
 
   return (

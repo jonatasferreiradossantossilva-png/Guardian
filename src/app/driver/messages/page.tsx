@@ -21,6 +21,7 @@ export default function DriverMessagesPage() {
   const driverFilter = useMemo(() => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined), [mockUserId]);
   const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', driverFilter);
   const driver = useMemo(() => drivers?.[0], [drivers]);
+  const driverUserId = driver?.userId;
 
   const activeRouteFilter = useMemo(() => (driver ? [
       { field: 'driverId', op: '==', value: driver.id },
@@ -46,24 +47,27 @@ export default function DriverMessagesPage() {
     const parentIdsOnRoute = new Set(studentsOnRoute.map(s => s.parentId));
     return allParents.filter(p => parentIdsOnRoute.has(p.id));
   }, [studentsOnRoute, allParents]);
+
+  const selectedParent = useMemo(() => allParents?.find(p => p.id === selectedParentId), [allParents, selectedParentId]);
+  const selectedParentUserId = selectedParent?.userId;
   
   const chatMessages = useMemo(() => {
-    if (!selectedParentId || !messages || !driver) return [];
+    if (!selectedParentUserId || !messages || !driverUserId) return [];
     return messages
-      .filter(m => (m.senderId === selectedParentId && m.recipientId === driver.id) || (m.senderId === driver.id && m.recipientId === selectedParentId))
+      .filter(m => (m.senderId === selectedParentUserId && m.recipientId === driverUserId) || (m.senderId === driverUserId && m.recipientId === selectedParentUserId))
       .sort((a, b) => new Date(a.timestamp).valueOf() - new Date(b.timestamp).valueOf());
-  }, [messages, selectedParentId, driver]);
+  }, [messages, selectedParentUserId, driverUserId]);
   
   const driverPredefinedMessages = useMemo(() => {
       return predefinedMessages?.filter(pm => pm.for === 'driver' || pm.for === 'all') || [];
   }, [predefinedMessages]);
 
   const handleSendMessage = (text: string) => {
-    if (!text.trim() || !selectedParentId || !driver) return;
+    if (!text.trim() || !selectedParentUserId || !driverUserId) return;
     
     addDoc('messages', {
-        senderId: driver.id,
-        recipientId: selectedParentId,
+        senderId: driverUserId,
+        recipientId: selectedParentUserId,
         text: text,
         timestamp: new Date().toISOString()
     });
@@ -150,9 +154,9 @@ export default function DriverMessagesPage() {
                     {chatMessages.map(msg => (
                       <div
                         key={msg.id}
-                        className={`flex items-end gap-2 ${msg.senderId === driver.id ? 'justify-end' : ''}`}
+                        className={`flex items-end gap-2 ${msg.senderId === driverUserId ? 'justify-end' : ''}`}
                       >
-                        <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === driver.id ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
+                        <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === driverUserId ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                           <p className="text-sm">{msg.text}</p>
                            <p className="text-xs text-right mt-1 opacity-70">
                               {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

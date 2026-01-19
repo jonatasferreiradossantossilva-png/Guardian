@@ -12,6 +12,7 @@ import {
   Loader2,
   AlertTriangle,
   ClipboardCheck,
+  MessageSquare,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -83,19 +84,22 @@ export default function AssistantRoutePlanPage() {
   // Derive shift from the active route
   const activeShift = useMemo(() => (route?.shift === 'manha' ? 'Manhã' : 'Tarde'), [route]);
   
-  const filteredStudents = useMemo(() => {
-    if (!orderedStudents) return [];
-    return orderedStudents.filter((student) => student.shift === activeShift);
-  }, [orderedStudents, activeShift]);
-
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Painel do Auxiliar</h1>
-          <Link href="/" passHref>
-             <Button variant="outline">Voltar ao Login</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline">
+                <Link href="/assistant/messages">
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Mensagens
+                </Link>
+            </Button>
+            <Link href="/" passHref>
+                <Button variant="outline">Voltar ao Login</Button>
+            </Link>
+          </div>
         </div>
         <Card>
           <CardHeader>
@@ -127,7 +131,7 @@ export default function AssistantRoutePlanPage() {
 
             {!isLoading && route && (
               <div className="space-y-4">
-                {filteredStudents
+                {orderedStudents
                   .map((student) => (
                     <div
                       key={student.id}
@@ -181,7 +185,7 @@ export default function AssistantRoutePlanPage() {
                       </div>
                     </div>
                   ))}
-                   {filteredStudents.length === 0 && (
+                   {orderedStudents.length === 0 && (
                      <div className="text-center text-muted-foreground py-10">
                         <p>Nenhum aluno para o turno da {activeShift.toLowerCase()}.</p>
                     </div>

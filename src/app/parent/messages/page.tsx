@@ -19,11 +19,13 @@ export default function ParentMessagesPage() {
 
   const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : []);
   const parent = useMemo(() => parents?.[0], [parents]);
+  const parentUserId = parent?.userId;
   
   const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : []);
   const student = useMemo(() => students?.[0], [students]);
   const { data: route } = useMockDoc('routes', student?.routeId);
-  const driverId = useMemo(() => route?.driverId, [route]);
+  const { data: driver } = useMockDoc('drivers', route?.driverId);
+  const driverUserId = driver?.userId;
 
   const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
   const { data: predefinedMessages } = useMockCollection('predefined_messages');
@@ -31,21 +33,21 @@ export default function ParentMessagesPage() {
   const [currentMessage, setCurrentMessage] = useState('');
 
   const chatMessages = useMemo(() => {
-    if (!parent || !messages || !driverId) return [];
-    return messages.filter(m => (m.senderId === parent.id && m.recipientId === driverId) || (m.senderId === driverId && m.recipientId === parent.id))
-      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  }, [messages, parent, driverId]);
+    if (!parentUserId || !messages || !driverUserId) return [];
+    return messages.filter(m => (m.senderId === parentUserId && m.recipientId === driverUserId) || (m.senderId === driverUserId && m.recipientId === parentUserId))
+      .sort((a, b) => new Date(a.timestamp).valueOf() - new Date(b.timestamp).valueOf());
+  }, [messages, parentUserId, driverUserId]);
   
   const parentPredefinedMessages = useMemo(() => {
       return predefinedMessages?.filter(pm => pm.for === 'parent' || pm.for === 'all') || [];
   }, [predefinedMessages]);
 
   const handleSendMessage = (text: string) => {
-    if (!text.trim() || !parent || !driverId) return;
+    if (!text.trim() || !parentUserId || !driverUserId) return;
     
     addDoc('messages', {
-        senderId: parent.id,
-        recipientId: driverId,
+        senderId: parentUserId,
+        recipientId: driverUserId,
         text: text,
         timestamp: new Date().toISOString()
     });
@@ -79,9 +81,9 @@ export default function ParentMessagesPage() {
               {chatMessages.map(msg => (
                 <div
                   key={msg.id}
-                  className={`flex items-end gap-2 ${msg.senderId === parent.id ? 'justify-end' : ''}`}
+                  className={`flex items-end gap-2 ${msg.senderId === parentUserId ? 'justify-end' : ''}`}
                 >
-                  <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === parent.id ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
+                  <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === parentUserId ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                     <p className="text-sm">{msg.text}</p>
                      <p className="text-xs text-right mt-1 opacity-70">
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

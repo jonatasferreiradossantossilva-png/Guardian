@@ -8,14 +8,23 @@ export const initialMockData = {
         { id: "user-motorista-3", name: "Roberto Almeida", email: "roberto.almeida@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-motorista-4", name: "Juliano Castro", email: "juliano.castro@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-motorista-5", name: "Beatriz Santos", email: "beatriz.santos@rotasegura.com", profile: 'motorista', active: true },
+        { id: "user-motorista-6", name: "Paulo Lima", email: "paulo.lima@rotasegura.com", profile: 'motorista', active: true },
+        { id: "user-motorista-7", name: "Cristina Borges", email: "cristina.borges@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", profile: 'pai', active: true },
         { id: "user-pai-2", name: "João Costa", email: "joao.costa@email.com", profile: 'pai', active: true },
         { id: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", profile: 'pai', active: true },
         { id: "user-pai-4", name: "Marcos Ribeiro", email: "marcos.ribeiro@email.com", profile: 'pai', active: true },
         { id: "user-pai-5", name: "Sofia Oliveira", email: "sofia.oliveira@email.com", profile: 'pai', active: true },
         { id: "user-pai-6", name: "Lucas Martins", email: "lucas.martins@email.com", profile: 'pai', active: true },
+        { id: "user-pai-7", name: "Juliana Andrade", email: "juliana.andrade@email.com", profile: 'pai', active: true },
+        { id: "user-pai-8", name: "Fernando Barros", email: "fernando.barros@email.com", profile: 'pai', active: true },
+        { id: "user-pai-9", name: "Patrícia Rocha", email: "patricia.rocha@email.com", profile: 'pai', active: true },
+        { id: "user-pai-10", name: "Sérgio Mendes", email: "sergio.mendes@email.com", profile: 'pai', active: true },
+        { id: "user-pai-11", name: "Camila Ferreira", email: "camila.ferreira@email.com", profile: 'pai', active: true },
+        { id: "user-pai-12", name: "Rafael Gomes", email: "rafael.gomes@email.com", profile: 'pai', active: true },
         { id: "user-aux-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", profile: 'auxiliar', active: true },
         { id: "user-aux-2", name: "Ricardo Souza", email: "ricardo.souza@rotasegura.com", profile: 'auxiliar', active: true },
+        { id: "user-aux-3", name: "Vanessa Alves", email: "vanessa.alves@rotasegura.com", profile: 'auxiliar', active: true },
     ],
     schools: [
         {
@@ -149,6 +158,12 @@ export const initialMockData = {
             state: "SP",
             zipCode: "04795-100"
         },
+        { id: "parent-7", userId: "user-pai-7", name: "Juliana Andrade", email: "juliana.andrade@email.com", phone: "11944443333", cpf: "121.232.343-45", street: "Rua dos Pinheiros", number: "1200", neighborhood: "Pinheiros", city: "São Paulo", state: "SP" },
+        { id: "parent-8", userId: "user-pai-8", name: "Fernando Barros", email: "fernando.barros@email.com", phone: "11933332222", cpf: "232.343.454-56", street: "Rua Augusta", number: "2500", neighborhood: "Cerqueira César", city: "São Paulo", state: "SP" },
+        { id: "parent-9", userId: "user-pai-9", name: "Patrícia Rocha", email: "patricia.rocha@email.com", phone: "11922221111", cpf: "343.454.565-67", street: "Rua Oscar Freire", number: "900", neighborhood: "Jardins", city: "São Paulo", state: "SP" },
+        { id: "parent-10", userId: "user-pai-10", name: "Sérgio Mendes", email: "sergio.mendes@email.com", phone: "11911110000", cpf: "454.565.676-78", street: "Avenida Brigadeiro Faria Lima", number: "3000", neighborhood: "Itaim Bibi", city: "São Paulo", state: "SP" },
+        { id: "parent-11", userId: "user-pai-11", name: "Camila Ferreira", email: "camila.ferreira@email.com", phone: "11988887777", cpf: "565.676.787-89", street: "Rua Verbo Divino", number: "1400", neighborhood: "Chácara Santo Antônio", city: "São Paulo", state: "SP" },
+        { id: "parent-12", userId: "user-pai-12", name: "Rafael Gomes", email: "rafael.gomes@email.com", phone: "11999996666", cpf: "676.787.898-90", street: "Rua Américo Brasiliense", number: "2000", neighborhood: "Chácara Santo Antônio", city: "São Paulo", state: "SP" },
     ],
     vehicles: [
         { id: "vehicle-1", model: "Mercedes-Benz Sprinter", licensePlate: "BRA2E19", capacity: 15, active: true },
@@ -156,6 +171,8 @@ export const initialMockData = {
         { id: "vehicle-3", model: "Fiat Ducato", licensePlate: "XYZ7W89", capacity: 18, active: true },
         { id: "vehicle-4", model: "Iveco Daily", licensePlate: "QWE4R56", capacity: 20, active: false },
         { id: "vehicle-5", model: "Ford Transit", licensePlate: "TYU7I89", capacity: 16, active: true },
+        { id: "vehicle-6", model: "Citroën Jumper", licensePlate: "JKL5M67", capacity: 15, active: true },
+        { id: "vehicle-7", model: "Peugeot Boxer", licensePlate: "GHI8J90", capacity: 18, active: false },
     ],
     drivers: [
         {
@@ -243,6 +260,8 @@ export const initialMockData = {
             state: "SP",
             zipCode: "02011-000"
         },
+        { id: "driver-6", userId: "user-motorista-6", name: "Paulo Lima", status: "em_rota", vehicleId: "vehicle-6", cpf: "666.777.888-99" },
+        { id: "driver-7", userId: "user-motorista-7", name: "Cristina Borges", status: "inativo", vehicleId: "vehicle-7", cpf: "777.888.999-00" },
     ],
     students: [
         {
@@ -415,13 +434,22 @@ export const initialMockData = {
             state: "SP",
             zipCode: "05707-430"
         },
+        { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", routeId: "route-6", shift: "Manhã", status: "aguardando", latitude: -23.558, longitude: -46.662, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP" },
+        { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", routeId: "route-6", shift: "Manhã", status: "aguardando", latitude: -23.559, longitude: -46.663, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP" },
+        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", routeId: "route-7", shift: "Tarde", status: "aguardando", latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP" },
+        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", routeId: "route-7", shift: "Tarde", status: "aguardando", latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP" },
+        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", routeId: "route-8", shift: "Manhã", status: "aguardando", latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP" },
+        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", routeId: "route-8", shift: "Manhã", status: "aguardando", latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP" }
     ],
     routes: [
         { id: "route-1", name: "Rota Matinal - Zona Sul", driverId: "driver-1", assistantId: "user-aux-1", studentIds: ["student-1", "student-2"], active: true, shift: "manha" },
         { id: "route-2", name: "Rota Vespertina - Centro", driverId: "driver-2", assistantId: "user-aux-2", studentIds: ["student-3", "student-4"], active: true, shift: "tarde" },
-        { id: "route-3", name: "Rota Matinal - Zona Oeste", driverId: "driver-3", assistantId: "", studentIds: ["student-5", "student-7"], active: true, shift: "manha" },
+        { id: "route-3", name: "Rota Matinal - Zona Oeste", driverId: "driver-3", assistantId: "user-aux-3", studentIds: ["student-5", "student-7"], active: true, shift: "manha" },
         { id: "route-4", name: "Rota Vespertina - Eixo Jardins", driverId: "driver-4", assistantId: "", studentIds: ["student-6", "student-8"], active: false, shift: "tarde" },
         { id: "route-5", name: "Rota Matinal - Morumbi", driverId: "driver-5", assistantId: "user-aux-1", studentIds: ["student-9", "student-10"], active: true, shift: "manha" },
+        { id: "route-6", name: "Rota Matinal - Jardins", driverId: "driver-6", assistantId: "user-aux-2", studentIds: ["student-11", "student-12"], active: true, shift: "manha" },
+        { id: "route-7", name: "Rota Tarde - Itaim", driverId: "driver-7", assistantId: "", studentIds: ["student-13", "student-14"], active: true, shift: "tarde" },
+        { id: "route-8", name: "Rota Matinal - Santo Amaro", driverId: "driver-1", assistantId: "", studentIds: ["student-15", "student-16"], active: false, shift: "manha" },
     ],
     locations: {
       "driver-1": { latitude: -23.55052, longitude: -46.633308, timestamp: new Date().toISOString() },
@@ -429,6 +457,8 @@ export const initialMockData = {
       "driver-3": { latitude: -23.57, longitude: -46.69, timestamp: new Date().toISOString() },
       "driver-4": { latitude: -23.59, longitude: -46.67, timestamp: new Date().toISOString() },
       "driver-5": { latitude: -23.60, longitude: -46.71, timestamp: new Date().toISOString() },
+      "driver-6": { latitude: -23.555, longitude: -46.665, timestamp: new Date().toISOString() },
+      "driver-7": { latitude: -23.575, longitude: -46.685, timestamp: new Date().toISOString() },
     },
     invoices: [
         {id: "inv-001", studentId: "student-1", amount: 350.00, dueDate: "2024-08-10T00:00:00Z", status: "pending" },
@@ -441,11 +471,11 @@ export const initialMockData = {
         {id: "inv-008", studentId: "student-10", amount: 450.00, dueDate: "2024-08-10T00:00:00Z", status: "pending" },
     ],
     messages: [
-        { id: "msg-1", senderId: "parent-1", recipientId: "driver-1", text: "Bom dia! O Lucas já está esperando.", timestamp: "2024-07-30T08:00:00Z" },
-        { id: "msg-2", senderId: "driver-1", recipientId: "parent-1", text: "Bom dia! Chego em 5 minutos.", timestamp: "2024-07-30T08:01:00Z" },
-        { id: "msg-3", senderId: "parent-2", recipientId: "driver-1", text: "A Beatriz vai se atrasar um pouco hoje.", timestamp: "2024-07-30T08:05:00Z" },
-        { id: "msg-4", senderId: "admin", recipientId: "parent-3", text: "Olá Carla, notamos que a fatura deste mês está pendente. Algum problema?", timestamp: "2024-07-29T14:00:00Z" },
-        { id: "msg-5", senderId: "parent-3", recipientId: "admin", text: "Ah, olá! Vou verificar e efetuar o pagamento hoje mesmo. Obrigada por avisar!", timestamp: "2024-07-29T14:02:00Z" },
+        { id: "msg-1", senderId: "user-pai-1", recipientId: "user-admin-1", text: "Bom dia! O Lucas já está esperando.", timestamp: "2024-07-30T08:00:00Z" },
+        { id: "msg-2", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Bom dia! Chego em 5 minutos.", timestamp: "2024-07-30T08:01:00Z" },
+        { id: "msg-3", senderId: "user-pai-2", recipientId: "user-admin-1", text: "A Beatriz vai se atrasar um pouco hoje.", timestamp: "2024-07-30T08:05:00Z" },
+        { id: "msg-4", senderId: "user-admin-1", recipientId: "user-pai-3", text: "Olá Carla, notamos que a fatura deste mês está pendente. Algum problema?", timestamp: "2024-07-29T14:00:00Z" },
+        { id: "msg-5", senderId: "user-pai-3", recipientId: "user-admin-1", text: "Ah, olá! Vou verificar e efetuar o pagamento hoje mesmo. Obrigada por avisar!", timestamp: "2024-07-29T14:02:00Z" }
     ],
     predefined_messages: [
         { id: "pm-1", text: "Estou a 5 minutos.", for: "driver" },
@@ -454,5 +484,7 @@ export const initialMockData = {
         { id: "pm-4", text: "O aluno(a) já está pronto(a).", for: "parent" },
         { id: "pm-5", text: "Meu filho(a) não irá hoje.", for: "parent" },
         { id: "pm-6", text: "Obrigado(a)!", for: "all" },
+        { id: "pm-7", text: "Ajudarei no embarque.", for: "auxiliar" },
+        { id: "pm-8", text: "Todos a bordo e seguros.", for: "auxiliar" },
     ]
 };
