@@ -122,17 +122,17 @@ export default function AssistantMessagesPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
+    <div className="flex flex-col h-screen bg-background text-foreground p-4">
+      <div className="max-w-4xl mx-auto w-full flex flex-col flex-1">
+        <div className="flex items-center gap-4 mb-6 shrink-0">
             <Button asChild variant="outline" size="icon">
                 <Link href="/assistant/route-plan"><ArrowLeft /></Link>
             </Button>
             <h1 className="text-3xl font-bold tracking-tight">Minhas Mensagens</h1>
         </div>
-        <Card className="grid grid-cols-[300px_1fr] h-[calc(100vh-12rem)]">
+        <Card className="flex-1 grid grid-cols-[300px_1fr] overflow-hidden">
           <div className="flex flex-col border-r">
-            <Tabs defaultValue="parents" className="flex flex-col flex-1">
+            <Tabs defaultValue="parents" className="flex flex-col flex-1 min-h-0">
                  <CardHeader>
                     <CardTitle>Conversas</CardTitle>
                  </CardHeader>

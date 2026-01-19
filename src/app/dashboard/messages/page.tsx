@@ -74,15 +74,15 @@ export default function MessagesPage() {
   const isAdminMessage = (senderId: string) => senderId === mockUserId;
 
   return (
-    <div>
-      <h1 className="text-3xl font-bold tracking-tight mb-6">Central de Mensagens</h1>
-        <Card className="grid grid-cols-[300px_1fr] h-[calc(100vh-12rem)]">
+    <div className="flex flex-col h-full">
+      <h1 className="text-3xl font-bold tracking-tight mb-6 shrink-0">Central de Mensagens</h1>
+        <Card className="flex-1 grid grid-cols-[300px_1fr] overflow-hidden">
           {/* Conversation List Panel */}
           <div className="flex flex-col border-r">
             <CardHeader>
               <CardTitle>Conversas</CardTitle>
             </CardHeader>
-            <Tabs defaultValue="parents" className="flex flex-col flex-1">
+            <Tabs defaultValue="parents" className="flex flex-col flex-1 min-h-0">
              <div className="px-4">
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="parents"><User className="mr-2 h-4 w-4"/>Pais</TabsTrigger>
