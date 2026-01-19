@@ -236,5 +236,18 @@ service cloud.firestore {
       allow create: if isSignedIn() && request.auth.uid == request.resource.data.parentUserId;
       allow read, update, delete: if isSignedIn() && request.auth.uid == resource.data.parentUserId;
     }
+
+    /**
+     * @description Manages one-off trip requests from parents.
+     * @principle A parent can create and view requests for their child. Admins have full access.
+     */
+    match /trip_requests/{requestId} {
+      allow create: if isSignedIn() && request.resource.data.parentUserId == request.auth.uid;
+      allow read, update: if isSignedIn() && resource.data.parentUserId == request.auth.uid;
+      // Admins get full CRUD access for management
+      allow read, write: if isAdmin();
+    }
   }
 }
+
+    

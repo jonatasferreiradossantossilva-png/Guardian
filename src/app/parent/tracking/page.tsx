@@ -10,7 +10,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -333,6 +333,11 @@ export default function ParentTrackingPage() {
                     <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
                 </Link>
               </Button>
+               <Button asChild variant="outline" className="w-full col-span-2">
+                <Link href="/parent/requests">
+                    <Route className="mr-2 h-4 w-4" /> Solicitar Viagem Avulsa
+                </Link>
+              </Button>
             </CardFooter>
           </Card>
         )}
@@ -340,3 +345,5 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
+
+    

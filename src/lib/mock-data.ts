@@ -495,5 +495,12 @@ export const initialMockData = {
         { id: "ap-1", studentId: "student-1", parentUserId: "user-pai-1", name: "Maria Pereira (Avó)", cpf: "123.123.123-12", phone: "1198888-1234" },
         { id: "ap-2", studentId: "student-1", parentUserId: "user-pai-1", name: "José Pereira (Avô)", cpf: "321.321.321-21", phone: "1198888-4321" },
         { id: "ap-3", studentId: "student-2", parentUserId: "user-pai-2", name: "Ricardo Costa (Tio)", cpf: "111.222.333-44", phone: "1197777-1234" }
+    ],
+    trip_requests: [
+        { id: "tr-1", studentId: "student-1", parentUserId: "user-pai-1", date: "2024-08-15", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "O aluno precisa ir a uma consulta médica e voltará para a escola.", createdAt: "2024-07-30T10:00:00Z" },
+        { id: "tr-2", studentId: "student-1", parentUserId: "user-pai-1", date: "2024-08-12", type: "volta", shift: "manha", status: "aprovada", reason: "", createdAt: "2024-07-29T11:30:00Z" },
+        { id: "tr-3", studentId: "student-2", parentUserId: "user-pai-2", date: "2024-08-14", type: "ida", shift: "manha", status: "rejeitada", reason: "A van estará em manutenção neste dia.", createdAt: "2024-07-28T15:00:00Z" }
     ]
 };
+
+    

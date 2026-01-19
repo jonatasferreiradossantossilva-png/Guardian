@@ -50,6 +50,7 @@ const managementLinks = [
     icon: GraduationCap,
   },
   { href: "/dashboard/management/predefined-messages", label: "Mensagens Predefinidas", icon: MessageCircle },
+  { href: "/dashboard/management/trip-requests", label: "Viagens Avulsas", icon: Route },
 ];
 
 const profileLinks = [
@@ -210,3 +211,5 @@ export function MainSidebar() {
     </Sidebar>
   );
 }
+
+    
