@@ -53,7 +53,7 @@ const statusBadgeVariant: Record<
 > = {
   a_bordo: "default",
   aguardando: "secondary",
-  desembarcado: "outline",
+  desembarcou: "outline",
   ausente: "destructive",
 };
 
