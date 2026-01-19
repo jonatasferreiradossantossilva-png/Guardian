@@ -471,14 +471,16 @@ export const initialMockData = {
       "driver-7": { latitude: -23.575, longitude: -46.685, timestamp: new Date().toISOString() },
     },
     invoices: [
-        {id: "inv-001", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 350.00, dueDate: "2024-08-10T00:00:00Z", status: "pending" },
-        {id: "inv-002", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 380.00, dueDate: "2024-08-10T00:00:00Z", status: "pending" },
-        {id: "inv-003", studentId: "student-3", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 350.00, dueDate: "2024-07-10T00:00:00Z", status: "paid" },
-        {id: "inv-004", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 400.00, dueDate: "2024-08-10T00:00:00Z", status: "pending" },
-        {id: "inv-005", studentId: "student-6", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 400.00, dueDate: "2024-08-10T00:00:00Z", status: "pending" },
-        {id: "inv-006", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 420.00, dueDate: "2024-07-10T00:00:00Z", status: "paid" },
-        {id: "inv-007", studentId: "student-9", parentUserId: "user-pai-5", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10T00:00:00Z", status: "pending" },
-        {id: "inv-008", studentId: "student-10", parentUserId: "user-pai-6", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10T00:00:00Z", status: "pending" },
+        {id: "inv-001", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "pending" },
+        {id: "inv-002", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 480.50, dueDate: "2024-08-10", status: "pending" },
+        {id: "inv-003", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-07-10", status: "paid" },
+        {id: "inv-004", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "pagamento_em_analise" },
+        {id: "inv-005", studentId: "student-6", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "pending" },
+        {id: "inv-006", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-07-10", status: "paid" },
+        {id: "inv-007", studentId: "student-9", parentUserId: "user-pai-5", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-08-10", status: "pending" },
+        {id: "inv-008", studentId: "student-10", parentUserId: "user-pai-6", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-08-10", status: "pending" },
+        {id: "inv-avulsa-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Viagem Avulsa - 12/08/2024", amount: 25.00, dueDate: "2024-08-12", status: "paid" },
+
     ],
     messages: [
         { id: "msg-1", senderId: "user-pai-1", recipientId: "user-admin-1", text: "Bom dia! O Lucas já está esperando.", timestamp: "2024-07-30T08:00:00Z" },
@@ -508,9 +510,9 @@ export const initialMockData = {
     ],
     trip_requests: [
         { id: "tr-1", studentId: "student-1", parentUserId: "user-pai-1", date: "2024-08-15", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "O aluno precisa ir a uma consulta médica e voltará para a escola.", createdAt: "2024-07-30T10:00:00Z" },
-        { id: "tr-2", studentId: "student-1", parentUserId: "user-pai-1", date: "2024-08-12", type: "volta", shift: "manha", status: "aprovada", reason: "", createdAt: "2024-07-29T11:30:00Z" },
-        { id: "tr-3", studentId: "student-2", parentUserId: "user-pai-2", date: "2024-08-14", type: "ida", shift: "manha", status: "rejeitada", reason: "A van estará em manutenção neste dia.", createdAt: "2024-07-28T15:00:00Z" }
+        { id: "tr-2", studentId: "student-1", parentUserId: "user-pai-1", date: "2024-08-12", type: "volta", shift: "manha", status: "aprovada", reason: "", createdAt: "2024-07-29T11:30:00Z", amount: 25.00 },
+        { id: "tr-3", studentId: "student-2", parentUserId: "user-pai-2", date: "2024-08-14", type: "ida", shift: "manha", status: "rejeitada", reason: "", createdAt: "2024-07-28T15:00:00Z" },
+        { id: "tr-4", studentId: "student-5", parentUserId: "user-pai-3", date: "2024-08-16", type: "volta", shift: "manha", status: "aguardando_aprovacao_pai", reason: "Sairá mais cedo para um compromisso.", createdAt: "2024-07-31T09:00:00Z", amount: 30.00 },
+        { id: "tr-5", studentId: "student-7", parentUserId: "user-pai-4", date: "2024-08-20", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "Participará de uma feira de ciências.", createdAt: "2024-07-31T11:00:00Z" }
     ]
 };
-
-    
