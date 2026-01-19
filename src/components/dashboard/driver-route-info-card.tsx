@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -11,14 +11,19 @@ import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { AssistantQuickEditForm } from './assistant-quick-edit-form';
 
 export function DriverRouteInfoCard() {
-  // In a real app, this would come from the logged-in user context.
-  // For this simulation, we hardcode the admin's user ID.
-  const mockAdminUserId = 'user-admin-1';
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // 1. Check if this admin user is also a driver
-  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', [
-    { field: 'userId', op: '==', value: mockAdminUserId },
-  ]);
+  useEffect(() => {
+    // For this prototype, we get the logged-in user's ID from session storage.
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setCurrentUserId(storedUserId);
+  }, []);
+
+
+  // 1. Check if the currently logged-in user is also a driver
+  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', currentUserId ? [
+    { field: 'userId', op: '==', value: currentUserId },
+  ] : []);
   const driverProfile = useMemo(() => (drivers && drivers.length > 0 ? drivers[0] : null), [drivers]);
 
   // 2. If they are a driver, find their active route
