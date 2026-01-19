@@ -1,7 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useUser } from '@/firebase';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -11,15 +10,18 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function DriverMessagesPage() {
-  const { user } = useUser();
   const { addDoc } = useMockData();
-  
-  // Memoize filters to prevent re-renders
-  const driverFilter = useMemo(() => (user ? [{ field: 'userId', op: '==', value: user.uid }] : undefined), [user]);
+  const [mockUserId, setMockUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMockUserId(storedUserId);
+  }, []);
+
+  const driverFilter = useMemo(() => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined), [mockUserId]);
   const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', driverFilter);
   const driver = useMemo(() => drivers?.[0], [drivers]);
 
-  // Find active route for this driver
   const activeRouteFilter = useMemo(() => (driver ? [
       { field: 'driverId', op: '==', value: driver.id },
       { field: 'active', op: '==', value: true }
@@ -27,7 +29,6 @@ export default function DriverMessagesPage() {
   const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes', activeRouteFilter);
   const activeRoute = useMemo(() => routes?.[0], [routes]);
 
-  // Get students on that route
   const studentsOnRouteFilter = useMemo(() => (activeRoute ? [
       { field: 'id', op: 'in', value: activeRoute.studentIds }
   ] : undefined), [activeRoute]);
@@ -40,7 +41,6 @@ export default function DriverMessagesPage() {
   const [selectedParentId, setSelectedParentId] = useState<string | null>(null);
   const [currentMessage, setCurrentMessage] = useState('');
 
-  // SIMPLIFIED LOGIC: Show only parents of students on the current active route
   const relevantParents = useMemo(() => {
     if (!studentsOnRoute || !allParents) return [];
     const parentIdsOnRoute = new Set(studentsOnRoute.map(s => s.parentId));
@@ -73,7 +73,6 @@ export default function DriverMessagesPage() {
   
   const isLoading = areDriversLoading || areRoutesLoading || areStudentsLoading || areParentsLoading || areMessagesLoading;
 
-  // UX Improvement: Select the first parent by default
   useEffect(() => {
     if (!selectedParentId && relevantParents.length > 0) {
       setSelectedParentId(relevantParents[0].id);

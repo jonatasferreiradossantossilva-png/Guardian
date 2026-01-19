@@ -1,7 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useUser } from '@/firebase';
 import { useMockCollection, useMockData, useMockDoc } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -10,9 +9,15 @@ import { Send, Loader2, ArrowLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 export default function ParentMessagesPage() {
-  const { user } = useUser();
   const { addDoc } = useMockData();
-  const { data: parents } = useMockCollection('parents', user ? [{ field: 'userId', op: '==', value: user.uid }] : []);
+  const [mockUserId, setMockUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMockUserId(storedUserId);
+  }, []);
+
+  const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : []);
   const parent = useMemo(() => parents?.[0], [parents]);
   
   const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : []);
