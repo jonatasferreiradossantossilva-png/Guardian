@@ -475,7 +475,9 @@ export const initialMockData = {
         { id: "msg-2", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Bom dia! Chego em 5 minutos.", timestamp: "2024-07-30T08:01:00Z" },
         { id: "msg-3", senderId: "user-pai-2", recipientId: "user-admin-1", text: "A Beatriz vai se atrasar um pouco hoje.", timestamp: "2024-07-30T08:05:00Z" },
         { id: "msg-4", senderId: "user-admin-1", recipientId: "user-pai-3", text: "Olá Carla, notamos que a fatura deste mês está pendente. Algum problema?", timestamp: "2024-07-29T14:00:00Z" },
-        { id: "msg-5", senderId: "user-pai-3", recipientId: "user-admin-1", text: "Ah, olá! Vou verificar e efetuar o pagamento hoje mesmo. Obrigada por avisar!", timestamp: "2024-07-29T14:02:00Z" }
+        { id: "msg-5", senderId: "user-pai-3", recipientId: "user-admin-1", text: "Ah, olá! Vou verificar e efetuar o pagamento hoje mesmo. Obrigada por avisar!", timestamp: "2024-07-29T14:02:00Z" },
+        { id: "msg-6", senderId: "user-admin-1", recipientId: "user-motorista-2", text: "Mariana, por favor, verifique o pneu do veículo 2 antes de sair.", timestamp: "2024-07-30T07:30:00Z" },
+        { id: "msg-7", senderId: "user-motorista-2", recipientId: "user-admin-1", text: "Ciente. Pneu verificado, tudo ok.", timestamp: "2024-07-30T07:35:00Z" }
     ],
     predefined_messages: [
         { id: "pm-1", text: "Estou a 5 minutos.", for: "driver" },
@@ -486,5 +488,7 @@ export const initialMockData = {
         { id: "pm-6", text: "Obrigado(a)!", for: "all" },
         { id: "pm-7", text: "Ajudarei no embarque.", for: "auxiliar" },
         { id: "pm-8", text: "Todos a bordo e seguros.", for: "auxiliar" },
+        { id: "pm-9", text: "Por favor, confirme o recebimento.", for: "gestor" },
+        { id: "pm-10", text: "A rota foi alterada. Verifique o novo plano.", for: "gestor" },
     ]
 };
