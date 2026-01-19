@@ -128,12 +128,13 @@ export default function RoutePlanPage() {
     updateDoc("students", studentId, { status: newStatus });
   };
   
+  const isRouteActive = useMemo(() => {
+    return students?.some(s => s.status === 'a_bordo');
+  }, [students]);
+
   // Effect to simulate GPS location updates while route is active
   useEffect(() => {
-    if (!route || !driverId) return;
-
-    const isRouteActive = students?.some(s => s.status === 'a_bordo');
-    if (!isRouteActive) return;
+    if (!route || !driverId || !isRouteActive) return;
 
     const intervalId = setInterval(() => {
       const currentLocation = locationRef.current || { latitude: -23.55052, longitude: -46.633308 };
@@ -153,7 +154,7 @@ export default function RoutePlanPage() {
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId);
-  }, [route, students, driverId, setDoc]);
+  }, [route, driverId, isRouteActive, setDoc]);
 
   const isLoading = isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
   
