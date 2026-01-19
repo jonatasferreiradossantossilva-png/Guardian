@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData, useMockDoc } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
