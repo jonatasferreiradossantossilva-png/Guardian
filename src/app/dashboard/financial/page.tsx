@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, Loader2, MoreHorizontal } from 'lucide-react';
+import { FilePlus, Loader2, MoreHorizontal, Filter, Users, Calendar } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -23,7 +23,21 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { format, startOfMonth, endOfMonth, set } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion"
+import { format, startOfMonth, endOfMonth, set, parseISO } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 type Invoice = {
@@ -54,6 +68,10 @@ export default function FinancialPage() {
   const { addDoc, updateDoc } = useMockData();
   const [isGenerating, setIsGenerating] = useState(false);
 
+  // State for filters
+  const [selectedStudentId, setSelectedStudentId] = useState<string>('all');
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
+
   const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection('invoices');
   const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
   const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
@@ -74,22 +92,53 @@ export default function FinancialPage() {
     return finalMap;
   }, [parents, students]);
 
-  const sortedInvoices = useMemo(() => {
+  const availableMonths = useMemo(() => {
     if (!invoices) return [];
+    const months = new Set<string>();
+    invoices.forEach(inv => {
+        months.add(format(parseISO(inv.dueDate), 'yyyy-MM'));
+    });
+    return Array.from(months).sort().reverse();
+  }, [invoices]);
+  
+  const filteredAndGroupedInvoices = useMemo(() => {
+    if (!invoices) return {};
+
+    // 1. Filter
+    let filtered = invoices;
+    if (selectedStudentId !== 'all') {
+        filtered = filtered.filter(inv => inv.studentId === selectedStudentId);
+    }
+    if (selectedMonth !== 'all') {
+        filtered = filtered.filter(inv => format(parseISO(inv.dueDate), 'yyyy-MM') === selectedMonth);
+    }
+
+    // 2. Sort within groups
     const statusOrder: Record<Invoice['status'], number> = {
       pagamento_em_analise: 1,
       pending: 2,
       overdue: 3,
       paid: 4,
     };
-    return [...invoices].sort((a, b) => {
+    const sorted = [...filtered].sort((a, b) => {
       const statusComparison = (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
-      if (statusComparison !== 0) {
-        return statusComparison;
-      }
+      if (statusComparison !== 0) return statusComparison;
       return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
     });
-  }, [invoices]);
+
+    // 3. Group by month
+    const grouped = sorted.reduce((acc, inv) => {
+        const month = format(parseISO(inv.dueDate), 'yyyy-MM');
+        if (!acc[month]) {
+            acc[month] = [];
+        }
+        acc[month].push(inv);
+        return acc;
+    }, {});
+
+    return grouped;
+
+  }, [invoices, selectedStudentId, selectedMonth]);
 
   const handleGenerateInvoices = () => {
     if (!students || !parents) {
@@ -160,7 +209,13 @@ export default function FinancialPage() {
   };
 
   const isLoading = areInvoicesLoading || areStudentsLoading || areParentsLoading;
-
+  const monthKeys = Object.keys(filteredAndGroupedInvoices).sort().reverse();
+  
+  const formatMonth = (monthStr: string) => {
+      const [year, month] = monthStr.split('-');
+      const date = new Date(Number(year), Number(month) -1);
+      return format(date, "MMMM 'de' yyyy", { locale: ptBR });
+  }
 
   return (
     <div>
@@ -174,76 +229,120 @@ export default function FinancialPage() {
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Faturas</CardTitle>
-          <CardDescription>Visualize e gerencie todas as faturas geradas para os alunos.</CardDescription>
+          <CardDescription>Visualize, filtre e gerencie todas as faturas geradas para os alunos.</CardDescription>
+          <div className="flex items-center gap-4 pt-4">
+            <Filter className="text-muted-foreground" />
+             <div className="flex items-center gap-2">
+                <Users className="text-muted-foreground h-4 w-4"/>
+                <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filtrar por aluno..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos os Alunos</SelectItem>
+                        {students?.map(s => (
+                            <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+             <div className="flex items-center gap-2">
+                <Calendar className="text-muted-foreground h-4 w-4"/>
+                <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                    <SelectTrigger className="w-[200px]">
+                        <SelectValue placeholder="Filtrar por mês..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="all">Todos os Meses</SelectItem>
+                        {availableMonths.map(month => (
+                            <SelectItem key={month} value={month}>{formatMonth(month)}</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
-           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Aluno</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Vencimento</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && (
-                <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24">Carregando...</TableCell>
-                </TableRow>
-              )}
-              {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
-                sortedInvoices.map((invoice) => (
-                  <TableRow key={invoice.id}>
-                    <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
-                    <TableCell>{parentsMap.get(invoice.studentId) || 'Responsável não encontrado'}</TableCell>
-                    <TableCell>{new Date(invoice.dueDate).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
-                    <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
-                    <TableCell>
-                        <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
-                            {statusTextMap[invoice.status]}
-                        </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Abrir menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Alterar Status</DropdownMenuLabel>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>
-                                    Marcar como Paga
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>
-                                    Marcar como Pendente
-                                </DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">
-                                    Marcar como Vencida
-                                </DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="h-24 text-center">Nenhuma fatura encontrada. Gere as faturas do mês para começar.</TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-           </Table>
+            {isLoading && <div className="text-center p-8">Carregando faturas...</div>}
+            {!isLoading && monthKeys.length > 0 ? (
+                 <Accordion type="multiple" defaultValue={monthKeys} className="w-full">
+                    {monthKeys.map(monthKey => {
+                        const monthInvoices = filteredAndGroupedInvoices[monthKey];
+                        const totalAmount = monthInvoices.reduce((sum, inv) => sum + inv.amount, 0);
+                        const totalPaid = monthInvoices.filter(inv => inv.status === 'paid').reduce((sum, inv) => sum + inv.amount, 0);
+
+                        return (
+                            <AccordionItem value={monthKey} key={monthKey}>
+                                <AccordionTrigger className="capitalize text-lg hover:no-underline px-2">
+                                    <div className="flex items-center justify-between w-full">
+                                        <span>{formatMonth(monthKey)}</span>
+                                        <div className="flex items-center gap-4 text-sm font-normal text-muted-foreground pr-4">
+                                            <span>Total: <span className="font-semibold text-foreground">R$ {totalAmount.toFixed(2)}</span></span>
+                                            <span>Recebido: <span className="font-semibold text-green-500">R$ {totalPaid.toFixed(2)}</span></span>
+                                        </div>
+                                    </div>
+                                </AccordionTrigger>
+                                <AccordionContent>
+                                    <Table>
+                                        <TableHeader>
+                                        <TableRow>
+                                            <TableHead>Aluno</TableHead>
+                                            <TableHead>Responsável</TableHead>
+                                            <TableHead>Vencimento</TableHead>
+                                            <TableHead>Valor</TableHead>
+                                            <TableHead>Status</TableHead>
+                                            <TableHead className="text-right">Ações</TableHead>
+                                        </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                        {monthInvoices.map((invoice) => (
+                                            <TableRow key={invoice.id}>
+                                                <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
+                                                <TableCell>{parentsMap.get(invoice.studentId) || 'Responsável não encontrado'}</TableCell>
+                                                <TableCell>{format(parseISO(invoice.dueDate), 'dd/MM/yyyy', { timeZone: 'UTC' })}</TableCell>
+                                                <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
+                                                <TableCell>
+                                                    <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
+                                                        {statusTextMap[invoice.status]}
+                                                    </Badge>
+                                                </TableCell>
+                                                <TableCell className="text-right">
+                                                    <DropdownMenu>
+                                                        <DropdownMenuTrigger asChild>
+                                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                <span className="sr-only">Abrir menu</span>
+                                                                <MoreHorizontal className="h-4 w-4" />
+                                                            </Button>
+                                                        </DropdownMenuTrigger>
+                                                        <DropdownMenuContent align="end">
+                                                            <DropdownMenuLabel>Alterar Status</DropdownMenuLabel>
+                                                            <DropdownMenuSeparator />
+                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>
+                                                                Marcar como Paga
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>
+                                                                Marcar como Pendente
+                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">
+                                                                Marcar como Vencida
+                                                            </DropdownMenuItem>
+                                                        </DropdownMenuContent>
+                                                    </DropdownMenu>
+                                                </TableCell>
+                                            </TableRow>
+                                        ))}
+                                        </TableBody>
+                                    </Table>
+                                </AccordionContent>
+                            </AccordionItem>
+                        )
+                    })}
+                 </Accordion>
+            ) : (
+                 !isLoading && <div className="h-24 text-center content-center text-muted-foreground">Nenhuma fatura encontrada para os filtros selecionados.</div>
+            )}
         </CardContent>
       </Card>
     </div>
   );
 }
-
-    
