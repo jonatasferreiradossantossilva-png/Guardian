@@ -5,6 +5,7 @@ import { DriverStatusList } from "@/components/dashboard/driver-status-list";
 import { incidents } from "@/lib/placeholder-data";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
+import { DriverRouteInfoCard } from "@/components/dashboard/driver-route-info-card";
 
 export default function DashboardPage() {
   return (
@@ -19,6 +20,8 @@ export default function DashboardPage() {
           Relatar Incidente
         </Button>
       </div>
+
+      <DriverRouteInfoCard />
 
       <OverviewCards />
 

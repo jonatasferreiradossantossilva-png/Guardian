@@ -4,7 +4,6 @@
 export const initialMockData = {
     users: [
         { id: "user-admin-1", name: "Admin User", email: "admin@rotasegura.com", profile: 'gestor', active: true },
-        { id: "user-motorista-1", name: "Carlos Silva", email: "carlos.silva@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-motorista-2", name: "Mariana Costa", email: "mariana.costa@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-motorista-3", name: "Roberto Almeida", email: "roberto.almeida@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", profile: 'pai', active: true },
@@ -79,8 +78,8 @@ export const initialMockData = {
     drivers: [
         { 
             id: "driver-1", 
-            userId: "user-motorista-1", 
-            name: "Carlos Silva", 
+            userId: "user-admin-1", 
+            name: "Admin User", 
             status: "em_rota", 
             vehicleId: "vehicle-1", 
             cpf: "123.456.789-00", 
