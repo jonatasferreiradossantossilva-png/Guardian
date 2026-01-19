@@ -42,7 +42,7 @@ type Student = {
   name: string;
   schoolId: string;
   parentId: string;
-  shift: 'manha' | 'tarde';
+  shift: 'Manhã' | 'Tarde';
   status: string;
   street?: string;
   number?: string;
@@ -176,7 +176,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                     <TableCell>{formatAddress(student)}</TableCell>
                     <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
                     <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
-                    <TableCell><Badge variant="outline">{student.shift === 'manha' ? 'Manhã' : 'Tarde'}</Badge></TableCell>
+                    <TableCell><Badge variant="outline">{student.shift}</Badge></TableCell>
                     <TableCell><Badge variant="secondary">{student.status}</Badge></TableCell>
                     <TableCell className="text-right">
                         <DropdownMenu>

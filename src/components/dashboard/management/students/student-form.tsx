@@ -39,7 +39,7 @@ const formSchema = z.object({
   longitude: z.coerce.number().optional(),
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
-  shift: z.enum(['manha', 'tarde', 'Manhã', 'Tarde'], { required_error: 'Selecione um turno.' }),
+  shift: z.enum(['manha', 'tarde'], { required_error: 'Selecione um turno.' }),
   zipCode: z.string().optional(),
   street: z.string().min(1, { message: 'A rua é obrigatória.' }),
   number: z.string().optional(),
@@ -107,7 +107,7 @@ export function StudentForm({
         longitude: student.longitude,
         schoolId: student.schoolId || '',
         parentId: student.parentId || '',
-        shift: student.shift?.toLowerCase() === 'manhã' ? 'manha' : student.shift?.toLowerCase() === 'tarde' ? 'tarde' : 'manha',
+        shift: (student.shift || 'manha').toLowerCase().startsWith('m') ? 'manha' : 'tarde',
         zipCode: student.zipCode || '',
         street: student.street || '',
         number: student.number || '',
@@ -160,7 +160,7 @@ export function StudentForm({
   const onSubmit = (data: StudentFormValues) => {
     const finalData = {
         ...data,
-        shift: data.shift.toLowerCase().startsWith('manh') ? 'Manhã' : 'Tarde'
+        shift: data.shift === 'manha' ? 'Manhã' : 'Tarde'
     }
 
     if (student) {
@@ -374,7 +374,7 @@ export function StudentForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Turno</FormLabel>
-                 <Select onValueChange={field.onChange} value={field.value?.toLowerCase().startsWith('manh') ? 'manha' : 'tarde'}>
+                 <Select onValueChange={field.onChange} value={field.value}>
                   <FormControl>
                     <SelectTrigger>
                       <SelectValue placeholder="Selecione o turno" />
