@@ -4,7 +4,8 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, GraduationCap, Truck, FileText } from "lucide-react";
 import { useMockCollection } from "@/hooks/use-mock-data";
-import { getYear, getMonth } from 'date-fns';
+import { parse, format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 export function OverviewCards() {
   const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
@@ -14,20 +15,21 @@ export function OverviewCards() {
   const isLoading = areStudentsLoading || areVehiclesLoading || areInvoicesLoading;
 
   const financialStats = useMemo(() => {
-    if (!allInvoices) return { monthlyRevenue: 0, monthlyReceivables: 0 };
-    
-    const today = new Date();
-    const currentYear = getYear(today);
-    const currentMonth = getMonth(today); // 0-indexed
+    if (!allInvoices || allInvoices.length === 0) return { monthlyRevenue: 0, monthlyReceivables: 0, displayMonth: 'N/A' };
 
+    // Find the latest month string (e.g., "2024-08") from the data
+    const latestMonthStr = allInvoices.reduce((latest, inv) => {
+        const invMonth = inv.dueDate.substring(0, 7);
+        return invMonth > latest ? invMonth : latest;
+    }, '0000-00');
+
+    if (latestMonthStr === '0000-00') return { monthlyRevenue: 0, monthlyReceivables: 0, displayMonth: 'N/A' };
+    
     let monthlyRevenue = 0;
     let monthlyReceivables = 0;
 
     allInvoices.forEach(invoice => {
-        // Dates in mock data are strings like 'YYYY-MM-DD'.
-        const [year, month] = invoice.dueDate.split('-').map(Number);
-        
-        if (year === currentYear && (month - 1) === currentMonth) {
+        if (invoice.dueDate.substring(0, 7) === latestMonthStr) {
             if (invoice.status === 'paid') {
                 monthlyRevenue += invoice.amount;
             }
@@ -37,7 +39,12 @@ export function OverviewCards() {
         }
     });
 
-    return { monthlyRevenue, monthlyReceivables };
+    // Format the month string for display
+    const date = parse(latestMonthStr, 'yyyy-MM', new Date());
+    const displayMonth = format(date, "MMMM 'de' yyyy", { locale: ptBR });
+    const capitalizedDisplayMonth = displayMonth.charAt(0).toUpperCase() + displayMonth.slice(1);
+
+    return { monthlyRevenue, monthlyReceivables, displayMonth: capitalizedDisplayMonth };
 
   }, [allInvoices]);
   
@@ -62,13 +69,13 @@ export function OverviewCards() {
       title: "Receita do Mês",
       value: isLoading ? "-" : formatCurrency(financialStats.monthlyRevenue),
       icon: DollarSign,
-      changeText: "Total recebido no mês corrente"
+      changeText: isLoading || financialStats.displayMonth === 'N/A' ? "Calculando..." : `Total recebido em ${financialStats.displayMonth}`
     },
     {
       title: "A Receber no Mês",
       value: isLoading ? "-" : formatCurrency(financialStats.monthlyReceivables),
       icon: FileText,
-      changeText: "Faturas pendentes ou em análise"
+      changeText: isLoading || financialStats.displayMonth === 'N/A' ? "Calculando..." : `Pendente ou em análise para ${financialStats.displayMonth}`
     },
   ];
 
