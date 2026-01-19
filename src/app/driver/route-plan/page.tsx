@@ -18,7 +18,7 @@ import {
   AlertTriangle,
   ClipboardCheck,
   MessageSquare,
-  Users, // Add Users icon
+  IdCard,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -209,8 +209,9 @@ export default function DriverRoutePlanPage() {
                         size="icon"
                         className="h-8 w-8"
                         onClick={() => handleOpenAuthorizedModal(student)}
+                        title="Ver contatos autorizados"
                       >
-                        <Users className="h-5 w-5 text-muted-foreground" />
+                        <IdCard className="h-5 w-5 text-muted-foreground" />
                       </Button>
                       <span className="font-medium">{student.name}</span>
                     </div>
