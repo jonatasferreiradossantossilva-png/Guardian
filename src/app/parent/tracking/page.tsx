@@ -203,9 +203,16 @@ export default function ParentTrackingPage() {
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Acompanhamento</h1>
-          <Link href="/" passHref>
-            <Button variant="outline">Voltar ao Login</Button>
-          </Link>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="outline">
+              <Link href="/parent/messages">
+                <MessageCircle className="mr-2 h-4 w-4" /> Mensagens
+              </Link>
+            </Button>
+            <Link href="/" passHref>
+              <Button variant="outline">Voltar ao Login</Button>
+            </Link>
+          </div>
         </div>
 
         {isLoading ? (
@@ -296,38 +303,30 @@ export default function ParentTrackingPage() {
                 </div>
               </div>
             </CardContent>
-            <CardFooter className="grid grid-cols-2 md:flex md:flex-row gap-2">
-               <Button asChild className="w-full">
-                <Link href="/parent/messages">
-                  <MessageCircle className="mr-2 h-4 w-4" /> Enviar Mensagem
-                </Link>
-              </Button>
-              
-               {studentStatus === 'ausente' ? (
-                  <Button
-                    variant="secondary"
-                    className="w-full"
-                    onClick={handleConfirmPresence}
-                  >
-                    <CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença
-                  </Button>
-                ) : (
-                  <Button
+            <CardFooter className="grid grid-cols-2 gap-2">
+                <Button
                     variant="destructive"
                     className="w-full"
                     onClick={handleCommunicateAbsence}
-                  >
+                >
                     <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
-                  </Button>
-                )}
-
+                </Button>
+                <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleConfirmPresence}
+                >
+                    <CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença
+                </Button>
                <Button asChild variant="outline" className="w-full">
                 <Link href="/parent/authorized">
                     <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
                 </Link>
                </Button>
-              <Button variant="outline" className="w-full">
-                <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
+              <Button asChild variant="outline" className="w-full">
+                <Link href="/parent/financial">
+                    <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
+                </Link>
               </Button>
             </CardFooter>
           </Card>
