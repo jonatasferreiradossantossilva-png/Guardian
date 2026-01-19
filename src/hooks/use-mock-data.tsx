@@ -11,8 +11,9 @@ export function MockDataProvider({ children }) {
   const [db, setDb] = useState(initialMockData);
 
   const getCollection = useCallback((collectionName, filters) => {
+    if (!collectionName) return [];
     let results = db[collectionName] || [];
-    if (filters) {
+    if (filters && filters.length > 0) {
       results = results.filter(doc => {
         return filters.every(filter => {
           const { field, op, value } = filter;
@@ -30,6 +31,7 @@ export function MockDataProvider({ children }) {
   }, [db]);
 
   const getDoc = useCallback((collectionName, docId) => {
+    if (!collectionName || !docId) return null;
     return (db[collectionName] || []).find(doc => doc.id === docId) || null;
   }, [db]);
   
@@ -42,17 +44,17 @@ export function MockDataProvider({ children }) {
   }, [db]);
 
   const addDoc = (collectionName, data) => {
-    const newDoc = { ...data, id: `${collectionName}-${Date.now()}` };
+    const newDoc = { ...data, id: `${collectionName.slice(0, 3)}-${Date.now()}` };
     setDb(prevDb => ({
       ...prevDb,
-      [collectionName]: [...prevDb[collectionName], newDoc],
+      [collectionName]: [...(prevDb[collectionName] || []), newDoc],
     }));
   };
 
   const updateDoc = (collectionName, docId, data) => {
     setDb(prevDb => ({
       ...prevDb,
-      [collectionName]: prevDb[collectionName].map(doc =>
+      [collectionName]: (prevDb[collectionName] || []).map(doc =>
         doc.id === docId ? { ...doc, ...data } : doc
       ),
     }));
@@ -74,7 +76,7 @@ export function MockDataProvider({ children }) {
   const deleteDoc = (collectionName, docId) => {
     setDb(prevDb => ({
       ...prevDb,
-      [collectionName]: prevDb[collectionName].filter(doc => doc.id !== docId),
+      [collectionName]: (prevDb[collectionName] || []).filter(doc => doc.id !== docId),
     }));
   };
 
@@ -110,7 +112,8 @@ export const useMockCollection = (collectionName, filters) => {
     const { getCollection, db } = useMockData();
     // By depending on `db`, this hook will re-run when the database state changes,
     // which simulates the real-time nature of onSnapshot.
-    const data = useMemo(() => getCollection(collectionName, filters), [db, collectionName, filters, getCollection]);
+    // The filter object is stringified to prevent infinite loops from new array references.
+    const data = useMemo(() => getCollection(collectionName, filters), [db, collectionName, JSON.stringify(filters), getCollection]);
     return { data, isLoading: false, error: null };
 }
 
