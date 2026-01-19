@@ -49,7 +49,7 @@ const managementLinks = [
     label: "Alunos",
     icon: GraduationCap,
   },
-  { href: "/dashboard/management/predefined-messages", label: "Mensagens", icon: MessageCircle },
+  { href: "/dashboard/management/predefined-messages", label: "Mensagens Rápidas", icon: MessageCircle },
 ];
 
 const profileLinks = [
