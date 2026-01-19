@@ -96,7 +96,7 @@ export default function FinancialPage() {
     if (!invoices) return [];
     const months = new Set<string>();
     invoices.forEach(inv => {
-        months.add(format(parseISO(inv.dueDate), 'yyyy-MM'));
+        months.add(inv.dueDate.substring(0, 7));
     });
     return Array.from(months).sort().reverse();
   }, [invoices]);
@@ -110,7 +110,7 @@ export default function FinancialPage() {
         filtered = filtered.filter(inv => inv.studentId === selectedStudentId);
     }
     if (selectedMonth !== 'all') {
-        filtered = filtered.filter(inv => format(parseISO(inv.dueDate), 'yyyy-MM') === selectedMonth);
+        filtered = filtered.filter(inv => inv.dueDate.substring(0, 7) === selectedMonth);
     }
 
     // 2. Sort within groups
@@ -128,7 +128,7 @@ export default function FinancialPage() {
 
     // 3. Group by month
     const grouped = sorted.reduce((acc, inv) => {
-        const month = format(parseISO(inv.dueDate), 'yyyy-MM');
+        const month = inv.dueDate.substring(0, 7);
         if (!acc[month]) {
             acc[month] = [];
         }
@@ -299,7 +299,7 @@ export default function FinancialPage() {
                                             <TableRow key={invoice.id}>
                                                 <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
                                                 <TableCell>{parentsMap.get(invoice.studentId) || 'Responsável não encontrado'}</TableCell>
-                                                <TableCell>{format(parseISO(invoice.dueDate), 'dd/MM/yyyy', { timeZone: 'UTC' })}</TableCell>
+                                                <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
                                                 <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                                                 <TableCell>
                                                     <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
