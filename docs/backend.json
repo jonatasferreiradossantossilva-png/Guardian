@@ -652,7 +652,8 @@
           "enum": [
             "pendente",
             "aprovada",
-            "rejeitada"
+            "rejeitada",
+            "aguardando_aprovacao_pai"
           ]
         },
         "reason": {
@@ -663,6 +664,10 @@
           "type": "string",
           "format": "date-time",
           "description": "Timestamp of when the request was created."
+        },
+        "amount": {
+          "type": "number",
+          "description": "The cost of the trip, to be approved by the parent."
         }
       },
       "required": [

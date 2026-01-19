@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, ArrowLeft, Route } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ArrowLeft, Route, Check, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -28,16 +28,26 @@ type TripRequest = {
   date: string;
   type: 'ida' | 'volta' | 'ida_e_volta';
   shift: 'manha' | 'tarde';
-  status: 'pendente' | 'aprovada' | 'rejeitada';
+  status: 'pendente' | 'aprovada' | 'rejeitada' | 'aguardando_aprovacao_pai';
   reason?: string;
   createdAt: string;
+  amount?: number;
 };
 
-const statusVariantMap: Record<TripRequest['status'], 'secondary' | 'default' | 'destructive'> = {
+const statusVariantMap: Record<TripRequest['status'], 'secondary' | 'default' | 'destructive' | 'outline'> = {
   pendente: 'secondary',
   aprovada: 'default',
   rejeitada: 'destructive',
+  aguardando_aprovacao_pai: 'outline',
 };
+
+const statusTextMap: Record<TripRequest['status'], string> = {
+  pendente: 'Pendente',
+  aprovada: 'Aprovada',
+  rejeitada: 'Rejeitada',
+  aguardando_aprovacao_pai: 'Aguardando Aprovação',
+};
+
 
 const typeMap = {
     'ida': 'Ida para a escola',
@@ -48,6 +58,7 @@ const typeMap = {
 export default function TripRequestsPage() {
   const { toast } = useToast();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const { updateDoc } = useMockData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TripRequest | null>(null);
@@ -67,6 +78,15 @@ export default function TripRequestsPage() {
   const handleFormSubmit = () => {
     setIsFormOpen(false);
     setSelectedRequest(null);
+  };
+
+  const handleApproval = (requestId: string, approved: boolean) => {
+    const newStatus = approved ? 'aprovada' : 'rejeitada';
+    updateDoc('trip_requests', requestId, { status: newStatus });
+    toast({
+      title: `Solicitação ${approved ? 'aprovada' : 'rejeitada'}!`,
+      description: `Sua decisão foi registrada.`,
+    });
   };
   
   const sortedRequests = useMemo(() => {
@@ -117,14 +137,15 @@ export default function TripRequestsPage() {
                   <TableHead>Data</TableHead>
                   <TableHead>Tipo</TableHead>
                   <TableHead>Turno</TableHead>
+                  <TableHead>Valor</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Criada em</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
+                    <TableCell colSpan={6} className="text-center">
                       Carregando...
                     </TableCell>
                   </TableRow>
@@ -135,16 +156,32 @@ export default function TripRequestsPage() {
                       <TableCell>{format(new Date(request.date), "dd/MM/yyyy", { locale: ptBR })}</TableCell>
                       <TableCell>{typeMap[request.type]}</TableCell>
                       <TableCell>{request.shift === 'manha' ? 'Manhã' : 'Tarde'}</TableCell>
+                      <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
                       <TableCell>
-                        <Badge variant={statusVariantMap[request.status]} className="capitalize">{request.status}</Badge>
+                        <Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge>
                       </TableCell>
-                      <TableCell>{format(new Date(request.createdAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</TableCell>
+                      <TableCell className="text-right">
+                        {request.status === 'aguardando_aprovacao_pai' ? (
+                          <div className="flex gap-2 justify-end">
+                            <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8" onClick={() => handleApproval(request.id, true)}>
+                                <Check className="mr-2 h-4 w-4" /> Aprovar
+                            </Button>
+                            <Button size="sm" variant="destructive" className="h-8" onClick={() => handleApproval(request.id, false)}>
+                                <X className="mr-2 h-4 w-4" /> Recusar
+                            </Button>
+                          </div>
+                        ) : (
+                           <span className="text-sm italic text-muted-foreground">
+                            {request.status === 'pendente' ? 'Aguardando gestor' : 'Processado'}
+                           </span>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   !isLoading && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center h-24">
+                      <TableCell colSpan={6} className="text-center h-24">
                         Nenhuma solicitação de viagem encontrada.
                       </TableCell>
                     </TableRow>
