@@ -316,16 +316,15 @@ export default function ParentTrackingPage() {
                     variant="destructive"
                     className="w-full"
                     onClick={handleCommunicateAbsence}
-                    disabled={studentStatus !== 'aguardando'}
                   >
                     <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
                   </Button>
                 )}
 
-               <Button variant="outline" className="w-full" disabled={studentStatus !== 'aguardando' && studentStatus !== 'ausente'}>
+               <Button variant="outline" className="w-full">
                 <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
               </Button>
-              <Button variant="outline" className="w-full" disabled={studentStatus !== 'aguardando' && studentStatus !== 'ausente'}>
+              <Button variant="outline" className="w-full">
                 <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
               </Button>
             </CardFooter>
