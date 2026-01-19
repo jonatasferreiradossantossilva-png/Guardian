@@ -245,7 +245,19 @@ export default function ParentTrackingPage() {
                         <User />
                         Status de {student.name}
                     </CardTitle>
-                     <p className="text-muted-foreground text-sm pt-2">Acompanhe em tempo real o transporte escolar.</p>
+                     {studentStatus === 'aguardando' && (
+                        <p className="text-primary text-sm pt-2">
+                            A presença está confirmada. Use o botão abaixo apenas se o aluno for faltar.
+                        </p>
+                     )}
+                     {studentStatus === 'ausente' && (
+                         <p className="text-destructive text-sm pt-2">
+                            A ausência foi comunicada. O motorista não passará para o embarque.
+                         </p>
+                     )}
+                     {(studentStatus === 'a_bordo' || studentStatus === 'desembarcou') && (
+                        <p className="text-muted-foreground text-sm pt-2">Acompanhe em tempo real o transporte escolar.</p>
+                     )}
                   </div>
                    <Badge variant={statusBadgeVariant[studentStatus]}>{statusText[studentStatus]}</Badge>
               </div>
