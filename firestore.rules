@@ -136,14 +136,11 @@ service cloud.firestore {
 
     /**
      * @description Manages invoice documents for billing.
-     * @principle Allows reads for signed-in users, centralizes control of writes to trusted administrators.
+     * @principle Admins have full access. Parents can only read invoices linked to them.
      */
     match /invoices/{invoiceId} {
-      allow get: if isSignedIn();
-      allow list: if isSignedIn();
-      allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
-      allow delete: if isAdmin() && resource != null;
+      allow read: if isAdmin() || (isSignedIn() && resource.data.parentUserId == request.auth.uid);
+      allow write: if isAdmin();
     }
 
     /**
@@ -249,5 +246,3 @@ service cloud.firestore {
     }
   }
 }
-
-    

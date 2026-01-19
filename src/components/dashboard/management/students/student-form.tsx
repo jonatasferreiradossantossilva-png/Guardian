@@ -40,6 +40,7 @@ const formSchema = z.object({
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
   shift: z.enum(['manha', 'tarde'], { required_error: 'Selecione um turno.' }),
+  monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
   zipCode: z.string().optional(),
   street: z.string().min(1, { message: 'A rua é obrigatória.' }),
   number: z.string().optional(),
@@ -65,7 +66,7 @@ type Parent = {
 };
 
 interface StudentFormProps {
-  student?: { id: string } & Partial<StudentFormValues>;
+  student?: { id: string; monthlyFee?: number } & Partial<StudentFormValues>;
   schools: School[];
   parents: Parent[];
   onFormSubmit: () => void;
@@ -89,6 +90,7 @@ export function StudentForm({
       schoolId: '',
       parentId: '',
       shift: 'manha',
+      monthlyFee: undefined,
       zipCode: '',
       street: '',
       number: '',
@@ -108,6 +110,7 @@ export function StudentForm({
         schoolId: student.schoolId || '',
         parentId: student.parentId || '',
         shift: (student.shift || 'manha').toLowerCase().startsWith('m') ? 'manha' : 'tarde',
+        monthlyFee: student.monthlyFee,
         zipCode: student.zipCode || '',
         street: student.street || '',
         number: student.number || '',
@@ -368,27 +371,42 @@ export function StudentForm({
             )}
           />
           
-          <FormField
-            control={form.control}
-            name="shift"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Turno</FormLabel>
-                 <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecione o turno" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    <SelectItem value="manha">Manhã</SelectItem>
-                    <SelectItem value="tarde">Tarde</SelectItem>
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+          <div className="grid grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="shift"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Turno</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Selecione o turno" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="manha">Manhã</SelectItem>
+                      <SelectItem value="tarde">Tarde</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+                control={form.control}
+                name="monthlyFee"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Mensalidade (R$)</FormLabel>
+                        <FormControl>
+                            <Input type="number" step="any" placeholder="Ex: 450.00" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                )}
+               />
+          </div>
 
           <DialogFooter className="pt-4">
             <DialogClose asChild>

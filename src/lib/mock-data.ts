@@ -279,7 +279,8 @@ export const initialMockData = {
             neighborhood: "Bela Vista",
             city: "São Paulo",
             state: "SP",
-            zipCode: "01311-000"
+            zipCode: "01311-000",
+            monthlyFee: 450.00
         },
         {
             id: "student-2",
@@ -296,7 +297,8 @@ export const initialMockData = {
             neighborhood: "Consolação",
             city: "São Paulo",
             state: "SP",
-            zipCode: "01220-010"
+            zipCode: "01220-010",
+            monthlyFee: 480.50
         },
         {
             id: "student-3",
@@ -313,7 +315,8 @@ export const initialMockData = {
             neighborhood: "Liberdade",
             city: "São Paulo",
             state: "SP",
-            zipCode: "01504-001"
+            zipCode: "01504-001",
+            monthlyFee: 420.00
         },
         {
             id: "student-4",
@@ -330,7 +333,8 @@ export const initialMockData = {
             neighborhood: "Aclimação",
             city: "São Paulo",
             state: "SP",
-            zipCode: "01529-000"
+            zipCode: "01529-000",
+            monthlyFee: 500.00
         },
         {
             id: "student-5",
@@ -347,7 +351,8 @@ export const initialMockData = {
             neighborhood: "Paraíso",
             city: "São Paulo",
             state: "SP",
-            zipCode: "04004-040"
+            zipCode: "04004-040",
+            monthlyFee: 450.00
         },
         {
             id: "student-6",
@@ -364,7 +369,8 @@ export const initialMockData = {
             neighborhood: "Vila Mariana",
             city: "São Paulo",
             state: "SP",
-            zipCode: "04011-060"
+            zipCode: "04011-060",
+            monthlyFee: 450.00
         },
         {
             id: "student-7",
@@ -381,7 +387,8 @@ export const initialMockData = {
             neighborhood: "Ibirapuera",
             city: "São Paulo",
             state: "SP",
-            zipCode: "04094-050"
+            zipCode: "04094-050",
+            monthlyFee: 510.00
         },
         {
             id: "student-8",
@@ -398,7 +405,8 @@ export const initialMockData = {
             neighborhood: "Campo Belo",
             city: "São Paulo",
             state: "SP",
-            zipCode: "04609-001"
+            zipCode: "04609-001",
+            monthlyFee: 510.00
         },
         {
             id: "student-9",
@@ -415,7 +423,8 @@ export const initialMockData = {
             neighborhood: "Vila Andrade",
             city: "São Paulo",
             state: "SP",
-            zipCode: "05726-140"
+            zipCode: "05726-140",
+            monthlyFee: 550.00
         },
         {
             id: "student-10",
@@ -432,14 +441,15 @@ export const initialMockData = {
             neighborhood: "Panamby",
             city: "São Paulo",
             state: "SP",
-            zipCode: "05707-430"
+            zipCode: "05707-430",
+            monthlyFee: 550.00
         },
-        { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", routeId: "route-6", shift: "Manhã", status: "aguardando", latitude: -23.558, longitude: -46.662, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP" },
-        { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", routeId: "route-6", shift: "Manhã", status: "aguardando", latitude: -23.559, longitude: -46.663, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP" },
-        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", routeId: "route-7", shift: "Tarde", status: "aguardando", latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP" },
-        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", routeId: "route-7", shift: "Tarde", status: "aguardando", latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP" },
-        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", routeId: "route-8", shift: "Manhã", status: "aguardando", latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP" },
-        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", routeId: "route-8", shift: "Manhã", status: "aguardando", latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP" }
+        { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", routeId: "route-6", shift: "Manhã", status: "aguardando", latitude: -23.558, longitude: -46.662, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP", monthlyFee: 430.00 },
+        { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", routeId: "route-6", shift: "Manhã", status: "aguardando", latitude: -23.559, longitude: -46.663, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP", monthlyFee: 490.00 },
+        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", routeId: "route-7", shift: "Tarde", status: "aguardando", latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
+        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", routeId: "route-7", shift: "Tarde", status: "aguardando", latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
+        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", routeId: "route-8", shift: "Manhã", status: "aguardando", latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
+        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", routeId: "route-8", shift: "Manhã", status: "aguardando", latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 }
     ],
     routes: [
         { id: "route-1", name: "Rota Matinal - Zona Sul", driverId: "driver-1", assistantId: "user-aux-1", studentIds: ["student-1", "student-2"], active: true, shift: "manha" },

@@ -1,30 +1,190 @@
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, Settings, FilePlus } from "lucide-react";
-import { Button } from "@/components/ui/button";
+'use client';
+
+import { useState, useMemo } from 'react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { FilePlus, Loader2 } from 'lucide-react';
+import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useToast } from '@/hooks/use-toast';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { format, startOfMonth, endOfMonth, set } from 'date-fns';
+
+type Invoice = {
+  id: string;
+  studentId: string;
+  parentUserId: string;
+  amount: number;
+  dueDate: string;
+  status: 'pending' | 'paid' | 'overdue';
+};
+
+const statusVariantMap: Record<Invoice['status'], 'secondary' | 'default' | 'destructive'> = {
+  pending: 'secondary',
+  paid: 'default',
+  overdue: 'destructive',
+};
+
+const statusTextMap: Record<Invoice['status'], string> = {
+  pending: 'Pendente',
+  paid: 'Pago',
+  overdue: 'Vencida',
+};
 
 export default function FinancialPage() {
+  const { toast } = useToast();
+  const { addDoc } = useMockData();
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection('invoices');
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
+  const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
+
+  const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
+  const parentsMap = useMemo(() => {
+    if (!parents || !students) return new Map();
+    const studentToParentMap = new Map(students.map(s => [s.id, s.parentId]));
+    const parentIdToNameMap = new Map(parents.map(p => [p.id, p.name]));
+    const finalMap = new Map();
+    for (const student of students) {
+        const parentId = studentToParentMap.get(student.id);
+        const parentName = parentIdToNameMap.get(parentId);
+        if (parentName) {
+            finalMap.set(student.id, parentName);
+        }
+    }
+    return finalMap;
+  }, [parents, students]);
+
+  const sortedInvoices = useMemo(() => {
+    if (!invoices) return [];
+    return [...invoices].sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+  }, [invoices]);
+
+  const handleGenerateInvoices = () => {
+    if (!students || !parents) {
+      toast({ title: 'Dados não carregados', description: 'Aguarde os dados de alunos e pais carregarem.', variant: 'destructive'});
+      return;
+    }
+
+    setIsGenerating(true);
+    const today = new Date();
+    const currentMonthStart = startOfMonth(today);
+    
+    let generatedCount = 0;
+
+    const studentParentMap = new Map(students.map(s => [s.id, s.parentId]));
+    const parentUserMap = new Map(parents.map(p => [p.id, p.userId]));
+
+    students.forEach(student => {
+        const parentId = studentParentMap.get(student.id);
+        const parentUserId = parentId ? parentUserMap.get(parentId) : null;
+
+        if (!parentUserId) {
+            console.warn(`Responsável não encontrado para o aluno ${student.name}`);
+            return;
+        }
+
+        const hasInvoiceThisMonth = (invoices || []).some(inv => {
+            const dueDate = new Date(inv.dueDate);
+            return inv.studentId === student.id && 
+                   dueDate >= currentMonthStart && 
+                   dueDate <= endOfMonth(currentMonthStart);
+        });
+
+        if (!hasInvoiceThisMonth) {
+            const dueDate = set(currentMonthStart, { date: 10 });
+            const studentFee = student.monthlyFee || 450.00; // Use individual fee or fallback
+            addDoc('invoices', {
+                studentId: student.id,
+                parentUserId: parentUserId,
+                amount: studentFee,
+                dueDate: format(dueDate, 'yyyy-MM-dd'),
+                status: 'pending'
+            });
+            generatedCount++;
+        }
+    });
+
+    setIsGenerating(false);
+
+    if (generatedCount > 0) {
+        toast({
+            title: 'Faturas Geradas!',
+            description: `${generatedCount} nova(s) fatura(s) foram geradas para este mês.`
+        });
+    } else {
+        toast({
+            title: 'Nenhuma fatura nova',
+            description: 'Todos os alunos já possuem faturas para o mês corrente.'
+        });
+    }
+  };
+  
+  const isLoading = areInvoicesLoading || areStudentsLoading || areParentsLoading;
+
+
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Gestão Financeira</h1>
-        <div className="flex gap-2">
-            <Button variant="outline">
-                <Settings className="mr-2" />
-                Configurar Faturamento
-            </Button>
-             <Button>
-                <FilePlus className="mr-2" />
-                Gerar Faturas do Mês
-            </Button>
-        </div>
+        <Button onClick={handleGenerateInvoices} disabled={isGenerating}>
+          {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <FilePlus className="mr-2" />}
+          Gerar Faturas do Mês
+        </Button>
       </div>
-      <Card className="flex flex-col items-center justify-center text-center p-12 min-h-[400px]">
-        <DollarSign className="h-16 w-16 text-muted-foreground mb-4" />
+      <Card>
         <CardHeader>
-          <CardTitle>Controle Financeiro Centralizado</CardTitle>
+          <CardTitle>Histórico de Faturas</CardTitle>
+          <CardDescription>Visualize todas as faturas geradas para os alunos.</CardDescription>
         </CardHeader>
         <CardContent>
-          <p className="max-w-md mx-auto text-muted-foreground">Em breve: aqui você poderá gerenciar faturamentos mensais, cobranças avulsas, controlar pagamentos e enviar lembretes aos pais.</p>
+           <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Aluno</TableHead>
+                <TableHead>Responsável</TableHead>
+                <TableHead>Vencimento</TableHead>
+                <TableHead>Valor</TableHead>
+                <TableHead>Status</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {isLoading && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center h-24">Carregando...</TableCell>
+                </TableRow>
+              )}
+              {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
+                sortedInvoices.map((invoice) => (
+                  <TableRow key={invoice.id}>
+                    <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
+                    <TableCell>{parentsMap.get(invoice.studentId) || 'Responsável não encontrado'}</TableCell>
+                    <TableCell>{format(new Date(invoice.dueDate), 'dd/MM/yyyy')}</TableCell>
+                    <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
+                    <TableCell>
+                        <Badge variant={statusVariantMap[invoice.status]}>
+                            {statusTextMap[invoice.status]}
+                        </Badge>
+                    </TableCell>
+                  </TableRow>
+                ))
+              ) : (
+                !isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={5} className="h-24 text-center">Nenhuma fatura encontrada. Gere as faturas do mês para começar.</TableCell>
+                  </TableRow>
+                )
+              )}
+            </TableBody>
+           </Table>
         </CardContent>
       </Card>
     </div>
