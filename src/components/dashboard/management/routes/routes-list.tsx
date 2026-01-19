@@ -41,20 +41,24 @@ type Route = {
   id: string;
   name: string;
   driverId: string;
+  assistantId?: string;
   studentIds: string[];
   active: boolean;
   shift: 'manha' | 'tarde';
 };
 type Driver = { id: string; name: string };
 type Student = { id: string; name: string };
+type Assistant = { id: string; name: string; profile: string };
+
 
 interface RoutesListProps {
   initialRoutes: Route[];
   initialDrivers: Driver[];
   initialStudents: Student[];
+  initialAssistants: Assistant[];
 }
 
-export function RoutesList({ initialRoutes, initialDrivers, initialStudents }: RoutesListProps) {
+export function RoutesList({ initialRoutes, initialDrivers, initialStudents, initialAssistants }: RoutesListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
 
@@ -65,11 +69,14 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents }: R
   const { data: liveRoutes, isLoading: areRoutesLoading } = useMockCollection('routes');
   const { data: liveDrivers, isLoading: areDriversLoading } = useMockCollection('drivers');
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
+  const { data: liveUsers, isLoading: areUsersLoading } = useMockCollection('users');
+
 
   const routes = liveRoutes ?? initialRoutes;
   const drivers = liveDrivers ?? initialDrivers;
   const students = liveStudents ?? initialStudents;
-  const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading;
+  const assistants = useMemo(() => (liveUsers ?? initialAssistants)?.filter(u => u.profile === 'auxiliar'), [liveUsers, initialAssistants]);
+  const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading || areUsersLoading;
 
   const driversMap = useMemo(() => {
     if (!drivers) return new Map();
@@ -123,6 +130,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents }: R
             route={selectedRoute || undefined} 
             drivers={drivers || []}
             students={students || []}
+            assistants={assistants || []}
             onFormSubmit={handleFormSubmit}
           />
         </Dialog>

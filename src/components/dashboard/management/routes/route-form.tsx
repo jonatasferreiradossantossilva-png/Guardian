@@ -49,11 +49,13 @@ const formSchema = z.object({
 type RouteFormValues = z.infer<typeof formSchema>;
 type Driver = { id: string; name: string };
 type Student = { id: string; name: string, routeId?: string, shift: string };
+type Assistant = { id: string; name: string };
 
 interface RouteFormProps {
   route?: { id: string } & Partial<RouteFormValues>;
   drivers: Driver[];
   students: Student[];
+  assistants: Assistant[];
   onFormSubmit: () => void;
 }
 
@@ -61,6 +63,7 @@ export function RouteForm({
   route,
   drivers,
   students,
+  assistants,
   onFormSubmit,
 }: RouteFormProps) {
   const { toast } = useToast();
@@ -113,7 +116,7 @@ export function RouteForm({
     } else {
       form.reset(form.defaultValues);
     }
-  }, [route, form.reset]);
+  }, [route, form]);
 
   const moveStudents = (direction: 'toRoute' | 'fromRoute' | 'allToRoute' | 'allFromRoute') => {
     const currentStudentIds = form.getValues('studentIds');
@@ -162,12 +165,17 @@ export function RouteForm({
 
 
   const onSubmit = (data: RouteFormValues) => {
+    const finalData = { ...data };
+    if (!finalData.assistantId || finalData.assistantId === 'none') {
+        delete (finalData as Partial<typeof finalData>).assistantId;
+    }
+
     if (route) {
-      updateDoc('routes', route.id, data);
-      toast({ title: 'Rota atualizada!', description: `A rota ${data.name} foi atualizada.` });
+      updateDoc('routes', route.id, finalData);
+      toast({ title: 'Rota atualizada!', description: `A rota ${finalData.name} foi atualizada.` });
     } else {
-      addDoc('routes', data);
-      toast({ title: 'Rota adicionada!', description: `A rota ${data.name} foi adicionada ao sistema.` });
+      addDoc('routes', finalData);
+      toast({ title: 'Rota adicionada!', description: `A rota ${finalData.name} foi adicionada ao sistema.` });
     }
     onFormSubmit();
   };
@@ -194,7 +202,23 @@ export function RouteForm({
               <FormItem><FormLabel>Turno</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione o turno" /></SelectTrigger></FormControl><SelectContent><SelectItem value="manha">Manhã</SelectItem><SelectItem value="tarde">Tarde</SelectItem></SelectContent></Select><FormMessage /></FormItem>
             )}/>
             <FormField control={form.control} name="assistantId" render={({ field }) => (
-              <FormItem><FormLabel>Auxiliar (ID do Usuário)</FormLabel><FormControl><Input placeholder="Cole o ID do usuário auxiliar (opcional)" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem>
+                    <FormLabel>Auxiliar</FormLabel>
+                    <Select onValueChange={field.onChange} value={field.value || ''}>
+                        <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione um auxiliar (opcional)" />
+                            </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                            <SelectItem value="none">Nenhum</SelectItem>
+                            {assistants.map(a => (
+                                <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <FormMessage />
+                </FormItem>
             )}/>
           </div>
 

@@ -2,6 +2,16 @@
 // This file contains mock data for the presentation mode.
 
 export const initialMockData = {
+    users: [
+        { id: "user-admin-1", name: "Admin User", email: "admin@rotasegura.com", profile: 'gestor', active: true },
+        { id: "user-motorista-1", name: "Carlos Silva", email: "carlos.silva@rotasegura.com", profile: 'motorista', active: true },
+        { id: "user-motorista-2", name: "Mariana Costa", email: "mariana.costa@rotasegura.com", profile: 'motorista', active: true },
+        { id: "user-motorista-3", name: "Roberto Almeida", email: "roberto.almeida@rotasegura.com", profile: 'motorista', active: true },
+        { id: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", profile: 'pai', active: true },
+        { id: "user-pai-2", name: "João Costa", email: "joao.costa@email.com", profile: 'pai', active: true },
+        { id: "user-aux-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", profile: 'auxiliar', active: true },
+        { id: "user-aux-2", name: "Ricardo Souza", email: "ricardo.souza@rotasegura.com", profile: 'auxiliar', active: true },
+    ],
     schools: [
         { 
             id: "school-1", 
