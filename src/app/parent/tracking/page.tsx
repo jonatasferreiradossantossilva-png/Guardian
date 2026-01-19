@@ -10,7 +10,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -41,7 +41,7 @@ interface LocationUpdate {
 }
 
 const statusText: Record<Student["status"], string> = {
-  aguardando: "Aguardando embarque",
+  aguardando: "Confirmado / Aguardando",
   a_bordo: "A bordo da van",
   desembarcou: "Desembarcou em segurança",
   ausente: "Ausente hoje",
@@ -83,6 +83,7 @@ const interpolate = (start, end, factor) => {
 export default function ParentTrackingPage() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { toast } = useToast();
+  const { updateDoc } = useMockData();
   const simulationTimer = useRef(null);
   const [simulatedLocation, setSimulatedLocation] = useState(null);
   const [mockUserId, setMockUserId] = useState<string | null>(null);
@@ -177,9 +178,20 @@ export default function ParentTrackingPage() {
   const displayLocation = realLocation || simulatedLocation;
   
   const handleCommunicateAbsence = () => {
+    if (!student) return;
+    updateDoc('students', student.id, { status: 'ausente' });
     toast({
       title: "Ausência comunicada",
       description: `O motorista foi notificado que ${student?.name || 'o aluno'} não precisará de transporte hoje.`,
+    });
+  };
+
+  const handleConfirmPresence = () => {
+    if (!student) return;
+    updateDoc('students', student.id, { status: 'aguardando' });
+    toast({
+        title: "Presença Confirmada!",
+        description: `O motorista foi notificado que ${student.name} aguardará o transporte.`,
     });
   };
 
@@ -290,18 +302,28 @@ export default function ParentTrackingPage() {
                   <MessageCircle className="mr-2 h-4 w-4" /> Enviar Mensagem
                 </Link>
               </Button>
-              <Button
-                variant="destructive"
-                className="w-full"
-                onClick={handleCommunicateAbsence}
-                disabled={student.status === 'ausente'}
-              >
-                <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
-              </Button>
-               <Button variant="outline" className="w-full">
+               {studentStatus === 'aguardando' && (
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={handleCommunicateAbsence}
+                  >
+                    <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
+                  </Button>
+                )}
+                {studentStatus === 'ausente' && (
+                  <Button
+                    variant="secondary"
+                    className="w-full"
+                    onClick={handleConfirmPresence}
+                  >
+                    <CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença
+                  </Button>
+                )}
+               <Button variant="outline" className="w-full" disabled={studentStatus !== 'aguardando' && studentStatus !== 'ausente'}>
                 <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
               </Button>
-              <Button variant="outline" className="w-full">
+              <Button variant="outline" className="w-full" disabled={studentStatus !== 'aguardando' && studentStatus !== 'ausente'}>
                 <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
               </Button>
             </CardFooter>
