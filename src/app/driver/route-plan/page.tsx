@@ -86,23 +86,25 @@ export default function RoutePlanPage() {
   }, []);
 
   // 1. Fetch driver profile from the dynamic user ID
-  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', mockUserId ? [
-      { field: 'userId', op: '==', value: mockUserId }
-  ] : []);
+  const driverFilter = useMemo(() => mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : [], [mockUserId]);
+  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', driverFilter);
   const driverProfile = useMemo(() => (drivers && drivers.length > 0 ? drivers[0] : null), [drivers]);
   const driverId = driverProfile?.id;
 
   // 2. Fetch current driver's active route using their profile ID
-  const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", driverId ? [
+  const routeFilter = useMemo(() => driverId ? [
     { field: "driverId", op: "==", value: driverId },
     { field: "active", op: "==", value: true },
-  ] : []);
+  ]: [], [driverId]);
+
+  const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", routeFilter);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
   // 3. Fetch students for the current route
-  const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route?.studentIds ? [
+  const studentFilter = useMemo(() => route?.studentIds ? [
     { field: 'id', op: 'in', value: route.studentIds }
-  ] : []);
+  ] : [], [route?.studentIds]);
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", studentFilter);
 
   // 4. Order students according to the route plan
   const orderedStudents = useMemo(() => {
@@ -157,7 +159,7 @@ export default function RoutePlanPage() {
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId);
-  }, [route, driverId, isRouteActive, setDoc]);
+  }, [isRouteActive]); // Simplified dependency
 
   const isLoading = isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
   
@@ -175,10 +177,10 @@ export default function RoutePlanPage() {
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Plano de Rota do Motorista</h1>
          <div className="flex items-center gap-2">
-            <Button asChild variant="outline" size="icon">
+            <Button asChild variant="outline">
                 <Link href="/driver/messages">
-                    <MessageSquare />
-                    <span className="sr-only">Mensagens</span>
+                    <MessageSquare className="mr-2 h-4 w-4" />
+                    Mensagens
                 </Link>
             </Button>
             <Link href="/" passHref>
