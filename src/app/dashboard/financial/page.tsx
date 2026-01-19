@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, Loader2 } from 'lucide-react';
+import { FilePlus, Loader2, MoreHorizontal } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -15,6 +15,14 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { format, startOfMonth, endOfMonth, set } from 'date-fns';
 
 type Invoice = {
@@ -40,7 +48,7 @@ const statusTextMap: Record<Invoice['status'], string> = {
 
 export default function FinancialPage() {
   const { toast } = useToast();
-  const { addDoc } = useMockData();
+  const { addDoc, updateDoc } = useMockData();
   const [isGenerating, setIsGenerating] = useState(false);
 
   const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection('invoices');
@@ -128,6 +136,14 @@ export default function FinancialPage() {
     }
   };
   
+  const handleStatusChange = (invoiceId: string, newStatus: Invoice['status']) => {
+    updateDoc('invoices', invoiceId, { status: newStatus });
+    toast({
+      title: 'Status da Fatura Atualizado!',
+      description: `A fatura foi marcada como ${statusTextMap[newStatus]}.`,
+    });
+  };
+
   const isLoading = areInvoicesLoading || areStudentsLoading || areParentsLoading;
 
 
@@ -143,7 +159,7 @@ export default function FinancialPage() {
       <Card>
         <CardHeader>
           <CardTitle>Histórico de Faturas</CardTitle>
-          <CardDescription>Visualize todas as faturas geradas para os alunos.</CardDescription>
+          <CardDescription>Visualize e gerencie todas as faturas geradas para os alunos.</CardDescription>
         </CardHeader>
         <CardContent>
            <Table>
@@ -154,12 +170,13 @@ export default function FinancialPage() {
                 <TableHead>Vencimento</TableHead>
                 <TableHead>Valor</TableHead>
                 <TableHead>Status</TableHead>
+                <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center h-24">Carregando...</TableCell>
+                  <TableCell colSpan={6} className="text-center h-24">Carregando...</TableCell>
                 </TableRow>
               )}
               {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
@@ -174,12 +191,35 @@ export default function FinancialPage() {
                             {statusTextMap[invoice.status]}
                         </Badge>
                     </TableCell>
+                    <TableCell className="text-right">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Abrir menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Alterar Status</DropdownMenuLabel>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>
+                                    Marcar como Paga
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>
+                                    Marcar como Pendente
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">
+                                    Marcar como Vencida
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </TableCell>
                   </TableRow>
                 ))
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="h-24 text-center">Nenhuma fatura encontrada. Gere as faturas do mês para começar.</TableCell>
+                    <TableCell colSpan={6} className="h-24 text-center">Nenhuma fatura encontrada. Gere as faturas do mês para começar.</TableCell>
                   </TableRow>
                 )
               )}
