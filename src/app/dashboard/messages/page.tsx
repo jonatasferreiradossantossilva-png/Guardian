@@ -76,14 +76,14 @@ export default function MessagesPage() {
   return (
     <div>
       <h1 className="text-3xl font-bold tracking-tight mb-6">Central de Mensagens</h1>
-       <Tabs defaultValue="parents">
         <Card className="grid grid-cols-[300px_1fr] h-[calc(100vh-12rem)]">
           {/* Conversation List Panel */}
           <div className="flex flex-col border-r">
             <CardHeader>
               <CardTitle>Conversas</CardTitle>
             </CardHeader>
-             <div className="px-2">
+            <Tabs defaultValue="parents" className="flex flex-col flex-1">
+             <div className="px-4">
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="parents"><User className="mr-2 h-4 w-4"/>Pais</TabsTrigger>
                     <TabsTrigger value="drivers"><Car className="mr-2 h-4 w-4"/>Motoristas</TabsTrigger>
@@ -130,6 +130,7 @@ export default function MessagesPage() {
                     </div>
                 </TabsContent>
             </ScrollArea>
+          </Tabs>
           </div>
 
           {/* Chat Window */}
@@ -192,7 +193,6 @@ export default function MessagesPage() {
             )}
           </div>
         </Card>
-       </Tabs>
     </div>
   );
 }
