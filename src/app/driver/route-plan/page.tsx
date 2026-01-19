@@ -107,18 +107,19 @@ export default function DriverRoutePlanPage() {
 
     const studentMap = new Map(students.map((s) => [s.id, s]));
 
+    // Updated demo data logic
     const studentStatusMap: Record<string, StudentStatus> = {
-      'student-1': 'a_bordo',
-      'student-2': 'aguardando',
+      [route.studentIds[0]]: 'aguardando',
+      [route.studentIds[1]]: 'a_bordo',
     };
 
     return route.studentIds
-      .map((id) => {
+      .map((id, index) => {
         const student = studentMap.get(id);
         if (student) {
-          // Override status for demonstration
-          if (id in studentStatusMap) {
-            student.status = studentStatusMap[id];
+          // Override status for demonstration if it's one of the first two
+          if (index < 2) {
+             student.status = studentStatusMap[id] || student.status;
           }
         }
         return student;
