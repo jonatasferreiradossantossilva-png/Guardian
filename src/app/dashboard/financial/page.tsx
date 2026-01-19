@@ -36,8 +36,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion"
-import { format, startOfMonth, endOfMonth, set, parseISO } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
+import { format, startOfMonth, endOfMonth, set } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 type Invoice = {
@@ -202,9 +201,14 @@ export default function FinancialPage() {
   const monthKeys = Object.keys(filteredAndGroupedInvoices).sort().reverse();
   
   const formatMonth = (monthStr: string) => {
-      const [year, month] = monthStr.split('-');
-      const date = new Date(Number(year), Number(month) -1);
-      return format(date, "MMMM 'de' yyyy", { locale: ptBR });
+      const monthNames: Record<string, string> = {
+        '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+        '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+        '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+      };
+      const [year, monthNum] = monthStr.split('-');
+      const monthName = monthNames[monthNum] || '';
+      return `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} de ${year}`;
   }
 
   return (
@@ -338,5 +342,3 @@ export default function FinancialPage() {
     </div>
   );
 }
-
-    

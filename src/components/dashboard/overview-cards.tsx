@@ -5,8 +5,6 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, GraduationCap, Truck, FileText } from "lucide-react";
 import { useMockCollection } from "@/hooks/use-mock-data";
-import { parse, format } from 'date-fns';
-import { ptBR } from 'date-fns/locale';
 
 export function OverviewCards() {
   const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
@@ -39,11 +37,17 @@ export function OverviewCards() {
             }
         }
     });
+    
+    const monthNames: Record<string, string> = {
+      '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+      '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+      '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+    };
+    
+    const [year, monthNum] = latestMonthStr.split('-');
+    const monthName = monthNames[monthNum] || '';
+    const capitalizedDisplayMonth = `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} de ${year}`;
 
-    // Format the month string for display
-    const date = parse(latestMonthStr, 'yyyy-MM', new Date());
-    const displayMonth = format(date, "MMMM 'de' yyyy", { locale: ptBR });
-    const capitalizedDisplayMonth = displayMonth.charAt(0).toUpperCase() + displayMonth.slice(1);
 
     return { monthlyRevenue, monthlyReceivables, displayMonth: capitalizedDisplayMonth };
 
