@@ -48,6 +48,7 @@ type Student = {
   number?: string;
   city?: string;
   state?: string;
+  monthlyFee?: number;
 };
 type School = { id: string; name: string };
 type Parent = { id: string; name: string };
@@ -157,6 +158,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                 <TableHead>Escola</TableHead>
                 <TableHead>Responsável</TableHead>
                 <TableHead>Turno</TableHead>
+                <TableHead>Mensalidade</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -164,7 +166,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">
+                  <TableCell colSpan={8} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -177,6 +179,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                     <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
                     <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
                     <TableCell><Badge variant="outline">{student.shift}</Badge></TableCell>
+                    <TableCell>R$ {student.monthlyFee ? student.monthlyFee.toFixed(2) : 'N/A'}</TableCell>
                     <TableCell><Badge variant="secondary">{student.status}</Badge></TableCell>
                     <TableCell className="text-right">
                         <DropdownMenu>
@@ -206,7 +209,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                       Nenhum aluno cadastrado.
                     </TableCell>
                   </TableRow>
