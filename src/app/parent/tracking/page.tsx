@@ -285,8 +285,10 @@ export default function ParentTrackingPage() {
               </div>
             </CardContent>
             <CardFooter className="grid grid-cols-2 md:flex md:flex-row gap-2">
-              <Button className="w-full">
-                <MessageCircle className="mr-2 h-4 w-4" /> Enviar Mensagem
+               <Button asChild className="w-full">
+                <Link href="/parent/messages">
+                  <MessageCircle className="mr-2 h-4 w-4" /> Enviar Mensagem
+                </Link>
               </Button>
               <Button
                 variant="destructive"

@@ -9,7 +9,7 @@
  * - /roles_driver/{userId}: Grants driver rights.
  * - /roles_assistant/{userId}: Grants assistant rights.
  * - Top-level collections (e.g., /schools, /students): Master data for the operation.
- * - /users/{userId}/messages/{messageId}: User-specific private data.
+ * - /messages/{messageId}: Communication channel between users.
  *
  * Key Security Decisions:
  * - Read Access for Authenticated Users: Most master data is readable by any signed-in user to support
@@ -169,16 +169,25 @@ service cloud.firestore {
     }
 
     /**
-     * @description Stores messages partitioned by user.
-     * @principle Restricts access to a user's own data tree, with an override for admins.
+     * @description Manages all messages.
+     * @principle Users can create messages. They can only read messages where they are the sender or recipient.
      */
-    match /users/{userId}/messages/{messageId} {
-      allow get: if isOwner(userId) || isAdmin();
-      allow list: if isOwner(userId) || isAdmin();
-      allow create: if (isOwner(userId) || isAdmin()) && request.resource.data.senderId == request.auth.uid;
-      allow update: if (isOwner(resource.data.senderId) || isAdmin()) && resource != null;
-      allow delete: if (isOwner(resource.data.senderId) || isAdmin()) && resource != null;
+    match /messages/{messageId} {
+      allow read: if isSignedIn() && (resource.data.senderId == request.auth.uid || resource.data.recipientId == request.auth.uid || isAdmin());
+      allow create: if isSignedIn() && request.resource.data.senderId == request.auth.uid;
+      // No updates or deletes allowed to preserve chat history
+      allow update, delete: if false;
     }
+    
+    /**
+     * @description Stores predefined messages for quick use.
+     * @principle All signed-in users can read, only admins can manage them.
+     */
+    match /predefined_messages/{messageId} {
+        allow get, list: if isSignedIn();
+        allow create, update, delete: if isAdmin();
+    }
+
 
     /**
      * @description Manages administrator roles.

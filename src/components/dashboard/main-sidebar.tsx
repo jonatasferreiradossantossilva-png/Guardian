@@ -33,6 +33,7 @@ import {
   GraduationCap,
   ClipboardCheck,
   Sparkles,
+  MessageCircle,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -48,6 +49,7 @@ const managementLinks = [
     label: "Alunos",
     icon: GraduationCap,
   },
+  { href: "/dashboard/management/predefined-messages", label: "Mensagens", icon: MessageCircle },
 ];
 
 const profileLinks = [

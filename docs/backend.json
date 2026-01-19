@@ -516,7 +516,7 @@
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Message",
       "type": "object",
-      "description": "Represents a message between a parent and the system.",
+      "description": "Represents a message between users (parents, drivers, admins).",
       "properties": {
         "id": {
           "type": "string",
@@ -524,11 +524,11 @@
         },
         "senderId": {
           "type": "string",
-          "description": "Identifier of the sender (either Parent or System)."
+          "description": "Identifier of the sender (can be a Parent, Driver, or Admin user ID)."
         },
         "recipientId": {
           "type": "string",
-          "description": "Identifier of the recipient (either Parent or System)."
+          "description": "Identifier of the recipient (can be a Parent, Driver, or Admin user ID)."
         },
         "text": {
           "type": "string",
@@ -547,6 +547,27 @@
         "text",
         "timestamp"
       ]
+    },
+    "PredefinedMessage": {
+      "title": "Predefined Message",
+      "type": "object",
+      "description": "A template for quick messages.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier."
+        },
+        "text": {
+          "type": "string",
+          "description": "The content of the message."
+        },
+        "for": {
+          "type": "string",
+          "description": "Who can use this message ('parent', 'driver', 'all').",
+          "enum": ["parent", "driver", "all"]
+        }
+      },
+      "required": ["id", "text", "for"]
     },
     "Stop": {
       "$schema": "http://json-schema.org/draft-07/schema#",
@@ -726,21 +747,33 @@
         }
       },
       {
-        "path": "/users/{userId}/messages/{messageId}",
+        "path": "/messages/{messageId}",
         "definition": {
           "entityName": "Message",
           "schema": {
             "$ref": "#/backend/entities/Message"
           },
-          "description": "Stores messages between users (parents) and the system. Includes denormalized 'senderId' and 'recipientId' for authorization independence.",
+          "description": "Stores all messages. Rules must enforce that users can only read messages where they are the sender or recipient.",
           "params": [
-            {
-              "name": "userId",
-              "description": "The unique identifier for the user (parent)."
-            },
-            {
+             {
               "name": "messageId",
               "description": "The unique identifier for the message."
+            }
+          ]
+        }
+      },
+       {
+        "path": "/predefined_messages/{messageId}",
+        "definition": {
+          "entityName": "PredefinedMessage",
+          "schema": {
+            "$ref": "#/backend/entities/PredefinedMessage"
+          },
+          "description": "Stores predefined messages for quick use.",
+          "params": [
+            {
+              "name": "messageId",
+              "description": "The unique identifier for the predefined message."
             }
           ]
         }
@@ -829,5 +862,3 @@
     "reasoning": "The Firestore data structure is designed to support the 'Rota Segura Mobile' application, focusing on real-time incident reporting, route optimization, and communication. The design prioritizes Authorization Independence by denormalizing authorization data where necessary. It utilizes structural segregation to maintain a homogeneous security posture within collections. Access Modeling follows consistent patterns for user-owned data and collaborative scenarios.\n\n**Authorization Independence:**\n\n*   For entities where authorization depends on parent data, like messages between parents and the system, the relevant authorization context (e.g., parent ID, system ID) is included directly within each message document. This avoids `get()` calls in security rules and enables atomic operations.\n*   For collaborative entities like routes, the `driverId` is denormalized to allow direct association and simplified security rules.\n\n**Structural Segregation:**\n\n*   Data with different access requirements are stored in separate collections. For example, global roles for admins are stored in `/roles_admin/{uid}` rather than mixing admin and non-admin user data in a single `/users` collection.\n*   User-specific data, like parent-student messages, is stored within a hierarchical path (`/users/{userId}/messages/{messageId}`) to ensure clear ownership and simplified security rules.\n\n**Access Modeling:**\n\n*   Private data is managed using path-based ownership (e.g., `/users/{userId}/invoices/{invoiceId}`).\n*   User-owned data is organized hierarchically (e.g., `/users/{userId}/routes/{routeId}`).\n*   Collaborative data (if any) would typically use a membership map (`members: {uid1: \"role\", uid2: \"role\"}`), but it's not explicitly needed in the current feature set. If future features require it (e.g., shared routes), this model should be implemented.\n\n**QAPs (Rules are not Filters):**\n\n*   The structure enables secure `list` operations by ensuring all documents within a collection share the same security requirements. For example, listing routes is secure because only authorized users can access the `/routes` collection, and all documents within that collection adhere to the same authorization rules (e.g., admin access). The alternative is to implement filtering in security rules, which is avoided."
   }
 }
-
-    
