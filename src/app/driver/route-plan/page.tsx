@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { useUser } from "@/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { useMockCollection, useMockData, useMockDoc } from "@/hooks/use-mock-data";
+import { useMockCollection, useMockData, useMockDoc, useMockNestedDoc } from "@/hooks/use-mock-data";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -75,7 +75,7 @@ const statusPinColor: Record<StudentStatus, string> = {
 
 export default function RoutePlanPage() {
   const { user, isUserLoading } = useUser(); // Still use for auth context
-  const { updateDoc, setDoc, getNestedDoc } = useMockData();
+  const { updateDoc, setDoc } = useMockData();
   const [shift, setShift] = useState<Shift>("Manhã");
   
   const mockUserId = "driver-1";
@@ -105,8 +105,14 @@ export default function RoutePlanPage() {
   const schoolId = useMemo(() => orderedStudents.length > 0 ? orderedStudents[0].schoolId : null, [orderedStudents]);
   const { data: school, isLoading: isSchoolLoading } = useMockDoc('schools', schoolId);
 
-  // 5. Fetch driver's live location
-  const [driverLocation, setDriverLocation] = useState(getNestedDoc(`locations/${mockUserId}`));
+  // 5. Fetch driver's live location by subscribing to the mock context
+  const { data: driverLocation } = useMockNestedDoc(`locations/${mockUserId}`);
+
+  // Use a ref to hold the current location for the interval to prevent stale closures.
+  const locationRef = useRef(driverLocation);
+  useEffect(() => {
+    locationRef.current = driverLocation;
+  }, [driverLocation]);
 
   // Function to update a student's status
   const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
@@ -122,20 +128,20 @@ export default function RoutePlanPage() {
     if (!isRouteActive) return;
 
     const intervalId = setInterval(() => {
-      // Simulate location change
-      setDriverLocation(currentLocation => {
-        const newLat = (currentLocation?.latitude || -23.55052) + (Math.random() - 0.5) * 0.001;
-        const newLng = (currentLocation?.longitude || -46.633308) + (Math.random() - 0.5) * 0.001;
-        
-        const newLocation = {
-            latitude: newLat,
-            longitude: newLng,
-            timestamp: new Date().toISOString(),
-        };
+      // Get the latest location from the ref to prevent stale closures
+      const currentLocation = locationRef.current || { latitude: -23.55052, longitude: -46.633308 };
 
-        setDoc(`locations/${mockUserId}`, newLocation);
-        return newLocation;
-      });
+      const newLat = currentLocation.latitude + (Math.random() - 0.5) * 0.001;
+      const newLng = currentLocation.longitude + (Math.random() - 0.5) * 0.001;
+      
+      const newLocation = {
+          latitude: newLat,
+          longitude: newLng,
+          timestamp: new Date().toISOString(),
+      };
+      
+      // Only update the mock database. The useMockNestedDoc hook will handle re-rendering.
+      setDoc(`locations/${mockUserId}`, newLocation);
 
     }, 10000); // Update every 10 seconds
 
