@@ -96,12 +96,12 @@ export default function ParentTrackingPage() {
 
   const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", mockUserId ? [
     { field: "userId", op: "==", value: mockUserId },
-  ] : []);
+  ] : undefined);
   const parent = useMemo(() => (parents && parents.length > 0 ? parents[0] : null), [parents]);
 
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", parent ? [
     { field: "parentId", op: "==", value: parent.id },
-  ] : []);
+  ] : undefined);
   const student = useMemo(() => (students && students.length > 0 ? students[0] : null), [students]);
   
   const { data: route, isLoading: isRouteLoading } = useMockDoc("routes", student?.routeId);
@@ -302,16 +302,8 @@ export default function ParentTrackingPage() {
                   <MessageCircle className="mr-2 h-4 w-4" /> Enviar Mensagem
                 </Link>
               </Button>
-               {studentStatus === 'aguardando' && (
-                  <Button
-                    variant="destructive"
-                    className="w-full"
-                    onClick={handleCommunicateAbsence}
-                  >
-                    <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
-                  </Button>
-                )}
-                {studentStatus === 'ausente' && (
+              
+               {studentStatus === 'ausente' ? (
                   <Button
                     variant="secondary"
                     className="w-full"
@@ -319,7 +311,17 @@ export default function ParentTrackingPage() {
                   >
                     <CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença
                   </Button>
+                ) : (
+                  <Button
+                    variant="destructive"
+                    className="w-full"
+                    onClick={handleCommunicateAbsence}
+                    disabled={studentStatus !== 'aguardando'}
+                  >
+                    <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
+                  </Button>
                 )}
+
                <Button variant="outline" className="w-full" disabled={studentStatus !== 'aguardando' && studentStatus !== 'ausente'}>
                 <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
               </Button>
