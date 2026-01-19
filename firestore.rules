@@ -224,5 +224,17 @@ service cloud.firestore {
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
     }
+
+    /**
+     * @description Manages authorized pickup contacts for students.
+     * @principle A parent can manage the contacts for their own child. This is enforced by
+     * checking that the `parentUserId` in the document matches the authenticated user's UID.
+     * A query on this collection must include `where('parentUserId', '==', request.auth.uid)`
+     * to be secure and comply with these rules.
+     */
+    match /authorized_pickups/{pickupId} {
+      allow create: if isSignedIn() && request.auth.uid == request.resource.data.parentUserId;
+      allow read, update, delete: if isSignedIn() && request.auth.uid == resource.data.parentUserId;
+    }
   }
 }

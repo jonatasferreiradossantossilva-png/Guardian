@@ -569,6 +569,44 @@
       },
       "required": ["id", "text", "for"]
     },
+    "AuthorizedPickup": {
+      "title": "Authorized Pickup",
+      "type": "object",
+      "description": "Represents a person authorized to pick up a student.",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "Unique identifier for the authorized person."
+        },
+        "studentId": {
+          "type": "string",
+          "description": "The ID of the student this person is authorized for."
+        },
+        "parentUserId": {
+          "type": "string",
+          "description": "The auth UID of the parent who owns this record."
+        },
+        "name": {
+          "type": "string",
+          "description": "Full name of the authorized person."
+        },
+        "cpf": {
+          "type": "string",
+          "description": "CPF of the authorized person."
+        },
+        "phone": {
+          "type": "string",
+          "description": "Contact phone number of the authorized person."
+        }
+      },
+      "required": [
+        "id",
+        "studentId",
+        "parentUserId",
+        "name",
+        "cpf"
+      ]
+    },
     "Stop": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Stop",
@@ -854,6 +892,22 @@
             {
               "name": "userId",
               "description": "The unique identifier for the user."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/authorized_pickups/{pickupId}",
+        "definition": {
+          "entityName": "AuthorizedPickup",
+          "schema": {
+            "$ref": "#/backend/entities/AuthorizedPickup"
+          },
+          "description": "Stores authorized pickup contacts for students. Rules enforce that only the parent can manage contacts for their child.",
+          "params": [
+            {
+              "name": "pickupId",
+              "description": "The unique identifier for the authorized pickup person."
             }
           ]
         }

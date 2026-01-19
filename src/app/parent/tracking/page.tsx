@@ -321,9 +321,11 @@ export default function ParentTrackingPage() {
                   </Button>
                 )}
 
-               <Button variant="outline" className="w-full">
-                <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
-              </Button>
+               <Button asChild variant="outline" className="w-full">
+                <Link href="/parent/authorized">
+                    <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
+                </Link>
+               </Button>
               <Button variant="outline" className="w-full">
                 <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
               </Button>

@@ -490,5 +490,10 @@ export const initialMockData = {
         { id: "pm-8", text: "Todos a bordo e seguros.", for: "auxiliar" },
         { id: "pm-9", text: "Por favor, confirme o recebimento.", for: "gestor" },
         { id: "pm-10", text: "A rota foi alterada. Verifique o novo plano.", for: "gestor" },
+    ],
+    authorized_pickups: [
+        { id: "ap-1", studentId: "student-1", parentUserId: "user-pai-1", name: "Maria Pereira (Avó)", cpf: "123.123.123-12", phone: "1198888-1234" },
+        { id: "ap-2", studentId: "student-1", parentUserId: "user-pai-1", name: "José Pereira (Avô)", cpf: "321.321.321-21", phone: "1198888-4321" },
+        { id: "ap-3", studentId: "student-2", parentUserId: "user-pai-2", name: "Ricardo Costa (Tio)", cpf: "111.222.333-44", phone: "1197777-1234" }
     ]
 };
