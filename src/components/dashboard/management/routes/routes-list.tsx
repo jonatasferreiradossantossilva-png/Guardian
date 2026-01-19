@@ -83,6 +83,11 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     return new Map(drivers.map(d => [d.id, d.name]));
   }, [drivers]);
 
+  const assistantsMap = useMemo(() => {
+      if (!assistants) return new Map();
+      return new Map(assistants.map(a => [a.id, a.name]));
+  }, [assistants]);
+
   const handleEdit = (route: Route) => {
     setSelectedRoute(route);
     setIsFormOpen(true);
@@ -145,6 +150,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
               <TableRow>
                 <TableHead>Nome da Rota</TableHead>
                 <TableHead>Motorista</TableHead>
+                <TableHead>Auxiliar</TableHead>
                 <TableHead>Alunos</TableHead>
                 <TableHead>Turno</TableHead>
                 <TableHead>Status</TableHead>
@@ -154,7 +160,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -164,6 +170,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                   <TableRow key={route.id}>
                     <TableCell className="font-medium">{route.name}</TableCell>
                     <TableCell>{driversMap.get(route.driverId) || 'N/A'}</TableCell>
+                    <TableCell>{assistantsMap.get(route.assistantId) || 'N/A'}</TableCell>
                     <TableCell>{route.studentIds?.length || 0}</TableCell>
                     <TableCell>
                         <Badge variant="outline">{route.shift === 'manha' ? 'Manhã' : 'Tarde'}</Badge>
@@ -201,7 +208,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={6} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       Nenhuma rota cadastrada.
                     </TableCell>
                   </TableRow>

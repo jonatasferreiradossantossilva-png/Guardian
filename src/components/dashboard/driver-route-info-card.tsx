@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useMockCollection, useMockDoc } from '@/hooks/use-mock-data';
-import { Car, Route, Users, ArrowRight, Loader2 } from 'lucide-react';
+import { useMockCollection } from '@/hooks/use-mock-data';
+import { Car, Users, ArrowRight, Loader2, Edit } from 'lucide-react';
+import { Dialog, DialogTrigger } from "@/components/ui/dialog";
+import { AssistantQuickEditForm } from './assistant-quick-edit-form';
 
 export function DriverRouteInfoCard() {
   // In a real app, this would come from the logged-in user context.
@@ -30,8 +32,20 @@ export function DriverRouteInfoCard() {
    const { data: students, isLoading: areStudentsLoading } = useMockCollection('students', activeRoute ? [
     { field: 'id', op: 'in', value: activeRoute.studentIds }
   ] : []);
+  
+  // 4. Get all users to find assistants
+  const { data: users, isLoading: areUsersLoading } = useMockCollection('users');
 
-  const isLoading = areDriversLoading || areRoutesLoading || areStudentsLoading;
+  const assistants = useMemo(() => (users || []).filter(u => u.profile === 'auxiliar'), [users]);
+  const assistantsMap = useMemo(() => new Map(assistants.map(a => [a.id, a.name])), [assistants]);
+  const currentAssistantName = useMemo(() => {
+    if (!activeRoute?.assistantId) return "Nenhum";
+    return assistantsMap.get(activeRoute.assistantId) || "Desconhecido";
+  }, [activeRoute, assistantsMap]);
+
+  const [isFormOpen, setIsFormOpen] = useState(false);
+
+  const isLoading = areDriversLoading || areRoutesLoading || areStudentsLoading || areUsersLoading;
 
   if (isLoading) {
     return (
@@ -56,6 +70,10 @@ export function DriverRouteInfoCard() {
   
   const studentsOnBoard = students.filter(s => s.status === 'a_bordo').length;
   const totalStudents = activeRoute.studentIds.length;
+
+  const handleFormSubmit = () => {
+      setIsFormOpen(false);
+  }
 
   return (
     <Card className="bg-primary/5 border-primary/20">
@@ -82,6 +100,25 @@ export function DriverRouteInfoCard() {
                 <p className="font-semibold text-lg">{studentsOnBoard} / {totalStudents} alunos a bordo</p>
             </div>
             <Users className="text-muted-foreground" />
+        </div>
+        <div className="flex justify-between items-center p-4 rounded-lg bg-background border">
+            <div>
+                <p className="text-sm text-muted-foreground">Auxiliar da Rota</p>
+                <p className="font-semibold text-lg">{currentAssistantName}</p>
+            </div>
+             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+                <DialogTrigger asChild>
+                    <Button variant="outline" size="sm">
+                        <Edit className="mr-2 h-3 w-3"/>
+                        Trocar
+                    </Button>
+                </DialogTrigger>
+                <AssistantQuickEditForm 
+                    route={activeRoute}
+                    assistants={assistants}
+                    onFormSubmit={handleFormSubmit}
+                />
+            </Dialog>
         </div>
       </CardContent>
       <CardFooter>
