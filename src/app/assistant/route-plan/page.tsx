@@ -63,6 +63,13 @@ export default function AssistantRoutePlanPage() {
   ] : []);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
+  // Auto-select the shift based on the active route
+  useEffect(() => {
+    if (route?.shift) {
+      setShift(route.shift === 'manha' ? 'Manhã' : 'Tarde');
+    }
+  }, [route]);
+
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route ? [
       { field: 'id', op: 'in', value: route.studentIds }
   ] : []);

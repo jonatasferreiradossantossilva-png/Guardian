@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { useMockCollection, useMockData, useMockNestedDoc, useMockDoc } from "@/hooks/use-mock-data";
+import { useMockCollection, useMockData, useMockDoc } from "@/hooks/use-mock-data";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -98,6 +98,13 @@ export default function RoutePlanPage() {
     { field: "active", op: "==", value: true },
   ] : []);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
+  
+  // Auto-select the shift based on the active route
+  useEffect(() => {
+    if (route?.shift) {
+      setShift(route.shift === 'manha' ? 'Manhã' : 'Tarde');
+    }
+  }, [route]);
 
   // 3. Fetch students for the current route
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route?.studentIds ? [
