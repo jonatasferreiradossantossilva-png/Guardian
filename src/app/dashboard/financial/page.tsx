@@ -44,6 +44,7 @@ type Invoice = {
   id: string;
   studentId: string;
   parentUserId: string;
+  description: string;
   amount: number;
   dueDate: string;
   status: 'pending' | 'paid' | 'overdue' | 'pagamento_em_analise';
@@ -77,20 +78,7 @@ export default function FinancialPage() {
   const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
 
   const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
-  const parentsMap = useMemo(() => {
-    if (!parents || !students) return new Map();
-    const studentToParentMap = new Map(students.map(s => [s.id, s.parentId]));
-    const parentIdToNameMap = new Map(parents.map(p => [p.id, p.name]));
-    const finalMap = new Map();
-    for (const student of students) {
-        const parentId = studentToParentMap.get(student.id);
-        const parentName = parentIdToNameMap.get(parentId);
-        if (parentName) {
-            finalMap.set(student.id, parentName);
-        }
-    }
-    return finalMap;
-  }, [parents, students]);
+  const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
 
   const availableMonths = useMemo(() => {
     if (!invoices) return [];
@@ -167,6 +155,7 @@ export default function FinancialPage() {
         const hasInvoiceThisMonth = (invoices || []).some(inv => {
             const dueDate = new Date(inv.dueDate);
             return inv.studentId === student.id && 
+                   inv.description === "Mensalidade Transporte" &&
                    dueDate >= currentMonthStart && 
                    dueDate <= endOfMonth(currentMonthStart);
         });
@@ -177,6 +166,7 @@ export default function FinancialPage() {
             addDoc('invoices', {
                 studentId: student.id,
                 parentUserId: parentUserId,
+                description: "Mensalidade Transporte",
                 amount: studentFee,
                 dueDate: format(dueDate, 'yyyy-MM-dd'),
                 status: 'pending'
@@ -288,6 +278,7 @@ export default function FinancialPage() {
                                         <TableRow>
                                             <TableHead>Aluno</TableHead>
                                             <TableHead>Responsável</TableHead>
+                                            <TableHead>Descrição</TableHead>
                                             <TableHead>Vencimento</TableHead>
                                             <TableHead>Valor</TableHead>
                                             <TableHead>Status</TableHead>
@@ -298,8 +289,9 @@ export default function FinancialPage() {
                                         {monthInvoices.map((invoice) => (
                                             <TableRow key={invoice.id}>
                                                 <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
-                                                <TableCell>{parentsMap.get(invoice.studentId) || 'Responsável não encontrado'}</TableCell>
-                                                <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
+                                                <TableCell>{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</TableCell>
+                                                <TableCell>{invoice.description}</TableCell>
+                                                <TableCell>{invoice.dueDate.split('-').reverse().join('/')}</TableCell>
                                                 <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                                                 <TableCell>
                                                     <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
@@ -346,3 +338,5 @@ export default function FinancialPage() {
     </div>
   );
 }
+
+    

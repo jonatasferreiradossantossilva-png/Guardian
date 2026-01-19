@@ -16,11 +16,13 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 type Invoice = {
   id: string;
   studentId: string;
   parentUserId: string;
+  description: string;
   amount: number;
   dueDate: string;
   status: 'pending' | 'paid' | 'overdue' | 'pagamento_em_analise';
@@ -100,11 +102,11 @@ export default function ParentFinancialPage() {
                   {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
                     sortedInvoices.map((invoice) => (
                       <TableRow key={invoice.id}>
-                        <TableCell>Mensalidade Transporte</TableCell>
-                        <TableCell>{new Date(invoice.dueDate).toLocaleDateString('pt-BR', {timeZone: 'UTC'})}</TableCell>
+                        <TableCell>{invoice.description}</TableCell>
+                        <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
                         <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                         <TableCell>
-                          <Badge variant={statusVariantMap[invoice.status]}>
+                          <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
                             {statusTextMap[invoice.status]}
                           </Badge>
                         </TableCell>

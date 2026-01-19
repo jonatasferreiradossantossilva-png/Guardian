@@ -56,7 +56,7 @@ const typeMap = {
 export default function TripRequestsPage() {
   const { toast } = useToast();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
-  const { updateDoc } = useMockData();
+  const { updateDoc, addDoc } = useMockData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TripRequest | null>(null);
@@ -78,13 +78,29 @@ export default function TripRequestsPage() {
     setSelectedRequest(null);
   };
 
-  const handleApproval = (requestId: string, approved: boolean) => {
+  const handleApproval = (request: TripRequest, approved: boolean) => {
     const newStatus = approved ? 'aprovada' : 'rejeitada';
-    updateDoc('trip_requests', requestId, { status: newStatus });
-    toast({
-      title: `Solicitação ${approved ? 'aprovada' : 'rejeitada'}!`,
-      description: `Sua decisão foi registrada.`,
-    });
+    updateDoc('trip_requests', request.id, { status: newStatus });
+    
+    if (approved && request.amount) {
+        addDoc('invoices', {
+            studentId: request.studentId,
+            parentUserId: request.parentUserId,
+            description: `Viagem Avulsa - ${request.date.split('-').reverse().join('/')}`,
+            amount: request.amount,
+            dueDate: request.date,
+            status: 'pending'
+        });
+        toast({
+            title: `Solicitação Aprovada!`,
+            description: `Uma nova fatura de R$ ${request.amount.toFixed(2)} foi gerada.`,
+        });
+    } else {
+        toast({
+          title: `Solicitação ${approved ? 'aprovada' : 'rejeitada'}!`,
+          description: `Sua decisão foi registrada.`,
+        });
+    }
   };
   
   const sortedRequests = useMemo(() => {
@@ -161,10 +177,10 @@ export default function TripRequestsPage() {
                       <TableCell className="text-right">
                         {request.status === 'aguardando_aprovacao_pai' ? (
                           <div className="flex gap-2 justify-end">
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8" onClick={() => handleApproval(request.id, true)}>
+                            <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8" onClick={() => handleApproval(request, true)}>
                                 <Check className="mr-2 h-4 w-4" /> Aprovar
                             </Button>
-                            <Button size="sm" variant="destructive" className="h-8" onClick={() => handleApproval(request.id, false)}>
+                            <Button size="sm" variant="destructive" className="h-8" onClick={() => handleApproval(request, false)}>
                                 <X className="mr-2 h-4 w-4" /> Recusar
                             </Button>
                           </div>
@@ -193,3 +209,5 @@ export default function TripRequestsPage() {
     </div>
   );
 }
+
+    

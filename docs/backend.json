@@ -498,6 +498,10 @@
           "type": "string",
           "description": "The auth UID of the parent responsible for this invoice."
         },
+        "description": {
+            "type": "string",
+            "description": "Description of the invoice item (e.g., 'Mensalidade', 'Viagem Avulsa')."
+        },
         "amount": {
           "type": "number",
           "description": "Amount due on the invoice."
@@ -522,6 +526,7 @@
         "id",
         "studentId",
         "parentUserId",
+        "description",
         "amount",
         "dueDate",
         "status"
