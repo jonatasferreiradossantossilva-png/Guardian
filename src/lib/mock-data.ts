@@ -271,7 +271,7 @@ export const initialMockData = {
             parentId: "parent-1",
             routeId: "route-1",
             shift: "Manhã",
-            status: "a_bordo",
+            status: "aguardando",
             latitude: -23.545,
             longitude: -46.638,
             street: "Rua A",

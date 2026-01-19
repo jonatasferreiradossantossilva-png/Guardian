@@ -8,12 +8,13 @@ import {
   useMockDoc,
   useMockData,
 } from "@/hooks/use-mock-data";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { cn } from "@/lib/utils";
 
 // Types matching mock data
 interface Student {
@@ -245,19 +246,11 @@ export default function ParentTrackingPage() {
                         <User />
                         Status de {student.name}
                     </CardTitle>
-                     {studentStatus === 'aguardando' && (
-                        <p className="text-primary text-sm pt-2">
-                            A presença está confirmada. Use o botão abaixo apenas se o aluno for faltar.
-                        </p>
-                     )}
-                     {studentStatus === 'ausente' && (
-                         <p className="text-destructive text-sm pt-2">
-                            A ausência foi comunicada. O motorista não passará para o embarque.
-                         </p>
-                     )}
-                     {(studentStatus === 'a_bordo' || studentStatus === 'desembarcou') && (
-                        <p className="text-muted-foreground text-sm pt-2">Acompanhe em tempo real o transporte escolar.</p>
-                     )}
+                    <CardDescription className={cn('pt-2', studentStatus === 'ausente' && 'text-destructive')}>
+                      {studentStatus === 'aguardando' && 'A presença está confirmada. Use o botão abaixo apenas se o aluno for faltar.'}
+                      {studentStatus === 'ausente' && 'A ausência foi comunicada. O motorista não passará para o embarque.'}
+                      {(studentStatus === 'a_bordo' || studentStatus === 'desembarcou') && 'Acompanhe em tempo real o transporte escolar.'}
+                    </CardDescription>
                   </div>
                    <Badge variant={statusBadgeVariant[studentStatus]}>{statusText[studentStatus]}</Badge>
               </div>
