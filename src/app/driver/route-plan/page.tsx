@@ -18,7 +18,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import Link from "next/link";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { useMockCollection, useMockData, useMockDoc, useMockNestedDoc } from "@/hooks/use-mock-data";
+import { useMockCollection, useMockData, useMockNestedDoc } from "@/hooks/use-mock-data";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -74,25 +74,37 @@ const statusPinColor: Record<StudentStatus, string> = {
 
 
 export default function RoutePlanPage() {
-  const { user, isUserLoading } = useUser(); // Still use for auth context
+  const { user, isUserLoading } = useUser();
   const { updateDoc, setDoc } = useMockData();
   const [shift, setShift] = useState<Shift>("Manhã");
-  
-  const mockUserId = "driver-1";
+  const [mockUserId, setMockUserId] = useState<string | null>(null);
 
-  // 1. Fetch current driver's active route
-  const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", [
-    { field: "driverId", op: "==", value: mockUserId },
+  useEffect(() => {
+    // For this prototype, we get the logged-in user's ID from session storage.
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMockUserId(storedUserId || "user-motorista-2"); // Default to a known driver for direct page access
+  }, []);
+
+  // 1. Fetch driver profile from the dynamic user ID
+  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', mockUserId ? [
+      { field: 'userId', op: '==', value: mockUserId }
+  ] : []);
+  const driverProfile = useMemo(() => (drivers && drivers.length > 0 ? drivers[0] : null), [drivers]);
+  const driverId = driverProfile?.id;
+
+  // 2. Fetch current driver's active route using their profile ID
+  const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", driverId ? [
+    { field: "driverId", op: "==", value: driverId },
     { field: "active", op: "==", value: true },
-  ]);
+  ] : []);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
-  // 2. Fetch students for the current route
+  // 3. Fetch students for the current route
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route?.studentIds ? [
     { field: 'id', op: 'in', value: route.studentIds }
   ] : []);
 
-  // 3. Order students according to the route plan
+  // 4. Order students according to the route plan
   const orderedStudents = useMemo(() => {
     if (!route?.studentIds || !students) return [];
     const studentMap = new Map(students.map((s) => [s.id, s]));
@@ -101,34 +113,30 @@ export default function RoutePlanPage() {
       .filter((s): s is Student => !!s);
   }, [route?.studentIds, students]);
   
-  // 4. Fetch School data from the first student
+  // 5. Fetch School data from the first student
   const schoolId = useMemo(() => orderedStudents.length > 0 ? orderedStudents[0].schoolId : null, [orderedStudents]);
   const { data: school, isLoading: isSchoolLoading } = useMockDoc('schools', schoolId);
 
-  // 5. Fetch driver's live location by subscribing to the mock context
-  const { data: driverLocation } = useMockNestedDoc(`locations/${mockUserId}`);
+  // 6. Fetch driver's live location by subscribing to the mock context with the dynamic driverId
+  const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
 
-  // Use a ref to hold the current location for the interval to prevent stale closures.
   const locationRef = useRef(driverLocation);
   useEffect(() => {
     locationRef.current = driverLocation;
   }, [driverLocation]);
 
-  // Function to update a student's status
   const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
     updateDoc("students", studentId, { status: newStatus });
   };
   
   // Effect to simulate GPS location updates while route is active
   useEffect(() => {
-    if (!route || route.driverId !== mockUserId) return;
+    if (!route || !driverId) return;
 
-    // A route is considered active if at least one student is on board.
     const isRouteActive = students?.some(s => s.status === 'a_bordo');
     if (!isRouteActive) return;
 
     const intervalId = setInterval(() => {
-      // Get the latest location from the ref to prevent stale closures
       const currentLocation = locationRef.current || { latitude: -23.55052, longitude: -46.633308 };
 
       const newLat = currentLocation.latitude + (Math.random() - 0.5) * 0.001;
@@ -140,15 +148,15 @@ export default function RoutePlanPage() {
           timestamp: new Date().toISOString(),
       };
       
-      // Only update the mock database. The useMockNestedDoc hook will handle re-rendering.
-      setDoc(`locations/${mockUserId}`, newLocation);
+      // Update the location for the currently logged-in driver
+      setDoc(`locations/${driverId}`, newLocation);
 
     }, 10000); // Update every 10 seconds
 
     return () => clearInterval(intervalId);
-  }, [route, students, mockUserId, setDoc]);
+  }, [route, students, driverId, setDoc]);
 
-  const isLoading = isUserLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
+  const isLoading = isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || isSchoolLoading;
   const filteredStudents = orderedStudents.filter((student) => student.shift === shift);
   
   const mapCenter = useMemo(() => {
@@ -176,8 +184,8 @@ export default function RoutePlanPage() {
       {!isLoading && !route && (
          <div className="flex flex-col items-center justify-center h-[calc(100vh-200px)] text-center">
             <AlertTriangle className="h-12 w-12 text-destructive mb-4" />
-            <p className="font-semibold text-xl">Nenhuma rota ativa encontrada.</p>
-            <p className="text-muted-foreground">Verifique com o administrador se uma rota foi atribuída a você.</p>
+            <p className="font-semibold text-xl">Nenhuma rota ativa encontrada para você.</p>
+            <p className="text-muted-foreground">Verifique com o administrador se uma rota foi atribuída.</p>
          </div>
       )}
 

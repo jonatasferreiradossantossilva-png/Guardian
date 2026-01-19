@@ -43,7 +43,7 @@ interface LocationUpdate {
 const statusText: Record<Student["status"], string> = {
   aguardando: "Aguardando embarque",
   a_bordo: "A bordo da van",
-  desembarcado: "Desembarcou em segurança",
+  desembarcou: "Desembarcou em segurança",
   ausente: "Ausente hoje",
 };
 
@@ -85,12 +85,17 @@ export default function ParentTrackingPage() {
   const { toast } = useToast();
   const simulationTimer = useRef(null);
   const [simulatedLocation, setSimulatedLocation] = useState(null);
+  const [mockUserId, setMockUserId] = useState<string | null>(null);
 
-  const mockUserId = "user-pai-1";
+  useEffect(() => {
+    // For this prototype, we get the logged-in user's ID from session storage.
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMockUserId(storedUserId || "user-pai-1"); // Default to a known parent for direct page access
+  }, []);
 
-  const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", [
+  const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", mockUserId ? [
     { field: "userId", op: "==", value: mockUserId },
-  ]);
+  ] : []);
   const parent = useMemo(() => (parents && parents.length > 0 ? parents[0] : null), [parents]);
 
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", parent ? [

@@ -33,6 +33,15 @@ const formSchema = z.object({
 
 type UserRole = "admin" | "driver" | "parent" | "assistant";
 
+// For mock purposes, map roles to specific user IDs from our mock data.
+const mockUserMap: Record<UserRole, string> = {
+    admin: 'user-admin-1',     // Admin User (also driver-1)
+    driver: 'user-motorista-2', // Mariana Costa (driver-2)
+    parent: 'user-pai-1',      // Ana Pereira (parent-1)
+    assistant: 'user-aux-1',   // Fernanda Lima
+};
+
+
 export function LoginForm() {
   const router = useRouter();
   const [isLoading, setIsLoading] = useState(false);
@@ -49,6 +58,10 @@ export function LoginForm() {
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
+
+    // For this prototype, we store the selected mock user ID in session storage
+    // to simulate a real user login for each role.
+    sessionStorage.setItem('mockUserId', mockUserMap[role]);
 
     if (auth) {
       // Non-blocking anonymous sign-in. The onAuthStateChanged listener will handle the rest.

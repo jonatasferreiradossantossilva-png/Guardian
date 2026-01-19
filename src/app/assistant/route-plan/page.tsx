@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useUser } from "@/firebase";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
@@ -49,13 +49,18 @@ export default function AssistantRoutePlanPage() {
   const { user, isUserLoading } = useUser();
   const { updateDoc } = useMockData();
   const [shift, setShift] = useState<Shift>("Manhã");
+  const [mockUserId, setMockUserId] = useState<string | null>(null);
 
-  const mockUserId = "user-aux-1";
+  useEffect(() => {
+    // For this prototype, we get the logged-in user's ID from session storage.
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMockUserId(storedUserId || "user-aux-1"); // Default to a known assistant for direct page access
+  }, []);
 
-  const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", [
+  const { data: routes, isLoading: isRouteLoading } = useMockCollection("routes", mockUserId ? [
       { field: 'assistantId', op: '==', value: mockUserId },
       { field: 'active', op: '==', value: true }
-  ]);
+  ] : []);
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", route ? [
@@ -110,8 +115,8 @@ export default function AssistantRoutePlanPage() {
             {!isLoading && !route && (
                  <div className="flex flex-col items-center justify-center h-40 text-center">
                     <AlertTriangle className="h-8 w-8 text-destructive mb-2" />
-                    <p className="font-semibold">Nenhuma rota ativa encontrada.</p>
-                    <p className="text-muted-foreground text-sm">Verifique com o administrador se uma rota foi atribuída a você.</p>
+                    <p className="font-semibold">Nenhuma rota ativa encontrada para você.</p>
+                    <p className="text-muted-foreground text-sm">Verifique com o administrador se uma rota foi atribuída.</p>
                  </div>
             )}
 
