@@ -1,6 +1,6 @@
 "use client";
-import { useState, useMemo } from 'react';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useState, useMemo, useEffect } from 'react';
+import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -11,26 +11,58 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 export default function MessagesPage() {
   const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
   const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
+  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers');
+  const { addDoc } = useMockData();
 
   const [selectedParentId, setSelectedParentId] = useState(null);
   const [currentMessage, setCurrentMessage] = useState('');
+  const [mockUserId, setMockUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMockUserId(storedUserId);
+  }, []);
+  
+  // The admin user also has a driver profile, which is used for messaging.
+  const adminDriverProfile = useMemo(() => {
+    if (!mockUserId || !drivers) return null;
+    return drivers.find(d => d.userId === mockUserId);
+  }, [mockUserId, drivers]);
+
 
   const parentMessages = useMemo(() => {
     if (!selectedParentId || !messages) return [];
-    // For mock purposes, we assume 'admin' is the recipient for all parent messages
-    return messages.filter(m => (m.senderId === selectedParentId && m.recipientId === 'admin') || (m.senderId === 'admin' && m.recipientId === selectedParentId))
-      .sort((a, b) => new Date(a.timestamp) - new Date(b.timestamp));
-  }, [messages, selectedParentId]);
+
+    const adminId = adminDriverProfile?.id;
+    
+    return messages.filter(m => {
+        const isAdminSender = m.senderId === adminId || m.senderId === 'admin';
+        const isAdminRecipient = m.recipientId === adminId || m.recipientId === 'admin';
+        const isParentSender = m.senderId === selectedParentId;
+        const isParentRecipient = m.recipientId === selectedParentId;
+
+        return (isAdminSender && isParentRecipient) || (isParentSender && isAdminRecipient);
+    }).sort((a, b) => new Date(a.timestamp).valueOf() - new Date(b.timestamp).valueOf());
+  }, [messages, selectedParentId, adminDriverProfile]);
 
   const handleSendMessage = () => {
-    if (!currentMessage.trim() || !selectedParentId) return;
-    // Mock sending message - in a real app, this would call an API or Firestore function
-    console.log(`Message to ${selectedParentId}: ${currentMessage}`);
+    if (!currentMessage.trim() || !selectedParentId || !adminDriverProfile) return;
+    
+    addDoc('messages', {
+        senderId: adminDriverProfile.id,
+        recipientId: selectedParentId,
+        text: currentMessage,
+        timestamp: new Date().toISOString()
+    });
+
     setCurrentMessage('');
-    // You would add the new message to the 'messages' collection here
   };
   
-  const isLoading = areParentsLoading || areMessagesLoading;
+  const isLoading = areParentsLoading || areMessagesLoading || areDriversLoading;
+  
+  const isAdminMessage = (senderId: string) => {
+    return senderId === adminDriverProfile?.id || senderId === 'admin';
+  };
 
   return (
     <div>
@@ -76,9 +108,9 @@ export default function MessagesPage() {
                   {parentMessages.map(msg => (
                     <div
                       key={msg.id}
-                      className={`flex items-end gap-2 ${msg.senderId === 'admin' ? 'justify-end' : ''}`}
+                      className={`flex items-end gap-2 ${isAdminMessage(msg.senderId) ? 'justify-end' : ''}`}
                     >
-                      <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === 'admin' ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
+                      <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${isAdminMessage(msg.senderId) ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                         <p className="text-sm">{msg.text}</p>
                         <p className="text-xs text-right mt-1 opacity-70">
                             {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
