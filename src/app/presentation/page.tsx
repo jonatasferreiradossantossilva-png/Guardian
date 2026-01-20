@@ -110,8 +110,8 @@ export default function PresentationPage() {
                     Identidade Visual: Conceitos de Logo
                 </h2>
                 <div className="grid md:grid-cols-3 gap-8 w-full">
-                    <div className="border-2 border-primary/50 ring-4 ring-primary/10 rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
-                        <h3 className="font-bold text-lg mb-4 text-primary">Conceito 1: O Escudo Localizador</h3>
+                    <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4">Conceito 1: O Escudo Localizador</h3>
                         <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
                             <div className="relative h-32 w-32">
                                 <Shield className="h-32 w-32 text-blue-900" fill="currentColor" />
@@ -133,11 +133,11 @@ export default function PresentationPage() {
                             Uma letra <strong>"G" estilizada</strong> que se transforma em uma linha de rota. Moderno, sutil e com uma forte identidade de marca de tecnologia.
                         </p>
                     </div>
-                    <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
-                        <h3 className="font-bold text-lg mb-4">Conceito 3: O Abraço Protetor</h3>
+                    <div className="border-2 border-primary/50 ring-4 ring-primary/10 rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4 text-primary">Conceito 3: O Abraço Protetor</h3>
                         <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
                             <div className="relative h-32 w-32 flex items-center justify-center bg-blue-600 rounded-lg">
-                                <HandHeart className="h-24 w-24 text-white" fill="currentColor" />
+                                <HandHeart className="h-24 w-24 text-white" fill="currentColor" stroke="black" strokeWidth={1.5} />
                                 <Bus className="absolute h-10 w-10 text-yellow-400" />
                             </div>
                         </div>
