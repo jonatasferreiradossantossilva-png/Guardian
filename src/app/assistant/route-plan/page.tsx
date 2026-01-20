@@ -37,6 +37,9 @@ interface Student {
   status: StudentStatus;
   shift: Shift;
   schoolId: string;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
 }
 
 const statusText: Record<StudentStatus, string> = {
@@ -191,19 +194,24 @@ export default function AssistantRoutePlanPage() {
                     <li key={student.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary gap-3">
                         <div className="flex items-center gap-4">
                             <div title={statusText[student.status]}>{statusIconMap[student.status]}</div>
-                            <div className="flex items-center gap-2">
-                                <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
-                                {student.name}
-                                </span>
-                                <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-6 w-6"
-                                    onClick={() => handleOpenAuthorizedModal(student)}
-                                    title="Ver contatos autorizados"
-                                >
-                                    <IdCard className="h-4 w-4 text-muted-foreground" />
-                                </Button>
+                            <div>
+                                <div className="flex items-center gap-2">
+                                    <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
+                                    {student.name}
+                                    </span>
+                                    <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        onClick={() => handleOpenAuthorizedModal(student)}
+                                        title="Ver contatos autorizados"
+                                    >
+                                        <IdCard className="h-4 w-4 text-muted-foreground" />
+                                    </Button>
+                                </div>
+                                <p className="text-xs text-muted-foreground">
+                                    {student.street ? `${student.street}, ${student.number} - ${student.neighborhood}` : 'Endereço indisponível'}
+                                </p>
                             </div>
                         </div>
                         <div className="flex items-center gap-2 w-full sm:w-auto max-w-[220px] self-end sm:self-center">
