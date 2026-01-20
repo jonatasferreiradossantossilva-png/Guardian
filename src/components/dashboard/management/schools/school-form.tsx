@@ -22,8 +22,9 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
+import { Loader2 } from 'lucide-react';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -49,6 +50,7 @@ interface SchoolFormProps {
 export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -66,6 +68,48 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       state: '',
     },
   });
+
+  const zipCode = form.watch('zipCode');
+
+  useEffect(() => {
+    if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
+      const fetchAddress = async () => {
+        setIsFetchingCep(true);
+        try {
+          const response = await fetch(`https://viacep.com.br/ws/${zipCode.replace(/\D/g, '')}/json/`);
+          if (!response.ok) throw new Error('Falha ao buscar CEP');
+          const data = await response.json();
+          if (!data.erro) {
+            form.setValue('street', data.logradouro);
+            form.setValue('neighborhood', data.bairro);
+            form.setValue('city', data.localidade);
+            form.setValue('state', data.uf);
+            toast({
+              title: 'Endereço preenchido!',
+              description: 'Os dados de endereço foram carregados automaticamente.',
+            });
+            form.setFocus('number');
+          } else {
+             toast({
+              title: 'CEP não encontrado',
+              description: 'Verifique o CEP e tente novamente.',
+              variant: 'destructive',
+            });
+          }
+        } catch (error) {
+          console.error('Failed to fetch CEP:', error);
+          toast({
+            title: 'Erro de Rede',
+            description: 'Não foi possível conectar ao serviço de CEP.',
+            variant: 'destructive',
+          });
+        } finally {
+          setIsFetchingCep(false);
+        }
+      };
+      fetchAddress();
+    }
+  }, [zipCode, form, toast]);
 
   useEffect(() => {
     if (school) {
@@ -150,7 +194,14 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     render={({ field }) => (
                         <FormItem className="col-span-1">
                         <FormLabel>CEP</FormLabel>
-                        <FormControl><Input placeholder="00000-000" {...field} /></FormControl>
+                        <FormControl>
+                          <div className="relative">
+                            <Input placeholder="00000-000" {...field} />
+                            {isFetchingCep && (
+                              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                            )}
+                          </div>
+                        </FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -262,5 +313,3 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     </DialogContent>
   );
 }
-
-    
