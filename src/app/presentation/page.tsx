@@ -199,16 +199,16 @@ export default function PresentationPage() {
                  <div className="grid md:grid-cols-2 gap-8 w-full items-center">
                     <div className="bg-background/50 border border-border p-8 rounded-lg text-center">
                         <p className="text-muted-foreground text-lg">Estamos buscando</p>
-                        <p className="text-6xl font-bold text-primary my-2">R$ 500.000</p>
+                        <p className="text-6xl font-bold text-primary my-2">R$ 250.000</p>
                         <p className="text-muted-foreground text-lg">em troca de</p>
                         <p className="text-4xl font-bold text-primary mt-2">15% de participação</p>
                     </div>
                      <div>
                         <h3 className="text-xl font-semibold mb-4 text-center">Uso dos Recursos</h3>
                         <div className="space-y-4 text-sm">
-                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary mr-2"></div><span className="font-semibold">40% - Desenvolvimento de Produto:</span><span className="ml-1 text-muted-foreground">Contratação de 2 desenvolvedores.</span></div>
-                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary/70 mr-2"></div><span className="font-semibold">35% - Vendas e Marketing:</span><span className="ml-1 text-muted-foreground">Estruturar equipe comercial e campanhas.</span></div>
-                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary/40 mr-2"></div><span className="font-semibold">25% - Custos Operacionais:</span><span className="ml-1 text-muted-foreground">Infraestrutura e despesas.</span></div>
+                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary mr-2"></div><span className="font-semibold">50% - Desenvolvimento de Produto:</span><span className="ml-1 text-muted-foreground">Contratação do desenvolvedor principal.</span></div>
+                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary/70 mr-2"></div><span className="font-semibold">30% - Vendas e Marketing:</span><span className="ml-1 text-muted-foreground">Primeiras campanhas e estruturação de vendas.</span></div>
+                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary/40 mr-2"></div><span className="font-semibold">20% - Custos Operacionais:</span><span className="ml-1 text-muted-foreground">Infraestrutura, G&A.</span></div>
                         </div>
                      </div>
                  </div>
