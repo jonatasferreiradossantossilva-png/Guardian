@@ -1,9 +1,10 @@
 'use client';
 
-import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, Shield, MapPin, Bus, HandHeart, ShieldCheck } from 'lucide-react';
+import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
+import { GuardianLogo } from '@/components/icons/guardian-logo';
 
 // Helper component for consistent slide styling
 const Slide = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
@@ -41,8 +42,8 @@ export default function PresentationPage() {
             
             {/* Slide 1: Vision */}
             <Slide className="text-center">
-                <div className="bg-primary/10 p-6 rounded-full border-2 border-primary/30 mb-8">
-                     <Shield className="h-16 w-16 text-primary" />
+                <div className="bg-primary/10 p-4 rounded-full border-2 border-primary/30 mb-8">
+                     <GuardianLogo className="w-16 h-auto" shieldClassName="text-primary" pinClassName="text-primary/50" pinDotClassName="text-primary"/>
                 </div>
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground">Guardian</h1>
                 <p className="mt-6 text-xl md:text-2xl text-muted-foreground max-w-3xl">
@@ -107,44 +108,35 @@ export default function PresentationPage() {
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">
                     <FileImage className="inline-block text-primary h-12 w-12 mr-4" />
-                    Identidade Visual: O Abraço Protetor
+                    Identidade Visual: O Escudo Protetor
                 </h2>
-                <p className="text-center mb-8 text-muted-foreground max-w-3xl">Abaixo estão 3 variações do conceito de logo "Abraço Protetor", explorando diferentes paletas de cores para transmitir nuances distintas da marca: Confiança, Energia e Tranquilidade.</p>
+                <p className="text-center mb-8 text-muted-foreground max-w-3xl">O logo "Escudo Localizador" combina proteção (escudo) e tecnologia (pino de mapa). Abaixo estão 3 variações de cores para transmitir nuances distintas da marca.</p>
                 <div className="grid md:grid-cols-3 gap-8 w-full">
-                    <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
-                        <h3 className="font-bold text-lg mb-4">Variação A: Confiança e Tecnologia</h3>
+                    <div className="border-2 border-primary/50 ring-4 ring-primary/10 rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4 text-primary">Variação A: Confiança e Tecnologia</h3>
                         <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
-                            <div className="relative h-32 w-32 flex items-center justify-center bg-blue-900 rounded-lg">
-                                <HandHeart className="h-24 w-24 text-teal-400" fill="currentColor" stroke="black" strokeWidth={1.5} />
-                                <Bus className="absolute h-10 w-10 text-yellow-400" />
-                            </div>
+                            <GuardianLogo shieldClassName="text-blue-600" pinClassName="text-teal-400" pinDotClassName="text-blue-600" />
                         </div>
                         <p className="text-sm text-muted-foreground">
-                             <strong>Azul escuro</strong> para seriedade e confiança, com o <strong>verde-água (teal)</strong> do coração simbolizando tecnologia e segurança. É uma paleta profissional e moderna.
+                            <strong>Azul</strong> para seriedade e confiança, com o <strong>verde-água (teal)</strong> do pino simbolizando tecnologia e segurança. Uma paleta profissional e moderna.
                         </p>
                     </div>
-                     <div className="border-2 border-primary/50 ring-4 ring-primary/10 rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
-                        <h3 className="font-bold text-lg mb-4 text-primary">Variação B: Acolhimento e Energia</h3>
+                     <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4">Variação B: Acolhimento e Energia</h3>
                         <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
-                            <div className="relative h-32 w-32 flex items-center justify-center bg-slate-800 rounded-lg">
-                                <HandHeart className="h-24 w-24 text-orange-500" fill="currentColor" stroke="white" strokeWidth={1.5} />
-                                <Bus className="absolute h-10 w-10 text-yellow-400" />
-                            </div>
+                           <GuardianLogo shieldClassName="text-slate-800" pinClassName="text-orange-500" pinDotClassName="text-slate-800" />
                         </div>
                         <p className="text-sm text-muted-foreground">
-                             Um <strong>laranja vibrante</strong> para o coração, que transmite energia, cuidado e atenção. O fundo escuro e o contorno branco criam um alto contraste, tornando o logo memorável.
+                             Um <strong>laranja vibrante</strong> para o pino, que transmite energia, cuidado e atenção. O fundo <strong>cinza-escuro</strong> cria um alto contraste, tornando o logo memorável.
                         </p>
                     </div>
                     <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
-                        <h3 className="font-bold text-lg mb-4">Variação C: Segurança e Tranquilidade</h3>
+                        <h3 className="font-bold text-lg mb-4">Variação C: Segurança e Natureza</h3>
                         <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
-                            <div className="relative h-32 w-32 flex items-center justify-center bg-green-800 rounded-lg">
-                                <HandHeart className="h-24 w-24 text-white" fill="currentColor" stroke="black" strokeWidth={1.5} />
-                                <Bus className="absolute h-10 w-10 text-yellow-400" />
-                            </div>
+                           <GuardianLogo shieldClassName="text-green-800" pinClassName="text-white" pinDotClassName="text-green-800" />
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            O <strong>verde</strong> está associado à segurança e tranquilidade. Com o coração em <strong>branco</strong> (pureza) sobre o fundo verde, a sensação de paz e confiança é a mensagem principal.
+                            O <strong>verde</strong> está associado à segurança e tranquilidade. Com o pino em <strong>branco</strong> (pureza), a sensação de paz e confiança é a mensagem principal.
                         </p>
                     </div>
                 </div>
@@ -219,7 +211,7 @@ export default function PresentationPage() {
                         </div>
                         <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-start items-end">
                              <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary text-right">
-                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
+                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><GuardianLogo shieldClassName="text-primary" pinClassName="text-primary/50" pinDotClassName="text-primary" className="w-5 h-auto"/> Guardian</h4>
                                 <p className="text-sm text-foreground">Plataforma B2B completa com IA, Financeiro e Comunicação.</p>
                             </div>
                         </div>
