@@ -1,20 +1,24 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2, ListOrdered, Clock, Route as RouteIcon, Users, Bot } from "lucide-react";
+import { Sparkles, Loader2, ListOrdered, Clock, Route as RouteIcon, Users, Bot, School } from "lucide-react";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
+import { APIProvider, Map, AdvancedMarker, Polyline, useMap } from "@vis.gl/react-google-maps";
 
-const formatAddress = (student) => {
-    if (!student.street) return 'Endereço indisponível';
-    return `${student.street}, ${student.number}, ${student.neighborhood}, ${student.city} - ${student.state}`;
+
+const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+const formatAddress = (entity) => {
+    if (!entity?.street) return 'Endereço indisponível';
+    return `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
 };
 
 export default function OptimizerPage() {
@@ -42,6 +46,19 @@ export default function OptimizerPage() {
         return selectedRoute.studentIds.map(id => studentsMap.get(id)).filter(Boolean);
     }, [selectedRoute, studentsMap]);
 
+    const schoolForRoute = useMemo(() => {
+        if (!studentsInRoute.length || !schoolsMap.size) return null;
+        const studentWithSchool = studentsInRoute.find(s => s.schoolId);
+        if (!studentWithSchool) return null;
+        return schoolsMap.get(studentWithSchool.schoolId);
+    }, [studentsInRoute, schoolsMap]);
+    
+    const optimizedStudentsResult = useMemo(() => {
+        if (!optimizationResult) return [];
+        return optimizationResult.optimizedStudentIds.map(id => studentsMap.get(id)).filter(Boolean);
+    }, [optimizationResult, studentsMap]);
+
+
     const handleOptimize = async () => {
         if (!selectedRoute || studentsInRoute.length === 0) {
             toast({
@@ -51,9 +68,8 @@ export default function OptimizerPage() {
             });
             return;
         }
-
-        const school = schoolsMap.get(studentsInRoute[0].schoolId);
-        if (!school) {
+        
+        if (!schoolForRoute) {
             toast({
                 title: "Dados Incompletos",
                 description: "Não foi possível encontrar a escola associada aos alunos da rota.",
@@ -68,7 +84,7 @@ export default function OptimizerPage() {
         try {
             const input = {
                 students: studentsInRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-                schoolAddress: formatAddress(school),
+                schoolAddress: formatAddress(schoolForRoute),
                 context: context,
             };
             const result = await optimizeSchoolVanRoute(input);
@@ -217,6 +233,129 @@ export default function OptimizerPage() {
                     </Card>
                 </div>
             </div>
+
+            <div className="mt-8">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Mapa Comparativo</CardTitle>
+                        <CardDescription>Visualização geográfica da rota original e da sugestão otimizada pela IA.</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-1 bg-blue-400"></div>
+                                <span>Rota Original</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <div className="w-4 h-1 bg-green-500"></div>
+                                <span>Rota Otimizada</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <School className="text-red-600" size={16} />
+                                <span>Escola</span>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <Users className="text-blue-500" size={16} />
+                                <span>Aluno</span>
+                            </div>
+                        </div>
+
+                         <div className="aspect-video w-full rounded-lg overflow-hidden border">
+                            {!API_KEY ? (
+                                <div className="flex h-full w-full items-center justify-center bg-secondary/30">
+                                    <div className="text-center p-4">
+                                        <p className="font-semibold text-lg">Mapa Indisponível</p>
+                                        <p className="text-muted-foreground text-sm">
+                                            A chave da API do Google Maps não foi configurada.
+                                        </p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <APIProvider apiKey={API_KEY}>
+                                    <Map
+                                        defaultCenter={{ lat: -23.55, lng: -46.63 }}
+                                        defaultZoom={12}
+                                        mapId="optimizer-map"
+                                        gestureHandling={'greedy'}
+                                        disableDefaultUI={true}
+                                    >
+                                        <RouteMap 
+                                            originalRoute={studentsInRoute} 
+                                            optimizedRoute={optimizedStudentsResult} 
+                                            school={schoolForRoute}
+                                        />
+                                    </Map>
+                                </APIProvider>
+                            )}
+                         </div>
+                    </CardContent>
+                 </Card>
+            </div>
         </div>
+    );
+}
+
+function RouteMap({ originalRoute, optimizedRoute, school }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (!map || !school) return;
+
+        const allStops = Array.from(new Set([...originalRoute, ...optimizedRoute]));
+        if (allStops.length === 0) return;
+
+        const bounds = new google.maps.LatLngBounds();
+        allStops.forEach(stop => {
+            if (stop.latitude && stop.longitude) {
+                bounds.extend({ lat: stop.latitude, lng: stop.longitude });
+            }
+        });
+         if (school.latitude && school.longitude) {
+            bounds.extend({ lat: school.latitude, lng: school.longitude });
+        }
+        if (bounds.isEmpty()) return;
+        map.fitBounds(bounds, 100);
+
+    }, [map, originalRoute, optimizedRoute, school]);
+    
+    if (!school) return null;
+
+    const originalPath = [
+        ...originalRoute.map(s => ({ lat: s.latitude, lng: s.longitude })),
+        { lat: school.latitude, lng: school.longitude }
+    ].filter(p => p.lat && p.lng);
+
+    const optimizedPath = [
+        ...optimizedRoute.map(s => ({ lat: s.latitude, lng: s.longitude })),
+        { lat: school.latitude, lng: school.longitude }
+    ].filter(p => p.lat && p.lng);
+
+    const allStudents = Array.from(new Map([...originalRoute, ...optimizedRoute].map(s => [s.id, s])).values());
+
+
+    return (
+        <>
+            {/* Markers */}
+            {allStudents.map(student => (
+                <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
+                    <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
+                        <Users className="h-4 w-4 text-white" />
+                    </div>
+                </AdvancedMarker>
+            ))}
+            <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
+                 <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+                    <School className="h-5 w-5 text-white" />
+                 </div>
+            </AdvancedMarker>
+
+            {/* Polylines */}
+            {originalPath.length > 1 && (
+                <Polyline path={originalPath} strokeColor="#60a5fa" strokeOpacity={0.7} strokeWeight={5} />
+            )}
+            {optimizedPath.length > 1 && (
+                <Polyline path={optimizedPath} strokeColor="#4ade80" strokeOpacity={1.0} strokeWeight={5} />
+            )}
+        </>
     );
 }
