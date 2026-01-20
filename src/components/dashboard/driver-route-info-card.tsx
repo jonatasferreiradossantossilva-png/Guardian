@@ -31,7 +31,6 @@ export function DriverRouteInfoCard() {
   // 2. If they are a driver, find their active route
   const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes', driverProfile ? [
     { field: 'driverId', op: '==', value: driverProfile.id },
-    { field: 'active', op: '==', value: true },
   ] : []);
   const activeRoute = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 

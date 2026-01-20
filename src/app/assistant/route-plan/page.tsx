@@ -145,7 +145,6 @@ export default function AssistantRoutePlanPage() {
     mockUserId
       ? [
           { field: 'assistantId', op: '==', value: mockUserId },
-          { field: 'active', op: '==', value: true },
         ]
       : []
   );

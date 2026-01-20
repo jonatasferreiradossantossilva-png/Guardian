@@ -289,7 +289,6 @@ export default function DriverRoutePlanPage() {
     driverId
       ? [
           { field: 'driverId', op: '==', value: driverId },
-          { field: 'active', op: '==', value: true },
         ]
       : []
   );
