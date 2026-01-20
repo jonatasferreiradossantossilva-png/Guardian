@@ -36,6 +36,8 @@ import { RouteForm } from "@/components/dashboard/management/routes/route-form";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { formatDistanceToNow } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 
 
 type Route = {
@@ -45,7 +47,7 @@ type Route = {
   assistantId?: string;
   studentIds: string[];
   shift: 'manha' | 'tarde';
-  active?: boolean;
+  lastOptimizedAt?: string;
 };
 type Driver = { id: string; name: string };
 type Student = { id: string; name: string };
@@ -154,6 +156,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                 <TableHead>Auxiliar</TableHead>
                 <TableHead>Alunos</TableHead>
                 <TableHead>Turno</TableHead>
+                <TableHead>Última Otimização</TableHead>
                 <TableHead>Otimizar</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
@@ -161,7 +164,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">
+                  <TableCell colSpan={8} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -175,6 +178,15 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                     <TableCell>{route.studentIds?.length || 0}</TableCell>
                     <TableCell>
                         <Badge variant="outline">{route.shift === 'manha' ? 'Manhã' : 'Tarde'}</Badge>
+                    </TableCell>
+                    <TableCell>
+                        {route.lastOptimizedAt ? (
+                            <span className="text-sm text-muted-foreground">
+                                {formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR })}
+                            </span>
+                        ) : (
+                            <Badge variant="secondary">Não otimizada</Badge>
+                        )}
                     </TableCell>
                     <TableCell>
                       <Button asChild variant="outline" size="sm">
@@ -212,7 +224,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={8} className="text-center">
                       Nenhuma rota cadastrada.
                     </TableCell>
                   </TableRow>
@@ -239,3 +251,5 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     </div>
   );
 }
+
+    

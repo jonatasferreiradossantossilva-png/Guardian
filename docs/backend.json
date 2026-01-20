@@ -459,10 +459,6 @@
             "type": "string"
           }
         },
-        "active": {
-          "type": "boolean",
-          "description": "Whether the route is currently active."
-        },
         "shift": {
           "type": "string",
           "description": "The route's operating shift.",
@@ -477,13 +473,17 @@
           "items": {
             "type": "string"
           }
+        },
+        "lastOptimizedAt": {
+          "type": "string",
+          "description": "Timestamp of the last time the route was optimized by AI.",
+          "format": "date-time"
         }
       },
       "required": [
         "id",
         "name",
         "driverId",
-        "active",
         "shift"
       ]
     },

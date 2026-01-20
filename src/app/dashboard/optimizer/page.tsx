@@ -164,7 +164,8 @@ export default function OptimizerPage() {
         if (!selectedRouteId || !optimizationResult) return;
         updateDoc('routes', selectedRouteId, { 
             studentIds: optimizationResult.optimizedStudentIds,
-            turnByTurnDirections: optimizationResult.turnByTurnDirections 
+            turnByTurnDirections: optimizationResult.turnByTurnDirections,
+            lastOptimizedAt: new Date().toISOString()
         });
         toast({
             title: "Rota Atualizada!",
@@ -437,5 +438,7 @@ function RouteMap({ originalRoute, optimizedRoute, school }) {
         </>
     );
 }
+
+    
 
     
