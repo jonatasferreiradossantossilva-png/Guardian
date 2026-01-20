@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, Shield, MapPin, Bus, HandHeart } from 'lucide-react';
+import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, Shield, MapPin, Bus, HandHeart, ShieldCheck } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -109,6 +109,7 @@ export default function PresentationPage() {
                     <FileImage className="inline-block text-primary h-12 w-12 mr-4" />
                     Identidade Visual: O Abraço Protetor
                 </h2>
+                <p className="text-center mb-8 text-muted-foreground max-w-3xl">Abaixo estão 3 variações do conceito de logo "Abraço Protetor", explorando diferentes paletas de cores para transmitir nuances distintas da marca: Confiança, Energia e Tranquilidade.</p>
                 <div className="grid md:grid-cols-3 gap-8 w-full">
                     <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
                         <h3 className="font-bold text-lg mb-4">Variação A: Confiança e Tecnologia</h3>
