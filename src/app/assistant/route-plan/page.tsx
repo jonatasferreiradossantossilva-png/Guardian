@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { useUser } from '@/firebase';
 import {
   Card,
   CardContent,
@@ -67,7 +66,6 @@ const statusIconMap: Record<Student['status'], React.ReactNode> = {
 };
 
 export default function AssistantRoutePlanPage() {
-  const { user, isUserLoading } = useUser();
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
@@ -127,7 +125,7 @@ export default function AssistantRoutePlanPage() {
     setIsModalOpen(true);
   };
 
-  const isLoading = isUserLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
+  const isLoading = isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
   // Derive shift from the active route
   const activeShift = useMemo(

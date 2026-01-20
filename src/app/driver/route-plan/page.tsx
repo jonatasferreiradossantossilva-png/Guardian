@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { useUser } from '@/firebase';
 import {
   Card,
   CardContent,
@@ -173,7 +172,6 @@ function RouteDirections({ directions }: { directions?: string[] }) {
 }
 
 export default function DriverRoutePlanPage() {
-  const { user, isUserLoading } = useUser();
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -362,7 +360,7 @@ export default function DriverRoutePlanPage() {
 
 
   const isLoading =
-    isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading || isLocationLoading;
+    areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading || isLocationLoading;
 
   const activeShift = useMemo(
     () => (route?.shift === 'manha' ? 'Manhã' : 'Tarde'),

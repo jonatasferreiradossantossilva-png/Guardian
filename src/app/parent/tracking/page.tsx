@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
-import { useUser } from "@/firebase";
 import {
   useMockCollection,
   useMockDoc,
@@ -109,7 +108,6 @@ function haversineDistance(coords1, coords2) {
 
 
 export default function ParentTrackingPage() {
-  const { user, isUserLoading: isAuthLoading } = useUser();
   const { toast } = useToast();
   const { updateDoc } = useMockData();
   const simulationTimer = useRef(null);
@@ -250,7 +248,7 @@ export default function ParentTrackingPage() {
     });
   };
 
-  const isLoading = isAuthLoading || areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading;
+  const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading;
   const studentStatus = student?.status || 'aguardando';
 
   return (
