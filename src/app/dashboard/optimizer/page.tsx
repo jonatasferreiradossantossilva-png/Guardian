@@ -11,7 +11,7 @@ import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -300,7 +300,7 @@ export default function OptimizerPage() {
                                 </div>
                             ) : (
                                 <APIProvider apiKey={API_KEY}>
-                                    <Map
+                                    <GoogleMap
                                         defaultCenter={{ lat: -23.55, lng: -46.63 }}
                                         defaultZoom={12}
                                         mapId="optimizer-map"
@@ -312,7 +312,7 @@ export default function OptimizerPage() {
                                             optimizedRoute={optimizedStudentsResult} 
                                             school={schoolForRoute}
                                         />
-                                    </Map>
+                                    </GoogleMap>
                                 </APIProvider>
                             )}
                          </div>
