@@ -35,7 +35,6 @@ export default function DriverMessagesPage() {
   // 2. Fetch Active Route for Driver
   const activeRouteFilter = useMemo(() => (driver ? [
       { field: 'driverId', op: '==', value: driver.id },
-      { field: 'active', op: '==', value: true }
   ] : undefined), [driver]);
   const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes', activeRouteFilter);
   const activeRoute = useMemo(() => routes?.[0], [routes]);

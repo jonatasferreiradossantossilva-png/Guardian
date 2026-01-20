@@ -31,7 +31,6 @@ export default function AssistantMessagesPage() {
 
   const activeRouteFilter = useMemo(() => (mockUserId ? [
       { field: 'assistantId', op: '==', value: mockUserId },
-      { field: 'active', op: '==', value: true }
   ] : undefined), [mockUserId]);
   const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes', activeRouteFilter);
   const activeRoute = useMemo(() => routes?.[0], [routes]);
