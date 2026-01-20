@@ -1,9 +1,16 @@
 import { LoginForm } from "@/components/auth/login-form";
-import { ShieldCheck } from "lucide-react";
+import { Presentation, ShieldCheck } from "lucide-react";
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
 
 export default function Home() {
   return (
     <main className="flex min-h-screen flex-col items-center justify-center p-8">
+       <div className="absolute top-4 right-4 z-10">
+          <Button asChild variant="outline">
+              <Link href="/presentation"><Presentation className="mr-2 h-4 w-4"/> Ver Apresentação</Link>
+          </Button>
+      </div>
       <div className="flex flex-col items-center gap-4 text-center mb-8">
         <div className="rounded-full bg-secondary p-4 border-2 border-primary/50">
           <ShieldCheck className="h-12 w-12 text-primary" />
