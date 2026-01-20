@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, Bot, School, Navigation } from "lucide-react";
+import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, Bot, School, Navigation, Siren } from "lucide-react";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
@@ -59,6 +59,7 @@ export default function OptimizerPage() {
     const { data: routes } = useMockCollection('routes');
     const { data: students } = useMockCollection('students');
     const { data: schools } = useMockCollection('schools');
+    const { data: incidents } = useMockCollection('incidents');
 
     const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
     const [context, setContext] = useState<string>("");
@@ -122,10 +123,16 @@ export default function OptimizerPage() {
         setOptimizationResult(null);
 
         try {
+            const incidentsContext = incidents && incidents.length > 0
+                ? "Incidentes reportados: " + incidents.map(inc => `${inc.category} (${inc.severity}): ${inc.description}`).join('; ')
+                : "";
+            
+            const combinedContext = [context, incidentsContext].filter(Boolean).join('\n\n');
+
             const input = {
                 students: studentsInRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
                 schoolAddress: formatAddress(schoolForRoute),
-                context: context,
+                context: combinedContext,
             };
             const result = await optimizeSchoolVanRoute(input);
             setOptimizationResult(result);
@@ -143,7 +150,7 @@ export default function OptimizerPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast]);
+    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast, incidents]);
     
     useEffect(() => {
         const autoOptimize = searchParams.get('autoOptimize') === 'true';
@@ -210,11 +217,16 @@ export default function OptimizerPage() {
                                 <label htmlFor="context-textarea" className="text-sm font-medium mb-2 block">Contexto Adicional (Opcional)</label>
                                 <Textarea 
                                     id="context-textarea"
-                                    placeholder="Ex: Evitar a Av. Principal entre 8h e 9h. A Rua B está em obras."
+                                    placeholder="Ex: Evitar a Av. Principal entre 8h e 9h. A Rua B está em obras. Os incidentes recentes já são considerados automaticamente."
                                     value={context}
                                     onChange={(e) => setContext(e.target.value)}
-                                    rows={4}
+                                    rows={3}
                                 />
+                                {incidents && incidents.length > 0 && (
+                                    <div className="mt-3 text-xs text-muted-foreground p-2 bg-secondary rounded-md border">
+                                        <p className="font-bold flex items-center gap-1.5"><Siren size={14} className="text-destructive"/> {incidents.length} incidente(s) recente(s) será(ão) considerado(s) pela IA.</p>
+                                    </div>
+                                )}
                             </div>
                         </CardContent>
                         <CardFooter>

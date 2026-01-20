@@ -20,13 +20,13 @@ const StudentStopSchema = z.object({
 const OptimizeSchoolVanRouteInputSchema = z.object({
   students: z.array(StudentStopSchema).describe("Lista de alunos com seus endereços para serem incluídos na rota."),
   schoolAddress: z.string().describe("O endereço da escola, que é o destino final."),
-  context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito, interdições de vias ou alunos ausentes."),
+  context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito, interdições de vias ou incidentes reportados."),
 });
 export type OptimizeSchoolVanRouteInput = z.infer<typeof OptimizeSchoolVanRouteInputSchema>;
 
 const OptimizeSchoolVanRouteOutputSchema = z.object({
   optimizedStudentIds: z.array(z.string()).describe('Uma lista ordenada de IDs de alunos representando a rota mais eficiente.'),
-  summary: z.string().describe('Um resumo da otimização, explicando os benefícios (ex: tempo/distância economizados).'),
+  summary: z.string().describe('Um resumo da otimização, explicando os benefícios (ex: tempo/distância economizados) e como o contexto (ex: incidentes) influenciou a decisão.'),
   estimatedTimeMinutes: z.number().describe('O tempo total estimado para a rota otimizada em minutos.'),
   estimatedDistanceKm: z.number().describe('A distância total estimada para a rota otimizada em quilômetros.'),
   turnByTurnDirections: z.array(z.string()).describe('Uma lista de instruções de direção passo a passo para a rota, como "Vire à direita na Rua X".')
@@ -49,14 +49,15 @@ Considere as seguintes informações:
 - Lista de Alunos e Endereços: {{{json students}}}
 - Endereço da Escola (Destino Final): {{{schoolAddress}}}
 {{#if context}}
-- Contexto Adicional: {{{context}}}
+- Contexto Adicional (condições de trânsito, interdições, incidentes reportados, etc.): {{{context}}}
+**Leve os incidentes e condições de trânsito em consideração ao calcular a rota mais eficiente, evitando as áreas afetadas se possível.**
 {{/if}}
 
 Por favor, forneça a seguinte saída em formato JSON:
 1.  **optimizedStudentIds**: Uma lista ordenada de IDs de alunos representando a rota mais eficiente, começando pelo primeiro aluno a ser pego.
 2.  **estimatedTimeMinutes**: Uma estimativa realista do tempo total da rota em minutos.
 3.  **estimatedDistanceKm**: Uma estimativa realista da distância total da rota em quilômetros.
-4.  **summary**: Uma breve explicação dos benefícios da rota. Exemplo: "Esta rota foi otimizada para evitar o congestionamento matinal, economizando cerca de 15 minutos."
+4.  **summary**: Uma breve explicação dos benefícios da rota, mencionando como o contexto (ex: incidentes) influenciou a decisão. Exemplo: "Esta rota foi otimizada para desviar do congestionamento na Av. Principal, economizando cerca de 15 minutos."
 5.  **turnByTurnDirections**: Uma lista de instruções de direção passo a passo (curtas e diretas), como um GPS, partindo do endereço do primeiro aluno da lista otimizada e seguindo por todas as paradas até chegar na escola. Por exemplo: ["Siga para a Rua Principal", "Vire à direita na Av. Central", "Na rotatória, pegue a segunda saída para a Rua das Flores", ...].
 
 Calcule a melhor sequência possível e forneça TODAS as informações solicitadas no formato JSON especificado.`,
