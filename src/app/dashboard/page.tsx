@@ -1,13 +1,19 @@
+'use client';
+
+import { useState } from 'react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { IncidentList } from "@/components/dashboard/incident-list";
 import { IncidentMap } from "@/components/dashboard/incident-map";
 import { DriverStatusList } from "@/components/dashboard/driver-status-list";
-import { incidents } from "@/lib/placeholder-data";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
 import { DriverRouteInfoCard } from "@/components/dashboard/driver-route-info-card";
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { ReportIncidentForm } from '@/components/dashboard/report-incident-form';
 
 export default function DashboardPage() {
+  const [isReportFormOpen, setIsReportFormOpen] = useState(false);
+
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -15,10 +21,15 @@ export default function DashboardPage() {
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
           <p className="text-muted-foreground">Visão geral da operação em tempo real.</p>
         </div>
-        <Button>
-          <PlusCircle className="mr-2 h-4 w-4" />
-          Relatar Incidente
-        </Button>
+        <Dialog open={isReportFormOpen} onOpenChange={setIsReportFormOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Relatar Incidente
+            </Button>
+          </DialogTrigger>
+          <ReportIncidentForm onFormSubmit={() => setIsReportFormOpen(false)} />
+        </Dialog>
       </div>
 
       <DriverRouteInfoCard />
@@ -29,7 +40,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <h2 className="text-2xl font-semibold mb-4">Mapa de Incidentes</h2>
           <div className="aspect-[16/9] rounded-lg overflow-hidden border">
-             <IncidentMap incidents={incidents} />
+             <IncidentMap />
           </div>
         </div>
         <div className="lg:col-span-1 flex flex-col gap-8">
@@ -39,7 +50,7 @@ export default function DashboardPage() {
             </div>
             <div>
                  <h2 className="text-2xl font-semibold mb-4">Incidentes Recentes</h2>
-                 <IncidentList incidents={incidents} />
+                 <IncidentList />
             </div>
         </div>
       </div>

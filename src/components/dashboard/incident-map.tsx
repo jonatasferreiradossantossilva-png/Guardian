@@ -10,6 +10,8 @@ import {
 import type { Incident } from "@/lib/placeholder-data";
 import { useState } from "react";
 import { Badge } from "../ui/badge";
+import { useMockCollection } from "@/hooks/use-mock-data";
+import { Loader2 } from 'lucide-react';
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -20,8 +22,17 @@ const severityColorMap: { [key in Incident["severity"]]: string } = {
   Baixa: "#84cc16", // lime-500
 };
 
-export function IncidentMap({ incidents }: { incidents: Incident[] }) {
+export function IncidentMap() {
+  const { data: incidents, isLoading } = useMockCollection('incidents');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+
+  if (isLoading) {
+    return (
+         <div className="flex h-full w-full items-center justify-center bg-secondary/30">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+        </div>
+    );
+  }
 
   if (!API_KEY) {
     return (
@@ -51,7 +62,7 @@ export function IncidentMap({ incidents }: { incidents: Incident[] }) {
         gestureHandling={'greedy'}
         className="w-full h-full"
       >
-        {incidents.map((incident) => (
+        {incidents && incidents.map((incident) => (
           <AdvancedMarker
             key={incident.id}
             position={incident.location}

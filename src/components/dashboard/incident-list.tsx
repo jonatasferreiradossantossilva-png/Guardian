@@ -4,9 +4,10 @@ import type { Incident } from "@/lib/placeholder-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Bot, Clock } from "lucide-react";
+import { Bot, Clock, Loader2 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AiSummaryModal } from "./ai-summary-modal";
+import { useMockCollection } from '@/hooks/use-mock-data';
 
 const severityVariantMap: { [key in Incident['severity']]: "destructive" | "default" | "secondary" | "outline" } = {
     'Crítica': 'destructive',
@@ -52,25 +53,38 @@ const IncidentListItem = ({ incident, onSummarizeClick }: { incident: Incident, 
 };
 
 
-export function IncidentList({ incidents }: { incidents: Incident[] }) {
+export function IncidentList() {
+    const { data: incidents, isLoading } = useMockCollection('incidents');
     const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
     const handleSummarizeClick = (incident: Incident) => {
         setSelectedIncident(incident);
     };
 
+    if (isLoading) {
+        return (
+            <Card className="border-secondary overflow-hidden flex items-center justify-center p-8">
+                 <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            </Card>
+        );
+    }
+
     return (
         <>
             <Card className="border-secondary overflow-hidden">
                 <CardContent className="p-0">
                     <div className="divide-y divide-secondary">
-                        {incidents.map((incident) => (
-                            <IncidentListItem 
-                                key={incident.id} 
-                                incident={incident} 
-                                onSummarizeClick={handleSummarizeClick} 
-                            />
-                        ))}
+                        {incidents && incidents.length > 0 ? (
+                            incidents.map((incident) => (
+                                <IncidentListItem 
+                                    key={incident.id} 
+                                    incident={incident} 
+                                    onSummarizeClick={handleSummarizeClick} 
+                                />
+                            ))
+                        ) : (
+                           <p className="text-center text-muted-foreground p-8 text-sm">Nenhum incidente recente.</p>
+                        )}
                     </div>
                 </CardContent>
             </Card>
