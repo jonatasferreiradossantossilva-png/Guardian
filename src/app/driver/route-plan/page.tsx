@@ -21,6 +21,7 @@ import {
   IdCard,
   MapPin,
   School,
+  Circle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -33,6 +34,7 @@ import {
   AdvancedMarker,
   useMap,
 } from '@vis.gl/react-google-maps';
+import { cn } from '@/lib/utils';
 
 type Shift = 'Manhã' | 'Tarde';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
@@ -61,6 +63,13 @@ const statusBadgeVariant: Record<
   aguardando: 'secondary',
   desembarcado: 'outline',
   ausente: 'destructive',
+};
+
+const statusIconMap: Record<Student['status'], React.ReactNode> = {
+  aguardando: <Circle className="h-5 w-5 text-muted-foreground/30" />,
+  a_bordo: <CheckCircle className="h-5 w-5 text-primary" />,
+  desembarcado: <CheckCircle className="h-5 w-5 text-green-500" />,
+  ausente: <XCircle className="h-5 w-5 text-destructive/80" />,
 };
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -235,7 +244,7 @@ export default function DriverRoutePlanPage() {
             <div className="flex justify-between items-start">
               <CardTitle className="flex items-center gap-2">
                 <ClipboardCheck />
-                Controle de Embarque/Desembarque
+                Progresso da Rota
               </CardTitle>
               {route && <Badge variant="outline">{activeShift}</Badge>}
             </div>
@@ -263,82 +272,65 @@ export default function DriverRoutePlanPage() {
             )}
 
             {!isLoading && route && (
-              <div className="space-y-4">
-                {orderedStudents.map((student) => (
-                  <div
-                    key={student.id}
-                    className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg bg-secondary"
-                  >
-                    <div className="flex items-center gap-3 mb-3 sm:mb-0">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8"
-                        onClick={() => handleOpenAuthorizedModal(student)}
-                        title="Ver contatos autorizados"
-                      >
-                        <IdCard className="h-5 w-5 text-muted-foreground" />
-                      </Button>
-                      <span className="font-medium">{student.name}</span>
-                    </div>
-                    <div className="flex items-center gap-2 w-full sm:w-auto">
-                      {student.status === 'aguardando' && (
-                        <>
-                          <Button
-                            size="sm"
-                            className="bg-green-600 hover:bg-green-700 flex-1"
-                            onClick={() =>
-                              handleStatusChange(student.id, 'a_bordo')
-                            }
-                          >
-                            <CheckCircle className="mr-2 h-4 w-4" />
-                            Embarcar
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="destructive"
-                            className="flex-1"
-                            onClick={() =>
-                              handleStatusChange(student.id, 'ausente')
-                            }
-                          >
-                            <XCircle className="mr-2 h-4 w-4" />
-                            Ausente
-                          </Button>
-                        </>
-                      )}
-                      {student.status === 'a_bordo' && (
-                        <Button
-                          size="sm"
-                          className="w-full"
-                          onClick={() =>
-                            handleStatusChange(student.id, 'desembarcado')
-                          }
-                        >
-                          <Bus className="mr-2 h-4 w-4" />
-                          Desembarcar
-                        </Button>
-                      )}
-                      {(student.status === 'desembarcado' ||
-                        student.status === 'ausente') && (
-                        <Badge
-                          variant={statusBadgeVariant[student.status]}
-                          className="w-full justify-center py-1 text-xs"
-                        >
-                          {statusText[student.status]}
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                ))}
+              <ol className="space-y-2">
+                {orderedStudents.map((student) => {
+                    const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
+                    return (
+                    <li key={student.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary gap-3">
+                        <div className="flex items-center gap-4">
+                            <div title={statusText[student.status]}>{statusIconMap[student.status]}</div>
+                            <div className="flex items-center gap-2">
+                                <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
+                                {student.name}
+                                </span>
+                                <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-6 w-6"
+                                    onClick={() => handleOpenAuthorizedModal(student)}
+                                    title="Ver contatos autorizados"
+                                >
+                                    <IdCard className="h-4 w-4 text-muted-foreground" />
+                                </Button>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-2 w-full sm:w-auto max-w-[220px] self-end sm:self-center">
+                            {student.status === 'aguardando' && (
+                                <>
+                                <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => handleStatusChange(student.id, 'a_bordo')}>
+                                    <CheckCircle className="mr-2 h-4 w-4" /> Embarcar
+                                </Button>
+                                <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleStatusChange(student.id, 'ausente')}>
+                                    <XCircle className="mr-2 h-4 w-4" /> Ausente
+                                </Button>
+                                </>
+                            )}
+                            {student.status === 'a_bordo' && (
+                                <Button size="sm" className="w-full" onClick={() => handleStatusChange(student.id, 'desembarcado')}>
+                                <Bus className="mr-2 h-4 w-4" /> Desembarcar
+                                </Button>
+                            )}
+                            {(student.status === 'desembarcado' || student.status === 'ausente') && (
+                                <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1.5 text-xs">
+                                {statusText[student.status]}
+                                </Badge>
+                            )}
+                        </div>
+                    </li>
+                    );
+                })}
+                <li className="flex items-center gap-4 p-3">
+                    <School className="h-5 w-5 text-muted-foreground/50"/>
+                    <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
+                </li>
                 {orderedStudents.length === 0 && (
-                  <div className="text-center text-muted-foreground py-10">
+                    <div className="text-center text-muted-foreground py-10">
                     <p>
-                      Nenhum aluno para o turno da {activeShift?.toLowerCase()}.
+                        Nenhum aluno para o turno da {activeShift?.toLowerCase()}.
                     </p>
-                  </div>
+                    </div>
                 )}
-              </div>
+              </ol>
             )}
           </CardContent>
         </Card>
