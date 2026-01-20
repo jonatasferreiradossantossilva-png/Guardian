@@ -33,11 +33,11 @@ import {
   ClipboardCheck,
   Sparkles,
   MessageCircle,
+  Rocket,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useState } from "react";
-import { GuardianLogo } from "../icons/guardian-logo";
 
 const managementLinks = [
   { href: "/dashboard/management/schools", label: "Escolas", icon: School },
@@ -82,7 +82,7 @@ export function MainSidebar() {
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/20">
-            <GuardianLogo className="w-8 h-8" shieldClassName="text-primary" pinClassName="text-primary/50" pinDotClassName="text-primary"/>
+            <Rocket className="w-8 h-8 text-primary" />
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
             <h2 className="text-xl font-bold">Guardian</h2>
