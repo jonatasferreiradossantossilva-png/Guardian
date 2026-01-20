@@ -430,6 +430,7 @@ export default function DriverRoutePlanPage() {
               <ol className="space-y-2">
                 {displayStudents.map((student, index) => {
                     const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
+                    const isOnBoard = student.status === 'a_bordo';
                     const isNextStop = student.id === nextStop?.id;
                     return (
                     <li key={student.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary gap-3">
@@ -437,8 +438,9 @@ export default function DriverRoutePlanPage() {
                             <div title={statusText[student.status]} className={cn(
                                 "w-8 h-8 rounded-full shadow-inner flex items-center justify-center font-bold text-white text-sm flex-shrink-0",
                                 isFinished && "bg-slate-400 opacity-70",
-                                !isFinished && isNextStop && "bg-green-500 scale-110 animate-pulse",
-                                !isFinished && !isNextStop && "bg-blue-500"
+                                isOnBoard && "bg-blue-500",
+                                !isFinished && !isOnBoard && isNextStop && "bg-green-500 scale-110 animate-pulse",
+                                !isFinished && !isOnBoard && !isNextStop && "bg-blue-500 opacity-50"
                             )}>
                                 {index + 1}
                             </div>
@@ -524,10 +526,11 @@ export default function DriverRoutePlanPage() {
                 </CardDescription>
             </CardHeader>
             <CardContent>
-                <div className="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-xs animate-pulse">1</div>Próxima Parada</div>
-                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">2</div>Parada Futura</div>
-                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-slate-400 opacity-70"></div>Parada Concluída</div>
+                <div className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-xs animate-pulse">1</div>Próxima</div>
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500"></div>A Bordo</div>
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-slate-400"></div>Concluída</div>
                     <div className="flex items-center gap-2"><div className="p-1 rounded-full bg-red-600"><School size={12} className="text-white"/></div>Escola</div>
                 </div>
                 <div className="aspect-video w-full rounded-lg overflow-hidden border bg-secondary">
@@ -642,16 +645,18 @@ function RouteMap({ driverLocation, currentRouteStudents, originalRouteStudents,
           {currentRouteStudents.map((student, index) => {
             if (!student.latitude || !student.longitude) return null;
 
-            const isNextStop = student.id === nextStop?.id;
             const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
+            const isOnBoard = student.status === 'a_bordo';
+            const isNextStop = student.id === nextStop?.id;
 
             return (
               <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
                   <div className={cn(
                     "w-8 h-8 rounded-full shadow border-2 border-white flex items-center justify-center font-bold text-white text-sm",
                     isFinished && "bg-slate-400 border-slate-200 opacity-70",
-                    !isFinished && isNextStop && "bg-green-500 border-green-200 scale-125 animate-pulse",
-                    !isFinished && !isNextStop && "bg-blue-500 border-blue-200"
+                    isOnBoard && "bg-blue-500 border-blue-200",
+                    !isFinished && !isOnBoard && isNextStop && "bg-green-500 border-green-200 scale-125 animate-pulse",
+                    !isFinished && !isOnBoard && !isNextStop && "bg-blue-500 border-blue-200 opacity-50"
                   )}>
                       {index + 1}
                   </div>
