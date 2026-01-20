@@ -206,8 +206,8 @@ export default function ParentTrackingPage() {
           { lat: student.latitude, lng: student.longitude }
         );
 
-        // Threshold in kilometers (500 meters)
-        const NEARBY_THRESHOLD_KM = 0.5;
+        // Threshold in kilometers (1km)
+        const NEARBY_THRESHOLD_KM = 1;
 
         if (distance < NEARBY_THRESHOLD_KM) {
           setIsNearby(true);
