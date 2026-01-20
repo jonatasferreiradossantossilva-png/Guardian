@@ -214,7 +214,7 @@ export default function AssistantRoutePlanPage() {
                                 </p>
                             </div>
                         </div>
-                        <div className="flex items-center gap-2 w-full sm:w-auto max-w-[220px] self-end sm:self-center">
+                        <div className="flex items-center gap-2 w-[220px] self-end sm:self-center">
                             {student.status === 'aguardando' && (
                                 <>
                                 <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => handleStatusChange(student.id, 'a_bordo')}>
