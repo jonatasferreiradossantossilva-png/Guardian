@@ -20,7 +20,7 @@ const StudentStopSchema = z.object({
 const OptimizeSchoolVanRouteInputSchema = z.object({
   students: z.array(StudentStopSchema).describe("Lista de alunos com seus endereços para serem incluídos na rota."),
   schoolAddress: z.string().describe("O endereço da escola, que é o destino final."),
-  context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito ou interdições de vias."),
+  context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito, interdições de vias ou alunos ausentes."),
 });
 export type OptimizeSchoolVanRouteInput = z.infer<typeof OptimizeSchoolVanRouteInputSchema>;
 
@@ -49,7 +49,7 @@ Considere as seguintes informações:
 - Lista de Alunos e Endereços: {{{json students}}}
 - Endereço da Escola (Destino Final): {{{schoolAddress}}}
 {{#if context}}
-- Contexto Adicional do gestor: {{{context}}}
+- Contexto Adicional: {{{context}}}
 {{/if}}
 
 Por favor, forneça a seguinte saída em formato JSON:

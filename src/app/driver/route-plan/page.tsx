@@ -29,6 +29,7 @@ import {
   ArrowRight,
   Undo2,
   GitCommitHorizontal,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -44,6 +45,8 @@ import {
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
+import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
+
 
 type Shift = 'Manhã' | 'Tarde';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
@@ -64,6 +67,9 @@ interface School {
   name: string;
   latitude: number;
   longitude: number;
+  street?: string;
+  number?: string;
+  neighborhood?: string;
 }
 
 
@@ -181,13 +187,15 @@ export default function DriverRoutePlanPage() {
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  // State for the modal
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] =
     useState<Student | null>(null);
+    
+  const [dynamicRoute, setDynamicRoute] = useState<{ students: Student[], turnByTurnDirections: string[] } | null>(null);
+  const [isRecalculating, setIsRecalculating] = useState(false);
+
 
   useEffect(() => {
-    // For this prototype, we get the logged-in user's ID from session storage.
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId || 'user-motorista-2'); // Default to a known driver for direct page access
   }, []);
@@ -205,7 +213,6 @@ export default function DriverRoutePlanPage() {
   );
   const driverId = driverProfile?.id;
 
-  // Fetch active route for driver
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
     'routes',
     driverId
@@ -234,6 +241,10 @@ export default function DriverRoutePlanPage() {
       .map((id) => studentMap.get(id))
       .filter((s): s is Student => !!s);
   }, [route?.studentIds, students]);
+  
+  const displayStudents = dynamicRoute ? dynamicRoute.students : orderedStudents;
+  const displayDirections = dynamicRoute ? dynamicRoute.turnByTurnDirections : route?.turnByTurnDirections;
+
 
   const school = useMemo(() => {
     if (!orderedStudents.length || !schools) return null;
@@ -277,75 +288,87 @@ export default function DriverRoutePlanPage() {
         });
     }
   };
-
-  const handleNavigateToSchool = (school: School) => {
-    if (school.latitude && school.longitude) {
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${school.latitude},${school.longitude}`;
-        window.open(url, '_blank');
-    } else {
-        toast({
-            title: 'Endereço da escola não encontrado',
-            description: 'As coordenadas de GPS para a escola não estão disponíveis.',
-            variant: 'destructive'
-        });
-    }
-  };
   
   const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
-
-    const studentName = orderedStudents.find(s => s.id === studentId)?.name || 'o aluno';
-
-    // Automatic Navigation Logic
-    if (newStatus === 'a_bordo' || newStatus === 'desembarcado') {
-      const currentIndex = orderedStudents.findIndex(s => s.id === studentId);
-      
-      if (currentIndex !== -1) {
-        // Find the next student in the list who is still waiting for pickup.
-        let nextStudentToPickup: Student | null = null;
-        for (let i = currentIndex + 1; i < orderedStudents.length; i++) {
-          if (orderedStudents[i].status === 'aguardando') {
-            nextStudentToPickup = orderedStudents[i];
-            break;
-          }
-        }
-
-        if (nextStudentToPickup) {
-          toast({
-            title: `Próxima Parada: ${nextStudentToPickup.name}`,
-            description: `Navegação automática iniciada.`,
-          });
-          handleNavigateToStudent(nextStudentToPickup);
-        } else {
-          // If there are no more students to pick up, the destination is the school.
-          const studentsOnBoard = orderedStudents.some(s => s.id !== studentId && s.status === 'a_bordo');
-          if ((studentsOnBoard || newStatus === 'a_bordo') && school) {
-            toast({
-              title: `Próxima Parada: ${school.name}`,
-              description: 'Todos os alunos foram recolhidos. Navegando para a escola.',
-            });
-            handleNavigateToSchool(school);
-          } else {
-            toast({
-              title: 'Status atualizado!',
-              description: `O status de ${studentName} foi salvo.`,
-            });
-          }
-        }
-      }
-    } else { // For 'ausente' status
-        toast({
-            title: 'Status Atualizado',
-            description: `${studentName} foi marcado(a) como ${statusText[newStatus]}.`
-        })
-    }
+    const studentName = students?.find(s => s.id === studentId)?.name || 'o aluno';
+    toast({
+        title: 'Status Atualizado',
+        description: `${studentName} foi marcado(a) como ${statusText[newStatus]}.`,
+    });
   };
+
+  const handleRecalculate = async () => {
+    if (!orderedStudents || orderedStudents.length === 0 || !school) {
+        toast({ 
+            title: "Dados insuficientes",
+            description: "Não é possível recalcular sem uma rota e escola definidos.",
+            variant: "destructive"
+        });
+        return;
+    }
+
+    setIsRecalculating(true);
+    
+    const studentsToReroute = orderedStudents.filter(s => s.status === 'aguardando');
+    
+    if (studentsToReroute.length === 0) {
+        toast({ title: "Nenhuma parada restante", description: "Todos os alunos já foram visitados." });
+        setIsRecalculating(false);
+        return;
+    }
+    
+    try {
+        const studentInputs = studentsToReroute.map(s => ({ 
+            id: s.id, 
+            name: s.name, 
+            address: `${s.street || ''}, ${s.number || ''}, ${s.neighborhood || ''}`.trim()
+        }));
+
+        const schoolAddress = `${school.street || ''}, ${school.number || ''}, ${school.neighborhood || ''}`.trim();
+
+        const input = {
+            students: studentInputs,
+            schoolAddress: schoolAddress,
+            context: "Recalcule a rota mais eficiente para as paradas restantes, terminando na escola. Um ou mais alunos podem ter sido marcados como ausentes.",
+        };
+
+        const result = await optimizeSchoolVanRoute(input);
+        
+        const processedStudents = orderedStudents.filter(s => s.status !== 'aguardando');
+        
+        const reorderedWaitingStudents = result.optimizedStudentIds
+            .map(id => students.find(s => s.id === id))
+            .filter((s): s is Student => !!s);
+
+        const newDisplayOrder = [...processedStudents, ...reorderedWaitingStudents];
+
+        setDynamicRoute({
+            students: newDisplayOrder,
+            turnByTurnDirections: result.turnByTurnDirections,
+        });
+
+        toast({
+            title: "Rota Recalculada!",
+            description: "A ordem das paradas e as instruções foram atualizadas.",
+        });
+
+    } catch (error) {
+        console.error("Error recalculating route:", error);
+        toast({
+            title: "Erro ao Recalcular",
+            description: "Não foi possível otimizar a rota. Tente novamente.",
+            variant: "destructive"
+        });
+    } finally {
+        setIsRecalculating(false);
+    }
+};
 
 
   const isLoading =
     isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading || isLocationLoading;
 
-  // Derive shift from the active route
   const activeShift = useMemo(
     () => (route?.shift === 'manha' ? 'Manhã' : 'Tarde'),
     [route]
@@ -377,7 +400,13 @@ export default function DriverRoutePlanPage() {
                 <ClipboardCheck />
                 Progresso da Rota
               </CardTitle>
-              {route && <Badge variant="outline">{activeShift}</Badge>}
+               <div className="flex items-center gap-2">
+                    <Button variant="outline" size="sm" onClick={handleRecalculate} disabled={isRecalculating}>
+                        {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Recalcular Rota
+                    </Button>
+                    {route && <Badge variant="outline">{activeShift}</Badge>}
+                </div>
             </div>
             <p className="text-muted-foreground text-sm pt-2">
               {route ? route.name : 'Carregando rota...'}
@@ -404,7 +433,7 @@ export default function DriverRoutePlanPage() {
 
             {!isLoading && route && (
               <ol className="space-y-2">
-                {orderedStudents.map((student) => {
+                {displayStudents.map((student) => {
                     const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
                     return (
                     <li key={student.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary gap-3">
@@ -468,7 +497,7 @@ export default function DriverRoutePlanPage() {
                     <School className="h-5 w-5 text-muted-foreground/50"/>
                     <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
                 </li>
-                {orderedStudents.length === 0 && (
+                {displayStudents.length === 0 && (
                     <div className="text-center text-muted-foreground py-10">
                     <p>
                         Nenhum aluno para o turno da {activeShift?.toLowerCase()}.
@@ -480,7 +509,7 @@ export default function DriverRoutePlanPage() {
           </CardContent>
         </Card>
         
-        <RouteDirections directions={route?.turnByTurnDirections} />
+        <RouteDirections directions={displayDirections} />
 
         <Card>
             <CardHeader>
@@ -508,7 +537,7 @@ export default function DriverRoutePlanPage() {
                             >
                                 <RouteMap
                                     driverLocation={driverLocation}
-                                    students={orderedStudents}
+                                    students={displayStudents}
                                     school={school}
                                 />
                             </GoogleMap>
