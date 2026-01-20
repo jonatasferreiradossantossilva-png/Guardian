@@ -2,6 +2,7 @@
 "use client";
 
 import { useState, useMemo, useEffect, useRef } from "react";
+import { useSearchParams } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -51,6 +52,7 @@ const formatAddress = (entity) => {
 };
 
 export default function OptimizerPage() {
+    const searchParams = useSearchParams();
     const { toast } = useToast();
     const { db, updateDoc } = useMockData();
     const { data: routes } = useMockCollection('routes');
@@ -61,6 +63,13 @@ export default function OptimizerPage() {
     const [context, setContext] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [optimizationResult, setOptimizationResult] = useState<OptimizeSchoolVanRouteOutput | null>(null);
+
+    useEffect(() => {
+        const routeIdFromUrl = searchParams.get('routeId');
+        if (routeIdFromUrl && routes?.find(r => r.id === routeIdFromUrl)) {
+            setSelectedRouteId(routeIdFromUrl);
+        }
+    }, [searchParams, routes]);
 
     const studentsMap = useMemo(() => new Map(students?.map(s => [s.id, s])), [students]);
     const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s])), [schools]);

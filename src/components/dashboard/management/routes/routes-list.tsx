@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import Link from 'next/link';
 import {
   Table,
   TableBody,
@@ -10,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Sparkles } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -43,7 +44,6 @@ type Route = {
   driverId: string;
   assistantId?: string;
   studentIds: string[];
-  active: boolean;
   shift: 'manha' | 'tarde';
 };
 type Driver = { id: string; name: string };
@@ -153,7 +153,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                 <TableHead>Auxiliar</TableHead>
                 <TableHead>Alunos</TableHead>
                 <TableHead>Turno</TableHead>
-                <TableHead>Status</TableHead>
+                <TableHead>Otimizar</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
@@ -176,9 +176,12 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                         <Badge variant="outline">{route.shift === 'manha' ? 'Manhã' : 'Tarde'}</Badge>
                     </TableCell>
                     <TableCell>
-                      <Badge variant={route.active ? 'default' : 'outline'}>
-                        {route.active ? 'Ativa' : 'Inativa'}
-                      </Badge>
+                      <Button asChild variant="outline" size="sm">
+                        <Link href={`/dashboard/optimizer?routeId=${route.id}`}>
+                            <Sparkles className="mr-2 h-4 w-4" />
+                            Otimizar
+                        </Link>
+                      </Button>
                     </TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>

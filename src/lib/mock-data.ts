@@ -288,7 +288,6 @@ export const initialMockData = {
             driverId: "driver-1", 
             assistantId: "user-aux-1", 
             studentIds: ["student-9", "student-10", "student-11", "student-12", "student-13", "student-14", "student-15", "student-16"], 
-            active: true, 
             shift: "manha",
             turnByTurnDirections: [
               "Siga para o sudeste na Rua A em direção à Rua B",
@@ -321,7 +320,6 @@ export const initialMockData = {
             driverId: "driver-2", 
             assistantId: "user-aux-2", 
             studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8"], 
-            active: true, 
             shift: "tarde",
             turnByTurnDirections: [
                 "Siga para o leste na Rua A em direção à Rua B",
@@ -335,12 +333,12 @@ export const initialMockData = {
                 "O seu destino, Colégio Vanguarda, estará à direita."
             ]
         },
-        { id: "route-3", name: "Rota Matinal - Zona Oeste", driverId: "driver-3", assistantId: "user-aux-3", studentIds: [], active: true, shift: "manha" },
-        { id: "route-4", name: "Rota Vespertina - Eixo Jardins", driverId: "driver-4", assistantId: "", studentIds: [], active: false, shift: "tarde" },
-        { id: "route-5", name: "Rota Matinal - Morumbi", driverId: "driver-5", assistantId: "user-aux-1", studentIds: [], active: true, shift: "manha" },
-        { id: "route-6", name: "Rota Matinal - Jardins", driverId: "driver-6", assistantId: "user-aux-2", studentIds: [], active: true, shift: "manha" },
-        { id: "route-7", name: "Rota Tarde - Itaim", driverId: "driver-7", assistantId: "", studentIds: [], active: true, shift: "tarde" },
-        { id: "route-8", name: "Rota Matinal - Santo Amaro", driverId: "driver-1", assistantId: "", studentIds: [], active: false, shift: "manha" },
+        { id: "route-3", name: "Rota Matinal - Zona Oeste", driverId: "driver-3", assistantId: "user-aux-3", studentIds: [], shift: "manha" },
+        { id: "route-4", name: "Rota Vespertina - Eixo Jardins", driverId: "driver-4", assistantId: "", studentIds: [], shift: "tarde" },
+        { id: "route-5", name: "Rota Matinal - Morumbi", driverId: "driver-5", assistantId: "user-aux-1", studentIds: [], shift: "manha" },
+        { id: "route-6", name: "Rota Matinal - Jardins", driverId: "driver-6", assistantId: "user-aux-2", studentIds: [], shift: "manha" },
+        { id: "route-7", name: "Rota Tarde - Itaim", driverId: "driver-7", assistantId: "", studentIds: [], shift: "tarde" },
+        { id: "route-8", name: "Rota Matinal - Santo Amaro", driverId: "driver-1", assistantId: "", studentIds: [], shift: "manha" },
     ],
     locations: {
       "driver-1": { latitude: -23.55052, longitude: -46.633308, timestamp: new Date().toISOString() },

@@ -31,7 +31,6 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useMemo, useState } from 'react';
-import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users } from 'lucide-react';
@@ -42,7 +41,6 @@ const formSchema = z.object({
   driverId: z.string().min(1, { message: 'Selecione um motorista.' }),
   assistantId: z.string().optional(),
   studentIds: z.array(z.string()).default([]),
-  active: z.boolean().default(true),
   shift: z.enum(['manha', 'tarde'], { required_error: 'Selecione um turno.' }),
 });
 
@@ -78,7 +76,6 @@ export function RouteForm({
       driverId: '',
       assistantId: '',
       studentIds: [],
-      active: true,
       shift: 'manha',
     },
   });
@@ -109,7 +106,6 @@ export function RouteForm({
         driverId: route.driverId || '',
         assistantId: route.assistantId || '',
         studentIds: route.studentIds || [],
-        active: route.active ?? true,
         shift: route.shift || 'manha',
       });
     } else {
@@ -265,10 +261,6 @@ export function RouteForm({
             </div>
           </div>
           
-          <FormField control={form.control} name="active" render={({ field }) => (
-            <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4"><div className="space-y-0.5"><FormLabel>Rota Ativa</FormLabel><FormDescription>Marque se esta rota está atualmente em operação.</FormDescription></div><FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl></FormItem>
-          )}/>
-
           <DialogFooter className="pt-4">
             <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
             <Button type="submit">Salvar</Button>
