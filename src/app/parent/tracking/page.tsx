@@ -81,6 +81,25 @@ const interpolate = (start, end, factor) => {
     return start + (end - start) * factor;
 };
 
+// Haversine formula to calculate distance between two lat/lng points in KM
+function haversineDistance(coords1, coords2) {
+  const toRad = (x) => (x * Math.PI) / 180;
+  const R = 6371; // Earth radius in km
+
+  const dLat = toRad(coords2.lat - coords1.lat);
+  const dLon = toRad(coords2.lng - coords1.lng);
+  const lat1 = toRad(coords1.lat);
+  const lat2 = toRad(coords2.lat);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
+
 export default function ParentTrackingPage() {
   const { user, isUserLoading: isAuthLoading } = useUser();
   const { toast } = useToast();
@@ -88,6 +107,7 @@ export default function ParentTrackingPage() {
   const simulationTimer = useRef(null);
   const [simulatedLocation, setSimulatedLocation] = useState(null);
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [isNearby, setIsNearby] = useState(false);
 
   useEffect(() => {
     // For this prototype, we get the logged-in user's ID from session storage.
@@ -177,6 +197,25 @@ export default function ParentTrackingPage() {
   }, [realLocation, route, allStudentsMap, school, student]);
 
   const displayLocation = realLocation || simulatedLocation;
+
+  // Effect for proximity check
+  useEffect(() => {
+      if (displayLocation && student) {
+        const distance = haversineDistance(
+          { lat: displayLocation.latitude, lng: displayLocation.longitude },
+          { lat: student.latitude, lng: student.longitude }
+        );
+
+        // Threshold in kilometers (500 meters)
+        const NEARBY_THRESHOLD_KM = 0.5;
+
+        if (distance < NEARBY_THRESHOLD_KM) {
+          setIsNearby(true);
+        } else {
+          setIsNearby(false);
+        }
+      }
+    }, [displayLocation, student]);
   
   const handleCommunicateAbsence = () => {
     if (!student) return;
@@ -239,6 +278,17 @@ export default function ParentTrackingPage() {
           </Card>
         ) : (
           <Card>
+            {isNearby && (
+              <div className="p-4 border-b-2 border-amber-400 bg-amber-50 dark:bg-amber-950/20">
+                  <div className="flex items-center gap-3">
+                      <Siren className="h-6 w-6 text-amber-500 animate-pulse" />
+                      <div>
+                          <h3 className="font-bold text-amber-700 dark:text-amber-300">A Van está Próxima!</h3>
+                          <p className="text-sm text-amber-600 dark:text-amber-400">Prepare-se para o embarque de {student.name}.</p>
+                      </div>
+                  </div>
+              </div>
+            )}
             <CardHeader>
               <div className="flex justify-between items-start">
                   <div>
@@ -345,5 +395,3 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
-
-    
