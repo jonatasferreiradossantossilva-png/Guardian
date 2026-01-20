@@ -514,8 +514,17 @@ export default function DriverRoutePlanPage() {
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><MapPin /> Mapa da Rota</CardTitle>
+                 <CardDescription>
+                    {dynamicRoute ? 'Visualização da rota original (pontilhada) e da rota recalculada (verde).' : 'Acompanhe a rota planejada em tempo real.'}
+                </CardDescription>
             </CardHeader>
             <CardContent>
+                <div className="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-xs animate-pulse">1</div>Próxima Parada</div>
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500 flex items-center justify-center text-white font-bold text-xs">2</div>Parada Futura</div>
+                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-slate-400 opacity-70"></div>Parada Concluída</div>
+                    <div className="flex items-center gap-2"><div className="p-1 rounded-full bg-red-600"><School size={12} className="text-white"/></div>Escola</div>
+                </div>
                 <div className="aspect-video w-full rounded-lg overflow-hidden border bg-secondary">
                     {!API_KEY ? (
                         <div className="flex h-full w-full items-center justify-center bg-secondary/30">
@@ -537,7 +546,8 @@ export default function DriverRoutePlanPage() {
                             >
                                 <RouteMap
                                     driverLocation={driverLocation}
-                                    students={displayStudents}
+                                    currentRouteStudents={displayStudents}
+                                    originalRouteStudents={dynamicRoute ? orderedStudents : null}
                                     school={school}
                                 />
                             </GoogleMap>
@@ -560,15 +570,23 @@ export default function DriverRoutePlanPage() {
   );
 }
 
-function RouteMap({ driverLocation, students, school }) {
+function RouteMap({ driverLocation, currentRouteStudents, originalRouteStudents, school }) {
   const map = useMap();
 
-  useEffect(() => {
-    if (!map || (!students.length && !school)) return;
+  const nextStop = useMemo(() => 
+    currentRouteStudents.find(s => s.status === 'aguardando'),
+    [currentRouteStudents]
+  );
 
+  useEffect(() => {
+    if (!map) return;
+
+    const allStops = [...currentRouteStudents, ...(originalRouteStudents || [])];
+    if (allStops.length === 0 && !school) return;
+    
     const bounds = new google.maps.LatLngBounds();
-    students.forEach(stop => {
-        if (stop.latitude && stop.longitude) {
+    allStops.forEach(stop => {
+        if (stop?.latitude && stop?.longitude) {
             bounds.extend({ lat: stop.latitude, lng: stop.longitude });
         }
     });
@@ -579,46 +597,76 @@ function RouteMap({ driverLocation, students, school }) {
         bounds.extend({ lat: driverLocation.latitude, lng: driverLocation.longitude });
     }
 
-    if (bounds.isEmpty()) return;
+    if (bounds.isEmpty()) {
+       if (school?.latitude && school?.longitude) {
+         map.setCenter({ lat: school.latitude, lng: school.longitude });
+         map.setZoom(14);
+       }
+       return;
+    };
     map.fitBounds(bounds, 100);
 
-  }, [map, driverLocation, students, school]);
+  }, [map, driverLocation, currentRouteStudents, originalRouteStudents, school]);
   
   if (!school) return null;
-
-  const routePath = [
+  
+  const originalPath = originalRouteStudents ? [
     ...(driverLocation ? [{ lat: driverLocation.latitude, lng: driverLocation.longitude }] : []),
-    ...students.map(s => ({ lat: s.latitude, lng: s.longitude })),
+    ...originalRouteStudents.map(s => ({ lat: s.latitude, lng: s.longitude })),
+    { lat: school.latitude, lng: school.longitude }
+  ].filter(p => p.lat && p.lng) : [];
+
+  const currentPath = [
+    ...(driverLocation ? [{ lat: driverLocation.latitude, lng: driverLocation.longitude }] : []),
+    ...currentRouteStudents.map(s => ({ lat: s.latitude, lng: s.longitude })),
     { lat: school.latitude, lng: school.longitude }
   ].filter(p => p.lat && p.lng);
 
   return (
       <>
-          {/* Markers */}
+          {/* Driver Marker */}
           {driverLocation && (
-              <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição">
+              <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição" zIndex={100}>
                   <div className="p-1 bg-primary rounded-full shadow-lg">
                       <Bus className="h-6 w-6 text-primary-foreground" />
                   </div>
               </AdvancedMarker>
           )}
 
-          {students.map(student => (
+          {/* Student Markers */}
+          {currentRouteStudents.map((student, index) => {
+            if (!student.latitude || !student.longitude) return null;
+
+            const isNextStop = student.id === nextStop?.id;
+            const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
+
+            return (
               <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                  <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
-                      <User className="h-4 w-4 text-white" />
+                  <div className={cn(
+                    "w-8 h-8 rounded-full shadow border-2 border-white flex items-center justify-center font-bold text-white text-sm",
+                    isFinished && "bg-slate-400 border-slate-200 opacity-70",
+                    !isFinished && isNextStop && "bg-green-500 border-green-200 scale-125 animate-pulse",
+                    !isFinished && !isNextStop && "bg-blue-500 border-blue-200"
+                  )}>
+                      {index + 1}
                   </div>
               </AdvancedMarker>
-          ))}
+            )
+          })}
+          
+          {/* School Marker */}
           <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
                <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
                   <School className="h-5 w-5 text-white" />
                </div>
           </AdvancedMarker>
 
-          {/* Polyline */}
-          {routePath.length > 1 && (
-              <Polyline path={routePath} strokeColor="#4f46e5" strokeOpacity={0.8} strokeWeight={6} />
+          {/* Polylines */}
+          {originalPath.length > 1 && (
+              <Polyline path={originalPath} strokeColor="#9ca3af" strokeOpacity={0} strokeWeight={6} icons={[{ icon: { path: 'M 0,-1 0,1', strokeOpacity: 0.6, scale: 3 }, offset: '0', repeat: '10px' }]} />
+          )}
+          {currentPath.length > 1 && (
+              <Polyline path={currentPath} strokeColor={originalPath.length > 1 ? "#22c55e" : "#4f46e5"} strokeOpacity={0.8} strokeWeight={6} />
           )}
       </>
   );
