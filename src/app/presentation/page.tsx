@@ -199,16 +199,16 @@ export default function PresentationPage() {
                  <div className="grid md:grid-cols-2 gap-8 w-full items-center">
                     <div className="bg-background/50 border border-border p-8 rounded-lg text-center">
                         <p className="text-muted-foreground text-lg">Estamos buscando</p>
-                        <p className="text-6xl font-bold text-primary my-2">R$ 250.000</p>
+                        <p className="text-6xl font-bold text-primary my-2">R$ 80.000</p>
                         <p className="text-muted-foreground text-lg">em troca de</p>
-                        <p className="text-4xl font-bold text-primary mt-2">15% de participação</p>
+                        <p className="text-4xl font-bold text-primary mt-2">10% de participação</p>
                     </div>
                      <div>
                         <h3 className="text-xl font-semibold mb-4 text-center">Uso dos Recursos</h3>
                         <div className="space-y-4 text-sm">
-                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary mr-2"></div><span className="font-semibold">50% - Desenvolvimento de Produto:</span><span className="ml-1 text-muted-foreground">Contratação do desenvolvedor principal.</span></div>
-                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary/70 mr-2"></div><span className="font-semibold">30% - Vendas e Marketing:</span><span className="ml-1 text-muted-foreground">Primeiras campanhas e estruturação de vendas.</span></div>
-                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary/40 mr-2"></div><span className="font-semibold">20% - Custos Operacionais:</span><span className="ml-1 text-muted-foreground">Infraestrutura, G&A.</span></div>
+                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary mr-2"></div><span className="font-semibold">60% - Produto (MVP de Produção):</span><span className="ml-1 text-muted-foreground">Desenvolvedor (freelancer/part-time) para finalizar o app.</span></div>
+                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary/70 mr-2"></div><span className="font-semibold">20% - Marketing (Aquisição Inicial):</span><span className="ml-1 text-muted-foreground">Campanhas focadas para conseguir os primeiros clientes.</span></div>
+                            <div className="flex items-center"><div className="w-4 h-4 rounded-sm bg-primary/40 mr-2"></div><span className="font-semibold">20% - Custos Operacionais:</span><span className="ml-1 text-muted-foreground">Custos de nuvem e despesas para os primeiros meses.</span></div>
                         </div>
                      </div>
                  </div>
