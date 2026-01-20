@@ -240,7 +240,9 @@ export default function AssistantRoutePlanPage() {
                     );
                 })}
                 <li className="flex items-center gap-4 p-3">
-                    <School className="h-5 w-5 text-muted-foreground/50"/>
+                    <div className="w-8 h-8 flex items-center justify-center">
+                        <School className="h-5 w-5 text-muted-foreground/50"/>
+                    </div>
                     <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
                 </li>
                 {orderedStudents.length === 0 && (

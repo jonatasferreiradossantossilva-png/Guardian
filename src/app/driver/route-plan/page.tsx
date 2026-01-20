@@ -11,8 +11,6 @@ import {
 } from '@/components/ui/card';
 import {
   List,
-  CheckCircle,
-  XCircle,
   Bus,
   User,
   Loader2,
@@ -22,7 +20,6 @@ import {
   IdCard,
   MapPin,
   School,
-  Circle,
   Navigation,
   ArrowUp,
   ArrowLeft,
@@ -88,13 +85,6 @@ const statusBadgeVariant: Record<
   aguardando: 'secondary',
   desembarcado: 'outline',
   ausente: 'destructive',
-};
-
-const statusIconMap: Record<Student['status'], React.ReactNode> = {
-  aguardando: <Circle className="h-5 w-5 text-muted-foreground/30" />,
-  a_bordo: <CheckCircle className="h-5 w-5 text-primary" />,
-  desembarcado: <CheckCircle className="h-5 w-5 text-green-500" />,
-  ausente: <XCircle className="h-5 w-5 text-destructive/80" />,
 };
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -245,6 +235,10 @@ export default function DriverRoutePlanPage() {
   const displayStudents = dynamicRoute ? dynamicRoute.students : orderedStudents;
   const displayDirections = dynamicRoute ? dynamicRoute.turnByTurnDirections : route?.turnByTurnDirections;
 
+  const nextStop = useMemo(() => 
+    displayStudents.find(s => s.status === 'aguardando'),
+    [displayStudents]
+  );
 
   const school = useMemo(() => {
     if (!orderedStudents.length || !schools) return null;
@@ -433,16 +427,24 @@ export default function DriverRoutePlanPage() {
 
             {!isLoading && route && (
               <ol className="space-y-2">
-                {displayStudents.map((student) => {
+                {displayStudents.map((student, index) => {
                     const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
+                    const isNextStop = student.id === nextStop?.id;
                     return (
                     <li key={student.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary gap-3">
                         <div className="flex items-center gap-4">
-                            <div title={statusText[student.status]}>{statusIconMap[student.status]}</div>
+                            <div title={statusText[student.status]} className={cn(
+                                "w-8 h-8 rounded-full shadow-inner flex items-center justify-center font-bold text-white text-sm flex-shrink-0",
+                                isFinished && "bg-slate-400 opacity-70",
+                                !isFinished && isNextStop && "bg-green-500 scale-110 animate-pulse",
+                                !isFinished && !isNextStop && "bg-blue-500"
+                            )}>
+                                {index + 1}
+                            </div>
                             <div>
                                 <div className="flex items-center gap-2">
                                     <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
-                                    {student.name}
+                                      {student.name}
                                     </span>
                                      <Button
                                         variant="ghost"
@@ -472,7 +474,7 @@ export default function DriverRoutePlanPage() {
                             {student.status === 'aguardando' && (
                                 <>
                                 <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => handleStatusChange(student.id, 'a_bordo')}>
-                                    <CheckCircle className="mr-2 h-4 w-4" /> Embarcar
+                                    <User className="mr-2 h-4 w-4" /> Embarcar
                                 </Button>
                                 <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleStatusChange(student.id, 'ausente')}>
                                     <XCircle className="mr-2 h-4 w-4" /> Ausente
@@ -494,7 +496,9 @@ export default function DriverRoutePlanPage() {
                     );
                 })}
                 <li className="flex items-center gap-4 p-3">
-                    <School className="h-5 w-5 text-muted-foreground/50"/>
+                    <div className="w-8 h-8 flex items-center justify-center">
+                      <School className="h-5 w-5 text-muted-foreground/50"/>
+                    </div>
                     <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
                 </li>
                 {displayStudents.length === 0 && (
