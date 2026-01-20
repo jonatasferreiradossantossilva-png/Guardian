@@ -12,18 +12,20 @@ import { AssistantQuickEditForm } from './assistant-quick-edit-form';
 
 export function DriverRouteInfoCard() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     // For this prototype, we get the logged-in user's ID from session storage.
     const storedUserId = sessionStorage.getItem('mockUserId');
     setCurrentUserId(storedUserId);
+    setIsClient(true);
   }, []);
 
 
   // 1. Check if the currently logged-in user is also a driver
   const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', currentUserId ? [
     { field: 'userId', op: '==', value: currentUserId },
-  ] : []);
+  ] : undefined);
   const driverProfile = useMemo(() => (drivers && drivers.length > 0 ? drivers[0] : null), [drivers]);
 
   // 2. If they are a driver, find their active route
@@ -52,7 +54,7 @@ export function DriverRouteInfoCard() {
 
   const isLoading = areDriversLoading || areRoutesLoading || areStudentsLoading || areUsersLoading;
 
-  if (isLoading) {
+  if (!isClient || isLoading) {
     return (
         <Card className="bg-primary/5 border-primary/20">
             <CardHeader>
