@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef, memo } from 'react';
+import { useState, useMemo, useEffect, useRef, memo, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -345,12 +345,12 @@ export default function DriverRoutePlanPage() {
   const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(driverId ? `locations/${driverId}` : null);
 
 
-  const handleOpenAuthorizedModal = (student: Student) => {
+  const handleOpenAuthorizedModal = useCallback((student: Student) => {
     setSelectedStudentForModal(student);
     setIsModalOpen(true);
-  };
+  }, []);
   
-  const handleNavigateToStudent = (student: Student) => {
+  const handleNavigateToStudent = useCallback((student: Student) => {
     if (student.latitude && student.longitude) {
         const url = `https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`;
         window.open(url, '_blank');
@@ -361,16 +361,16 @@ export default function DriverRoutePlanPage() {
             variant: 'destructive'
         });
     }
-  };
+  }, [toast]);
   
-  const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
+  const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
     const studentName = students?.find(s => s.id === studentId)?.name || 'o aluno';
     toast({
         title: 'Status Atualizado',
         description: `${studentName} foi marcado(a) como ${statusText[newStatus]}.`,
     });
-  };
+  }, [updateDoc, students, toast]);
 
   const handleRecalculate = async () => {
     if (!orderedStudents || orderedStudents.length === 0 || !school) {

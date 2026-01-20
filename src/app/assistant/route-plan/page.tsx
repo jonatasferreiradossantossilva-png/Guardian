@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, memo } from 'react';
+import { useState, useMemo, useEffect, memo, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -175,14 +175,14 @@ export default function AssistantRoutePlanPage() {
     return schools.find(s => s.id === studentWithSchool.schoolId);
   }, [orderedStudents, schools]);
 
-  const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
+  const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
-  };
+  }, [updateDoc]);
 
-  const handleOpenAuthorizedModal = (student: Student) => {
+  const handleOpenAuthorizedModal = useCallback((student: Student) => {
     setSelectedStudentForModal(student);
     setIsModalOpen(true);
-  };
+  }, []);
 
   const isLoading = isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
