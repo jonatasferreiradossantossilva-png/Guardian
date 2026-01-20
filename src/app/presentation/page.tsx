@@ -108,17 +108,17 @@ export default function PresentationPage() {
                  <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Target className="inline-block text-primary h-12 w-12 mr-4" />Oportunidade de Mercado</h2>
                  <div className="grid md:grid-cols-3 gap-6 text-center w-full">
                     <div className="bg-background/50 border border-border p-6 rounded-lg">
-                        <h3 className="text-lg font-semibold text-muted-foreground">TAM (Total)</h3>
+                        <h3 className="text-lg font-semibold text-muted-foreground">TAM (Mercado Total)</h3>
                         <p className="text-5xl font-bold text-primary mt-2">R$ 4.5 Bi</p>
                         <p className="text-sm text-muted-foreground mt-2">Mercado total de transporte escolar no Brasil (anual).</p>
                     </div>
                      <div className="bg-background/50 border-2 border-primary/50 p-6 rounded-lg ring-4 ring-primary/10">
-                        <h3 className="text-lg font-semibold text-muted-foreground">SAM (Alcançável)</h3>
+                        <h3 className="text-lg font-semibold text-muted-foreground">SAM (Mercado Endereçável)</h3>
                         <p className="text-5xl font-bold text-primary mt-2">R$ 1.3 Bi</p>
                         <p className="text-sm text-muted-foreground mt-2">Empresas privadas em centros urbanos no Brasil.</p>
                     </div>
                      <div className="bg-background/50 border border-border p-6 rounded-lg">
-                        <h3 className="text-lg font-semibold text-muted-foreground">SOM (Meta 2 Anos)</h3>
+                        <h3 className="text-lg font-semibold text-muted-foreground">SOM (Mercado Obtível)</h3>
                         <p className="text-5xl font-bold text-primary mt-2">R$ 13 Mi</p>
                         <p className="text-sm text-muted-foreground mt-2">Conquistar 1% do mercado alcançável, começando por SP e RJ.</p>
                     </div>
