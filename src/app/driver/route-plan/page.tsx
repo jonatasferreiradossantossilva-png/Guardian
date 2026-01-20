@@ -7,6 +7,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import {
   List,
@@ -22,6 +23,12 @@ import {
   MapPin,
   School,
   Circle,
+  Navigation,
+  ArrowUp,
+  ArrowLeft,
+  ArrowRight,
+  Undo2,
+  GitCommitHorizontal,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +42,7 @@ import {
   useMap,
 } from '@vis.gl/react-google-maps';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Shift = 'Manhã' | 'Tarde';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
@@ -103,6 +111,61 @@ const Polyline = (props: google.maps.PolylineOptions) => {
 
   return null;
 };
+
+function getDirectionDetails(instruction: string) {
+  const lowerInstruction = instruction.toLowerCase();
+  
+  if (lowerInstruction.includes("direita")) return { icon: <ArrowRight className="text-blue-500" />, text: instruction };
+  if (lowerInstruction.includes("esquerda")) return { icon: <ArrowLeft className="text-blue-500" />, text: instruction };
+  if (lowerInstruction.includes("frente")) return { icon: <ArrowUp className="text-blue-500" />, text: instruction };
+  if (lowerInstruction.includes("retorno")) return { icon: <Undo2 className="text-orange-500" />, text: instruction };
+  if (lowerInstruction.includes("rotatória")) return { icon: <GitCommitHorizontal className="text-purple-500" />, text: instruction };
+  
+  return { icon: <Navigation className="text-muted-foreground" />, text: instruction };
+}
+
+function RouteDirections({ directions }: { directions?: string[] }) {
+    if (!directions || directions.length === 0) {
+        return (
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2"><Navigation /> Instruções de Rota</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground text-center p-4">Nenhuma instrução de rota salva para este percurso.</p>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    return (
+        <Card>
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><Navigation /> Instruções de Rota (Plano)</CardTitle>
+                 <CardDescription>
+                    Este é um plano de rota gerado por IA. Use um app de navegação em tempo real para dirigir.
+                </CardDescription>
+            </CardHeader>
+            <CardContent>
+                <ScrollArea className="h-64">
+                    <ul className="space-y-3 pr-4">
+                        {directions.map((instruction, index) => {
+                            const { icon, text } = getDirectionDetails(instruction);
+                            return (
+                                <li key={index} className="flex items-center gap-4 p-2 bg-secondary rounded-md">
+                                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-background border">
+                                        {icon}
+                                    </div>
+                                    <span className="text-sm font-medium">{text}</span>
+                                </li>
+                            );
+                        })}
+                    </ul>
+                </ScrollArea>
+            </CardContent>
+        </Card>
+    )
+}
 
 export default function DriverRoutePlanPage() {
   const { user, isUserLoading } = useUser();
@@ -225,8 +288,8 @@ export default function DriverRoutePlanPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
-      <div className="max-w-4xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
+      <div className="max-w-4xl mx-auto space-y-6">
+        <div className="flex justify-between items-center">
           <h1 className="text-3xl font-bold tracking-tight">
             Painel do Motorista
           </h1>
@@ -343,7 +406,9 @@ export default function DriverRoutePlanPage() {
           </CardContent>
         </Card>
         
-        <Card className="mt-6">
+        <RouteDirections directions={route?.turnByTurnDirections} />
+
+        <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2"><MapPin /> Mapa da Rota</CardTitle>
             </CardHeader>
@@ -455,3 +520,5 @@ function RouteMap({ driverLocation, students, school }) {
       </>
   );
 }
+
+    

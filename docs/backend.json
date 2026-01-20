@@ -470,6 +470,13 @@
             "manha",
             "tarde"
           ]
+        },
+        "turnByTurnDirections": {
+          "type": "array",
+          "description": "A list of turn-by-turn navigation instructions for the route.",
+          "items": {
+            "type": "string"
+          }
         }
       },
       "required": [

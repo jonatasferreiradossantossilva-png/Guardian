@@ -136,10 +136,13 @@ export default function OptimizerPage() {
     
     const handleSaveChanges = () => {
         if (!selectedRouteId || !optimizationResult) return;
-        updateDoc('routes', selectedRouteId, { studentIds: optimizationResult.optimizedStudentIds });
+        updateDoc('routes', selectedRouteId, { 
+            studentIds: optimizationResult.optimizedStudentIds,
+            turnByTurnDirections: optimizationResult.turnByTurnDirections 
+        });
         toast({
             title: "Rota Atualizada!",
-            description: "A rota foi salva com a nova ordem otimizada.",
+            description: "A rota foi salva com a nova ordem otimizada e as instruções de direção.",
         });
         setOptimizationResult(null);
     }
@@ -408,3 +411,5 @@ function RouteMap({ originalRoute, optimizedRoute, school }) {
         </>
     );
 }
+
+    
