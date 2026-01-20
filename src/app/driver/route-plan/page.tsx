@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { useUser } from '@/firebase';
 import {
   Card,
@@ -19,13 +19,20 @@ import {
   ClipboardCheck,
   MessageSquare,
   IdCard,
+  MapPin,
+  School,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal'; // Import the modal
-import { initialMockData } from '@/lib/mock-data';
+import {
+  APIProvider,
+  Map as GoogleMap,
+  AdvancedMarker,
+  useMap,
+} from '@vis.gl/react-google-maps';
 
 type Shift = 'Manhã' | 'Tarde';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
@@ -34,6 +41,9 @@ interface Student {
   name: string;
   status: StudentStatus;
   shift: Shift;
+  latitude: number;
+  longitude: number;
+  schoolId: string;
 }
 
 const statusText: Record<StudentStatus, string> = {
@@ -51,6 +61,35 @@ const statusBadgeVariant: Record<
   aguardando: 'secondary',
   desembarcado: 'outline',
   ausente: 'destructive',
+};
+
+const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+const Polyline = (props: google.maps.PolylineOptions) => {
+  const map = useMap();
+  const polylineRef = useRef<google.maps.Polyline>();
+
+  useEffect(() => {
+    if (!map) {
+      return;
+    }
+    polylineRef.current = new google.maps.Polyline();
+    polylineRef.current.setMap(map);
+
+    return () => {
+      if (polylineRef.current) {
+        polylineRef.current.setMap(null);
+      }
+    };
+  }, [map]);
+
+  useEffect(() => {
+    if (polylineRef.current) {
+      polylineRef.current.setOptions(props);
+    }
+  }, [props]);
+
+  return null;
 };
 
 export default function DriverRoutePlanPage() {
@@ -126,6 +165,33 @@ export default function DriverRoutePlanPage() {
       })
       .filter((s): s is Student => !!s);
   }, [route?.studentIds, students]);
+  
+  const { data: schools, isLoading: areSchoolsLoading } = useMockCollection('schools');
+
+  const school = useMemo(() => {
+    if (!orderedStudents.length || !schools) return null;
+    const studentWithSchool = orderedStudents.find(s => s.schoolId);
+    if (!studentWithSchool) return null;
+    return schools.find(s => s.id === studentWithSchool.schoolId);
+  }, [orderedStudents, schools]);
+  
+  const useMockNestedDocSnapshot = (path) => {
+    const { getNestedDoc, db } = useMockData();
+    const [data, setData] = useState(() => path ? getNestedDoc(path) : null);
+
+    useEffect(() => {
+        if (path) {
+            setData(getNestedDoc(path));
+        } else {
+            setData(null);
+        }
+    }, [db, path, getNestedDoc]);
+
+    return { data, isLoading: false, error: null };
+  }
+  
+  const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(driverId ? `locations/${driverId}` : null);
+
 
   const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
@@ -137,7 +203,7 @@ export default function DriverRoutePlanPage() {
   };
 
   const isLoading =
-    isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading;
+    isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading || isLocationLoading;
 
   // Derive shift from the active route
   const activeShift = useMemo(
@@ -276,16 +342,116 @@ export default function DriverRoutePlanPage() {
             )}
           </CardContent>
         </Card>
-      </div>
+        
+        <Card className="mt-6">
+            <CardHeader>
+                <CardTitle className="flex items-center gap-2"><MapPin /> Mapa da Rota</CardTitle>
+            </CardHeader>
+            <CardContent>
+                <div className="aspect-video w-full rounded-lg overflow-hidden border bg-secondary">
+                    {!API_KEY ? (
+                        <div className="flex h-full w-full items-center justify-center bg-secondary/30">
+                          <div className="text-center p-4">
+                              <p className="font-semibold text-lg">Mapa Indisponível</p>
+                              <p className="text-muted-foreground text-sm">
+                                  A chave da API do Google Maps não foi configurada.
+                              </p>
+                          </div>
+                        </div>
+                    ) : (
+                        <APIProvider apiKey={API_KEY}>
+                            <GoogleMap
+                                defaultCenter={{ lat: -23.55, lng: -46.63 }}
+                                defaultZoom={12}
+                                mapId="driver-route-map"
+                                gestureHandling={'greedy'}
+                                disableDefaultUI={true}
+                            >
+                                <RouteMap
+                                    driverLocation={driverLocation}
+                                    students={orderedStudents}
+                                    school={school}
+                                />
+                            </GoogleMap>
+                        </APIProvider>
+                    )}
+                </div>
+            </CardContent>
+        </Card>
 
-      {isModalOpen && selectedStudentForModal && (
-        <AuthorizedContactsModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          studentId={selectedStudentForModal.id}
-          studentName={selectedStudentForModal.name}
-        />
-      )}
+        {isModalOpen && selectedStudentForModal && (
+            <AuthorizedContactsModal
+            isOpen={isModalOpen}
+            onClose={() => setIsModalOpen(false)}
+            studentId={selectedStudentForModal.id}
+            studentName={selectedStudentForModal.name}
+            />
+        )}
+      </div>
     </div>
+  );
+}
+
+function RouteMap({ driverLocation, students, school }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map || (!students.length && !school)) return;
+
+    const bounds = new google.maps.LatLngBounds();
+    students.forEach(stop => {
+        if (stop.latitude && stop.longitude) {
+            bounds.extend({ lat: stop.latitude, lng: stop.longitude });
+        }
+    });
+    if (school?.latitude && school?.longitude) {
+        bounds.extend({ lat: school.latitude, lng: school.longitude });
+    }
+    if (driverLocation?.latitude && driverLocation?.longitude) {
+        bounds.extend({ lat: driverLocation.latitude, lng: driverLocation.longitude });
+    }
+
+    if (bounds.isEmpty()) return;
+    map.fitBounds(bounds, 100);
+
+  }, [map, driverLocation, students, school]);
+  
+  if (!school) return null;
+
+  const routePath = [
+    ...(driverLocation ? [{ lat: driverLocation.latitude, lng: driverLocation.longitude }] : []),
+    ...students.map(s => ({ lat: s.latitude, lng: s.longitude })),
+    { lat: school.latitude, lng: school.longitude }
+  ].filter(p => p.lat && p.lng);
+
+  return (
+      <>
+          {/* Markers */}
+          {driverLocation && (
+              <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição">
+                  <div className="p-1 bg-primary rounded-full shadow-lg">
+                      <Bus className="h-6 w-6 text-primary-foreground" />
+                  </div>
+              </AdvancedMarker>
+          )}
+
+          {students.map(student => (
+              <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
+                  <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
+                      <User className="h-4 w-4 text-white" />
+                  </div>
+              </AdvancedMarker>
+          ))}
+          <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
+               <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+                  <School className="h-5 w-5 text-white" />
+               </div>
+          </AdvancedMarker>
+
+          {/* Polyline */}
+          {routePath.length > 1 && (
+              <Polyline path={routePath} strokeColor="#4f46e5" strokeOpacity={0.8} strokeWeight={6} />
+          )}
+      </>
   );
 }
