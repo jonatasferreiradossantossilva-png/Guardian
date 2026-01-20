@@ -4,10 +4,11 @@ import type { Incident } from "@/lib/placeholder-data";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
-import { Bot, Clock, Loader2 } from "lucide-react";
+import { Bot, Clock, Loader2, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AiSummaryModal } from "./ai-summary-modal";
 import { useMockCollection } from '@/hooks/use-mock-data';
+import { useToast } from "@/hooks/use-toast";
 
 const severityVariantMap: { [key in Incident['severity']]: "destructive" | "default" | "secondary" | "outline" } = {
     'Crítica': 'destructive',
@@ -16,7 +17,7 @@ const severityVariantMap: { [key in Incident['severity']]: "destructive" | "defa
     'Baixa': 'outline'
 };
 
-const IncidentListItem = ({ incident, onSummarizeClick }: { incident: Incident, onSummarizeClick: (incident: Incident) => void }) => {
+const IncidentListItem = ({ incident, onSummarizeClick, onLocateClick }: { incident: Incident, onSummarizeClick: (incident: Incident) => void, onLocateClick: (incident: Incident) => void }) => {
     const [clientTime, setClientTime] = useState("");
 
     useEffect(() => {
@@ -35,13 +36,22 @@ const IncidentListItem = ({ incident, onSummarizeClick }: { incident: Incident, 
                     <Badge variant={severityVariantMap[incident.severity]}>{incident.severity}</Badge>
                     <p className="font-semibold text-foreground mt-2">{incident.category}</p>
                 </div>
-                <button
-                    onClick={() => onSummarizeClick(incident)}
-                    className="p-2 rounded-md hover:bg-primary/20 text-primary transition-colors"
-                    title="Sumarizar com IA"
-                >
-                    <Bot className="h-5 w-5" />
-                </button>
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => onSummarizeClick(incident)}
+                        className="p-2 rounded-md hover:bg-primary/20 text-primary transition-colors"
+                        title="Sumarizar com IA"
+                    >
+                        <Bot className="h-5 w-5" />
+                    </button>
+                     <button
+                        onClick={() => onLocateClick(incident)}
+                        className="p-2 rounded-md hover:bg-blue-500/20 text-blue-500 transition-colors"
+                        title="Localizar no Mapa"
+                    >
+                        <MapPin className="h-5 w-5" />
+                    </button>
+                </div>
             </div>
             <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{incident.description}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground/80 mt-2">
@@ -53,13 +63,31 @@ const IncidentListItem = ({ incident, onSummarizeClick }: { incident: Incident, 
 };
 
 
-export function IncidentList() {
+export function IncidentList({ onLocateIncident }: { onLocateIncident: (coords: google.maps.LatLngLiteral) => void }) {
     const { data: incidents, isLoading } = useMockCollection('incidents');
     const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
+    const { toast } = useToast();
 
     const handleSummarizeClick = (incident: Incident) => {
         setSelectedIncident(incident);
     };
+    
+    const handleLocateClick = (incident: Incident) => {
+        if (incident.location) {
+            onLocateIncident(incident.location);
+            toast({
+                title: "Localizando incidente",
+                description: "O mapa foi centralizado no local do incidente."
+            });
+        } else {
+             toast({
+                title: "Localização não encontrada",
+                description: "Não há dados de localização para este incidente.",
+                variant: 'destructive',
+            });
+        }
+    };
+
 
     if (isLoading) {
         return (
@@ -80,6 +108,7 @@ export function IncidentList() {
                                     key={incident.id} 
                                     incident={incident} 
                                     onSummarizeClick={handleSummarizeClick} 
+                                    onLocateClick={handleLocateClick}
                                 />
                             ))
                         ) : (

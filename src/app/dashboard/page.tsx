@@ -52,7 +52,7 @@ export default function DashboardPage() {
             </div>
             <div>
                  <h2 className="text-2xl font-semibold mb-4">Incidentes Recentes</h2>
-                 <IncidentList />
+                 <IncidentList onLocateIncident={setMapTarget} />
             </div>
         </div>
       </div>
