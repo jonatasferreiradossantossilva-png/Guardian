@@ -468,7 +468,7 @@ export default function DriverRoutePlanPage() {
                                         <IdCard className="h-4 w-4 text-muted-foreground" />
                                     </Button>
                                 </div>
-                                <p className="text-xs text-muted-foreground">
+                                <p className="text-xs text-muted-foreground truncate">
                                     {student.street ? `${student.street}, ${student.number} - ${student.neighborhood}` : 'Endereço indisponível'}
                                 </p>
                             </div>
