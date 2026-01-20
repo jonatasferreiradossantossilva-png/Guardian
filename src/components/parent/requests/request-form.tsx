@@ -49,7 +49,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface TripRequestFormProps {
-  request?: { id: string } & Partial<FormValues>;
+  request?: { id: string; date?: string | Date } & Partial<FormValues>;
   studentId: string;
   parentUserId: string;
   onFormSubmit: () => void;
@@ -83,20 +83,27 @@ export function TripRequestForm({ request, studentId, parentUserId, onFormSubmit
   }, [request, form]);
 
   const onSubmit = (data: FormValues) => {
-    const requestData = {
-      ...data,
-      date: format(data.date, 'yyyy-MM-dd'),
-      studentId,
-      parentUserId,
-      createdAt: new Date().toISOString(),
-      status: 'pendente',
-    };
 
     if (request) {
-      // updateDoc('trip_requests', request.id, requestData);
-      toast({ title: 'Função de editar ainda não implementada.' });
+       const updateData = {
+        ...data,
+        date: format(data.date, 'yyyy-MM-dd'),
+      };
+      updateDoc('trip_requests', request.id, updateData);
+      toast({
+        title: 'Solicitação atualizada!',
+        description: 'Sua solicitação de viagem avulsa foi atualizada.',
+      });
     } else {
-      addDoc('trip_requests', requestData);
+        const createData = {
+            ...data,
+            date: format(data.date, 'yyyy-MM-dd'),
+            studentId,
+            parentUserId,
+            createdAt: new Date().toISOString(),
+            status: 'pendente',
+        };
+      addDoc('trip_requests', createData);
       toast({
         title: 'Solicitação enviada!',
         description: 'Sua solicitação de viagem avulsa foi enviada para análise.',
@@ -222,12 +229,10 @@ export function TripRequestForm({ request, studentId, parentUserId, onFormSubmit
                 Cancelar
               </Button>
             </DialogClose>
-            <Button type="submit">Enviar Solicitação</Button>
+            <Button type="submit">Salvar</Button>
           </DialogFooter>
         </form>
       </Form>
     </DialogContent>
   );
 }
-
-    

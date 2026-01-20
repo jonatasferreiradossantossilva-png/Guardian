@@ -13,6 +13,13 @@ import {
 import { Button } from '@/components/ui/button';
 import { MoreHorizontal, PlusCircle, ArrowLeft, Route, Check, X } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
@@ -108,6 +115,11 @@ export default function TripRequestsPage() {
     return [...tripRequests].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
   }, [tripRequests]);
 
+  const handleEdit = (request: TripRequest) => {
+    setSelectedRequest(request);
+    setIsFormOpen(true);
+  };
+
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
       <div className="max-w-4xl mx-auto">
@@ -184,9 +196,24 @@ export default function TripRequestsPage() {
                                 <X className="mr-2 h-4 w-4" /> Recusar
                             </Button>
                           </div>
+                        ) : request.status === 'pendente' ? (
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                    <span className="sr-only">Abrir menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => handleEdit(request)}>
+                                        Editar
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         ) : (
-                           <span className="text-sm italic text-muted-foreground">
-                            {request.status === 'pendente' ? 'Aguardando gestor' : 'Processado'}
+                           <span className="text-xs italic text-muted-foreground">
+                            Processado
                            </span>
                         )}
                       </TableCell>
@@ -209,5 +236,3 @@ export default function TripRequestsPage() {
     </div>
   );
 }
-
-    
