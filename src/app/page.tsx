@@ -15,9 +15,9 @@ export default function Home() {
         <div className="rounded-full bg-secondary p-4 border-2 border-primary/50">
           <ShieldCheck className="h-12 w-12 text-primary" />
         </div>
-        <h1 className="text-4xl font-bold text-foreground">Rota Segura</h1>
+        <h1 className="text-4xl font-bold text-foreground">Guardian</h1>
         <p className="max-w-md text-muted-foreground">
-          Acesse sua conta para gerenciar o transporte escolar. Para simular o acesso, selecione um perfil e clique no botão para entrar.
+          A plataforma para gestão do transporte escolar. Segurança, eficiência e tranquilidade.
         </p>
       </div>
       <LoginForm />

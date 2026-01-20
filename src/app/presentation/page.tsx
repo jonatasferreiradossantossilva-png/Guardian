@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle } from 'lucide-react';
+import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, Shield, MapPin, Bus, HandHeart } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -44,9 +44,9 @@ export default function PresentationPage() {
                 <div className="bg-primary/10 p-6 rounded-full border-2 border-primary/30 mb-8">
                      <Gem className="h-16 w-16 text-primary" />
                 </div>
-                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground">Rota Segura</h1>
+                <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground">Guardian</h1>
                 <p className="mt-6 text-xl md:text-2xl text-muted-foreground max-w-3xl">
-                    A plataforma SaaS para a modernização e segurança do transporte escolar no Brasil.
+                    A jornada do seu filho, protegida em tempo real.
                 </p>
                 <div className="mt-12 text-sm text-muted-foreground animate-pulse">
                     <p>Role para baixo para ver a apresentação</p>
@@ -87,7 +87,7 @@ export default function PresentationPage() {
                  <div className="w-full bg-background/50 border border-primary/20 rounded-xl p-8 backdrop-blur-sm">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
                         <div className="relative aspect-video rounded-lg overflow-hidden border-2 border-primary/20 shadow-2xl shadow-primary/10">
-                            <Image src="https://picsum.photos/seed/dashboard/1280/720" layout="fill" objectFit="cover" alt="Dashboard do Rota Segura" data-ai-hint="dashboard analytics" />
+                            <Image src="https://picsum.photos/seed/dashboard/1280/720" layout="fill" objectFit="cover" alt="Dashboard do Guardian" data-ai-hint="dashboard analytics" />
                         </div>
                         <div className="space-y-6">
                             <div>
@@ -102,13 +102,58 @@ export default function PresentationPage() {
                     </div>
                  </div>
             </Slide>
+            
+            {/* Slide 4: Logo Concepts */}
+            <Slide>
+                <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">
+                    <FileImage className="inline-block text-primary h-12 w-12 mr-4" />
+                    Identidade Visual: Conceitos de Logo
+                </h2>
+                <div className="grid md:grid-cols-3 gap-8 w-full">
+                    <div className="border-2 border-primary/50 ring-4 ring-primary/10 rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4 text-primary">Conceito 1: O Escudo Localizador</h3>
+                        <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
+                            <div className="relative h-32 w-32">
+                                <Shield className="h-32 w-32 text-blue-900" fill="currentColor" />
+                                <MapPin className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 text-teal-400" />
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            A fusão de um <strong>escudo</strong> (proteção) com um <strong>pino de mapa</strong> (localização). Profissional, direto e ideal para um ícone de app.
+                        </p>
+                    </div>
+                    <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4">Conceito 2: A Rota "G"</h3>
+                        <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
+                            <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                                <span className="text-7xl font-bold text-white italic -rotate-12 transform" style={{fontFamily: 'serif'}}>G</span>
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            Uma letra <strong>"G" estilizada</strong> que se transforma em uma linha de rota. Moderno, sutil e com uma forte identidade de marca de tecnologia.
+                        </p>
+                    </div>
+                    <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4">Conceito 3: O Abraço Protetor</h3>
+                        <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
+                             <div className="relative h-32 w-32 flex items-center justify-center">
+                                <HandHeart className="h-32 w-32 text-green-500/80" fill="currentColor" />
+                                <Bus className="absolute h-10 w-10 text-orange-500" />
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            Duas mãos formando um <strong>círculo de proteção</strong> em volta da van. Apela ao emocional dos pais, transmitindo cuidado e comunidade.
+                        </p>
+                    </div>
+                </div>
+            </Slide>
 
             {/* Slide 5: Market Opportunity */}
             <Slide>
                  <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Target className="inline-block text-primary h-12 w-12 mr-4" />Oportunidade de Mercado</h2>
                  <div className="grid md:grid-cols-3 gap-6 text-center w-full">
                     <div className="bg-background/50 border border-border p-6 rounded-lg">
-                        <h3 className="text-lg font-semibold text-muted-foreground">TAM (Mercado Total)</h3>
+                        <h3 className="text-lg font-semibold text-muted-foreground">TAM (Mercado Total Endereçável)</h3>
                         <p className="text-5xl font-bold text-primary mt-2">R$ 4.5 Bi</p>
                         <p className="text-sm text-muted-foreground mt-2">Mercado total de transporte escolar no Brasil (anual).</p>
                     </div>
@@ -172,7 +217,7 @@ export default function PresentationPage() {
                         </div>
                         <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-start items-end">
                              <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary text-right">
-                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><Gem/> Rota Segura</h4>
+                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><Gem/> Guardian</h4>
                                 <p className="text-sm text-foreground">Plataforma B2B completa com IA, Financeiro e Comunicação.</p>
                             </div>
                         </div>

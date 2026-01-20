@@ -85,7 +85,7 @@ export function MainSidebar() {
             <ShieldCheck className="w-8 h-8" />
           </div>
           <div className="group-data-[collapsible=icon]:hidden">
-            <h2 className="text-xl font-bold">Rota Segura</h2>
+            <h2 className="text-xl font-bold">Guardian</h2>
             <p className="text-sm text-muted-foreground">Admin</p>
           </div>
         </div>
@@ -217,7 +217,7 @@ export function MainSidebar() {
           </Avatar>
           <div className="group-data-[collapsible=icon]:hidden">
             <p className="font-semibold">Admin</p>
-            <p className="text-xs text-muted-foreground">admin@rotasegura.com</p>
+            <p className="text-xs text-muted-foreground">admin@guardian.com</p>
           </div>
           <Link href="/" className="ml-auto group-data-[collapsible=icon]:hidden">
             <Button variant="ghost" size="icon">

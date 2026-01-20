@@ -5,8 +5,8 @@ import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { MockDataProvider } from '@/hooks/use-mock-data';
 
 export const metadata: Metadata = {
-  title: 'Rota Segura Mobile',
-  description: 'Gestão de transporte escolar em tempo real.',
+  title: 'Guardian',
+  description: 'A jornada do seu filho, protegida em tempo real.',
 };
 
 export default function RootLayout({
