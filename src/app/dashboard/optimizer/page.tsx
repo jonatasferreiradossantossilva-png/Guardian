@@ -1,8 +1,8 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useSearchParams } from 'next/navigation';
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useSearchParams, useRouter } from 'next/navigation';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -53,6 +53,7 @@ const formatAddress = (entity) => {
 
 export default function OptimizerPage() {
     const searchParams = useSearchParams();
+    const router = useRouter();
     const { toast } = useToast();
     const { db, updateDoc } = useMockData();
     const { data: routes } = useMockCollection('routes');
@@ -63,6 +64,7 @@ export default function OptimizerPage() {
     const [context, setContext] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [optimizationResult, setOptimizationResult] = useState<OptimizeSchoolVanRouteOutput | null>(null);
+    const [autoOptimizeTriggered, setAutoOptimizeTriggered] = useState(false);
 
     useEffect(() => {
         const routeIdFromUrl = searchParams.get('routeId');
@@ -97,7 +99,7 @@ export default function OptimizerPage() {
     }, [optimizationResult, studentsMap]);
 
 
-    const handleOptimize = async () => {
+    const handleOptimize = useCallback(async () => {
         if (!selectedRoute || studentsInRoute.length === 0) {
             toast({
                 title: "Seleção Incompleta",
@@ -141,8 +143,23 @@ export default function OptimizerPage() {
         } finally {
             setIsLoading(false);
         }
-    };
+    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast]);
     
+    useEffect(() => {
+        const autoOptimize = searchParams.get('autoOptimize') === 'true';
+
+        if (autoOptimize && !autoOptimizeTriggered && selectedRoute && schoolForRoute) {
+            setAutoOptimizeTriggered(true);
+            handleOptimize();
+            
+            const current = new URL(window.location.href);
+            const newSearchParams = new URLSearchParams(current.search);
+            newSearchParams.delete('autoOptimize');
+            router.replace(`${current.pathname}?${newSearchParams.toString()}`);
+        }
+    }, [searchParams, autoOptimizeTriggered, selectedRoute, schoolForRoute, handleOptimize, router]);
+
+
     const handleSaveChanges = () => {
         if (!selectedRouteId || !optimizationResult) return;
         updateDoc('routes', selectedRouteId, { 

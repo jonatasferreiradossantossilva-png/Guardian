@@ -45,6 +45,7 @@ type Route = {
   assistantId?: string;
   studentIds: string[];
   shift: 'manha' | 'tarde';
+  active?: boolean;
 };
 type Driver = { id: string; name: string };
 type Student = { id: string; name: string };
@@ -177,7 +178,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                     </TableCell>
                     <TableCell>
                       <Button asChild variant="outline" size="sm">
-                        <Link href={`/dashboard/optimizer?routeId=${route.id}`}>
+                        <Link href={`/dashboard/optimizer?routeId=${route.id}&autoOptimize=true`}>
                             <Sparkles className="mr-2 h-4 w-4" />
                             Otimizar
                         </Link>
