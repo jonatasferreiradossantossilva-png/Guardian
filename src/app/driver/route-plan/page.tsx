@@ -289,6 +289,7 @@ export default function DriverRoutePlanPage() {
     driverId
       ? [
           { field: 'driverId', op: '==', value: driverId },
+          { field: 'active', op: '==', value: true }
         ]
       : []
   );
@@ -601,7 +602,7 @@ export default function DriverRoutePlanPage() {
   );
 }
 
-function RouteMap({ driverLocation, currentRouteStudents, originalRouteStudents, school }) {
+const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStudents, school }) => {
   const map = useMap();
 
   const nextStop = useMemo(() => 
@@ -703,4 +704,5 @@ function RouteMap({ driverLocation, currentRouteStudents, originalRouteStudents,
           )}
       </>
   );
-}
+});
+RouteMap.displayName = 'RouteMap';
