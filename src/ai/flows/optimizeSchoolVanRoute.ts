@@ -18,17 +18,17 @@ const StudentStopSchema = z.object({
 });
 
 const OptimizeSchoolVanRouteInputSchema = z.object({
-  students: z.array(StudentStopSchema).describe("List of students with their addresses to be included in the route."),
-  schoolAddress: z.string().describe("The address of the school, which is the final destination."),
-  context: z.string().optional().describe("Additional context for the AI to consider, like traffic conditions or road closures."),
+  students: z.array(StudentStopSchema).describe("Lista de alunos com seus endereços para serem incluídos na rota."),
+  schoolAddress: z.string().describe("O endereço da escola, que é o destino final."),
+  context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito ou interdições de vias."),
 });
 export type OptimizeSchoolVanRouteInput = z.infer<typeof OptimizeSchoolVanRouteInputSchema>;
 
 const OptimizeSchoolVanRouteOutputSchema = z.object({
-  optimizedStudentIds: z.array(z.string()).describe('An ordered list of student IDs representing the most efficient route.'),
-  summary: z.string().describe('A summary of the optimization, explaining the benefits (e.g., time/distance saved).'),
-  estimatedTimeMinutes: z.number().describe('The estimated total time for the optimized route in minutes.'),
-  estimatedDistanceKm: z.number().describe('The estimated total distance for the optimized route in kilometers.'),
+  optimizedStudentIds: z.array(z.string()).describe('Uma lista ordenada de IDs de alunos representando a rota mais eficiente.'),
+  summary: z.string().describe('Um resumo da otimização, explicando os benefícios (ex: tempo/distância economizados).'),
+  estimatedTimeMinutes: z.number().describe('O tempo total estimado para a rota otimizada em minutos.'),
+  estimatedDistanceKm: z.number().describe('A distância total estimada para a rota otimizada em quilômetros.'),
 });
 export type OptimizeSchoolVanRouteOutput = z.infer<typeof OptimizeSchoolVanRouteOutputSchema>;
 
@@ -40,24 +40,24 @@ const prompt = ai.definePrompt({
   name: 'optimizeSchoolVanRoutePrompt',
   input: {schema: OptimizeSchoolVanRouteInputSchema},
   output: {schema: OptimizeSchoolVanRouteOutputSchema},
-  prompt: `You are a logistics expert specializing in school transportation. Your task is to create the most efficient route possible.
+  prompt: `Você é um especialista em logística especializado em transporte escolar. Sua tarefa é criar a rota mais eficiente possível.
 
-You will be given a list of students with their home addresses and the school's address. Your goal is to determine the optimal sequence of student pickups to minimize travel time and distance, ending at the school.
+Você receberá uma lista de alunos com seus endereços residenciais e o endereço da escola. Seu objetivo é determinar a sequência ótima de embarque dos alunos para minimizar o tempo de viagem e a distância, terminando na escola.
 
-Consider the following information:
-- List of Students and Addresses: {{{json students}}}
-- School Address (Final Destination): {{{schoolAddress}}}
+Considere as seguintes informações:
+- Lista de Alunos e Endereços: {{{json students}}}
+- Endereço da Escola (Destino Final): {{{schoolAddress}}}
 {{#if context}}
-- Additional Context from the manager: {{{context}}}
+- Contexto Adicional do gestor: {{{context}}}
 {{/if}}
 
-Please provide the following output:
-1.  **optimizedStudentIds**: An array of student IDs in the precise, optimized pickup order.
-2.  **estimatedTimeMinutes**: A realistic estimate of the total route time in minutes.
-3.  **estimatedDistanceKm**: A realistic estimate of the total route distance in kilometers.
-4.  **summary**: A brief explanation of the route's benefits. For example: "This route is optimized to avoid morning congestion around the city center, saving an estimated 15 minutes compared to a non-optimized route."
+Por favor, forneça a seguinte saída:
+1.  **optimizedStudentIds**: Uma lista ordenada de IDs de alunos representando a rota mais eficiente.
+2.  **estimatedTimeMinutes**: Uma estimativa realista do tempo total da rota em minutos.
+3.  **estimatedDistanceKm**: Uma estimativa realista da distância total da rota em quilômetros.
+4.  **summary**: Uma breve explicação dos benefícios da rota. Por exemplo: "Esta rota foi otimizada para evitar o congestionamento matinal no centro da cidade, economizando cerca de 15 minutos em comparação com uma rota não otimizada."
 
-Calculate the best possible sequence and provide the requested information in the specified JSON format.`,
+Calcule a melhor sequência possível e forneça as informações solicitadas no formato JSON especificado.`,
 });
 
 const optimizeSchoolVanRouteFlow = ai.defineFlow(
