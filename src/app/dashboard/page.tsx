@@ -13,6 +13,8 @@ import { ReportIncidentForm } from '@/components/dashboard/report-incident-form'
 
 export default function DashboardPage() {
   const [isReportFormOpen, setIsReportFormOpen] = useState(false);
+  const [mapTarget, setMapTarget] = useState<google.maps.LatLngLiteral | null>(null);
+
 
   return (
     <div className="flex flex-col gap-8">
@@ -40,13 +42,13 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <h2 className="text-2xl font-semibold mb-4">Mapa de Incidentes</h2>
           <div className="aspect-[16/9] rounded-lg overflow-hidden border">
-             <IncidentMap />
+             <IncidentMap target={mapTarget} />
           </div>
         </div>
         <div className="lg:col-span-1 flex flex-col gap-8">
             <div>
                  <h2 className="text-2xl font-semibold mb-4">Status dos Motoristas</h2>
-                 <DriverStatusList />
+                 <DriverStatusList onLocateDriver={setMapTarget} />
             </div>
             <div>
                  <h2 className="text-2xl font-semibold mb-4">Incidentes Recentes</h2>

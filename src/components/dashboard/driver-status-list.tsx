@@ -7,7 +7,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MapPin, MessageSquareWarning, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useToast } from '@/hooks/use-toast';
+
 
 type Driver = {
   id: string;
@@ -31,9 +33,11 @@ const statusLabelMap: Record<Driver['status'], string> = {
   'pausa': 'Em Pausa'
 };
 
-export function DriverStatusList() {
+export function DriverStatusList({ onLocateDriver }: { onLocateDriver: (coords: google.maps.LatLngLiteral) => void }) {
   const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers');
   const { data: vehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
+  const { db } = useMockData();
+  const { toast } = useToast();
 
   const isLoading = areDriversLoading || areVehiclesLoading;
 
@@ -41,6 +45,23 @@ export function DriverStatusList() {
     if (!vehicles) return new Map();
     return new Map(vehicles.map((v) => [v.id, `${v.model} (${v.licensePlate})`]));
   }, [vehicles]);
+
+  const handleLocateClick = (driverId: string) => {
+    const location = db.locations?.[driverId];
+    if (location && location.latitude && location.longitude) {
+      onLocateDriver({ lat: location.latitude, lng: location.longitude });
+       toast({
+          title: `Localizando motorista`,
+          description: `O mapa foi centralizado na última posição conhecida.`,
+        });
+    } else {
+        toast({
+          title: `Localização não encontrada`,
+          description: `Não há dados de localização para este motorista.`,
+          variant: 'destructive',
+        });
+    }
+  };
 
   return (
     <Card>
@@ -71,7 +92,7 @@ export function DriverStatusList() {
                   {statusLabelMap[driver.status]}
                 </Badge>
                 <div className="flex gap-1">
-                   <Button variant="ghost" size="icon" className="h-8 w-8">
+                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleLocateClick(driver.id)}>
                      <MapPin className="h-4 w-4" />
                    </Button>
                    <Button asChild variant="ghost" size="icon" className="h-8 w-8">

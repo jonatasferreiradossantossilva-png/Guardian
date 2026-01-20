@@ -6,9 +6,10 @@ import {
   AdvancedMarker,
   Pin,
   InfoWindow,
+  useMap,
 } from "@vis.gl/react-google-maps";
 import type { Incident } from "@/lib/placeholder-data";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Badge } from "../ui/badge";
 import { useMockCollection } from "@/hooks/use-mock-data";
 import { Loader2 } from 'lucide-react';
@@ -22,7 +23,22 @@ const severityColorMap: { [key in Incident["severity"]]: string } = {
   Baixa: "#84cc16", // lime-500
 };
 
-export function IncidentMap() {
+// This component will handle map panning and zooming when a target is set.
+function MapController({ target }: { target: google.maps.LatLngLiteral | null }) {
+    const map = useMap();
+
+    useEffect(() => {
+        if (map && target) {
+            map.panTo(target);
+            map.setZoom(15);
+        }
+    }, [map, target]);
+
+    return null; // This component does not render anything.
+}
+
+
+export function IncidentMap({ target }: { target: google.maps.LatLngLiteral | null }) {
   const { data: incidents, isLoading } = useMockCollection('incidents');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
@@ -62,6 +78,7 @@ export function IncidentMap() {
         gestureHandling={'greedy'}
         className="w-full h-full"
       >
+        <MapController target={target} />
         {incidents && incidents.map((incident) => (
           <AdvancedMarker
             key={incident.id}
