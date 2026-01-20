@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -11,10 +11,38 @@ import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { APIProvider, Map, AdvancedMarker, Polyline, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
+const Polyline = (props: google.maps.PolylineOptions) => {
+  const map = useMap();
+  const polylineRef = useRef<google.maps.Polyline>();
+
+  useEffect(() => {
+    if (!map) {
+      return;
+    }
+    polylineRef.current = new google.maps.Polyline();
+    polylineRef.current.setMap(map);
+
+    return () => {
+      if (polylineRef.current) {
+        polylineRef.current.setMap(null);
+      }
+    };
+  }, [map]);
+
+  useEffect(() => {
+    if (polylineRef.current) {
+      polylineRef.current.setOptions(props);
+    }
+  }, [props]);
+
+  return null;
+};
+
 
 const formatAddress = (entity) => {
     if (!entity?.street) return 'Endereço indisponível';
