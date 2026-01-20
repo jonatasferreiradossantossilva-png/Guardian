@@ -6,12 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2, ListOrdered, Clock, Route as RouteIcon, Users, Bot, School } from "lucide-react";
+import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, Bot, School, Navigation } from "lucide-react";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -243,11 +244,31 @@ export default function OptimizerPage() {
                                             </div>
                                          </div>
                                         <p className="text-sm text-muted-foreground italic mb-3">"{optimizationResult.summary}"</p>
-                                        <ol className="space-y-2 text-sm list-decimal list-inside font-medium">
+                                        <ol className="space-y-2 text-sm list-decimal list-inside font-medium mb-4">
                                             {optimizationResult.optimizedStudentIds.map((studentId) => (
                                                 <li key={studentId}>{getStudentName(studentId)}</li>
                                             ))}
                                         </ol>
+                                        
+                                        {optimizationResult.turnByTurnDirections && optimizationResult.turnByTurnDirections.length > 0 && (
+                                            <div className="mt-4 pt-4 border-t">
+                                                <h4 className="font-semibold flex items-center gap-2 text-sm mb-2">
+                                                    <Navigation size={16} className="text-primary"/>
+                                                    Instruções de Rota (Sugestão)
+                                                </h4>
+                                                <ScrollArea className="h-32">
+                                                    <ol className="space-y-1.5 text-xs text-muted-foreground list-decimal list-inside">
+                                                        {optimizationResult.turnByTurnDirections.map((direction, index) => (
+                                                            <li key={index}>{direction}</li>
+                                                        ))}
+                                                    </ol>
+                                                </ScrollArea>
+                                                <p className="text-xs text-muted-foreground/80 mt-2 italic">
+                                                    Atenção: Estas são instruções geradas por IA para planejamento e podem não refletir as condições de trânsito em tempo real.
+                                                </p>
+                                            </div>
+                                        )}
+
                                         <Button className="w-full mt-4" onClick={handleSaveChanges}>Salvar Rota Otimizada</Button>
                                      </Card>
                                  )}

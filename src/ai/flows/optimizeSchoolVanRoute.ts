@@ -29,6 +29,7 @@ const OptimizeSchoolVanRouteOutputSchema = z.object({
   summary: z.string().describe('Um resumo da otimização, explicando os benefícios (ex: tempo/distância economizados).'),
   estimatedTimeMinutes: z.number().describe('O tempo total estimado para a rota otimizada em minutos.'),
   estimatedDistanceKm: z.number().describe('A distância total estimada para a rota otimizada em quilômetros.'),
+  turnByTurnDirections: z.array(z.string()).describe('Uma lista de instruções de direção passo a passo para a rota, como "Vire à direita na Rua X".')
 });
 export type OptimizeSchoolVanRouteOutput = z.infer<typeof OptimizeSchoolVanRouteOutputSchema>;
 
@@ -40,7 +41,7 @@ const prompt = ai.definePrompt({
   name: 'optimizeSchoolVanRoutePrompt',
   input: {schema: OptimizeSchoolVanRouteInputSchema},
   output: {schema: OptimizeSchoolVanRouteOutputSchema},
-  prompt: `Você é um especialista em logística especializado em transporte escolar. Sua tarefa é criar a rota mais eficiente possível.
+  prompt: `Você é um especialista em logística e um assistente de navegação GPS para transporte escolar. Sua tarefa é criar a rota mais eficiente possível e fornecer as direções detalhadas.
 
 Você receberá uma lista de alunos com seus endereços residenciais e o endereço da escola. Seu objetivo é determinar a sequência ótima de embarque dos alunos para minimizar o tempo de viagem e a distância, terminando na escola.
 
@@ -51,13 +52,14 @@ Considere as seguintes informações:
 - Contexto Adicional do gestor: {{{context}}}
 {{/if}}
 
-Por favor, forneça a seguinte saída:
-1.  **optimizedStudentIds**: Uma lista ordenada de IDs de alunos representando a rota mais eficiente.
+Por favor, forneça a seguinte saída em formato JSON:
+1.  **optimizedStudentIds**: Uma lista ordenada de IDs de alunos representando a rota mais eficiente, começando pelo primeiro aluno a ser pego.
 2.  **estimatedTimeMinutes**: Uma estimativa realista do tempo total da rota em minutos.
 3.  **estimatedDistanceKm**: Uma estimativa realista da distância total da rota em quilômetros.
-4.  **summary**: Uma breve explicação dos benefícios da rota. Por exemplo: "Esta rota foi otimizada para evitar o congestionamento matinal no centro da cidade, economizando cerca de 15 minutos em comparação com uma rota não otimizada."
+4.  **summary**: Uma breve explicação dos benefícios da rota. Exemplo: "Esta rota foi otimizada para evitar o congestionamento matinal, economizando cerca de 15 minutos."
+5.  **turnByTurnDirections**: Uma lista de instruções de direção passo a passo (curtas e diretas), como um GPS, partindo do endereço do primeiro aluno da lista otimizada e seguindo por todas as paradas até chegar na escola. Por exemplo: ["Siga para a Rua Principal", "Vire à direita na Av. Central", "Na rotatória, pegue a segunda saída para a Rua das Flores", ...].
 
-Calcule a melhor sequência possível e forneça as informações solicitadas no formato JSON especificado.`,
+Calcule a melhor sequência possível e forneça TODAS as informações solicitadas no formato JSON especificado.`,
 });
 
 const optimizeSchoolVanRouteFlow = ai.defineFlow(
