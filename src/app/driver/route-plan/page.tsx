@@ -43,6 +43,7 @@ import {
 } from '@vis.gl/react-google-maps';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { useToast } from '@/hooks/use-toast';
 
 type Shift = 'Manhã' | 'Tarde';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
@@ -171,6 +172,7 @@ export default function DriverRoutePlanPage() {
   const { user, isUserLoading } = useUser();
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const { toast } = useToast();
 
   // State for the modal
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -276,6 +278,19 @@ export default function DriverRoutePlanPage() {
     setSelectedStudentForModal(student);
     setIsModalOpen(true);
   };
+  
+  const handleNavigateToStudent = (student: Student) => {
+    if (student.latitude && student.longitude) {
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`;
+        window.open(url, '_blank');
+    } else {
+        toast({
+            title: 'Endereço não encontrado',
+            description: 'As coordenadas de GPS para este aluno não estão disponíveis.',
+            variant: 'destructive'
+        });
+    }
+  };
 
   const isLoading =
     isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading || isLocationLoading;
@@ -350,6 +365,15 @@ export default function DriverRoutePlanPage() {
                                     <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
                                     {student.name}
                                     </span>
+                                     <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-6 w-6"
+                                        onClick={() => handleNavigateToStudent(student)}
+                                        title="Navegar até este aluno"
+                                    >
+                                        <Navigation className="h-4 w-4 text-blue-500" />
+                                    </Button>
                                     <Button
                                         variant="ghost"
                                         size="icon"
@@ -520,5 +544,3 @@ function RouteMap({ driverLocation, students, school }) {
       </>
   );
 }
-
-    
