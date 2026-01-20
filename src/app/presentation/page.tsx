@@ -42,7 +42,7 @@ export default function PresentationPage() {
             {/* Slide 1: Vision */}
             <Slide className="text-center">
                 <div className="bg-primary/10 p-6 rounded-full border-2 border-primary/30 mb-8">
-                     <Gem className="h-16 w-16 text-primary" />
+                     <Shield className="h-16 w-16 text-primary" />
                 </div>
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground">Guardian</h1>
                 <p className="mt-6 text-xl md:text-2xl text-muted-foreground max-w-3xl">
@@ -107,42 +107,43 @@ export default function PresentationPage() {
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">
                     <FileImage className="inline-block text-primary h-12 w-12 mr-4" />
-                    Identidade Visual: Conceitos de Logo
+                    Identidade Visual: O Abraço Protetor
                 </h2>
                 <div className="grid md:grid-cols-3 gap-8 w-full">
                     <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
-                        <h3 className="font-bold text-lg mb-4">Conceito 1: O Escudo Localizador</h3>
+                        <h3 className="font-bold text-lg mb-4">Variação A: Confiança e Tecnologia</h3>
                         <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
-                            <div className="relative h-32 w-32">
-                                <Shield className="h-32 w-32 text-blue-900" fill="currentColor" />
-                                <MapPin className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 h-16 w-16 text-teal-400" />
-                            </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            A fusão de um <strong>escudo</strong> (proteção) com um <strong>pino de mapa</strong> (localização). Profissional, direto e ideal para um ícone de app.
-                        </p>
-                    </div>
-                    <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
-                        <h3 className="font-bold text-lg mb-4">Conceito 2: A Rota "G"</h3>
-                        <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
-                            <div className="h-32 w-32 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                                <span className="text-7xl font-bold text-white italic -rotate-12 transform" style={{fontFamily: 'serif'}}>G</span>
-                            </div>
-                        </div>
-                        <p className="text-sm text-muted-foreground">
-                            Uma letra <strong>"G" estilizada</strong> que se transforma em uma linha de rota. Moderno, sutil e com uma forte identidade de marca de tecnologia.
-                        </p>
-                    </div>
-                    <div className="border-2 border-primary/50 ring-4 ring-primary/10 rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
-                        <h3 className="font-bold text-lg mb-4 text-primary">Conceito 3: O Abraço Protetor</h3>
-                        <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
-                            <div className="relative h-32 w-32 flex items-center justify-center bg-blue-600 rounded-lg">
-                                <HandHeart className="h-24 w-24 text-red-500" fill="currentColor" stroke="black" strokeWidth={1.5} />
+                            <div className="relative h-32 w-32 flex items-center justify-center bg-blue-900 rounded-lg">
+                                <HandHeart className="h-24 w-24 text-teal-400" fill="currentColor" stroke="black" strokeWidth={1.5} />
                                 <Bus className="absolute h-10 w-10 text-yellow-400" />
                             </div>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            Um <strong>coração vermelho</strong>, formado por duas mãos com contorno preto, envolvendo a van. Apela ao emocional dos pais, transmitindo cuidado e comunidade.
+                             <strong>Azul escuro</strong> para seriedade e confiança, com o <strong>verde-água (teal)</strong> do coração simbolizando tecnologia e segurança. É uma paleta profissional e moderna.
+                        </p>
+                    </div>
+                     <div className="border-2 border-primary/50 ring-4 ring-primary/10 rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4 text-primary">Variação B: Acolhimento e Energia</h3>
+                        <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
+                            <div className="relative h-32 w-32 flex items-center justify-center bg-slate-800 rounded-lg">
+                                <HandHeart className="h-24 w-24 text-orange-500" fill="currentColor" stroke="white" strokeWidth={1.5} />
+                                <Bus className="absolute h-10 w-10 text-yellow-400" />
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                             Um <strong>laranja vibrante</strong> para o coração, que transmite energia, cuidado e atenção. O fundo escuro e o contorno branco criam um alto contraste, tornando o logo memorável.
+                        </p>
+                    </div>
+                    <div className="border border-border rounded-xl p-6 text-center flex flex-col bg-background/50 backdrop-blur-sm">
+                        <h3 className="font-bold text-lg mb-4">Variação C: Segurança e Tranquilidade</h3>
+                        <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
+                            <div className="relative h-32 w-32 flex items-center justify-center bg-green-800 rounded-lg">
+                                <HandHeart className="h-24 w-24 text-white" fill="currentColor" stroke="black" strokeWidth={1.5} />
+                                <Bus className="absolute h-10 w-10 text-yellow-400" />
+                            </div>
+                        </div>
+                        <p className="text-sm text-muted-foreground">
+                            O <strong>verde</strong> está associado à segurança e tranquilidade. Com o coração em <strong>branco</strong> (pureza) sobre o fundo verde, a sensação de paz e confiança é a mensagem principal.
                         </p>
                     </div>
                 </div>
@@ -217,7 +218,7 @@ export default function PresentationPage() {
                         </div>
                         <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-start items-end">
                              <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary text-right">
-                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><Gem/> Guardian</h4>
+                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
                                 <p className="text-sm text-foreground">Plataforma B2B completa com IA, Financeiro e Comunicação.</p>
                             </div>
                         </div>
