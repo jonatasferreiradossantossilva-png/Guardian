@@ -59,6 +59,13 @@ interface Student {
   number?: string;
   neighborhood?: string;
 }
+interface School {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+}
+
 
 const statusText: Record<StudentStatus, string> = {
   aguardando: 'Aguardando',
@@ -217,33 +224,16 @@ export default function DriverRoutePlanPage() {
     'students',
     route ? [{ field: 'id', op: 'in', value: route.studentIds }] : []
   );
+    
+  const { data: schools, isLoading: areSchoolsLoading } = useMockCollection('schools');
 
   const orderedStudents = useMemo(() => {
     if (!route?.studentIds || !students) return [];
-
     const studentMap = new Map(students.map((s) => [s.id, s]));
-
-    // Updated demo data logic
-    const studentStatusMap: Record<string, StudentStatus> = {
-      [route.studentIds[0]]: 'aguardando',
-      [route.studentIds[1]]: 'a_bordo',
-    };
-
     return route.studentIds
-      .map((id, index) => {
-        const student = studentMap.get(id);
-        if (student) {
-          // Override status for demonstration if it's one of the first two
-          if (index < 2) {
-             student.status = studentStatusMap[id] || student.status;
-          }
-        }
-        return student;
-      })
+      .map((id) => studentMap.get(id))
       .filter((s): s is Student => !!s);
   }, [route?.studentIds, students]);
-  
-  const { data: schools, isLoading: areSchoolsLoading } = useMockCollection('schools');
 
   const school = useMemo(() => {
     if (!orderedStudents.length || !schools) return null;
@@ -270,10 +260,6 @@ export default function DriverRoutePlanPage() {
   const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(driverId ? `locations/${driverId}` : null);
 
 
-  const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
-    updateDoc('students', studentId, { status: newStatus });
-  };
-
   const handleOpenAuthorizedModal = (student: Student) => {
     setSelectedStudentForModal(student);
     setIsModalOpen(true);
@@ -291,6 +277,70 @@ export default function DriverRoutePlanPage() {
         });
     }
   };
+
+  const handleNavigateToSchool = (school: School) => {
+    if (school.latitude && school.longitude) {
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${school.latitude},${school.longitude}`;
+        window.open(url, '_blank');
+    } else {
+        toast({
+            title: 'Endereço da escola não encontrado',
+            description: 'As coordenadas de GPS para a escola não estão disponíveis.',
+            variant: 'destructive'
+        });
+    }
+  };
+  
+  const handleStatusChange = (studentId: string, newStatus: StudentStatus) => {
+    updateDoc('students', studentId, { status: newStatus });
+
+    const studentName = orderedStudents.find(s => s.id === studentId)?.name || 'o aluno';
+
+    // Automatic Navigation Logic
+    if (newStatus === 'a_bordo' || newStatus === 'desembarcado') {
+      const currentIndex = orderedStudents.findIndex(s => s.id === studentId);
+      
+      if (currentIndex !== -1) {
+        // Find the next student in the list who is still waiting for pickup.
+        let nextStudentToPickup: Student | null = null;
+        for (let i = currentIndex + 1; i < orderedStudents.length; i++) {
+          if (orderedStudents[i].status === 'aguardando') {
+            nextStudentToPickup = orderedStudents[i];
+            break;
+          }
+        }
+
+        if (nextStudentToPickup) {
+          toast({
+            title: `Próxima Parada: ${nextStudentToPickup.name}`,
+            description: `Navegação automática iniciada.`,
+          });
+          handleNavigateToStudent(nextStudentToPickup);
+        } else {
+          // If there are no more students to pick up, the destination is the school.
+          const studentsOnBoard = orderedStudents.some(s => s.id !== studentId && s.status === 'a_bordo');
+          if ((studentsOnBoard || newStatus === 'a_bordo') && school) {
+            toast({
+              title: `Próxima Parada: ${school.name}`,
+              description: 'Todos os alunos foram recolhidos. Navegando para a escola.',
+            });
+            handleNavigateToSchool(school);
+          } else {
+            toast({
+              title: 'Status atualizado!',
+              description: `O status de ${studentName} foi salvo.`,
+            });
+          }
+        }
+      }
+    } else { // For 'ausente' status
+        toast({
+            title: 'Status Atualizado',
+            description: `${studentName} foi marcado(a) como ${statusText[newStatus]}.`
+        })
+    }
+  };
+
 
   const isLoading =
     isUserLoading || areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading || isLocationLoading;
