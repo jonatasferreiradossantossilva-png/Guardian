@@ -10,7 +10,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -387,6 +387,10 @@ export default function ParentTrackingPage() {
                 <Link href="/parent/requests">
                     <Route className="mr-2 h-4 w-4" /> Solicitar Viagem Avulsa
                 </Link>
+              </Button>
+               <Button variant="ghost" className="w-full col-span-2 border-dashed border" onClick={() => setIsNearby(v => !v)}>
+                  <Bell className="mr-2 h-4 w-4" />
+                  Testar Notificação de Proximidade
               </Button>
             </CardFooter>
           </Card>
