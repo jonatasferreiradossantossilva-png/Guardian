@@ -137,12 +137,12 @@ export default function PresentationPage() {
                         <h3 className="font-bold text-lg mb-4 text-primary">Conceito 3: O Abraço Protetor</h3>
                         <div className="flex-grow flex items-center justify-center rounded-lg p-8 my-4">
                             <div className="relative h-32 w-32 flex items-center justify-center bg-blue-600 rounded-lg">
-                                <HandHeart className="h-24 w-24 text-white" fill="currentColor" stroke="black" strokeWidth={1.5} />
+                                <HandHeart className="h-24 w-24 text-red-500" fill="currentColor" stroke="black" strokeWidth={1.5} />
                                 <Bus className="absolute h-10 w-10 text-yellow-400" />
                             </div>
                         </div>
                         <p className="text-sm text-muted-foreground">
-                            Duas mãos formando um <strong>círculo de proteção</strong> em volta da van. Apela ao emocional dos pais, transmitindo cuidado e comunidade.
+                            Um <strong>coração vermelho</strong>, formado por duas mãos com contorno preto, envolvendo a van. Apela ao emocional dos pais, transmitindo cuidado e comunidade.
                         </p>
                     </div>
                 </div>
