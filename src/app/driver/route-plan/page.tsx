@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect, useRef, memo } from 'react';
 import {
   Card,
   CardContent,
@@ -170,6 +170,88 @@ function RouteDirections({ directions }: { directions?: string[] }) {
         </Card>
     )
 }
+
+interface StudentListItemProps {
+  student: Student;
+  index: number;
+  isNextStop: boolean;
+  onStatusChange: (studentId: string, newStatus: StudentStatus) => void;
+  onNavigate: (student: Student) => void;
+  onOpenAuthorizedModal: (student: Student) => void;
+}
+
+const StudentListItem = memo(({ student, index, isNextStop, onStatusChange, onNavigate, onOpenAuthorizedModal }: StudentListItemProps) => {
+  const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
+  const isOnBoard = student.status === 'a_bordo';
+
+  return (
+    <li className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary gap-3">
+        <div className="flex items-center gap-4">
+            <div title={statusText[student.status]} className={cn(
+                "w-8 h-8 rounded-full shadow-inner flex items-center justify-center font-bold text-white text-sm flex-shrink-0",
+                isFinished && "bg-slate-400 opacity-70",
+                isOnBoard && "bg-blue-500",
+                !isFinished && !isOnBoard && isNextStop && "bg-green-500 scale-110 animate-pulse",
+                !isFinished && !isOnBoard && !isNextStop && "bg-blue-500 opacity-50"
+            )}>
+                {index + 1}
+            </div>
+            <div>
+                <div className="flex items-center gap-2">
+                    <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
+                      {student.name}
+                    </span>
+                     <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => onNavigate(student)}
+                        title="Navegar até este aluno"
+                    >
+                        <Navigation className="h-4 w-4 text-blue-500" />
+                    </Button>
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-6 w-6"
+                        onClick={() => onOpenAuthorizedModal(student)}
+                        title="Ver contatos autorizados"
+                    >
+                        <IdCard className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                </div>
+                <p className="text-xs text-muted-foreground truncate">
+                    {student.street ? `${student.street}, ${student.number} - ${student.neighborhood}` : 'Endereço indisponível'}
+                </p>
+            </div>
+        </div>
+        <div className="flex items-center gap-2 w-[220px] self-end sm:self-center">
+            {student.status === 'aguardando' && (
+                <>
+                <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => onStatusChange(student.id, 'a_bordo')}>
+                    <User className="mr-2 h-4 w-4" /> Embarcar
+                </Button>
+                <Button size="sm" variant="destructive" className="flex-1" onClick={() => onStatusChange(student.id, 'ausente')}>
+                    <XCircle className="mr-2 h-4 w-4" /> Ausente
+                </Button>
+                </>
+            )}
+            {student.status === 'a_bordo' && (
+                <Button size="sm" className="w-full" onClick={() => onStatusChange(student.id, 'desembarcado')}>
+                <Bus className="mr-2 h-4 w-4" /> Desembarcar
+                </Button>
+            )}
+            {(student.status === 'desembarcado' || student.status === 'ausente') && (
+                <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1.5 text-xs">
+                {statusText[student.status]}
+                </Badge>
+            )}
+        </div>
+    </li>
+  );
+});
+StudentListItem.displayName = 'StudentListItem';
+
 
 export default function DriverRoutePlanPage() {
   const { updateDoc } = useMockData();
@@ -427,73 +509,17 @@ export default function DriverRoutePlanPage() {
             {!isLoading && route && (
               <ol className="space-y-2">
                 {displayStudents.map((student, index) => {
-                    const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
-                    const isOnBoard = student.status === 'a_bordo';
                     const isNextStop = student.id === nextStop?.id;
                     return (
-                    <li key={student.id} className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary gap-3">
-                        <div className="flex items-center gap-4">
-                            <div title={statusText[student.status]} className={cn(
-                                "w-8 h-8 rounded-full shadow-inner flex items-center justify-center font-bold text-white text-sm flex-shrink-0",
-                                isFinished && "bg-slate-400 opacity-70",
-                                isOnBoard && "bg-blue-500",
-                                !isFinished && !isOnBoard && isNextStop && "bg-green-500 scale-110 animate-pulse",
-                                !isFinished && !isOnBoard && !isNextStop && "bg-blue-500 opacity-50"
-                            )}>
-                                {index + 1}
-                            </div>
-                            <div>
-                                <div className="flex items-center gap-2">
-                                    <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
-                                      {student.name}
-                                    </span>
-                                     <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={() => handleNavigateToStudent(student)}
-                                        title="Navegar até este aluno"
-                                    >
-                                        <Navigation className="h-4 w-4 text-blue-500" />
-                                    </Button>
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-6 w-6"
-                                        onClick={() => handleOpenAuthorizedModal(student)}
-                                        title="Ver contatos autorizados"
-                                    >
-                                        <IdCard className="h-4 w-4 text-muted-foreground" />
-                                    </Button>
-                                </div>
-                                <p className="text-xs text-muted-foreground truncate">
-                                    {student.street ? `${student.street}, ${student.number} - ${student.neighborhood}` : 'Endereço indisponível'}
-                                </p>
-                            </div>
-                        </div>
-                        <div className="flex items-center gap-2 w-[220px] self-end sm:self-center">
-                            {student.status === 'aguardando' && (
-                                <>
-                                <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => handleStatusChange(student.id, 'a_bordo')}>
-                                    <User className="mr-2 h-4 w-4" /> Embarcar
-                                </Button>
-                                <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleStatusChange(student.id, 'ausente')}>
-                                    <XCircle className="mr-2 h-4 w-4" /> Ausente
-                                </Button>
-                                </>
-                            )}
-                            {student.status === 'a_bordo' && (
-                                <Button size="sm" className="w-full" onClick={() => handleStatusChange(student.id, 'desembarcado')}>
-                                <Bus className="mr-2 h-4 w-4" /> Desembarcar
-                                </Button>
-                            )}
-                            {(student.status === 'desembarcado' || student.status === 'ausente') && (
-                                <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1.5 text-xs">
-                                {statusText[student.status]}
-                                </Badge>
-                            )}
-                        </div>
-                    </li>
+                      <StudentListItem
+                        key={student.id}
+                        student={student}
+                        index={index}
+                        isNextStop={isNextStop}
+                        onStatusChange={handleStatusChange}
+                        onNavigate={handleNavigateToStudent}
+                        onOpenAuthorizedModal={handleOpenAuthorizedModal}
+                      />
                     );
                 })}
                 <li className="flex items-center gap-4 p-3">
