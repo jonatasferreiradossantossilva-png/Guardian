@@ -37,6 +37,7 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
+import { useEffect, useState } from "react";
 
 const managementLinks = [
   { href: "/dashboard/management/schools", label: "Escolas", icon: School },
@@ -65,6 +66,12 @@ const profileLinks = [
 
 export function MainSidebar() {
   const pathname = usePathname();
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+  
   const isActive = (href: string) => pathname === href;
   const isManagementActive = managementLinks.some((link) =>
     pathname.startsWith(link.href)
@@ -98,36 +105,47 @@ export function MainSidebar() {
           </SidebarMenuItem>
 
           <SidebarMenuItem>
-            <Collapsible defaultOpen={isManagementActive}>
-              <CollapsibleTrigger asChild>
-                <SidebarMenuButton
-                  className="w-full justify-start"
-                  isActive={isManagementActive}
-                >
-                  <FolderKanban />
-                  <span>Gerenciamento</span>
-                  <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
-                </SidebarMenuButton>
-              </CollapsibleTrigger>
-              <CollapsibleContent>
-                <SidebarMenu className="pl-6 pt-1">
-                  {managementLinks.map((link) => (
-                    <SidebarMenuItem key={link.href}>
-                      <Link href={link.href} passHref>
-                        <SidebarMenuButton
-                          variant="ghost"
-                          size="sm"
-                          isActive={isActive(link.href)}
-                        >
-                          <link.icon />
-                          <span>{link.label}</span>
-                        </SidebarMenuButton>
-                      </Link>
-                    </SidebarMenuItem>
-                  ))}
-                </SidebarMenu>
-              </CollapsibleContent>
-            </Collapsible>
+            {isMounted ? (
+              <Collapsible defaultOpen={isManagementActive}>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    className="w-full justify-start"
+                    isActive={isManagementActive}
+                  >
+                    <FolderKanban />
+                    <span>Gerenciamento</span>
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenu className="pl-6 pt-1">
+                    {managementLinks.map((link) => (
+                      <SidebarMenuItem key={link.href}>
+                        <Link href={link.href} passHref>
+                          <SidebarMenuButton
+                            variant="ghost"
+                            size="sm"
+                            isActive={isActive(link.href)}
+                          >
+                            <link.icon />
+                            <span>{link.label}</span>
+                          </SidebarMenuButton>
+                        </Link>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </CollapsibleContent>
+              </Collapsible>
+            ) : (
+              <SidebarMenuButton
+                className="w-full justify-start"
+                isActive={isManagementActive}
+              >
+                <FolderKanban />
+                <span>Gerenciamento</span>
+                <ChevronDown className="ml-auto h-4 w-4" />
+              </SidebarMenuButton>
+            )}
           </SidebarMenuItem>
 
            <SidebarMenuItem>
@@ -211,5 +229,3 @@ export function MainSidebar() {
     </Sidebar>
   );
 }
-
-    
