@@ -33,7 +33,7 @@ import {
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon, School } from 'lucide-react';
 import { Calendar } from '@/components/ui/calendar';
 import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
@@ -52,11 +52,12 @@ interface TripRequestFormProps {
   request?: { id: string; date?: string | Date } & Partial<FormValues>;
   studentId: string;
   schoolId: string;
+  schoolName?: string;
   parentUserId: string;
   onFormSubmit: () => void;
 }
 
-export function TripRequestForm({ request, studentId, schoolId, parentUserId, onFormSubmit }: TripRequestFormProps) {
+export function TripRequestForm({ request, studentId, schoolId, schoolName, parentUserId, onFormSubmit }: TripRequestFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
 
@@ -124,6 +125,17 @@ export function TripRequestForm({ request, studentId, schoolId, parentUserId, on
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          
+          {schoolName && (
+            <div className="space-y-2">
+                <FormLabel>Destino</FormLabel>
+                <div className="relative">
+                     <School className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input value={schoolName} disabled className="pl-9"/>
+                </div>
+            </div>
+          )}
+
           <FormField
             control={form.control}
             name="date"

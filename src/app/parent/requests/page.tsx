@@ -77,6 +77,12 @@ export default function TripRequestsPage() {
   const { data: students } = useMockCollection('students', mockUserId ? [{ field: 'parentId', op: '==', value: 'parent-1' }] : undefined); // Simplified for mock
   const student = useMemo(() => students?.[0], [students]);
 
+  const { data: schools } = useMockCollection('schools');
+  const studentSchool = useMemo(() => {
+    if (!student || !schools) return null;
+    return schools.find(s => s.id === student.schoolId);
+  }, [student, schools]);
+
   const { data: tripRequests, isLoading } = useMockCollection('trip_requests', mockUserId ? [
     { field: 'parentUserId', op: '==', value: mockUserId }
   ] : undefined);
@@ -151,6 +157,7 @@ export default function TripRequestsPage() {
                             request={selectedRequest || undefined}
                             studentId={student.id}
                             schoolId={student.schoolId}
+                            schoolName={studentSchool?.name}
                             parentUserId={mockUserId}
                             onFormSubmit={handleFormSubmit}
                         />
