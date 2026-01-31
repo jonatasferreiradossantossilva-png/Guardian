@@ -2,7 +2,6 @@
 
 import { useState, useMemo } from 'react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
-import { FinancialTrendCards } from "@/components/dashboard/financial-trend-cards";
 import { MonthlyBalanceChart } from "@/components/dashboard/monthly-balance-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
 import { useMockCollection } from '@/hooks/use-mock-data';
@@ -78,8 +77,7 @@ export default function DashboardPage() {
         <div className="lg:col-span-2">
           <MonthlyBalanceChart />
         </div>
-        <div className="space-y-8">
-          <FinancialTrendCards filters={filters}/>
+        <div className="lg:col-span-1">
           <ExpensesCategoryChart filters={filters}/>
         </div>
       </div>

@@ -437,26 +437,26 @@ export const initialMockData = {
     ],
     expenses: [
         // Mês Atual (Agosto 2024)
-        { id: "exp-aug-1", description: "Salários de Motoristas e Auxiliares", amount: 4800.00, date: "2024-08-05", category: "Salários" },
-        { id: "exp-aug-2", description: "Abastecimento da frota", amount: 850.00, date: "2024-08-02", category: "Combustível" },
-        { id: "exp-aug-3", description: "Manutenção corretiva - Sprinter", amount: 450.00, date: "2024-08-06", category: "Manutenção" },
+        { id: "exp-aug-1", description: "Salários de Motoristas e Auxiliares", amount: 2800.00, date: "2024-08-05", category: "Salários" },
+        { id: "exp-aug-2", description: "Abastecimento da frota", amount: 750.00, date: "2024-08-02", category: "Combustível" },
+        { id: "exp-aug-3", description: "Manutenção corretiva - Sprinter", amount: 320.00, date: "2024-08-06", category: "Manutenção" },
         
         // Mês Anterior (Julho 2024)
-        { id: "exp-jul-1", description: "Salários de Motoristas e Auxiliares", amount: 4800.00, date: "2024-07-05", category: "Salários" },
-        { id: "exp-jul-2", description: "Abastecimento da frota", amount: 1150.50, date: "2024-07-15", category: "Combustível" },
-        { id: "exp-jul-3", description: "Impostos e Taxas Municipais", amount: 750.00, date: "2024-07-20", category: "Impostos" },
+        { id: "exp-jul-1", description: "Salários de Motoristas e Auxiliares", amount: 2800.00, date: "2024-07-05", category: "Salários" },
+        { id: "exp-jul-2", description: "Abastecimento da frota", amount: 950.50, date: "2024-07-15", category: "Combustível" },
+        { id: "exp-jul-3", description: "Impostos e Taxas Municipais", amount: 600.00, date: "2024-07-20", category: "Impostos" },
         { id: "exp-jul-4", description: "Compra de material de limpeza para os veículos", amount: 89.90, date: "2024-07-28", category: "Outros" },
   
         // Meses Anteriores (Histórico)
-        { id: "exp-jun-1", description: "Salários", amount: 4700.00, date: "2024-06-05", category: "Salários" },
-        { id: "exp-jun-2", description: "Combustível", amount: 1050.00, date: "2024-06-15", category: "Combustível" },
-        { id: "exp-mai-1", description: "Salários", amount: 4650.00, date: "2024-05-05", category: "Salários" },
-        { id: "exp-mai-2", description: "Combustível", amount: 1250.00, date: "2024-05-15", category: "Combustível" },
-        { id: "exp-mai-3", description: "Manutenção Preventiva - Frota", amount: 1500.00, date: "2024-05-20", category: "Manutenção" },
-        { id: "exp-apr-1", description: "Salários", amount: 4600.00, date: "2024-04-05", category: "Salários" },
-        { id: "exp-apr-2", description: "Combustível", amount: 1100.00, date: "2024-04-15", category: "Combustível" },
-        { id: "exp-mar-1", description: "Salários", amount: 4500.00, date: "2024-03-05", category: "Salários" },
-        { id: "exp-mar-2", description: "Combustível", amount: 1050.00, date: "2024-03-15", category: "Combustível" },
+        { id: "exp-jun-1", description: "Salários", amount: 2700.00, date: "2024-06-05", category: "Salários" },
+        { id: "exp-jun-2", description: "Combustível", amount: 900.00, date: "2024-06-15", category: "Combustível" },
+        { id: "exp-mai-1", description: "Salários", amount: 2650.00, date: "2024-05-05", category: "Salários" },
+        { id: "exp-mai-2", description: "Combustível", amount: 1100.00, date: "2024-05-15", category: "Combustível" },
+        { id: "exp-mai-3", description: "Manutenção Preventiva - Frota", amount: 1200.00, date: "2024-05-20", category: "Manutenção" },
+        { id: "exp-apr-1", description: "Salários", amount: 2600.00, date: "2024-04-05", category: "Salários" },
+        { id: "exp-apr-2", description: "Combustível", amount: 980.00, date: "2024-04-15", category: "Combustível" },
+        { id: "exp-mar-1", description: "Salários", amount: 2500.00, date: "2024-03-05", category: "Salários" },
+        { id: "exp-mar-2", description: "Combustível", amount: 950.00, date: "2024-03-15", category: "Combustível" },
     ],
     messages: [
         { id: "msg-1", senderId: "user-pai-1", recipientId: "user-admin-1", text: "Bom dia! O Lucas já está esperando.", timestamp: "2024-07-30T08:00:00Z" },
