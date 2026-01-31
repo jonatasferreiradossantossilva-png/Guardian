@@ -2,8 +2,8 @@
 
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { FinancialTrendCards } from "@/components/dashboard/financial-trend-cards";
-import { RecentInvoicesList } from "@/components/dashboard/recent-invoices-list";
-
+import { MonthlyRevenueChart } from "@/components/dashboard/monthly-revenue-chart";
+import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 
 export default function DashboardPage() {
   return (
@@ -19,8 +19,13 @@ export default function DashboardPage() {
 
       <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
         <FinancialTrendCards />
-        <RecentInvoicesList />
+        <InvoicesStatusChart />
       </div>
+
+      <div className="grid gap-8 grid-cols-1">
+        <MonthlyRevenueChart />
+      </div>
+
     </div>
   );
 }
