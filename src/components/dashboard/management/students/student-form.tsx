@@ -283,11 +283,11 @@ export function StudentForm({
                     Usar endereço do responsável
                 </Button>
             </div>
-             <div className="grid grid-cols-3 gap-4">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <FormField
                     control={form.control} name="zipCode"
                     render={({ field }) => (
-                        <FormItem className="col-span-1">
+                        <FormItem className="md:col-span-1">
                         <FormLabel>CEP</FormLabel>
                         <FormControl>
                           <div className="relative">
@@ -304,7 +304,7 @@ export function StudentForm({
                  <FormField
                     control={form.control} name="street"
                     render={({ field }) => (
-                        <FormItem className="col-span-2">
+                        <FormItem className="md:col-span-2">
                         <FormLabel>Rua</FormLabel>
                         <FormControl><Input placeholder="Rua das Flores" {...field} /></FormControl>
                         <FormMessage />
@@ -312,7 +312,7 @@ export function StudentForm({
                     )}
                 />
              </div>
-             <div className="grid grid-cols-3 gap-4 mt-4">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                  <FormField
                     control={form.control} name="number"
                     render={({ field }) => (
@@ -344,7 +344,7 @@ export function StudentForm({
                     )}
                 />
              </div>
-             <div className="grid grid-cols-2 gap-4 mt-4">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                  <FormField
                     control={form.control} name="city"
                     render={({ field }) => (
@@ -368,7 +368,7 @@ export function StudentForm({
              </div>
           </div>
 
-           <div className="grid grid-cols-2 gap-4 pt-4">
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
             <FormField
               control={form.control}
               name="latitude"
@@ -421,7 +421,7 @@ export function StudentForm({
             )}
           />
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField
               control={form.control}
               name="shift"

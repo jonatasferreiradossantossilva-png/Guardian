@@ -186,7 +186,7 @@ export function RouteForm({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
           {/* Form Fields */}
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem><FormLabel>Nome da Rota</FormLabel><FormControl><Input placeholder="Ex: Rota Matinal - Zona Sul" {...field} /></FormControl><FormMessage /></FormItem>
             )}/>
@@ -221,7 +221,7 @@ export function RouteForm({
           <div className="pt-4">
             <FormLabel>Alunos na Rota</FormLabel>
             <FormDescription className="mb-2">Mova os alunos para a lista da direita e ordene-os para definir as paradas.</FormDescription>
-            <div className="grid grid-cols-[1fr_auto_1fr] gap-2 items-center">
+            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-2 items-center">
                 {/* Available Students */}
                 <CardWithListHeader title="Alunos Disponíveis" count={availableStudents.length}>
                     <ScrollArea className="h-48">
@@ -234,7 +234,7 @@ export function RouteForm({
                 </CardWithListHeader>
 
                 {/* Controls */}
-                <div className="flex flex-col gap-2">
+                <div className="flex flex-row md:flex-col gap-2 justify-center">
                     <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('allToRoute')}><ChevronsRight/></Button>
                     <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('toRoute')}><ArrowRight/></Button>
                     <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('fromRoute')}><ArrowLeft/></Button>
@@ -242,7 +242,7 @@ export function RouteForm({
                 </div>
 
                 {/* Students in Route */}
-                <div className="grid grid-cols-[1fr_auto] gap-2 items-center">
+                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 md:gap-2 items-center">
                     <CardWithListHeader title="Alunos na Rota (Paradas)" count={studentsInCurrentRoute.length}>
                         <ScrollArea className="h-48">
                             {studentsInCurrentRoute.map((s, index) => (
@@ -253,7 +253,7 @@ export function RouteForm({
                             ))}
                         </ScrollArea>
                     </CardWithListHeader>
-                     <div className="flex flex-col gap-2">
+                     <div className="flex flex-row md:flex-col gap-2 justify-center">
                         <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('up')}><ArrowUp/></Button>
                         <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('down')}><ArrowDown/></Button>
                     </div>
@@ -282,5 +282,3 @@ const CardWithListHeader = ({ title, count, children }) => (
         <div className="p-2">{children}</div>
     </Card>
 );
-
-    
