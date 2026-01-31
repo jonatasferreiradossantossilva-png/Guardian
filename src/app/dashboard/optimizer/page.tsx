@@ -14,6 +14,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -66,6 +67,8 @@ export default function OptimizerPage() {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [optimizationResult, setOptimizationResult] = useState<OptimizeSchoolVanRouteOutput | null>(null);
     const [autoOptimizeTriggered, setAutoOptimizeTriggered] = useState(false);
+    const isInitialMount = useRef(true);
+
 
     useEffect(() => {
         const routeIdFromUrl = searchParams.get('routeId');
@@ -101,21 +104,7 @@ export default function OptimizerPage() {
 
 
     const handleOptimize = useCallback(async () => {
-        if (!selectedRoute || studentsInRoute.length === 0) {
-            toast({
-                title: "Seleção Incompleta",
-                description: "Por favor, selecione uma rota com alunos para otimizar.",
-                variant: "destructive"
-            });
-            return;
-        }
-        
-        if (!schoolForRoute) {
-            toast({
-                title: "Dados Incompletos",
-                description: "Não foi possível encontrar a escola associada aos alunos da rota.",
-                variant: "destructive"
-            });
+        if (!selectedRoute || studentsInRoute.length === 0 || !schoolForRoute) {
             return;
         }
         
@@ -136,10 +125,12 @@ export default function OptimizerPage() {
             };
             const result = await optimizeSchoolVanRoute(input);
             setOptimizationResult(result);
-            toast({
-                title: "Rota Otimizada com Sucesso!",
-                description: "A IA gerou uma nova sugestão de rota.",
-            });
+            if (!isInitialMount.current) {
+                toast({
+                    title: "Rota Otimizada com Sucesso!",
+                    description: "A IA gerou uma nova sugestão de rota.",
+                });
+            }
         } catch (error) {
             console.error("Error optimizing route:", error);
             toast({
@@ -152,6 +143,7 @@ export default function OptimizerPage() {
         }
     }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast, incidents]);
     
+    // This effect is specifically for the 'autoOptimize=true' parameter from the routes page
     useEffect(() => {
         const autoOptimize = searchParams.get('autoOptimize') === 'true';
 
@@ -165,6 +157,21 @@ export default function OptimizerPage() {
             router.replace(`${current.pathname}?${newSearchParams.toString()}`);
         }
     }, [searchParams, autoOptimizeTriggered, selectedRoute, schoolForRoute, handleOptimize, router]);
+
+    // This effect triggers optimization whenever the selected route changes, except for the very first render
+    useEffect(() => {
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            // Let the auto-optimize effect handle the very first optimization if needed
+            if (searchParams.get('autoOptimize') === 'true') {
+                return;
+            }
+        }
+
+        if (selectedRouteId) {
+            handleOptimize();
+        }
+    }, [selectedRouteId, context]); // Also re-optimizes when context changes
 
 
     const handleSaveChanges = () => {
@@ -196,8 +203,8 @@ export default function OptimizerPage() {
                 <div className="lg:col-span-1">
                     <Card>
                         <CardHeader>
-                            <CardTitle>1. Configurar Otimização</CardTitle>
-                            <CardDescription>Selecione a rota e forneça um contexto para a IA.</CardDescription>
+                            <CardTitle>Configurar Otimização</CardTitle>
+                            <CardDescription>Selecione a rota para otimizar automaticamente. Adicione um contexto se necessário.</CardDescription>
                         </CardHeader>
                         <CardContent className="space-y-4">
                             <div>
@@ -229,11 +236,6 @@ export default function OptimizerPage() {
                                 )}
                             </div>
                         </CardContent>
-                        <CardFooter>
-                            <Button className="w-full" onClick={handleOptimize} disabled={isLoading || !selectedRouteId}>
-                                {isLoading ? <Loader2 className="animate-spin" /> : <><Sparkles className="mr-2"/> Otimizar com IA</>}
-                            </Button>
-                        </CardFooter>
                     </Card>
                 </div>
                 
@@ -241,7 +243,7 @@ export default function OptimizerPage() {
                 <div className="lg:col-span-2">
                     <Card className="min-h-full">
                          <CardHeader>
-                            <CardTitle>2. Analisar Resultado</CardTitle>
+                            <CardTitle>Analisar Resultado</CardTitle>
                             <CardDescription>Veja a rota original e a sugestão da IA lado a lado.</CardDescription>
                         </CardHeader>
                         <CardContent className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -285,13 +287,27 @@ export default function OptimizerPage() {
                                                 <Badge variant="outline" className="flex gap-1.5"><RouteIcon size={14}/> {optimizationResult.estimatedDistanceKm} km</Badge>
                                             </div>
                                          </div>
-                                        <p className="text-sm text-muted-foreground italic mb-3">"{optimizationResult.summary}"</p>
+                                        
                                         <ol className="space-y-2 text-sm list-decimal list-inside font-medium mb-4">
                                             {optimizationResult.optimizedStudentIds.map((studentId) => (
                                                 <li key={studentId}>{getStudentName(studentId)}</li>
                                             ))}
                                         </ol>
                                         
+                                        <Accordion type="single" collapsible className="w-full">
+                                            <AccordionItem value="summary" className="border-b-0">
+                                                <AccordionTrigger className="text-xs text-muted-foreground hover:no-underline justify-start p-0 flex-nowrap gap-1">
+                                                    <Sparkles className="h-3 w-3" />
+                                                    Ver justificativa da IA
+                                                </AccordionTrigger>
+                                                <AccordionContent>
+                                                    <p className="text-sm text-muted-foreground italic mt-2 bg-secondary p-3 rounded-md border">
+                                                        "{optimizationResult.summary}"
+                                                    </p>
+                                                </AccordionContent>
+                                            </AccordionItem>
+                                        </Accordion>
+
                                         {optimizationResult.turnByTurnDirections && optimizationResult.turnByTurnDirections.length > 0 && (
                                             <div className="mt-4 pt-4 border-t">
                                                 <h4 className="font-semibold flex items-center gap-2 text-sm mb-2">
