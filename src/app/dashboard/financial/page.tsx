@@ -134,6 +134,7 @@ export default function FinancialPage() {
           pending: { total: 0, count: 0 },
           overdue: { total: 0, count: 0 },
           pagamento_em_analise: { total: 0, count: 0 },
+          total: { total: 0, count: 0 },
       };
 
       if (!filteredInvoicesForSummary) return initialStats;
@@ -143,6 +144,8 @@ export default function FinancialPage() {
             acc[inv.status].total += inv.amount;
             acc[inv.status].count += 1;
           }
+          acc.total.total += inv.amount;
+          acc.total.count += 1;
           return acc;
       }, JSON.parse(JSON.stringify(initialStats)));
   }, [filteredInvoicesForSummary]);
@@ -310,7 +313,23 @@ export default function FinancialPage() {
                             </Select>
                         </div>
                     </div>
-                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        <Card 
+                            className={cn(
+                                "cursor-pointer transition-all hover:bg-secondary/50",
+                                selectedStatus === 'all' && 'ring-2 ring-primary shadow-lg',
+                            )}
+                            onClick={() => setSelectedStatus('all')}
+                            >
+                            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                                <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
+                                <Wallet className="h-4 w-4 text-muted-foreground" />
+                            </CardHeader>
+                            <CardContent>
+                                <div className="text-2xl font-bold">R$ {summaryStats.total.total.toFixed(2).replace('.',',')}</div>
+                                <p className="text-xs text-muted-foreground">{summaryStats.total.count} fatura(s)</p>
+                            </CardContent>
+                        </Card>
                         {statusCardsData.map(stat => (
                             <StatCard 
                                 key={stat.status}
