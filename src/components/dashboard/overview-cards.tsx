@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, TrendingDown, FileText } from "lucide-react";
@@ -16,6 +16,11 @@ interface OverviewCardsProps {
 export function OverviewCards({ filters }: OverviewCardsProps) {
   const { data: allInvoices, isLoading: areInvoicesLoading } = useMockCollection('invoices', undefined);
   const { data: allExpenses, isLoading: areExpensesLoading } = useMockCollection('expenses', undefined);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const isLoading = areInvoicesLoading || areExpensesLoading;
 
@@ -60,30 +65,30 @@ export function OverviewCards({ filters }: OverviewCardsProps) {
   const overviewStats = [
     {
       title: "Receita",
-      value: isLoading ? "-" : formatCurrency(financialStats.monthlyRevenue),
-      changeText: isLoading ? "Calculando..." : `Total recebido em ${financialStats.displayPeriod}`,
+      value: isLoading || !isClient ? "..." : formatCurrency(financialStats.monthlyRevenue),
+      changeText: isLoading || !isClient ? "Calculando..." : `Total recebido em ${financialStats.displayPeriod}`,
       icon: DollarSign,
       href: "/dashboard/financial"
     },
     {
       title: "Despesas",
-      value: isLoading ? "-" : formatCurrency(financialStats.monthlyExpenses),
-      changeText: isLoading ? "Calculando..." : `Total gasto em ${financialStats.displayPeriod}`,
+      value: isLoading || !isClient ? "..." : formatCurrency(financialStats.monthlyExpenses),
+      changeText: isLoading || !isClient ? "Calculando..." : `Total gasto em ${financialStats.displayPeriod}`,
       icon: TrendingDown,
       href: "/dashboard/financial"
     },
     {
       title: "Balanço",
-      value: isLoading ? "-" : formatCurrency(financialStats.monthlyBalance),
-      changeText: isLoading ? "Calculando..." : `Receitas - Despesas em ${financialStats.displayPeriod}`,
+      value: isLoading || !isClient ? "..." : formatCurrency(financialStats.monthlyBalance),
+      changeText: isLoading || !isClient ? "Calculando..." : `Receitas - Despesas em ${financialStats.displayPeriod}`,
       icon: financialStats.monthlyBalance >= 0 ? TrendingUp : TrendingDown,
       href: "/dashboard/financial",
       isBalance: true,
     },
     {
       title: "Contas a Receber",
-      value: isLoading ? "-" : formatCurrency(financialStats.monthlyReceivables),
-      changeText: isLoading ? "Calculando..." : `Pendente ou em análise para ${financialStats.displayPeriod}`,
+      value: isLoading || !isClient ? "..." : formatCurrency(financialStats.monthlyReceivables),
+      changeText: isLoading || !isClient ? "Calculando..." : `Pendente ou em análise para ${financialStats.displayPeriod}`,
       icon: FileText,
       href: "/dashboard/financial"
     },
