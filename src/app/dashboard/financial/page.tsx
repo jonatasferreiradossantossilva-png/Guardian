@@ -405,6 +405,9 @@ export default function FinancialPage() {
                                                         <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>
                                                             Marcar como Pendente
                                                         </DropdownMenuItem>
+                                                        <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pagamento_em_analise')}>
+                                                            Marcar como Pagto. em Análise
+                                                        </DropdownMenuItem>
                                                         <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">
                                                             Marcar como Vencida
                                                         </DropdownMenuItem>
@@ -437,6 +440,7 @@ export default function FinancialPage() {
                                                     <DropdownMenuSeparator />
                                                     <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>Marcar como Paga</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>Marcar como Pendente</DropdownMenuItem>
+                                                    <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pagamento_em_analise')}>Marcar como Pagto. em Análise</DropdownMenuItem>
                                                     <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">Marcar como Vencida</DropdownMenuItem>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
