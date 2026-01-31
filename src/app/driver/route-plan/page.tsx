@@ -33,7 +33,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData, useMockNestedDoc } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal'; // Import the modal
 import {
   APIProvider,
@@ -330,22 +330,7 @@ export default function DriverRoutePlanPage() {
     return schools.find(s => s.id === studentWithSchool.schoolId);
   }, [orderedStudents, schools]);
   
-  const useMockNestedDocSnapshot = (path) => {
-    const { getNestedDoc, db } = useMockData();
-    const [data, setData] = useState(() => path ? getNestedDoc(path) : null);
-
-    useEffect(() => {
-        if (path) {
-            setData(getNestedDoc(path));
-        } else {
-            setData(null);
-        }
-    }, [db, path, getNestedDoc]);
-
-    return { data, isLoading: false, error: null };
-  }
-  
-  const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(driverId ? `locations/${driverId}` : null);
+  const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
 
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
@@ -727,3 +712,4 @@ RouteMap.displayName = 'RouteMap';
     
 
     
+
