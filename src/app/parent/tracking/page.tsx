@@ -60,7 +60,7 @@ const statusBadgeVariant: Record<
 const statusIconMap: Record<Student['status'], React.ReactNode> = {
   aguardando: <Circle className="h-5 w-5 text-muted-foreground/30" />,
   a_bordo: <CheckCircle className="h-5 w-5 text-primary" />,
-  desembarcado: <CheckCircle className="h-5 w-5 text-green-500" />,
+  desembarcou: <CheckCircle className="h-5 w-5 text-green-500" />,
   ausente: <XCircle className="h-5 w-5 text-destructive/80" />,
 };
 
@@ -320,7 +320,7 @@ export default function ParentTrackingPage() {
                 </div>
               </CardHeader>
               <CardContent>
-                 <div className="grid grid-cols-2 gap-2">
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <Button
                         variant="destructive"
                         className="w-full"
@@ -422,7 +422,7 @@ export default function ParentTrackingPage() {
                     )}
                     </div>
                 </CardContent>
-                <CardFooter className="grid grid-cols-2 gap-2">
+                <CardFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <Button asChild variant="outline" className="w-full">
                     <Link href="/parent/authorized">
                         <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
@@ -433,12 +433,12 @@ export default function ParentTrackingPage() {
                         <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
                     </Link>
                 </Button>
-                <Button asChild variant="outline" className="w-full col-span-2">
+                <Button asChild variant="outline" className="w-full col-span-1 sm:col-span-2">
                     <Link href="/parent/requests">
                         <Route className="mr-2 h-4 w-4" /> Solicitar Viagem Avulsa
                     </Link>
                 </Button>
-                <Button variant="ghost" className="w-full col-span-2 border-dashed border" onClick={() => setIsNearby(v => !v)}>
+                <Button variant="ghost" className="w-full col-span-1 sm:col-span-2 border-dashed border" onClick={() => setIsNearby(v => !v)}>
                     <Bell className="mr-2 h-4 w-4" />
                     Testar Notificação de Proximidade
                 </Button>

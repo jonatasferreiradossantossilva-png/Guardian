@@ -65,7 +65,17 @@ export default function ParentFinancialPage() {
 
   const sortedInvoices = useMemo(() => {
     if (!invoices) return [];
-    return [...invoices].sort((a, b) => new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime());
+    const statusOrder: Record<Invoice['status'], number> = {
+        overdue: 1,
+        pagamento_em_analise: 2,
+        pending: 3,
+        paid: 4,
+    };
+    return [...invoices].sort((a, b) => {
+        const statusComparison = statusOrder[a.status] - statusOrder[b.status];
+        if (statusComparison !== 0) return statusComparison;
+        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
+    });
   }, [invoices]);
 
   return (
@@ -85,52 +95,87 @@ export default function ParentFinancialPage() {
                 <CardDescription>Visualize seu histórico de pagamentos e faturas pendentes.</CardDescription>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Descrição</TableHead>
-                    <TableHead>Vencimento</TableHead>
-                    <TableHead>Valor</TableHead>
-                    <TableHead>Status</TableHead>
-                    <TableHead className="text-right">Ações</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {isLoading && (
-                    <TableRow><TableCell colSpan={5} className="h-24 text-center">Carregando...</TableCell></TableRow>
-                  )}
-                  {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
+              {/* Desktop View */}
+              <div className="hidden md:block">
+                <Table>
+                    <TableHeader>
+                    <TableRow>
+                        <TableHead>Descrição</TableHead>
+                        <TableHead>Vencimento</TableHead>
+                        <TableHead>Valor</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead className="text-right">Ações</TableHead>
+                    </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                    {isLoading && (
+                        <TableRow><TableCell colSpan={5} className="h-24 text-center">Carregando...</TableCell></TableRow>
+                    )}
+                    {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
+                        sortedInvoices.map((invoice) => (
+                        <TableRow key={invoice.id}>
+                            <TableCell>{invoice.description}</TableCell>
+                            <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
+                            <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
+                            <TableCell>
+                            <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
+                                {statusTextMap[invoice.status]}
+                            </Badge>
+                            </TableCell>
+                            <TableCell className="text-right">
+                            {(invoice.status === 'pending' || invoice.status === 'overdue') && (
+                                <Button size="sm" onClick={() => handleInformPayment(invoice.id)}>Informar Pagamento</Button>
+                            )}
+                            </TableCell>
+                        </TableRow>
+                        ))
+                    ) : (
+                        !isLoading && (
+                        <TableRow>
+                            <TableCell colSpan={5} className="h-24 text-center">Nenhuma fatura encontrada.</TableCell>
+                        </TableRow>
+                        )
+                    )}
+                    </TableBody>
+                </Table>
+              </div>
+
+              {/* Mobile View */}
+              <div className="md:hidden space-y-4">
+                {isLoading && <p className="text-center text-muted-foreground">Carregando...</p>}
+                {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
                     sortedInvoices.map((invoice) => (
-                      <TableRow key={invoice.id}>
-                        <TableCell>{invoice.description}</TableCell>
-                        <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
-                        <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
-                        <TableCell>
-                          <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
-                            {statusTextMap[invoice.status]}
-                          </Badge>
-                        </TableCell>
-                        <TableCell className="text-right">
-                          {(invoice.status === 'pending' || invoice.status === 'overdue') && (
-                            <Button size="sm" onClick={() => handleInformPayment(invoice.id)}>Informar Pagamento</Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
+                        <Card key={invoice.id} className="p-4">
+                            <div className="flex justify-between items-start">
+                                <p className="font-medium pr-2">{invoice.description}</p>
+                                <Badge variant={statusVariantMap[invoice.status]} className={cn('flex-shrink-0', invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
+                                    {statusTextMap[invoice.status]}
+                                </Badge>
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-y-4 text-sm">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Vencimento</p>
+                                    <p>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Valor</p>
+                                    <p>R$ {invoice.amount.toFixed(2)}</p>
+                                </div>
+                            </div>
+                            {(invoice.status === 'pending' || invoice.status === 'overdue') && (
+                                <Button size="sm" onClick={() => handleInformPayment(invoice.id)} className="w-full mt-4">
+                                    Informar Pagamento
+                                </Button>
+                            )}
+                        </Card>
                     ))
-                  ) : (
-                    !isLoading && (
-                      <TableRow>
-                        <TableCell colSpan={5} className="h-24 text-center">Nenhuma fatura encontrada.</TableCell>
-                      </TableRow>
-                    )
-                  )}
-                </TableBody>
-              </Table>
+                ) : (
+                    !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma fatura encontrada.</p>
+                )}
+              </div>
             </CardContent>
         </Card>
       </div>
     </div>
   );
 }
-
-    

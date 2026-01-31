@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, ArrowLeft, Users } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ArrowLeft, Users, Phone, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -106,14 +106,14 @@ export default function AuthorizedPage() {
         </div>
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <CardTitle className="flex items-center gap-2"><Users/>Pessoas Autorizadas</CardTitle>
                     <CardDescription className="mt-2">Adicione ou remova pessoas de confiança para a retirada do(a) {student?.name || 'aluno'}.</CardDescription>
                 </div>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => { setSelectedPerson(null); setIsFormOpen(true); }} disabled={!student}>
+                        <Button onClick={() => { setSelectedPerson(null); setIsFormOpen(true); }} disabled={!student} className="w-full sm:w-auto">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Adicionar Pessoa
                         </Button>
@@ -130,58 +130,103 @@ export default function AuthorizedPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>CPF</TableHead>
-                  <TableHead>Telefone</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={4} className="text-center">
-                      Carregando...
-                    </TableCell>
-                  </TableRow>
-                )}
-                {!isLoading && authorizedPersons && authorizedPersons.length > 0 ? (
-                  authorizedPersons.map((person) => (
-                    <TableRow key={person.id}>
-                      <TableCell>{person.name}</TableCell>
-                      <TableCell>{person.cpf}</TableCell>
-                      <TableCell>{person.phone}</TableCell>
-                      <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(person)}>Editar</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(person)}>Remover</DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  !isLoading && (
+            {/* Desktop View */}
+            <div className="hidden md:block">
+                <Table>
+                <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={4} className="text-center h-24">
-                        Nenhuma pessoa autorizada cadastrada.
-                      </TableCell>
+                    <TableHead>Nome</TableHead>
+                    <TableHead>CPF</TableHead>
+                    <TableHead>Telefone</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  )
-                )}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                    {isLoading && (
+                    <TableRow>
+                        <TableCell colSpan={4} className="text-center">
+                        Carregando...
+                        </TableCell>
+                    </TableRow>
+                    )}
+                    {!isLoading && authorizedPersons && authorizedPersons.length > 0 ? (
+                    authorizedPersons.map((person) => (
+                        <TableRow key={person.id}>
+                        <TableCell>{person.name}</TableCell>
+                        <TableCell>{person.cpf}</TableCell>
+                        <TableCell>{person.phone}</TableCell>
+                        <TableCell className="text-right">
+                            <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                <span className="sr-only">Abrir menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleEdit(person)}>Editar</DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(person)}>Remover</DropdownMenuItem>
+                            </DropdownMenuContent>
+                            </DropdownMenu>
+                        </TableCell>
+                        </TableRow>
+                    ))
+                    ) : (
+                    !isLoading && (
+                        <TableRow>
+                        <TableCell colSpan={4} className="text-center h-24">
+                            Nenhuma pessoa autorizada cadastrada.
+                        </TableCell>
+                        </TableRow>
+                    )
+                    )}
+                </TableBody>
+                </Table>
+            </div>
+
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                 {isLoading && <p className="text-center text-muted-foreground">Carregando...</p>}
+                 {!isLoading && authorizedPersons && authorizedPersons.length > 0 ? (
+                    authorizedPersons.map((person) => (
+                        <Card key={person.id} className="p-4">
+                            <div className="flex justify-between items-start">
+                                <div>
+                                    <p className="font-medium">{person.name}</p>
+                                </div>
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-8 w-8 p-0 -mt-1 -mr-2 flex-shrink-0">
+                                            <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                        <DropdownMenuItem onClick={() => handleEdit(person)}>Editar</DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(person)}>Remover</DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </div>
+                             <div className="mt-2 text-sm text-muted-foreground space-y-2">
+                               <div className="flex items-center gap-2">
+                                <FileText className="h-4 w-4"/>
+                                <span>CPF: {person.cpf}</span>
+                               </div>
+                                <div className="flex items-center gap-2">
+                                <Phone className="h-4 w-4"/>
+                                <span>Tel: {person.phone || 'Não informado'}</span>
+                               </div>
+                            </div>
+                        </Card>
+                    ))
+                 ) : (
+                    !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma pessoa autorizada cadastrada.</p>
+                 )}
+            </div>
+
           </CardContent>
         </Card>
         <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

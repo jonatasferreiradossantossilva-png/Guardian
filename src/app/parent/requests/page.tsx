@@ -140,14 +140,14 @@ export default function TripRequestsPage() {
         </div>
         <Card>
           <CardHeader>
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <CardTitle className="flex items-center gap-2"><Route/>Viagens Avulsas</CardTitle>
                     <CardDescription className="mt-2">Solicite um transporte extra para {student?.name || 'o aluno'} ou veja o histórico.</CardDescription>
                 </div>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                     <DialogTrigger asChild>
-                        <Button onClick={() => { setSelectedRequest(null); setIsFormOpen(true); }} disabled={!student}>
+                        <Button onClick={() => { setSelectedRequest(null); setIsFormOpen(true); }} disabled={!student} className="w-full sm:w-auto">
                         <PlusCircle className="mr-2 h-4 w-4" />
                         Nova Solicitação
                         </Button>
@@ -166,79 +166,149 @@ export default function TripRequestsPage() {
             </div>
           </CardHeader>
           <CardContent>
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Data</TableHead>
-                  <TableHead>Tipo</TableHead>
-                  <TableHead>Turno</TableHead>
-                  <TableHead>Valor</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={6} className="text-center">
-                      Carregando...
-                    </TableCell>
-                  </TableRow>
-                )}
-                {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
-                  sortedRequests.map((request) => (
-                    <TableRow key={request.id}>
-                      <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
-                      <TableCell>{typeMap[request.type]}</TableCell>
-                      <TableCell>{request.shift === 'manha' ? 'Manhã' : 'Tarde'}</TableCell>
-                      <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
-                      <TableCell>
-                        <Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge>
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {request.status === 'aguardando_aprovacao_pai' ? (
-                          <div className="flex gap-2 justify-end">
-                            <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8" onClick={() => handleApproval(request, true)}>
-                                <Check className="mr-2 h-4 w-4" /> Aprovar
-                            </Button>
-                            <Button size="sm" variant="destructive" className="h-8" onClick={() => handleApproval(request, false)}>
-                                <X className="mr-2 h-4 w-4" /> Recusar
-                            </Button>
-                          </div>
-                        ) : request.status === 'pendente' ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                    <span className="sr-only">Abrir menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => handleEdit(request)}>
-                                        Editar
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        ) : (
-                           <span className="text-xs italic text-muted-foreground">
-                            Processado
-                           </span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))
-                ) : (
-                  !isLoading && (
+            {/* Desktop View */}
+            <div className="hidden md:block">
+                <Table>
+                <TableHeader>
                     <TableRow>
-                      <TableCell colSpan={6} className="text-center h-24">
-                        Nenhuma solicitação de viagem encontrada.
-                      </TableCell>
+                    <TableHead>Data</TableHead>
+                    <TableHead>Tipo</TableHead>
+                    <TableHead>Turno</TableHead>
+                    <TableHead>Valor</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
-                  )
+                </TableHeader>
+                <TableBody>
+                    {isLoading && (
+                    <TableRow>
+                        <TableCell colSpan={6} className="text-center">
+                        Carregando...
+                        </TableCell>
+                    </TableRow>
+                    )}
+                    {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
+                    sortedRequests.map((request) => (
+                        <TableRow key={request.id}>
+                        <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
+                        <TableCell>{typeMap[request.type]}</TableCell>
+                        <TableCell>{request.shift === 'manha' ? 'Manhã' : 'Tarde'}</TableCell>
+                        <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
+                        <TableCell>
+                            <Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge>
+                        </TableCell>
+                        <TableCell className="text-right">
+                            {request.status === 'aguardando_aprovacao_pai' ? (
+                            <div className="flex gap-2 justify-end">
+                                <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8" onClick={() => handleApproval(request, true)}>
+                                    <Check className="mr-2 h-4 w-4" /> Aprovar
+                                </Button>
+                                <Button size="sm" variant="destructive" className="h-8" onClick={() => handleApproval(request, false)}>
+                                    <X className="mr-2 h-4 w-4" /> Recusar
+                                </Button>
+                            </div>
+                            ) : request.status === 'pendente' ? (
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Abrir menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                        </Button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end">
+                                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                        <DropdownMenuItem onClick={() => handleEdit(request)}>
+                                            Editar
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            ) : (
+                            <span className="text-xs italic text-muted-foreground">
+                                Processado
+                            </span>
+                            )}
+                        </TableCell>
+                        </TableRow>
+                    ))
+                    ) : (
+                    !isLoading && (
+                        <TableRow>
+                        <TableCell colSpan={6} className="text-center h-24">
+                            Nenhuma solicitação de viagem encontrada.
+                        </TableCell>
+                        </TableRow>
+                    )
+                    )}
+                </TableBody>
+                </Table>
+            </div>
+            
+            {/* Mobile View */}
+            <div className="md:hidden space-y-4">
+                {isLoading && <p className="text-center text-muted-foreground">Carregando...</p>}
+                {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
+                    sortedRequests.map((request) => (
+                        <Card key={request.id} className="p-4">
+                            <div className="flex justify-between items-start">
+                                <p className="font-medium pr-2">{typeMap[request.type]}</p>
+                                {request.status === 'pendente' && (
+                                     <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
+                                            <span className="sr-only">Abrir menu</span>
+                                            <MoreHorizontal className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                            <DropdownMenuItem onClick={() => handleEdit(request)}>
+                                                Editar
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                )}
+                            </div>
+                            <div className="mt-2 grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Data</p>
+                                    <p>{request.date.split('-').reverse().join('/')}</p>
+                                </div>
+                                 <div>
+                                    <p className="text-xs text-muted-foreground">Turno</p>
+                                    <p>{request.shift === 'manha' ? 'Manhã' : 'Tarde'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Valor</p>
+                                    <p>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</p>
+                                </div>
+                                <div>
+                                    <p className="text-xs text-muted-foreground">Status</p>
+                                     <Badge variant={statusVariantMap[request.status]} className="capitalize mt-1">{statusTextMap[request.status]}</Badge>
+                                </div>
+                                 {request.reason && (
+                                    <div className="col-span-2">
+                                        <p className="text-xs text-muted-foreground">Observação</p>
+                                        <p>{request.reason}</p>
+                                    </div>
+                                 )}
+                            </div>
+                             {request.status === 'aguardando_aprovacao_pai' && (
+                                <div className="flex gap-2 mt-4">
+                                    <Button size="sm" className="bg-green-600 hover:bg-green-700 h-8 flex-1" onClick={() => handleApproval(request, true)}>
+                                        <Check className="mr-2 h-4 w-4" /> Aprovar
+                                    </Button>
+                                    <Button size="sm" variant="destructive" className="h-8 flex-1" onClick={() => handleApproval(request, false)}>
+                                        <X className="mr-2 h-4 w-4" /> Recusar
+                                    </Button>
+                                </div>
+                            )}
+                        </Card>
+                    ))
+                ) : (
+                    !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma solicitação encontrada.</p>
                 )}
-              </TableBody>
-            </Table>
+            </div>
+
           </CardContent>
         </Card>
       </div>
