@@ -28,6 +28,7 @@ import {
   GitCommitHorizontal,
   Sparkles,
   XCircle,
+  CheckCircle,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -227,11 +228,11 @@ const StudentListItem = memo(({ student, index, isNextStop, onStatusChange, onNa
                 </p>
             </div>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-[220px]">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
             {student.status === 'aguardando' && (
                 <>
                 <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => onStatusChange(student.id, 'a_bordo')}>
-                    <User className="mr-2 h-4 w-4" /> Embarcar
+                    <CheckCircle className="mr-2 h-4 w-4" /> Embarcar
                 </Button>
                 <Button size="sm" variant="destructive" className="flex-1" onClick={() => onStatusChange(student.id, 'ausente')}>
                     <XCircle className="mr-2 h-4 w-4" /> Ausente
@@ -722,5 +723,7 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
+    
 
     
