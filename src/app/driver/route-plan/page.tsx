@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useRef, memo, useCallback } from 'react';
@@ -272,12 +271,12 @@ export default function DriverRoutePlanPage() {
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || 'user-admin-1'); // Default to a known driver for direct page access
+    setMockUserId(storedUserId || 'driver-1'); // Default to a known driver for direct page access
   }, []);
 
   // Fetch driver profile
   const driverFilter = useMemo(
-    () => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined),
+    () => (mockUserId ? [{ field: 'id', op: '==', value: mockUserId }] : undefined),
     [mockUserId]
   );
   const { data: drivers, isLoading: areDriversLoading } =
@@ -332,6 +331,12 @@ export default function DriverRoutePlanPage() {
   }, [orderedStudents, schools]);
   
   const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
+  
+  const locationRef = useRef(driverLocation);
+  useEffect(() => {
+    locationRef.current = driverLocation;
+  }, [driverLocation]);
+
 
   // Location simulation effect
   useEffect(() => {
@@ -340,12 +345,12 @@ export default function DriverRoutePlanPage() {
       clearInterval(simulationIntervalRef.current);
     }
     
-    // Conditions to start a new simulation
-    if (!driverId || !nextStop || !driverLocation) {
+    // Conditions to start a new simulation. Use the ref for the current location.
+    if (!driverId || !nextStop || !locationRef.current) {
       return;
     }
 
-    const startPoint = { lat: driverLocation.latitude, lng: driverLocation.longitude };
+    const startPoint = { lat: locationRef.current.latitude, lng: locationRef.current.longitude };
     const endPoint = { lat: nextStop.latitude, lng: nextStop.longitude };
 
     // Don't simulate if already at the destination
@@ -391,7 +396,6 @@ export default function DriverRoutePlanPage() {
       }
     };
   }, [driverId, nextStop, setDoc]); // driverLocation is intentionally omitted to avoid loops
-
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
     setSelectedStudentForModal(student);
@@ -768,9 +772,3 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
-
-    
-
-    
-
-
