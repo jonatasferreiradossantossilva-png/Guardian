@@ -119,65 +119,102 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
           <CardTitle>Lista de Mensagens Predefinidas</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-[60%]">Texto</TableHead>
-                <TableHead>Disponível Para</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && (
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={3} className="text-center">
-                    Carregando...
-                  </TableCell>
+                  <TableHead className="w-[60%]">Texto</TableHead>
+                  <TableHead>Disponível Para</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              )}
-              {!isLoading && messages && messages.length > 0 ? (
-                messages.map((message) => (
-                  <TableRow key={message.id}>
-                    <TableCell className="font-medium">{message.text}</TableCell>
-                    <TableCell>
-                        <Badge variant="secondary">{profileMap[message.for] || message.for}</Badge>
+              </TableHeader>
+              <TableBody>
+                {isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={3} className="text-center h-24">
+                      Carregando...
                     </TableCell>
-                    <TableCell className="text-right">
+                  </TableRow>
+                )}
+                {!isLoading && messages && messages.length > 0 ? (
+                  messages.map((message) => (
+                    <TableRow key={message.id}>
+                      <TableCell className="font-medium">{message.text}</TableCell>
+                      <TableCell>
+                          <Badge variant="secondary">{profileMap[message.for] || message.for}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(message)}>
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(message)}
+                            >
+                              Deletar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell colSpan={3} className="text-center h-24">
+                        Nenhuma mensagem rápida cadastrada.
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          {/* Mobile View */}
+          <div className="md:hidden">
+            {isLoading && <p className="text-center py-10">Carregando...</p>}
+            {!isLoading && messages && messages.length > 0 ? (
+              <div className="space-y-4">
+                {messages.map((message) => (
+                  <Card key={message.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                       <p className="font-medium pr-4">{message.text}</p>
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(message)}>
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDelete(message)}
-                          >
-                            Deletar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
+                            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(message)}>Editar</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(message)}>Deletar</DropdownMenuItem>
+                          </DropdownMenuContent>
                       </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={3} className="text-center">
-                      Nenhuma mensagem rápida cadastrada.
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
+                    </div>
+                     <div className="mt-2 text-sm">
+                        <Badge variant="secondary">{profileMap[message.for] || message.for}</Badge>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma mensagem rápida cadastrada.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

@@ -114,71 +114,120 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
           <CardTitle>Frota de Veículos</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Modelo</TableHead>
-                <TableHead>Placa</TableHead>
-                <TableHead>Capacidade</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && (
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={5} className="text-center">
-                    Carregando...
-                  </TableCell>
+                  <TableHead>Modelo</TableHead>
+                  <TableHead>Placa</TableHead>
+                  <TableHead>Capacidade</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              )}
-              {!isLoading && vehicles && vehicles.length > 0 ? (
-                vehicles.map((vehicle) => (
-                  <TableRow key={vehicle.id}>
-                    <TableCell>{vehicle.model}</TableCell>
-                    <TableCell>{vehicle.licensePlate}</TableCell>
-                    <TableCell>{vehicle.capacity}</TableCell>
-                    <TableCell>
-                      <Badge variant={vehicle.active ? 'default' : 'destructive'}>
-                        {vehicle.active ? 'Ativo' : 'Inativo'}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(vehicle)}>
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDelete(vehicle)}
-                          >
-                            Deletar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
+              </TableHeader>
+              <TableBody>
+                {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center">
-                        Nenhum veículo cadastrado.
+                    <TableCell colSpan={5} className="text-center h-24">
+                      Carregando...
                     </TableCell>
                   </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
+                )}
+                {!isLoading && vehicles && vehicles.length > 0 ? (
+                  vehicles.map((vehicle) => (
+                    <TableRow key={vehicle.id}>
+                      <TableCell className="font-medium">{vehicle.model}</TableCell>
+                      <TableCell>{vehicle.licensePlate}</TableCell>
+                      <TableCell>{vehicle.capacity}</TableCell>
+                      <TableCell>
+                        <Badge variant={vehicle.active ? 'default' : 'destructive'}>
+                          {vehicle.active ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(vehicle)}>
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(vehicle)}
+                            >
+                              Deletar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center h-24">
+                          Nenhum veículo cadastrado.
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          {/* Mobile View */}
+          <div className="md:hidden">
+            {isLoading && <p className="text-center py-10">Carregando...</p>}
+            {!isLoading && vehicles && vehicles.length > 0 ? (
+              <div className="space-y-4">
+                {vehicles.map((vehicle) => (
+                  <Card key={vehicle.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-medium">{vehicle.model}</p>
+                        <p className="text-xs text-muted-foreground">Placa: {vehicle.licensePlate}</p>
+                      </div>
+                       <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(vehicle)}>Editar</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(vehicle)}>Deletar</DropdownMenuItem>
+                          </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                       <div>
+                        <p className="text-muted-foreground text-xs">Capacidade</p>
+                        <p className="font-medium">{vehicle.capacity} passageiros</p>
+                      </div>
+                       <div>
+                        <p className="text-muted-foreground text-xs">Status</p>
+                         <Badge variant={vehicle.active ? 'default' : 'destructive'} className="mt-1">
+                          {vehicle.active ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum veículo cadastrado.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

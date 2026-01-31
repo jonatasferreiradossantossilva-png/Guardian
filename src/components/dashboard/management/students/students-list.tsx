@@ -151,81 +151,143 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
           <CardTitle>Lista de Alunos</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Endereço</TableHead>
-                <TableHead>Escola</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Turno</TableHead>
-                <TableHead>Mensalidade</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && (
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center">
-                    Carregando...
-                  </TableCell>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Endereço</TableHead>
+                  <TableHead>Escola</TableHead>
+                  <TableHead>Responsável</TableHead>
+                  <TableHead>Turno</TableHead>
+                  <TableHead>Mensalidade</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              )}
-              {!isLoading && students && students.length > 0 ? (
-                students.map((student) => (
-                  <TableRow key={student.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
-                          <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <span className="font-medium">{student.name}</span>
-                      </div>
-                    </TableCell>
-                    <TableCell>{formatAddress(student)}</TableCell>
-                    <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
-                    <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
-                    <TableCell><Badge variant="outline">{student.shift}</Badge></TableCell>
-                    <TableCell>R$ {student.monthlyFee ? student.monthlyFee.toFixed(2) : 'N/A'}</TableCell>
-                    <TableCell><Badge variant="secondary">{student.status}</Badge></TableCell>
-                    <TableCell className="text-right">
-                        <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(student)}>
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDelete(student)}
-                          >
-                            Deletar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
+              </TableHeader>
+              <TableBody>
+                {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">
-                      Nenhum aluno cadastrado.
+                    <TableCell colSpan={8} className="text-center h-24">
+                      Carregando...
                     </TableCell>
                   </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
+                )}
+                {!isLoading && students && students.length > 0 ? (
+                  students.map((student) => (
+                    <TableRow key={student.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
+                            <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <span className="font-medium">{student.name}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatAddress(student)}</TableCell>
+                      <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
+                      <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
+                      <TableCell><Badge variant="outline">{student.shift}</Badge></TableCell>
+                      <TableCell>R$ {student.monthlyFee ? student.monthlyFee.toFixed(2) : 'N/A'}</TableCell>
+                      <TableCell><Badge variant="secondary">{student.status}</Badge></TableCell>
+                      <TableCell className="text-right">
+                          <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(student)}>
+                              Editar
+                            </DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem
+                              className="text-red-600"
+                              onClick={() => handleDelete(student)}
+                            >
+                              Deletar
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center h-24">
+                        Nenhum aluno cadastrado.
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          {/* Mobile View */}
+           <div className="md:hidden">
+            {isLoading && <p className="text-center py-10">Carregando...</p>}
+            {!isLoading && students && students.length > 0 ? (
+              <div className="space-y-4">
+                {students.map((student) => (
+                  <Card key={student.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                       <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
+                            <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <p className="font-medium">{student.name}</p>
+                        </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
+                              <span className="sr-only">Abrir menu</span>
+                              <MoreHorizontal className="h-4 w-4" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                            <DropdownMenuItem onClick={() => handleEdit(student)}>Editar</DropdownMenuItem>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(student)}>Deletar</DropdownMenuItem>
+                          </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                       <div>
+                        <p className="text-muted-foreground text-xs">Escola</p>
+                        <p className="font-medium">{schoolsMap.get(student.schoolId) || 'N/A'}</p>
+                      </div>
+                       <div>
+                        <p className="text-muted-foreground text-xs">Responsável</p>
+                        <p className="font-medium">{parentsMap.get(student.parentId) || 'N/A'}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Turno</p>
+                        <p><Badge variant="outline">{student.shift}</Badge></p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Mensalidade</p>
+                        <p className="font-medium">R$ {student.monthlyFee ? student.monthlyFee.toFixed(2) : 'N/A'}</p>
+                      </div>
+                       <div className="col-span-2">
+                         <p className="text-muted-foreground text-xs">Endereço</p>
+                         <p className="font-medium">{formatAddress(student)}</p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum aluno cadastrado.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
 

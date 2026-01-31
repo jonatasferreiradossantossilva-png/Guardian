@@ -159,79 +159,139 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
           <CardDescription>Aprove, rejeite e defina valores para as solicitações de transporte avulso.</CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Aluno</TableHead>
-                <TableHead>Responsável</TableHead>
-                <TableHead>Escola</TableHead>
-                <TableHead>Data</TableHead>
-                <TableHead>Tipo</TableHead>
-                <TableHead>Valor</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && (
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center">Carregando...</TableCell>
+                  <TableHead>Aluno</TableHead>
+                  <TableHead>Responsável</TableHead>
+                  <TableHead>Escola</TableHead>
+                  <TableHead>Data</TableHead>
+                  <TableHead>Tipo</TableHead>
+                  <TableHead>Valor</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              )}
-              {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
-                sortedRequests.map((request) => {
+              </TableHeader>
+              <TableBody>
+                {isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={8} className="text-center h-24">Carregando...</TableCell>
+                  </TableRow>
+                )}
+                {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
+                  sortedRequests.map((request) => {
+                    const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
+                    const parentInfo = parentDataMap.get(request.parentUserId);
+                    const parentName = parentInfo?.name || 'Responsável não encontrado';
+                    const parentIdForAvatar = parentInfo?.id;
+                    const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
+
+                    return (
+                      <TableRow key={request.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                  <AvatarImage src={`https://picsum.photos/seed/student-${request.studentId}/100/100`} />
+                                  <AvatarFallback>{(studentName || '?')[0]}</AvatarFallback>
+                              </Avatar>
+                              <div className="flex items-center gap-2">
+                                <span>{studentName}</span>
+                                  {request.reason && (
+                                    <TooltipProvider>
+                                      <Tooltip>
+                                          <TooltipTrigger asChild>
+                                              <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                                          </TooltipTrigger>
+                                          <TooltipContent><p>{request.reason}</p></TooltipContent>
+                                      </Tooltip>
+                                    </TooltipProvider>
+                                  )}
+                              </div>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                              <Avatar className="h-8 w-8">
+                                  <AvatarImage src={`https://picsum.photos/seed/parent-${parentIdForAvatar}/100/100`} />
+                                  <AvatarFallback>{(parentName || '?')[0]}</AvatarFallback>
+                              </Avatar>
+                              <span>{parentName}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>{schoolName}</TableCell>
+                        <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
+                        <TableCell>{typeMap[request.type]}</TableCell>
+                        <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
+                        <TableCell><Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge></TableCell>
+                        <TableCell className="text-right">
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0" disabled={request.status === 'aprovada' || request.status === 'rejeitada'}>
+                                    <span className="sr-only">Abrir menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end">
+                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                <DropdownMenuItem onClick={() => handleStatusChange(request.id, 'aprovada')} disabled={request.status !== 'pendente'}>
+                                    <Check className="mr-2" /> Aprovar Direto
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setPriceDialogRequest(request)} disabled={request.status !== 'pendente'}>
+                                    <DollarSign className="mr-2" /> Atribuir Valor
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem className="text-red-600" onClick={() => handleStatusChange(request.id, 'rejeitada')}>
+                                    <X className="mr-2"/> Rejeitar
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    )
+                  })
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="h-24 text-center">Nenhuma solicitação encontrada.</TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
+          </div>
+          {/* Mobile View */}
+          <div className="md:hidden">
+            {isLoading && <p className="text-center py-10">Carregando...</p>}
+            {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
+              <div className="space-y-4">
+                {sortedRequests.map((request) => {
                   const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
                   const parentInfo = parentDataMap.get(request.parentUserId);
                   const parentName = parentInfo?.name || 'Responsável não encontrado';
-                  const parentIdForAvatar = parentInfo?.id;
                   const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
-
-                  return (
-                    <TableRow key={request.id}>
-                      <TableCell>
-                         <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
+                   return (
+                      <Card key={request.id} className="p-4">
+                        <div className="flex items-start justify-between">
+                          <div className="flex items-center gap-3">
+                             <Avatar>
                                 <AvatarImage src={`https://picsum.photos/seed/student-${request.studentId}/100/100`} />
                                 <AvatarFallback>{(studentName || '?')[0]}</AvatarFallback>
                             </Avatar>
-                            <div className="flex items-center gap-2">
-                               <span>{studentName}</span>
-                                {request.reason && (
-                                   <TooltipProvider>
-                                     <Tooltip>
-                                        <TooltipTrigger asChild>
-                                            <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                                        </TooltipTrigger>
-                                        <TooltipContent><p>{request.reason}</p></TooltipContent>
-                                     </Tooltip>
-                                   </TooltipProvider>
-                                )}
+                            <div>
+                              <p className="font-medium">{studentName}</p>
+                              <p className="text-xs text-muted-foreground">{parentName}</p>
                             </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex items-center gap-3">
-                            <Avatar className="h-8 w-8">
-                                <AvatarImage src={`https://picsum.photos/seed/parent-${parentIdForAvatar}/100/100`} />
-                                <AvatarFallback>{(parentName || '?')[0]}</AvatarFallback>
-                            </Avatar>
-                            <span>{parentName}</span>
-                        </div>
-                      </TableCell>
-                      <TableCell>{schoolName}</TableCell>
-                      <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
-                      <TableCell>{typeMap[request.type]}</TableCell>
-                      <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
-                      <TableCell><Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge></TableCell>
-                      <TableCell className="text-right">
-                         <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                             <Button variant="ghost" className="h-8 w-8 p-0" disabled={request.status === 'aprovada' || request.status === 'rejeitada'}>
-                                  <span className="sr-only">Abrir menu</span>
-                                  <MoreHorizontal className="h-4 w-4" />
+                          </div>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2" disabled={request.status === 'aprovada' || request.status === 'rejeitada'}>
+                                <span className="sr-only">Abrir menu</span>
+                                <MoreHorizontal className="h-4 w-4" />
                               </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
+                            </DropdownMenuTrigger>
+                             <DropdownMenuContent align="end">
                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                <DropdownMenuItem onClick={() => handleStatusChange(request.id, 'aprovada')} disabled={request.status !== 'pendente'}>
                                   <Check className="mr-2" /> Aprovar Direto
@@ -244,20 +304,38 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                                   <X className="mr-2"/> Rejeitar
                                </DropdownMenuItem>
                           </DropdownMenuContent>
-                         </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  )
-                })
-              ) : (
-                !isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">Nenhuma solicitação encontrada.</TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
+                          </DropdownMenu>
+                        </div>
+                         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                           <div className="col-span-2">
+                            <p className="text-muted-foreground text-xs">Tipo</p>
+                            <p className="font-medium">{typeMap[request.type]}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground text-xs">Data</p>
+                            <p className="font-medium">{request.date.split('-').reverse().join('/')}</p>
+                          </div>
+                           <div>
+                            <p className="text-muted-foreground text-xs">Status</p>
+                            <Badge variant={statusVariantMap[request.status]} className="capitalize mt-1">{statusTextMap[request.status]}</Badge>
+                          </div>
+                           <div>
+                            <p className="text-muted-foreground text-xs">Escola</p>
+                            <p className="font-medium">{schoolName}</p>
+                          </div>
+                          <div>
+                            <p className="text-muted-foreground text-xs">Valor</p>
+                            <p className="font-medium">{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</p>
+                          </div>
+                        </div>
+                      </Card>
+                   )
+                })}
+              </div>
+            ) : (
+              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma solicitação encontrada.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
       {/* Assign Price Dialog */}

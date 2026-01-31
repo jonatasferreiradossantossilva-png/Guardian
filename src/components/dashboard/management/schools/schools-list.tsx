@@ -120,30 +120,32 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
           <CardTitle>Lista de Escolas</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Endereço</TableHead>
-                <TableHead>CNPJ</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && (
+          {/* Desktop View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={4} className="text-center">
-                    Carregando...
-                  </TableCell>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>Endereço</TableHead>
+                  <TableHead>CNPJ</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              )}
-              {!isLoading && schools && schools.length > 0 ? (
-                schools.map((school) => (
-                  <TableRow key={school.id}>
-                    <TableCell>{school.name}</TableCell>
-                    <TableCell>{formatAddress(school)}</TableCell>
-                    <TableCell>{school.cnpj || 'N/A'}</TableCell>
-                    <TableCell className="text-right">
+              </TableHeader>
+              <TableBody>
+                {isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={4} className="text-center h-24">
+                      Carregando...
+                    </TableCell>
+                  </TableRow>
+                )}
+                {!isLoading && schools && schools.length > 0 ? (
+                  schools.map((school) => (
+                    <TableRow key={school.id}>
+                      <TableCell className="font-medium">{school.name}</TableCell>
+                      <TableCell>{formatAddress(school)}</TableCell>
+                      <TableCell>{school.cnpj || 'N/A'}</TableCell>
+                      <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -171,7 +173,7 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center">
+                    <TableCell colSpan={4} className="text-center h-24">
                       Nenhuma escola cadastrada.
                     </TableCell>
                   </TableRow>
@@ -179,6 +181,45 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
               )}
             </TableBody>
           </Table>
+          </div>
+           {/* Mobile View */}
+          <div className="md:hidden">
+            {isLoading && <p className="text-center py-10">Carregando...</p>}
+            {!isLoading && schools && schools.length > 0 ? (
+              <div className="space-y-4">
+                {schools.map((school) => (
+                  <Card key={school.id} className="p-4">
+                    <div className="flex items-start justify-between">
+                      <div>
+                        <p className="font-medium">{school.name}</p>
+                        <p className="text-xs text-muted-foreground">CNPJ: {school.cnpj || 'N/A'}</p>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0 -mt-1 -mr-2">
+                            <span className="sr-only">Abrir menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEdit(school)}>Editar</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(school)}>Deletar</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="mt-4 text-sm">
+                      <p className="text-muted-foreground text-xs">Endereço</p>
+                      <p className="font-medium">{formatAddress(school)}</p>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma escola cadastrada.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

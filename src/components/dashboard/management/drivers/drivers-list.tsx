@@ -153,51 +153,53 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
           <CardTitle>Lista de Motoristas</CardTitle>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>CPF</TableHead>
-                <TableHead>CNH</TableHead>
-                <TableHead>Endereço</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead>Veículo</TableHead>
-                <TableHead className="text-right">Ações</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {isLoading && (
+          {/* Desktop Table View */}
+          <div className="hidden md:block">
+            <Table>
+              <TableHeader>
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">
-                    Carregando...
-                  </TableCell>
+                  <TableHead>Nome</TableHead>
+                  <TableHead>CPF</TableHead>
+                  <TableHead>CNH</TableHead>
+                  <TableHead>Endereço</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Veículo</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
-              )}
-              {!isLoading && drivers && drivers.length > 0 ? (
-                drivers.map((driver) => (
-                  <TableRow key={driver.id}>
-                    <TableCell>
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
-                          <AvatarFallback>{driver.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{driver.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono">{driver.userId}</p>
+              </TableHeader>
+              <TableBody>
+                {isLoading && (
+                  <TableRow>
+                    <TableCell colSpan={7} className="text-center h-24">
+                      Carregando...
+                    </TableCell>
+                  </TableRow>
+                )}
+                {!isLoading && drivers && drivers.length > 0 ? (
+                  drivers.map((driver) => (
+                    <TableRow key={driver.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <Avatar>
+                            <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
+                            <AvatarFallback>{driver.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <p className="font-medium">{driver.name}</p>
+                            <p className="text-xs text-muted-foreground font-mono">{driver.userId}</p>
+                          </div>
                         </div>
-                      </div>
-                    </TableCell>
-                    <TableCell>{driver.cpf || 'N/A'}</TableCell>
-                    <TableCell>{driver.cnh || 'N/A'}</TableCell>
-                    <TableCell>{formatAddress(driver)}</TableCell>
-                    <TableCell>
-                      <Badge variant={statusVariantMap[driver.status]}>
+                      </TableCell>
+                      <TableCell>{driver.cpf || 'N/A'}</TableCell>
+                      <TableCell>{driver.cnh || 'N/A'}</TableCell>
+                      <TableCell>{formatAddress(driver)}</TableCell>
+                      <TableCell>
+                        <Badge variant={statusVariantMap[driver.status]}>
                          {statusLabelMap[driver.status]}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</TableCell>
-                    <TableCell className="text-right">
+                        </Badge>
+                      </TableCell>
+                      <TableCell>{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</TableCell>
+                      <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button variant="ghost" className="h-8 w-8 p-0">
@@ -225,7 +227,7 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
+                    <TableCell colSpan={7} className="text-center h-24">
                       Nenhum motorista cadastrado.
                     </TableCell>
                   </TableRow>
@@ -233,6 +235,69 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
               )}
             </TableBody>
           </Table>
+          </div>
+          {/* Mobile Card View */}
+          <div className="md:hidden">
+            {isLoading && <p className="text-center py-10">Carregando...</p>}
+            {!isLoading && drivers && drivers.length > 0 ? (
+              <div className="space-y-4">
+                {drivers.map((driver) => (
+                  <Card key={driver.id} className="p-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
+                          <AvatarFallback>{driver.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{driver.name}</p>
+                          <p className="text-xs text-muted-foreground font-mono">{driver.userId}</p>
+                        </div>
+                      </div>
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button variant="ghost" className="h-8 w-8 p-0">
+                            <span className="sr-only">Abrir menu</span>
+                            <MoreHorizontal className="h-4 w-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                          <DropdownMenuItem onClick={() => handleEdit(driver)}>Editar</DropdownMenuItem>
+                          <DropdownMenuSeparator />
+                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(driver)}>Deletar</DropdownMenuItem>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </div>
+                    <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                       <div>
+                        <p className="text-muted-foreground text-xs">Status</p>
+                        <Badge variant={statusVariantMap[driver.status]} className="mt-1">{statusLabelMap[driver.status]}</Badge>
+                      </div>
+                       <div>
+                        <p className="text-muted-foreground text-xs">Veículo</p>
+                        <p className="font-medium">{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</p>
+                      </div>
+                       <div>
+                        <p className="text-muted-foreground text-xs">CPF</p>
+                        <p className="font-medium">{driver.cpf || 'N/A'}</p>
+                      </div>
+                       <div>
+                        <p className="text-muted-foreground text-xs">CNH</p>
+                        <p className="font-medium">{driver.cnh || 'N/A'}</p>
+                      </div>
+                      <div className="col-span-2">
+                         <p className="text-muted-foreground text-xs">Endereço</p>
+                         <p className="font-medium">{formatAddress(driver)}</p>
+                      </div>
+                    </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum motorista cadastrado.</p>
+            )}
+          </div>
         </CardContent>
       </Card>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
