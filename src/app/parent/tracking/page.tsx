@@ -222,32 +222,37 @@ export default function ParentTrackingPage() {
   // Simulation Logic Effect
   useEffect(() => {
     const startSimulation = () => {
-        if (!route || !allStudentsMap.size || !school || !student) return;
+        if (!student?.latitude || !student?.longitude) return;
 
-        let lastKnownPosition = realLocation ? { lat: realLocation.latitude, lng: realLocation.longitude } : null;
+        // The destination is always the current student's home.
+        const endPoint = { lat: student.latitude, lng: student.longitude };
 
-        // Find next stop
-        const currentStopIndex = route.studentIds.findIndex(id => id === student.id);
-        const nextStopId = route.studentIds[currentStopIndex + 1] || school.id;
-        const nextStop = nextStopId === school.id ? school : allStudentsMap.get(nextStopId);
-        
-        if (!nextStop) return;
+        // For simulation, create a starting point ~2-3km away.
+        // 1 degree of latitude is ~111km. 0.02 is ~2.2km.
+        const startPoint = { 
+            lat: student.latitude + 0.02, 
+            lng: student.longitude - 0.015 
+        };
 
-        const endPoint = { lat: nextStop.latitude, lng: nextStop.longitude };
-        
-        // If there's no driver location, start simulation from student's home
-        if(!lastKnownPosition) {
-            lastKnownPosition = { lat: student.latitude, lng: student.longitude };
-        }
-        
-        const startPoint = lastKnownPosition;
+        // Set the initial simulated location right away
+        setSimulatedLocation({ latitude: startPoint.lat, longitude: startPoint.lng });
+
         let step = 0;
-        const totalSteps = 20; // 5s * 20 = 100s to reach next stop
+        const totalSteps = 40; // 5s * 40 = 200s (3.3 mins) to travel ~2-3km
 
         simulationTimer.current = setInterval(() => {
+            // If a real location suddenly appears, stop the simulation
+            if (realLocation) {
+                clearInterval(simulationTimer.current);
+                setSimulatedLocation(null); // Let the real location take over
+                return;
+            }
+            
             step++;
             if (step > totalSteps) {
                 clearInterval(simulationTimer.current);
+                // Snap to final position to ensure it reaches the destination
+                setSimulatedLocation({ latitude: endPoint.lat, longitude: endPoint.lng });
                 return;
             }
             const factor = step / totalSteps;
@@ -258,8 +263,8 @@ export default function ParentTrackingPage() {
     };
 
     const fallbackTimeout = setTimeout(() => {
-        // If after 3 seconds we have no real location, but we have a route, start simulation
-        if (!realLocation && route) {
+        // If after 3 seconds we have no real location, start simulation
+        if (!realLocation) {
             startSimulation();
         }
     }, 3000);
@@ -278,7 +283,7 @@ export default function ParentTrackingPage() {
         }
     };
 
-  }, [realLocation, route, allStudentsMap, school, student]);
+  }, [realLocation, student]);
 
   const displayLocation = realLocation || simulatedLocation;
 
