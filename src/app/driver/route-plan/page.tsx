@@ -271,7 +271,7 @@ export default function DriverRoutePlanPage() {
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || 'user-motorista-2'); // Default to a known driver for direct page access
+    setMockUserId(storedUserId || 'user-admin-1'); // Default to a known driver for direct page access
   }, []);
 
   // Fetch driver profile
