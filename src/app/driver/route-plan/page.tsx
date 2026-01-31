@@ -462,7 +462,7 @@ export default function DriverRoutePlanPage() {
                 Mensagens
               </Link>
             </Button>
-            <Link href="/login" passHref>
+            <Link href="/" passHref>
               <Button variant="outline">Voltar ao Login</Button>
             </Link>
           </div>
