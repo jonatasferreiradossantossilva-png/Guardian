@@ -40,6 +40,7 @@ import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useState } from "react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import { DriverRouteInfoCard } from "./driver-route-info-card";
 
 // NEW: Links for the "Operational" section
 const operationalLinks = [
@@ -213,8 +214,9 @@ export function MainSidebar() {
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>
-
         </SidebarMenu>
+
+        <DriverRouteInfoCard />
 
         {/* Other Profile Links - Unchanged */}
         <SidebarMenu className="mt-4">

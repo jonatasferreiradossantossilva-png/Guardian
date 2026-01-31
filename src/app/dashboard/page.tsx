@@ -7,7 +7,6 @@ import { IncidentMap } from "@/components/dashboard/incident-map";
 import { DriverStatusList } from "@/components/dashboard/driver-status-list";
 import { Button } from "@/components/ui/button";
 import { PlusCircle } from "lucide-react";
-import { DriverRouteInfoCard } from "@/components/dashboard/driver-route-info-card";
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { ReportIncidentForm } from '@/components/dashboard/report-incident-form';
 
@@ -33,8 +32,6 @@ export default function DashboardPage() {
           <ReportIncidentForm onFormSubmit={() => setIsReportFormOpen(false)} />
         </Dialog>
       </div>
-
-      <DriverRouteInfoCard />
 
       <OverviewCards />
 

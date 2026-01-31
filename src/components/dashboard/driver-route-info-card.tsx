@@ -2,7 +2,6 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection } from '@/hooks/use-mock-data';
@@ -53,22 +52,10 @@ export function DriverRouteInfoCard() {
 
   const isLoading = areDriversLoading || areRoutesLoading || areStudentsLoading || areUsersLoading;
 
-  if (!isClient || isLoading) {
-    return (
-        <Card className="bg-primary/5 border-primary/20">
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2 text-primary">
-                    <Car />
-                    Visão do Motorista
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex items-center justify-center p-6">
-                 <Loader2 className="h-6 w-6 animate-spin" />
-            </CardContent>
-        </Card>
-    );
+  if (!isClient) {
+    return null;
   }
-
+  
   // If the admin is not a driver or has no active route, render nothing.
   if (!driverProfile || !activeRoute || !students) {
     return null;
@@ -82,59 +69,38 @@ export function DriverRouteInfoCard() {
   }
 
   return (
-    <Card className="bg-primary/5 border-primary/20">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-3">
-          <Car className="text-primary"/>
-          <div>
-            Minha Rota como Motorista
-            <p className="text-sm font-normal text-muted-foreground mt-1">Você também tem uma rota ativa atribuída.</p>
-          </div>
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="flex justify-between items-center p-4 rounded-lg bg-background border">
-            <div>
-                <p className="text-sm text-muted-foreground">Rota Ativa</p>
-                <p className="font-semibold text-lg">{activeRoute.name}</p>
-            </div>
-            <Badge variant="outline">{activeRoute.shift === 'manha' ? 'Manhã' : 'Tarde'}</Badge>
+    <div className="group-data-[collapsible=icon]:hidden px-2 mt-4">
+      {isLoading ? (
+        <div className="flex items-center justify-center p-6">
+          <Loader2 className="h-6 w-6 animate-spin" />
         </div>
-         <div className="flex justify-between items-center p-4 rounded-lg bg-background border">
-            <div>
-                <p className="text-sm text-muted-foreground">Progresso</p>
-                <p className="font-semibold text-lg">{studentsOnBoard} / {totalStudents} alunos a bordo</p>
+      ) : (
+        <div className="p-3 rounded-lg bg-sidebar-accent border border-sidebar-border/50 text-sidebar-foreground">
+            <div className="flex items-center gap-3">
+              <Car className="text-sidebar-accent-foreground/80 h-5 w-5"/>
+              <div>
+                <p className="text-xs text-sidebar-accent-foreground/80">Minha Rota (Motorista)</p>
+                <p className="text-sm font-semibold">{activeRoute.name}</p>
+              </div>
             </div>
-            <Users className="text-muted-foreground" />
-        </div>
-        <div className="flex justify-between items-center p-4 rounded-lg bg-background border">
-            <div>
-                <p className="text-sm text-muted-foreground">Auxiliar da Rota</p>
-                <p className="font-semibold text-lg">{currentAssistantName}</p>
+            <div className="text-xs space-y-2 mt-3">
+              <div className="flex justify-between">
+                <span>Progresso:</span>
+                <span className="font-medium">{studentsOnBoard} / {totalStudents} a bordo</span>
+              </div>
+               <div className="flex justify-between">
+                <span>Turno:</span>
+                <span className="font-medium">{activeRoute.shift === 'manha' ? 'Manhã' : 'Tarde'}</span>
+              </div>
             </div>
-             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-                <DialogTrigger asChild>
-                    <Button variant="outline" size="sm">
-                        <Edit className="mr-2 h-3 w-3"/>
-                        Trocar
-                    </Button>
-                </DialogTrigger>
-                <AssistantQuickEditForm 
-                    route={activeRoute}
-                    assistants={assistants}
-                    onFormSubmit={handleFormSubmit}
-                />
-            </Dialog>
+            <Button asChild size="sm" className="w-full mt-3">
+                <Link href="/driver/route-plan">
+                    Ver Plano de Rota
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                </Link>
+            </Button>
         </div>
-      </CardContent>
-      <CardFooter>
-        <Button asChild className="w-full">
-            <Link href="/driver/route-plan">
-                Ir para o Plano de Rota
-                <ArrowRight className="ml-2"/>
-            </Link>
-        </Button>
-      </CardFooter>
-    </Card>
+      )}
+    </div>
   );
 }
