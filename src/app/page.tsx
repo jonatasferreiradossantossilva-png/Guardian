@@ -16,10 +16,15 @@ export default function Page() {
         </p>
       </div>
       <LoginForm />
-      <div className="mt-6">
+      <div className="mt-6 flex flex-col sm:flex-row gap-4">
         <Button asChild variant="link" className="text-muted-foreground">
             <Link href="/login">
                 Conheça a plataforma &rarr;
+            </Link>
+        </Button>
+        <Button asChild variant="link" className="text-muted-foreground">
+            <Link href="/presentation">
+                Ver Apresentação (Pitch Deck) &rarr;
             </Link>
         </Button>
       </div>
