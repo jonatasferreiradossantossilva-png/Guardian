@@ -349,11 +349,34 @@ export default function ParentTrackingPage() {
                         </div>
                     </CardContent>
                   </div>
+                   <CardFooter className="flex flex-col gap-2 pt-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
+                            <Button asChild variant="outline" className="w-full">
+                                <Link href="/parent/authorized">
+                                    <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" className="w-full">
+                                <Link href="/parent/financial">
+                                    <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
+                                </Link>
+                            </Button>
+                        </div>
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/parent/requests">
+                                <Route className="mr-2 h-4 w-4" /> Solicitar Viagem Avulsa
+                            </Link>
+                        </Button>
+                        <Button variant="ghost" className="w-full border-dashed border" onClick={() => setIsNearby(v => !v)}>
+                            <Bell className="mr-2 h-4 w-4" />
+                            Testar Notificação de Proximidade
+                        </Button>
+                    </CardFooter>
               </TabsContent>
 
               <TabsContent value="map" className="m-0">
                 <CardContent className="p-0">
-                    <div className="h-[50vh] md:h-[60vh] bg-secondary flex items-center justify-center overflow-hidden">
+                    <div className="h-[70vh] bg-secondary flex items-center justify-center overflow-hidden">
                     {!API_KEY ? (
                         <div className="text-center p-4">
                             <p className="font-semibold text-lg">Mapa Indisponível</p>
@@ -402,27 +425,6 @@ export default function ParentTrackingPage() {
                 </CardContent>
               </TabsContent>
             </Tabs>
-            <CardFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-6">
-                <Button asChild variant="outline" className="w-full">
-                    <Link href="/parent/authorized">
-                        <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
-                    </Link>
-                </Button>
-                <Button asChild variant="outline" className="w-full">
-                    <Link href="/parent/financial">
-                        <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
-                    </Link>
-                </Button>
-                <Button asChild variant="outline" className="w-full col-span-1 sm:col-span-2">
-                    <Link href="/parent/requests">
-                        <Route className="mr-2 h-4 w-4" /> Solicitar Viagem Avulsa
-                    </Link>
-                </Button>
-                <Button variant="ghost" className="w-full col-span-1 sm:col-span-2 border-dashed border" onClick={() => setIsNearby(v => !v)}>
-                    <Bell className="mr-2 h-4 w-4" />
-                    Testar Notificação de Proximidade
-                </Button>
-            </CardFooter>
           </Card>
         )}
       </div>
