@@ -36,7 +36,7 @@ export default function PresentationPage() {
         <main className="bg-background text-foreground antialiased selection:bg-primary/20">
             <div className="fixed top-4 right-4 z-50">
                 <Button asChild variant="outline">
-                    <Link href="/">Voltar ao Login</Link>
+                    <Link href="/login">Voltar ao Login</Link>
                 </Button>
             </div>
             

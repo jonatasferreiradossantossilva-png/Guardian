@@ -206,7 +206,7 @@ export default function AssistantRoutePlanPage() {
                 Mensagens
               </Link>
             </Button>
-            <Link href="/" passHref>
+            <Link href="/login" passHref>
               <Button variant="outline">Voltar ao Login</Button>
             </Link>
           </div>
