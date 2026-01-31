@@ -1,1 +1,1 @@
-export * from './students-by-school-chart';
+export * from './monthly-revenue-chart';
