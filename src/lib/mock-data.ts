@@ -284,10 +284,10 @@ export const initialMockData = {
     routes: [
         { 
             id: "route-1", 
-            name: "Rota de Simulação (16 Alunos)", 
+            name: "Rota de Simulação (15 Alunos)", 
             driverId: "driver-1", 
             assistantId: "user-aux-1", 
-            studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12", "student-13", "student-14", "student-15", "student-16"], 
+            studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12", "student-13", "student-14", "student-15"], 
             shift: "manha",
             turnByTurnDirections: [
               "Siga para o sudeste na Rua A em direção à Rua B",
@@ -309,8 +309,7 @@ export const initialMockData = {
               "Continue para a Rua M",
               "Vire à direita na Rua N",
               "Vire à esquerda na Rua O",
-              "Continue em frente para a Rua P",
-              "Vire à direita na Rua do Conhecimento",
+              "Continue para a Rua do Conhecimento",
               "Seu destino, Escola Primária do Saber, estará à esquerda"
             ]
         },
