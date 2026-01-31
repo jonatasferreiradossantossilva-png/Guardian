@@ -133,7 +133,7 @@ export function ExpenseForm({ expense, onFormSubmit }: ExpenseFormProps) {
                 <FormItem>
                     <FormLabel>Valor (R$)</FormLabel>
                     <FormControl>
-                        <Input type="number" step="0.01" placeholder="Ex: 350.50" {...field} />
+                        <Input type="number" step="0.01" placeholder="Ex: 350.50" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                 </FormItem>
