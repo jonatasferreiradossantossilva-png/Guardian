@@ -138,7 +138,7 @@ export function InvoicesStatusChart({ filters }: InvoicesStatusChartProps) {
                 </Pie>
                 <ChartLegend
                     content={<ChartLegendContent nameKey="status" />}
-                    className="-translate-y-4"
+                    className="-translate-y-4 flex-wrap"
                     />
                 </PieChart>
             </ResponsiveContainer>
