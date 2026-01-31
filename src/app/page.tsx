@@ -1,5 +1,7 @@
 import { LoginForm } from "@/components/auth/login-form";
+import { Button } from "@/components/ui/button";
 import { Rocket } from "lucide-react";
+import Link from "next/link";
 
 export default function Page() {
   return (
@@ -14,6 +16,13 @@ export default function Page() {
         </p>
       </div>
       <LoginForm />
+      <div className="mt-6">
+        <Button asChild variant="link" className="text-muted-foreground">
+            <Link href="/login">
+                Conheça a plataforma &rarr;
+            </Link>
+        </Button>
+      </div>
     </main>
   );
 }
