@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { TrendingUp, TrendingDown } from 'lucide-react';
@@ -9,9 +9,17 @@ import { cn } from '@/lib/utils';
 export function FinancialTrendCards() {
     const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection('invoices');
     const { data: expenses, isLoading: areExpensesLoading } = useMockCollection('expenses');
+    const [trends, setTrends] = useState<{
+        revenue: { value: string; change: string; changeType: 'increase' | 'decrease' };
+        expenses: { value: string; change: string; changeType: 'increase' | 'decrease' };
+        lastMonthName: string;
+    } | null>(null);
 
-    const trends = useMemo(() => {
-        if (!invoices || !expenses) return null;
+    useEffect(() => {
+        if (!invoices || !expenses) {
+            setTrends(null);
+            return;
+        }
 
         const now = new Date();
         const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
@@ -46,7 +54,7 @@ export function FinancialTrendCards() {
         const expensesDiff = currentMonthExpenses - lastMonthExpenses;
         const expenseChange = lastMonthExpenses > 0 ? (expensesDiff / lastMonthExpenses) * 100 : (currentMonthExpenses > 0 ? 100 : 0);
 
-        return {
+        setTrends({
             revenue: {
                 value: `R$ ${currentMonthRevenue.toFixed(2)}`,
                 change: `${revenueChange >= 0 ? '+' : ''}${revenueChange.toFixed(1)}%`,
@@ -59,8 +67,9 @@ export function FinancialTrendCards() {
                 changeType: expensesDiff >= 0 ? 'decrease' : 'increase'
             },
             lastMonthName
-        };
+        });
     }, [invoices, expenses]);
+
 
     if (areInvoicesLoading || areExpensesLoading || !trends) {
         return (

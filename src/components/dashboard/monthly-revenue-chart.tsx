@@ -1,6 +1,6 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
@@ -18,9 +18,13 @@ const chartConfig = {
 
 export function MonthlyRevenueChart() {
   const { data: invoices, isLoading } = useMockCollection('invoices');
+  const [chartData, setChartData] = useState<{ month: string; receita: number }[]>([]);
 
-  const chartData = useMemo(() => {
-    if (!invoices) return [];
+  useEffect(() => {
+    if (!invoices) {
+      setChartData([]);
+      return;
+    }
 
     const monthlyRevenue = new Map<string, number>();
     const now = new Date();
@@ -41,10 +45,11 @@ export function MonthlyRevenueChart() {
       }
     });
 
-    return Array.from(monthlyRevenue.entries()).map(([month, receita]) => ({
+    const data = Array.from(monthlyRevenue.entries()).map(([month, receita]) => ({
       month: format(new Date(`${month}-02`), "MMM", { locale: ptBR }), // Using day 02 to avoid timezone issues
       receita,
     }));
+    setChartData(data);
   }, [invoices]);
 
   if (isLoading) {
