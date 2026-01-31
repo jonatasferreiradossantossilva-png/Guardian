@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FilePlus, Loader2, MoreHorizontal, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet } from 'lucide-react';
@@ -98,6 +98,8 @@ export default function FinancialPage() {
   const [selectedStudentId, setSelectedStudentId] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<Invoice['status'] | 'all'>('all');
+  const listRef = useRef<HTMLDivElement>(null);
+  const isInitialMount = useRef(true);
 
 
   const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection('invoices');
@@ -106,6 +108,14 @@ export default function FinancialPage() {
 
   const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
   const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
+
+  useEffect(() => {
+    if (isInitialMount.current) {
+        isInitialMount.current = false;
+    } else {
+        listRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+  }, [selectedStatus]);
 
   const availableMonths = useMemo(() => {
     if (!invoices) return [];
@@ -342,7 +352,7 @@ export default function FinancialPage() {
                 </CardContent>
             </Card>
 
-            <Card>
+            <Card ref={listRef}>
                 <CardHeader>
                 <CardTitle>Histórico de Faturas</CardTitle>
                 <CardDescription>Visualize, filtre e gerencie todas as faturas geradas para os alunos.</CardDescription>
