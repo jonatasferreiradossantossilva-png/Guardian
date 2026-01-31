@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { CheckCircle, Users, Car, Bot, Shield, DollarSign, BarChart, Rocket } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export default function LandingPage() {
   return (
@@ -59,41 +60,56 @@ export default function LandingPage() {
             </p>
             <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {/* Feature Card: Gestor */}
-              <Card>
+              <Card className="flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3"><BarChart className="text-primary"/> Para o Gestor</CardTitle>
                   <CardDescription>Visão 360° e eficiência máxima.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <FeatureItem icon={Bot} text="Otimizador de Rotas com IA" />
-                  <FeatureItem icon={DollarSign} text="Gestão Financeira Simplificada" />
-                  <FeatureItem icon={Users} text="Cadastro Centralizado" />
+                <CardContent className="flex flex-col flex-1 justify-between space-y-4">
+                  <div className="relative aspect-video rounded-md overflow-hidden">
+                     <Image src="https://picsum.photos/seed/gestor-dashboard/600/400" alt="Painel do Gestor" layout="fill" objectFit="cover" data-ai-hint="dashboard analytics" />
+                  </div>
+                  <div className="space-y-4 pt-4">
+                    <FeatureItem icon={Bot} text="Otimizador de Rotas com IA" />
+                    <FeatureItem icon={DollarSign} text="Gestão Financeira Simplificada" />
+                    <FeatureItem icon={Users} text="Cadastro Centralizado" />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Feature Card: Motorista & Auxiliar */}
-              <Card>
+              <Card className="flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3"><Car className="text-primary"/> Para Motorista e Auxiliar</CardTitle>
                   <CardDescription>Rotas claras e comunicação direta.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <FeatureItem icon={CheckCircle} text="Plano de Rota Interativo" />
-                  <FeatureItem icon={Users} text="Controle de Embarque e Desembarque" />
-                  <FeatureItem icon={Shield} text="Comunicação Direta com Pais e Gestão" />
+                <CardContent className="flex flex-col flex-1 justify-between space-y-4">
+                  <div className="relative aspect-video rounded-md overflow-hidden">
+                     <Image src="https://picsum.photos/seed/driver-app/600/400" alt="Painel do Motorista" layout="fill" objectFit="cover" data-ai-hint="mobile app" />
+                  </div>
+                  <div className="space-y-4 pt-4">
+                    <FeatureItem icon={CheckCircle} text="Plano de Rota Interativo" />
+                    <FeatureItem icon={Users} text="Controle de Embarque e Desembarque" />
+                    <FeatureItem icon={Shield} text="Comunicação Direta com Pais e Gestão" />
+                  </div>
                 </CardContent>
               </Card>
 
               {/* Feature Card: Pais */}
-              <Card>
+              <Card className="flex flex-col">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-3"><Users className="text-primary"/> Para os Pais</CardTitle>
                   <CardDescription>Tranquilidade e controle na palma da mão.</CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <FeatureItem icon={Shield} text="Acompanhamento em Tempo Real" />
-                  <FeatureItem icon={CheckCircle} text="Status do Aluno (Embarque/Desembarque)" />
-                  <FeatureItem icon={DollarSign} text="Gestão de Pagamentos e Viagens Avulsas" />
+                <CardContent className="flex flex-col flex-1 justify-between space-y-4">
+                   <div className="relative aspect-video rounded-md overflow-hidden">
+                     <Image src="https://picsum.photos/seed/parent-app/600/400" alt="Painel dos Pais" layout="fill" objectFit="cover" data-ai-hint="map tracking" />
+                  </div>
+                  <div className="space-y-4 pt-4">
+                    <FeatureItem icon={Shield} text="Acompanhamento em Tempo Real" />
+                    <FeatureItem icon={CheckCircle} text="Status do Aluno (Embarque/Desembarque)" />
+                    <FeatureItem icon={DollarSign} text="Gestão de Pagamentos e Viagens Avulsas" />
+                  </div>
                 </CardContent>
               </Card>
             </div>
