@@ -257,9 +257,10 @@ StudentListItem.displayName = 'StudentListItem';
 
 
 export default function DriverRoutePlanPage() {
-  const { updateDoc } = useMockData();
+  const { updateDoc, setDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const { toast } = useToast();
+  const simulationIntervalRef = useRef(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] =
@@ -331,6 +332,65 @@ export default function DriverRoutePlanPage() {
   }, [orderedStudents, schools]);
   
   const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
+
+  // Location simulation effect
+  useEffect(() => {
+    // Always clear previous interval
+    if (simulationIntervalRef.current) {
+      clearInterval(simulationIntervalRef.current);
+    }
+    
+    // Conditions to start a new simulation
+    if (!driverId || !nextStop || !driverLocation) {
+      return;
+    }
+
+    const startPoint = { lat: driverLocation.latitude, lng: driverLocation.longitude };
+    const endPoint = { lat: nextStop.latitude, lng: nextStop.longitude };
+
+    // Don't simulate if already at the destination
+    const distance = Math.sqrt(Math.pow(endPoint.lat - startPoint.lat, 2) + Math.pow(endPoint.lng - startPoint.lng, 2));
+    if (distance < 0.0001) { // small threshold
+        return;
+    }
+
+    let step = 0;
+    const totalSteps = 20; // 5s * 20 = 100s to simulate arrival
+
+    simulationIntervalRef.current = setInterval(() => {
+      step++;
+
+      if (step > totalSteps) {
+        clearInterval(simulationIntervalRef.current);
+        // Snap to destination and stop
+        setDoc(`locations/${driverId}`, { 
+          latitude: endPoint.lat, 
+          longitude: endPoint.lng,
+          timestamp: new Date().toISOString()
+        });
+        return;
+      }
+
+      const factor = step / totalSteps;
+      // Linear interpolation
+      const newLat = startPoint.lat + (endPoint.lat - startPoint.lat) * factor;
+      const newLng = startPoint.lng + (endPoint.lng - startPoint.lng) * factor;
+
+      setDoc(`locations/${driverId}`, { 
+        latitude: newLat, 
+        longitude: newLng,
+        timestamp: new Date().toISOString()
+      });
+
+    }, 5000); // Update every 5 seconds
+
+    // Cleanup on unmount or when deps change
+    return () => {
+      if (simulationIntervalRef.current) {
+        clearInterval(simulationIntervalRef.current);
+      }
+    };
+  }, [driverId, nextStop, setDoc]); // driverLocation is intentionally omitted to avoid loops
 
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
@@ -712,4 +772,5 @@ RouteMap.displayName = 'RouteMap';
     
 
     
+
 
