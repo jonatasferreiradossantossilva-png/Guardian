@@ -118,7 +118,7 @@ export function MainSidebar() {
                 tooltip="Dashboard"
               >
                 <Home />
-                <span>Dashboard</span>
+                <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
@@ -133,8 +133,8 @@ export function MainSidebar() {
                     isActive={isOperationalActive}
                   >
                     <Briefcase />
-                    <span>Operacional</span>
-                    <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                    <span className="group-data-[collapsible=icon]:hidden">Operacional</span>
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180 group-data-[collapsible=icon]:hidden" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -148,7 +148,7 @@ export function MainSidebar() {
                             isActive={isActive(link.href)}
                           >
                             <link.icon />
-                            <span>{link.label}</span>
+                            <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
                           </SidebarMenuButton>
                         </Link>
                       </SidebarMenuItem>
@@ -162,8 +162,8 @@ export function MainSidebar() {
                 isActive={isOperationalActive}
               >
                 <Briefcase />
-                <span>Operacional</span>
-                <ChevronDown className="ml-auto h-4 w-4" />
+                <span className="group-data-[collapsible=icon]:hidden">Operacional</span>
+                <ChevronDown className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>
@@ -178,8 +178,8 @@ export function MainSidebar() {
                     isActive={isRegistrationActive}
                   >
                     <FolderKanban />
-                    <span>Cadastros</span>
-                    <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                    <span className="group-data-[collapsible=icon]:hidden">Cadastros</span>
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180 group-data-[collapsible=icon]:hidden" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
@@ -193,7 +193,7 @@ export function MainSidebar() {
                             isActive={isActive(link.href)}
                           >
                             <link.icon />
-                            <span>{link.label}</span>
+                            <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
                           </SidebarMenuButton>
                         </Link>
                       </SidebarMenuItem>
@@ -207,8 +207,8 @@ export function MainSidebar() {
                 isActive={isRegistrationActive}
               >
                 <FolderKanban />
-                <span>Cadastros</span>
-                <ChevronDown className="ml-auto h-4 w-4" />
+                <span className="group-data-[collapsible=icon]:hidden">Cadastros</span>
+                <ChevronDown className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden" />
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>
@@ -229,7 +229,7 @@ export function MainSidebar() {
                   variant="ghost"
                 >
                   <link.icon />
-                  <span>{link.label}</span>
+                  <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>
