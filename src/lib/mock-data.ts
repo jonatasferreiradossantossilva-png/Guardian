@@ -391,7 +391,7 @@ export const initialMockData = {
         {id: "inv-aug-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "paid" },
         {id: "inv-aug-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 480.50, dueDate: "2024-08-10", status: "paid" },
         {id: "inv-aug-3", studentId: "student-3", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 420.00, dueDate: "2024-08-10", status: "pagamento_em_analise" },
-        {id: "inv-aug-4", studentId: "student-4", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 500.00, dueDate: "2024-08-10", status: "paid" },
+        {id: "inv-aug-4", studentId: "student-4", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 500.00, dueDate: "2024-08-10", status: "pending" },
         {id: "inv-aug-5", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "overdue" },
         {id: "inv-aug-6", studentId: "student-6", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "paid" },
         {id: "inv-aug-7", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-08-10", status: "paid" },
@@ -423,40 +423,50 @@ export const initialMockData = {
         {id: "inv-jun-4", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-06-10", status: "paid" },
         {id: "inv-jun-5", studentId: "student-8", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-06-10", status: "paid" },
         {id: "inv-jun-6", studentId: "student-11", parentUserId: "user-pai-7", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-06-10", status: "paid" },
+        {id: "inv-jun-12", studentId: "student-12", parentUserId: "user-pai-8", description: "Mensalidade Transporte", amount: 490.00, dueDate: "2024-06-10", status: "paid" },
+        {id: "inv-jun-13", studentId: "student-13", parentUserId: "user-pai-9", description: "Mensalidade Transporte", amount: 465.00, dueDate: "2024-06-10", status: "paid" },
   
         {id: "inv-mai-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-05-10", status: "paid" },
         {id: "inv-mai-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 480.50, dueDate: "2024-05-10", status: "paid" },
         {id: "inv-mai-3", studentId: "student-3", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 400.00, dueDate: "2024-05-10", status: "paid" },
         {id: "inv-mai-4", studentId: "student-4", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 500.00, dueDate: "2024-05-10", status: "paid" },
+        {id: "inv-mai-9", studentId: "student-9", parentUserId: "user-pai-5", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-05-10", status: "paid" },
+        {id: "inv-mai-10", studentId: "student-10", parentUserId: "user-pai-6", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-05-10", status: "paid" },
   
         {id: "inv-apr-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-04-10", status: "paid" },
         {id: "inv-apr-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 460.50, dueDate: "2024-04-10", status: "paid" },
+        {id: "inv-apr-5", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-04-10", status: "paid" },
+        {id: "inv-apr-6", studentId: "student-6", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-04-10", status: "paid" },
   
         {id: "inv-mar-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-03-10", status: "paid" },
         {id: "inv-mar-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 460.50, dueDate: "2024-03-10", status: "paid" },
+        {id: "inv-mar-7", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-03-10", status: "paid" },
+        {id: "inv-mar-14", studentId: "student-14", parentUserId: "user-pai-10", description: "Mensalidade Transporte", amount: 525.00, dueDate: "2024-03-10", status: "paid" },
     ],
     expenses: [
-        // Mês Atual (Agosto 2024)
-        { id: "exp-aug-1", description: "Salários de Motoristas e Auxiliares", amount: 2800.00, date: "2024-08-05", category: "Salários" },
-        { id: "exp-aug-2", description: "Abastecimento da frota", amount: 750.00, date: "2024-08-02", category: "Combustível" },
+        // Mês Atual (Agosto 2024) - Lucrativo
+        { id: "exp-aug-1", description: "Salários de Motoristas e Auxiliares", amount: 2100.00, date: "2024-08-05", category: "Salários" },
+        { id: "exp-aug-2", description: "Abastecimento da frota", amount: 650.00, date: "2024-08-02", category: "Combustível" },
         { id: "exp-aug-3", description: "Manutenção corretiva - Sprinter", amount: 320.00, date: "2024-08-06", category: "Manutenção" },
         
-        // Mês Anterior (Julho 2024)
-        { id: "exp-jul-1", description: "Salários de Motoristas e Auxiliares", amount: 2800.00, date: "2024-07-05", category: "Salários" },
-        { id: "exp-jul-2", description: "Abastecimento da frota", amount: 950.50, date: "2024-07-15", category: "Combustível" },
-        { id: "exp-jul-3", description: "Impostos e Taxas Municipais", amount: 600.00, date: "2024-07-20", category: "Impostos" },
+        // Mês Anterior (Julho 2024) - Lucrativo
+        { id: "exp-jul-1", description: "Salários de Motoristas e Auxiliares", amount: 2100.00, date: "2024-07-05", category: "Salários" },
+        { id: "exp-jul-2", description: "Abastecimento da frota", amount: 850.50, date: "2024-07-15", category: "Combustível" },
+        { id: "exp-jul-3", description: "Impostos e Taxas Municipais", amount: 400.00, date: "2024-07-20", category: "Impostos" },
         { id: "exp-jul-4", description: "Compra de material de limpeza para os veículos", amount: 89.90, date: "2024-07-28", category: "Outros" },
   
-        // Meses Anteriores (Histórico)
-        { id: "exp-jun-1", description: "Salários", amount: 2700.00, date: "2024-06-05", category: "Salários" },
-        { id: "exp-jun-2", description: "Combustível", amount: 900.00, date: "2024-06-15", category: "Combustível" },
-        { id: "exp-mai-1", description: "Salários", amount: 2650.00, date: "2024-05-05", category: "Salários" },
-        { id: "exp-mai-2", description: "Combustível", amount: 1100.00, date: "2024-05-15", category: "Combustível" },
-        { id: "exp-mai-3", description: "Manutenção Preventiva - Frota", amount: 1200.00, date: "2024-05-20", category: "Manutenção" },
-        { id: "exp-apr-1", description: "Salários", amount: 2600.00, date: "2024-04-05", category: "Salários" },
+        // Meses Anteriores (Histórico) - Lucrativo
+        { id: "exp-jun-1", description: "Salários", amount: 2000.00, date: "2024-06-05", category: "Salários" },
+        { id: "exp-jun-2", description: "Combustível", amount: 800.00, date: "2024-06-15", category: "Combustível" },
+        { id: "exp-jun-3", description: "Seguro da Frota (Parcela)", amount: 550.00, date: "2024-06-18", category: "Impostos" },
+        { id: "exp-mai-1", description: "Salários", amount: 2000.00, date: "2024-05-05", category: "Salários" },
+        { id: "exp-mai-2", description: "Combustível", amount: 950.00, date: "2024-05-15", category: "Combustível" },
+        { id: "exp-mai-3", description: "Manutenção Preventiva - Frota", amount: 1100.00, date: "2024-05-20", category: "Manutenção" },
+        { id: "exp-apr-1", description: "Salários", amount: 1950.00, date: "2024-04-05", category: "Salários" },
         { id: "exp-apr-2", description: "Combustível", amount: 980.00, date: "2024-04-15", category: "Combustível" },
-        { id: "exp-mar-1", description: "Salários", amount: 2500.00, date: "2024-03-05", category: "Salários" },
-        { id: "exp-mar-2", description: "Combustível", amount: 950.00, date: "2024-03-15", category: "Combustível" },
+        { id: "exp-apr-3", description: "Troca de Pneus - Master", amount: 1500.00, date: "2024-04-22", category: "Manutenção" },
+        { id: "exp-mar-1", description: "Salários", amount: 1950.00, date: "2024-03-05", category: "Salários" },
+        { id: "exp-mar-2", description: "Combustível", amount: 850.00, date: "2024-03-15", category: "Combustível" },
     ],
     messages: [
         { id: "msg-1", senderId: "user-pai-1", recipientId: "user-admin-1", text: "Bom dia! O Lucas já está esperando.", timestamp: "2024-07-30T08:00:00Z" },
