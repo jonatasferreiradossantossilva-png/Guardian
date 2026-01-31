@@ -34,12 +34,22 @@ import {
   Sparkles,
   MessageCircle,
   Rocket,
+  Briefcase,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useState } from "react";
 
-const managementLinks = [
+// NEW: Links for the "Operational" section
+const operationalLinks = [
+  { href: "/dashboard/optimizer", label: "Otimizador (IA)", icon: Sparkles },
+  { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
+  { href: "/dashboard/financial", label: "Financeiro", icon: DollarSign },
+  { href: "/dashboard/management/trip-requests", label: "Viagens Avulsas", icon: Route },
+];
+
+// RENAMED & UPDATED: Links for the "Registrations" section (formerly Management)
+const registrationLinks = [
   { href: "/dashboard/management/schools", label: "Escolas", icon: School },
   { href: "/dashboard/management/drivers", label: "Motoristas", icon: Car },
   { href: "/dashboard/management/vehicles", label: "Veículos", icon: Truck },
@@ -51,8 +61,8 @@ const managementLinks = [
     icon: GraduationCap,
   },
   { href: "/dashboard/management/predefined-messages", label: "Mensagens Predefinidas", icon: MessageCircle },
-  { href: "/dashboard/management/trip-requests", label: "Viagens Avulsas", icon: Route },
 ];
+
 
 const profileLinks = [
   {
@@ -73,9 +83,17 @@ export function MainSidebar() {
   }, []);
   
   const isActive = (href: string) => pathname === href;
-  const isManagementActive = managementLinks.some((link) =>
+  
+  // UPDATED: Check for active link in "Registrations"
+  const isRegistrationActive = registrationLinks.some((link) =>
     pathname.startsWith(link.href)
   );
+
+  // NEW: Check for active link in "Operational"
+  const isOperationalActive = operationalLinks.some((link) =>
+    pathname.startsWith(link.href)
+  );
+
 
   return (
     <Sidebar>
@@ -92,6 +110,7 @@ export function MainSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
+          {/* Dashboard Link - Unchanged */}
           <SidebarMenuItem>
             <Link href="/dashboard" passHref>
               <SidebarMenuButton
@@ -104,22 +123,23 @@ export function MainSidebar() {
             </Link>
           </SidebarMenuItem>
 
+          {/* NEW: Operational Group */}
           <SidebarMenuItem>
             {isMounted ? (
-              <Collapsible defaultOpen={isManagementActive}>
+              <Collapsible defaultOpen={isOperationalActive}>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton
                     className="w-full justify-start"
-                    isActive={isManagementActive}
+                    isActive={isOperationalActive}
                   >
-                    <FolderKanban />
-                    <span>Gerenciamento</span>
+                    <Briefcase />
+                    <span>Operacional</span>
                     <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
                   </SidebarMenuButton>
                 </CollapsibleTrigger>
                 <CollapsibleContent>
                   <SidebarMenu className="pl-6 pt-1">
-                    {managementLinks.map((link) => (
+                    {operationalLinks.map((link) => (
                       <SidebarMenuItem key={link.href}>
                         <Link href={link.href} passHref>
                           <SidebarMenuButton
@@ -139,52 +159,63 @@ export function MainSidebar() {
             ) : (
               <SidebarMenuButton
                 className="w-full justify-start"
-                isActive={isManagementActive}
+                isActive={isOperationalActive}
               >
-                <FolderKanban />
-                <span>Gerenciamento</span>
+                <Briefcase />
+                <span>Operacional</span>
                 <ChevronDown className="ml-auto h-4 w-4" />
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>
 
-           <SidebarMenuItem>
-            <Link href="/dashboard/optimizer" passHref>
+          {/* UPDATED: Registrations Group (formerly Management) */}
+          <SidebarMenuItem>
+            {isMounted ? (
+              <Collapsible defaultOpen={isRegistrationActive}>
+                <CollapsibleTrigger asChild>
+                  <SidebarMenuButton
+                    className="w-full justify-start"
+                    isActive={isRegistrationActive}
+                  >
+                    <FolderKanban />
+                    <span>Cadastros</span>
+                    <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180" />
+                  </SidebarMenuButton>
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <SidebarMenu className="pl-6 pt-1">
+                    {registrationLinks.map((link) => (
+                      <SidebarMenuItem key={link.href}>
+                        <Link href={link.href} passHref>
+                          <SidebarMenuButton
+                            variant="ghost"
+                            size="sm"
+                            isActive={isActive(link.href)}
+                          >
+                            <link.icon />
+                            <span>{link.label}</span>
+                          </SidebarMenuButton>
+                        </Link>
+                      </SidebarMenuItem>
+                    ))}
+                  </SidebarMenu>
+                </CollapsibleContent>
+              </Collapsible>
+            ) : (
               <SidebarMenuButton
-                isActive={isActive("/dashboard/optimizer")}
-                tooltip="Otimizador de Rotas (IA)"
+                className="w-full justify-start"
+                isActive={isRegistrationActive}
               >
-                <Sparkles />
-                <span>Otimizador (IA)</span>
+                <FolderKanban />
+                <span>Cadastros</span>
+                <ChevronDown className="ml-auto h-4 w-4" />
               </SidebarMenuButton>
-            </Link>
+            )}
           </SidebarMenuItem>
 
-          <SidebarMenuItem>
-            <Link href="/dashboard/messages" passHref>
-              <SidebarMenuButton
-                isActive={isActive("/dashboard/messages")}
-                tooltip="Mensagens"
-              >
-                <MessageSquare />
-                <span>Mensagens</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-
-          <SidebarMenuItem>
-            <Link href="/dashboard/financial" passHref>
-              <SidebarMenuButton
-                isActive={isActive("/dashboard/financial")}
-                tooltip="Financeiro"
-              >
-                <DollarSign />
-                <span>Financeiro</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
         </SidebarMenu>
 
+        {/* Other Profile Links - Unchanged */}
         <SidebarMenu className="mt-4">
           <p className="px-4 text-xs text-muted-foreground mb-2 group-data-[collapsible=icon]:hidden">
             Outras Visões
