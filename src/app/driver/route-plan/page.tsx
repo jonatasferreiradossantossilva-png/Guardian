@@ -44,6 +44,7 @@ import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 
 type Shift = 'Manhã' | 'Tarde';
@@ -468,127 +469,142 @@ export default function DriverRoutePlanPage() {
             </Link>
           </div>
         </div>
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-start">
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardCheck />
-                Progresso da Rota
-              </CardTitle>
-               <div className="flex items-center gap-2">
-                    <Button variant="outline" size="sm" onClick={handleRecalculate} disabled={isRecalculating}>
-                        {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                        Recalcular Rota
-                    </Button>
-                    {route && <Badge variant="outline">{activeShift}</Badge>}
-                </div>
-            </div>
-            <p className="text-muted-foreground text-sm pt-2">
-              {route ? route.name : 'Carregando rota...'}
-            </p>
-          </CardHeader>
-          <CardContent>
-            {isLoading && (
-              <div className="flex items-center justify-center h-40">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            )}
 
-            {!isLoading && !route && (
-              <div className="flex flex-col items-center justify-center h-40 text-center">
-                <AlertTriangle className="h-8 w-8 text-destructive mb-2" />
-                <p className="font-semibold">
-                  Nenhuma rota ativa encontrada para você.
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  Verifique com o administrador se uma rota foi atribuída.
-                </p>
-              </div>
-            )}
-
-            {!isLoading && route && (
-              <ol className="space-y-2">
-                {displayStudents.map((student, index) => {
-                    const isNextStop = student.id === nextStop?.id;
-                    return (
-                      <StudentListItem
-                        key={student.id}
-                        student={student}
-                        index={index}
-                        isNextStop={isNextStop}
-                        onStatusChange={handleStatusChange}
-                        onNavigate={handleNavigateToStudent}
-                        onOpenAuthorizedModal={handleOpenAuthorizedModal}
-                      />
-                    );
-                })}
-                <li className="flex items-center gap-4 p-3">
-                    <div className="w-8 h-8 flex items-center justify-center">
-                      <School className="h-5 w-5 text-muted-foreground/50"/>
-                    </div>
-                    <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
-                </li>
-                {displayStudents.length === 0 && (
-                    <div className="text-center text-muted-foreground py-10">
-                    <p>
-                        Nenhum aluno para o turno da {activeShift?.toLowerCase()}.
-                    </p>
-                    </div>
-                )}
-              </ol>
-            )}
-          </CardContent>
-        </Card>
-        
-        <RouteDirections directions={displayDirections} />
-
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><MapPin /> Mapa da Rota</CardTitle>
-                 <CardDescription>
-                    {dynamicRoute ? 'Visualização da rota original (pontilhada) e da rota recalculada (verde).' : 'Acompanhe a rota planejada em tempo real.'}
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <div className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-4 text-sm text-muted-foreground">
-                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-xs animate-pulse">1</div>Próxima</div>
-                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500"></div>A Bordo</div>
-                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
-                    <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-slate-400"></div>Concluída</div>
-                    <div className="flex items-center gap-2"><div className="p-1 rounded-full bg-red-600"><School size={12} className="text-white"/></div>Escola</div>
-                </div>
-                <div className="aspect-video w-full rounded-lg overflow-hidden border bg-secondary">
-                    {!API_KEY ? (
-                        <div className="flex h-full w-full items-center justify-center bg-secondary/30">
-                          <div className="text-center p-4">
-                              <p className="font-semibold text-lg">Mapa Indisponível</p>
-                              <p className="text-muted-foreground text-sm">
-                                  A chave da API do Google Maps não foi configurada.
-                              </p>
-                          </div>
+        <Tabs defaultValue="plan" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="plan">
+                    <ClipboardCheck className="mr-2 h-4 w-4" />
+                    Plano de Rota
+                </TabsTrigger>
+                <TabsTrigger value="map">
+                    <MapPin className="mr-2 h-4 w-4" />
+                    Mapa Interativo
+                </TabsTrigger>
+            </TabsList>
+            <TabsContent value="plan" className="mt-6 space-y-6">
+                 <Card>
+                    <CardHeader>
+                        <div className="flex justify-between items-start">
+                        <CardTitle className="flex items-center gap-2">
+                            <ClipboardCheck />
+                            Progresso da Rota
+                        </CardTitle>
+                        <div className="flex items-center gap-2">
+                                <Button variant="outline" size="sm" onClick={handleRecalculate} disabled={isRecalculating}>
+                                    {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                                    Recalcular Rota
+                                </Button>
+                                {route && <Badge variant="outline">{activeShift}</Badge>}
+                            </div>
                         </div>
-                    ) : (
-                        <APIProvider apiKey={API_KEY}>
-                            <GoogleMap
-                                defaultCenter={{ lat: -23.55, lng: -46.63 }}
-                                defaultZoom={12}
-                                mapId="driver-route-map"
-                                gestureHandling={'greedy'}
-                                disableDefaultUI={true}
-                            >
-                                <RouteMap
-                                    driverLocation={driverLocation}
-                                    currentRouteStudents={displayStudents}
-                                    originalRouteStudents={dynamicRoute ? orderedStudents : null}
-                                    school={school}
-                                />
-                            </GoogleMap>
-                        </APIProvider>
-                    )}
-                </div>
-            </CardContent>
-        </Card>
+                        <p className="text-muted-foreground text-sm pt-2">
+                        {route ? route.name : 'Carregando rota...'}
+                        </p>
+                    </CardHeader>
+                    <CardContent>
+                        {isLoading && (
+                        <div className="flex items-center justify-center h-40">
+                            <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                        </div>
+                        )}
 
+                        {!isLoading && !route && (
+                        <div className="flex flex-col items-center justify-center h-40 text-center">
+                            <AlertTriangle className="h-8 w-8 text-destructive mb-2" />
+                            <p className="font-semibold">
+                            Nenhuma rota ativa encontrada para você.
+                            </p>
+                            <p className="text-muted-foreground text-sm">
+                            Verifique com o administrador se uma rota foi atribuída.
+                            </p>
+                        </div>
+                        )}
+
+                        {!isLoading && route && (
+                        <ol className="space-y-2">
+                            {displayStudents.map((student, index) => {
+                                const isNextStop = student.id === nextStop?.id;
+                                return (
+                                <StudentListItem
+                                    key={student.id}
+                                    student={student}
+                                    index={index}
+                                    isNextStop={isNextStop}
+                                    onStatusChange={handleStatusChange}
+                                    onNavigate={handleNavigateToStudent}
+                                    onOpenAuthorizedModal={handleOpenAuthorizedModal}
+                                />
+                                );
+                            })}
+                            <li className="flex items-center gap-4 p-3">
+                                <div className="w-8 h-8 flex items-center justify-center">
+                                <School className="h-5 w-5 text-muted-foreground/50"/>
+                                </div>
+                                <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
+                            </li>
+                            {displayStudents.length === 0 && (
+                                <div className="text-center text-muted-foreground py-10">
+                                <p>
+                                    Nenhum aluno para o turno da {activeShift?.toLowerCase()}.
+                                </p>
+                                </div>
+                            )}
+                        </ol>
+                        )}
+                    </CardContent>
+                </Card>
+                <RouteDirections directions={displayDirections} />
+            </TabsContent>
+            <TabsContent value="map" className="mt-6">
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2"><MapPin /> Mapa da Rota</CardTitle>
+                        <CardDescription>
+                            {dynamicRoute ? 'Visualização da rota original (pontilhada) e da rota recalculada (verde).' : 'Acompanhe a rota planejada em tempo real.'}
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <div className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-4 text-sm text-muted-foreground">
+                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-xs animate-pulse">1</div>Próxima</div>
+                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500"></div>A Bordo</div>
+                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
+                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-slate-400"></div>Concluída</div>
+                            <div className="flex items-center gap-2"><div className="p-1 rounded-full bg-red-600"><School size={12} className="text-white"/></div>Escola</div>
+                        </div>
+                        <div className="aspect-video w-full rounded-lg overflow-hidden border bg-secondary">
+                            {!API_KEY ? (
+                                <div className="flex h-full w-full items-center justify-center bg-secondary/30">
+                                <div className="text-center p-4">
+                                    <p className="font-semibold text-lg">Mapa Indisponível</p>
+                                    <p className="text-muted-foreground text-sm">
+                                        A chave da API do Google Maps não foi configurada.
+                                    </p>
+                                </div>
+                                </div>
+                            ) : (
+                                <APIProvider apiKey={API_KEY}>
+                                    <GoogleMap
+                                        defaultCenter={{ lat: -23.55, lng: -46.63 }}
+                                        defaultZoom={12}
+                                        mapId="driver-route-map"
+                                        gestureHandling={'greedy'}
+                                        disableDefaultUI={true}
+                                    >
+                                        <RouteMap
+                                            driverLocation={driverLocation}
+                                            currentRouteStudents={displayStudents}
+                                            originalRouteStudents={dynamicRoute ? orderedStudents : null}
+                                            school={school}
+                                        />
+                                    </GoogleMap>
+                                </APIProvider>
+                            )}
+                        </div>
+                    </CardContent>
+                </Card>
+            </TabsContent>
+        </Tabs>
+        
         {isModalOpen && selectedStudentForModal && (
             <AuthorizedContactsModal
             isOpen={isModalOpen}
@@ -706,3 +722,5 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
+    
