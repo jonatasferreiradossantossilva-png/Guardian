@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef } from "react";
@@ -339,35 +340,6 @@ export default function ParentTrackingPage() {
               </CardContent>
             </Card>
 
-            <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
-                  <Route /> Progresso da Rota
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ol className="space-y-4">
-                  {orderedStudentsOnRoute.map((stopStudent) => {
-                    const isFinished = stopStudent.status === 'desembarcado' || stopStudent.status === 'ausente';
-                    const isMyChild = stopStudent.id === student.id;
-                    return (
-                        <li key={stopStudent.id} className="flex items-center gap-4">
-                            <div>{statusIconMap[stopStudent.status]}</div>
-                            <span className={cn("font-medium", isFinished && "line-through text-muted-foreground", isMyChild && "font-bold text-primary")}>
-                              {stopStudent.name}
-                            </span>
-                            {isMyChild && <Badge variant="outline" className="ml-auto">Seu Filho</Badge>}
-                        </li>
-                    );
-                  })}
-                   <li className="flex items-center gap-4">
-                      <School className="h-5 w-5 text-muted-foreground/50"/>
-                      <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino)</span>
-                   </li>
-                </ol>
-              </CardContent>
-            </Card>
-            
             <Card>
                 <CardHeader>
                      <h3 className="font-semibold flex items-center gap-2 mb-2">
