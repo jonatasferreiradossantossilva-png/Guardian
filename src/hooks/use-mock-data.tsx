@@ -43,7 +43,7 @@ export function MockDataProvider({ children }) {
       return null;
   }, [db]);
 
-  const addDoc = (collectionName, data) => {
+  const addDoc = useCallback((collectionName, data) => {
     // Add a random component to ensure unique IDs even in rapid succession.
     const newId = `${collectionName.slice(0, 3)}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
     const newDoc = { ...data, id: newId };
@@ -51,18 +51,18 @@ export function MockDataProvider({ children }) {
       ...prevDb,
       [collectionName]: [...(prevDb[collectionName] || []), newDoc],
     }));
-  };
+  }, []);
 
-  const updateDoc = (collectionName, docId, data) => {
+  const updateDoc = useCallback((collectionName, docId, data) => {
     setDb(prevDb => ({
       ...prevDb,
       [collectionName]: (prevDb[collectionName] || []).map(doc =>
         doc.id === docId ? { ...doc, ...data } : doc
       ),
     }));
-  };
+  }, []);
 
-  const setDoc = (path, data) => {
+  const setDoc = useCallback((path, data) => {
      const [collectionName, docId] = path.split('/');
       if (collectionName === 'locations' && docId) {
         setDb(prevDb => ({
@@ -73,14 +73,14 @@ export function MockDataProvider({ children }) {
             }
         }));
       }
-  };
+  }, []);
 
-  const deleteDoc = (collectionName, docId) => {
+  const deleteDoc = useCallback((collectionName, docId) => {
     setDb(prevDb => ({
       ...prevDb,
       [collectionName]: (prevDb[collectionName] || []).filter(doc => doc.id !== docId),
     }));
-  };
+  }, []);
 
   const value = useMemo(() => ({
     db,
@@ -91,7 +91,7 @@ export function MockDataProvider({ children }) {
     deleteDoc,
     getNestedDoc,
     setDoc,
-  }), [db, getCollection, getDoc, getNestedDoc]);
+  }), [db, getCollection, getDoc, addDoc, updateDoc, deleteDoc, getNestedDoc, setDoc]);
 
   return (
     <MockDataContext.Provider value={value}>
