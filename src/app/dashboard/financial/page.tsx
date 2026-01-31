@@ -64,7 +64,7 @@ const statusIconMap: Record<Invoice['status'], React.ElementType> = {
   pagamento_em_analise: Wallet,
 };
 
-const StatCard = ({ title, value, icon: Icon, status, selectedStatus, onSelect }: { title: string, value: number, icon: React.ElementType, status: Invoice['status'], selectedStatus: Invoice['status'] | 'all', onSelect: (status: Invoice['status']) => void }) => (
+const StatCard = ({ title, value, count, icon: Icon, status, selectedStatus, onSelect }: { title: string, value: number, count: number, icon: React.ElementType, status: Invoice['status'], selectedStatus: Invoice['status'] | 'all', onSelect: (status: Invoice['status']) => void }) => (
     <Card 
       className={cn(
         "cursor-pointer transition-all hover:bg-secondary/50",
@@ -83,6 +83,7 @@ const StatCard = ({ title, value, icon: Icon, status, selectedStatus, onSelect }
         </CardHeader>
         <CardContent>
             <div className="text-2xl font-bold">R$ {value.toFixed(2).replace('.',',')}</div>
+            <p className="text-xs text-muted-foreground">{count} fatura(s)</p>
         </CardContent>
     </Card>
 );
@@ -128,10 +129,22 @@ export default function FinancialPage() {
   }, [invoices, selectedStudentId, selectedMonth]);
 
   const summaryStats = useMemo(() => {
-      return (filteredInvoicesForSummary || []).reduce((acc, inv) => {
-          acc[inv.status] = (acc[inv.status] || 0) + inv.amount;
+      const initialStats = {
+          paid: { total: 0, count: 0 },
+          pending: { total: 0, count: 0 },
+          overdue: { total: 0, count: 0 },
+          pagamento_em_analise: { total: 0, count: 0 },
+      };
+
+      if (!filteredInvoicesForSummary) return initialStats;
+      
+      return filteredInvoicesForSummary.reduce((acc, inv) => {
+          if (acc[inv.status]) {
+            acc[inv.status].total += inv.amount;
+            acc[inv.status].count += 1;
+          }
           return acc;
-      }, { paid: 0, pending: 0, overdue: 0, pagamento_em_analise: 0 });
+      }, JSON.parse(JSON.stringify(initialStats)));
   }, [filteredInvoicesForSummary]);
 
   const finalInvoiceList = useMemo(() => {
@@ -242,11 +255,11 @@ export default function FinancialPage() {
       return `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} de ${year}`;
   }
 
-  const statusCardsData: {title: string, value: number, icon: React.ElementType, status: Invoice['status']}[] = [
-      { title: 'Pagas', value: summaryStats.paid, icon: statusIconMap.paid, status: 'paid' },
-      { title: 'Pendentes', value: summaryStats.pending, icon: statusIconMap.pending, status: 'pending' },
-      { title: 'Vencidas', value: summaryStats.overdue, icon: statusIconMap.overdue, status: 'overdue' },
-      { title: 'Em Análise', value: summaryStats.pagamento_em_analise, icon: statusIconMap.pagamento_em_analise, status: 'pagamento_em_analise' },
+  const statusCardsData: {title: string, value: number, count: number, icon: React.ElementType, status: Invoice['status']}[] = [
+      { title: 'Pagas', value: summaryStats.paid.total, count: summaryStats.paid.count, icon: statusIconMap.paid, status: 'paid' },
+      { title: 'Pendentes', value: summaryStats.pending.total, count: summaryStats.pending.count, icon: statusIconMap.pending, status: 'pending' },
+      { title: 'Vencidas', value: summaryStats.overdue.total, count: summaryStats.overdue.count, icon: statusIconMap.overdue, status: 'overdue' },
+      { title: 'Em Análise', value: summaryStats.pagamento_em_analise.total, count: summaryStats.pagamento_em_analise.count, icon: statusIconMap.pagamento_em_analise, status: 'pagamento_em_analise' },
   ];
 
   return (
