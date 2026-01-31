@@ -61,6 +61,8 @@ export default function OptimizerPage() {
     const { data: students } = useMockCollection('students');
     const { data: schools } = useMockCollection('schools');
     const { data: incidents } = useMockCollection('incidents');
+    const { data: drivers } = useMockCollection('drivers');
+    const { data: vehicles } = useMockCollection('vehicles');
 
     const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
     const [context, setContext] = useState<string>("");
@@ -84,6 +86,13 @@ export default function OptimizerPage() {
         if (!selectedRouteId || !routes) return null;
         return routes.find(r => r.id === selectedRouteId);
     }, [selectedRouteId, routes]);
+
+    const vehicleForRoute = useMemo(() => {
+        if (!selectedRoute || !drivers || !vehicles) return null;
+        const driver = drivers.find(d => d.id === selectedRoute.driverId);
+        if (!driver || !driver.vehicleId) return null;
+        return vehicles.find(v => v.id === driver.vehicleId);
+    }, [selectedRoute, drivers, vehicles]);
 
     const studentsInRoute = useMemo(() => {
         if (!selectedRoute) return [];
@@ -121,6 +130,7 @@ export default function OptimizerPage() {
             const input = {
                 students: studentsInRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
                 schoolAddress: formatAddress(schoolForRoute),
+                vehicleCapacity: vehicleForRoute?.capacity,
                 context: combinedContext,
             };
             const result = await optimizeSchoolVanRoute(input);
@@ -141,7 +151,7 @@ export default function OptimizerPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast, incidents]);
+    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast, incidents, vehicleForRoute]);
     
     // This effect is specifically for the 'autoOptimize=true' parameter from the routes page
     useEffect(() => {

@@ -20,6 +20,7 @@ const StudentStopSchema = z.object({
 const OptimizeSchoolVanRouteInputSchema = z.object({
   students: z.array(StudentStopSchema).describe("Lista de alunos com seus endereços para serem incluídos na rota."),
   schoolAddress: z.string().describe("O endereço da escola, que é o destino final."),
+  vehicleCapacity: z.number().optional().describe("A capacidade máxima de passageiros do veículo."),
   context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito, interdições de vias ou incidentes reportados."),
 });
 export type OptimizeSchoolVanRouteInput = z.infer<typeof OptimizeSchoolVanRouteInputSchema>;
@@ -48,6 +49,9 @@ Você receberá uma lista de alunos com seus endereços residenciais e o endere�
 Considere as seguintes informações:
 - Lista de Alunos e Endereços: {{{json students}}}
 - Endereço da Escola (Destino Final): {{{schoolAddress}}}
+{{#if vehicleCapacity}}
+- Capacidade do Veículo: {{{vehicleCapacity}}} passageiros. **A rota otimizada não deve, sob nenhuma hipótese, incluir mais alunos do que a capacidade do veículo.**
+{{/if}}
 {{#if context}}
 - Contexto Adicional (condições de trânsito, interdições, incidentes reportados, etc.): {{{context}}}
 **Leve os incidentes e condições de trânsito em consideração ao calcular a rota mais eficiente, evitando as áreas afetadas se possível.**
