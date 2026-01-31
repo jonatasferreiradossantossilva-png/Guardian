@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { IncidentMap } from "@/components/dashboard/incident-map";
 import { DriverStatusList } from "@/components/dashboard/driver-status-list";
+import { StudentsBySchoolChart } from '@/components/dashboard/charts/students-by-school-chart';
 
 export default function DashboardPage() {
   const [mapTarget, setMapTarget] = useState<google.maps.LatLngLiteral | null>(null);
@@ -31,6 +32,7 @@ export default function DashboardPage() {
                  <h2 className="text-2xl font-semibold mb-4">Status dos Motoristas</h2>
                  <DriverStatusList onLocateDriver={setMapTarget} />
             </div>
+            <StudentsBySchoolChart />
         </div>
       </div>
     </div>
