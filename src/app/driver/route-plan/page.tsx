@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef, memo, useCallback } from 'react';
@@ -28,6 +29,9 @@ import {
   Sparkles,
   XCircle,
   CheckCircle,
+  Play,
+  Pause,
+  Square,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -271,12 +275,12 @@ export default function DriverRoutePlanPage() {
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || 'driver-1'); // Default to a known driver for direct page access
+    setMockUserId(storedUserId || 'user-admin-1'); // Default to a known driver for direct page access
   }, []);
 
-  // Fetch driver profile
+  // Fetch driver profile based on logged-in user ID
   const driverFilter = useMemo(
-    () => (mockUserId ? [{ field: 'id', op: '==', value: mockUserId }] : undefined),
+    () => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined),
     [mockUserId]
   );
   const { data: drivers, isLoading: areDriversLoading } =
@@ -340,34 +344,29 @@ export default function DriverRoutePlanPage() {
 
   // Location simulation effect
   useEffect(() => {
-    // Always clear previous interval
     if (simulationIntervalRef.current) {
       clearInterval(simulationIntervalRef.current);
     }
     
-    // Conditions to start a new simulation. Use the ref for the current location.
-    if (!driverId || !nextStop || !locationRef.current) {
+    if (!driverId || driverProfile?.status !== 'em_rota' || !nextStop || !locationRef.current) {
       return;
     }
 
     const startPoint = { lat: locationRef.current.latitude, lng: locationRef.current.longitude };
     const endPoint = { lat: nextStop.latitude, lng: nextStop.longitude };
 
-    // Don't simulate if already at the destination
     const distance = Math.sqrt(Math.pow(endPoint.lat - startPoint.lat, 2) + Math.pow(endPoint.lng - startPoint.lng, 2));
-    if (distance < 0.0001) { // small threshold
+    if (distance < 0.0001) {
         return;
     }
 
     let step = 0;
-    const totalSteps = 20; // 5s * 20 = 100s to simulate arrival
+    const totalSteps = 20; 
 
     simulationIntervalRef.current = setInterval(() => {
       step++;
-
       if (step > totalSteps) {
         clearInterval(simulationIntervalRef.current);
-        // Snap to destination and stop
         setDoc(`locations/${driverId}`, { 
           latitude: endPoint.lat, 
           longitude: endPoint.lng,
@@ -375,9 +374,7 @@ export default function DriverRoutePlanPage() {
         });
         return;
       }
-
       const factor = step / totalSteps;
-      // Linear interpolation
       const newLat = startPoint.lat + (endPoint.lat - startPoint.lat) * factor;
       const newLng = startPoint.lng + (endPoint.lng - startPoint.lng) * factor;
 
@@ -386,16 +383,50 @@ export default function DriverRoutePlanPage() {
         longitude: newLng,
         timestamp: new Date().toISOString()
       });
+    }, 5000);
 
-    }, 5000); // Update every 5 seconds
-
-    // Cleanup on unmount or when deps change
     return () => {
       if (simulationIntervalRef.current) {
         clearInterval(simulationIntervalRef.current);
       }
     };
-  }, [driverId, nextStop, setDoc]); // driverLocation is intentionally omitted to avoid loops
+  }, [driverId, driverProfile?.status, nextStop, setDoc]);
+
+  // Route control handlers
+  const handleStartRoute = useCallback(() => {
+      if (!driverId) return;
+      updateDoc('drivers', driverId, { status: 'em_rota' });
+      toast({ title: "Rota Iniciada!", description: "Boa viagem!" });
+  }, [driverId, updateDoc, toast]);
+
+  const handlePauseRoute = useCallback(() => {
+      if (!driverId) return;
+      updateDoc('drivers', driverId, { status: 'pausa' });
+      toast({ title: "Rota Pausada" });
+  }, [driverId, updateDoc, toast]);
+
+  const handleResumeRoute = useCallback(() => {
+      if (!driverId) return;
+      updateDoc('drivers', driverId, { status: 'em_rota' });
+      toast({ title: "Rota Retomada" });
+  }, [driverId, updateDoc, toast]);
+
+  const handleEndRoute = useCallback(() => {
+      if (!driverId || !route) return;
+      updateDoc('drivers', driverId, { status: 'inativo' });
+      route.studentIds.forEach(studentId => {
+          updateDoc('students', studentId, { status: 'aguardando' });
+      });
+      if (simulationIntervalRef.current) {
+          clearInterval(simulationIntervalRef.current);
+      }
+      setDynamicRoute(null);
+      toast({
+          title: "Rota Finalizada!",
+          description: "Bom descanso! Os status dos alunos foram reiniciados.",
+      });
+  }, [driverId, route, updateDoc, toast]);
+
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
     setSelectedStudentForModal(student);
@@ -534,22 +565,48 @@ export default function DriverRoutePlanPage() {
             <TabsContent value="plan" className="mt-6 space-y-6">
                  <Card>
                     <CardHeader>
-                        <div className="flex justify-between items-start">
-                        <CardTitle className="flex items-center gap-2">
-                            <ClipboardCheck />
-                            Progresso da Rota
-                        </CardTitle>
-                        <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" onClick={handleRecalculate} disabled={isRecalculating}>
+                        <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
+                            <div>
+                                <CardTitle className="flex items-center gap-2">
+                                    <ClipboardCheck />
+                                    Progresso da Rota
+                                </CardTitle>
+                                <p className="text-muted-foreground text-sm pt-2">
+                                {route ? `${route.name} - Turno ${activeShift}` : 'Carregando rota...'}
+                                </p>
+                            </div>
+                            <div className="flex items-center gap-2 flex-wrap">
+                                {driverProfile?.status === 'inativo' && (
+                                    <Button onClick={handleStartRoute} className="bg-green-600 hover:bg-green-700">
+                                        <Play className="mr-2 h-4 w-4" /> Iniciar Rota
+                                    </Button>
+                                )}
+                                {driverProfile?.status === 'em_rota' && (
+                                    <>
+                                        <Button onClick={handlePauseRoute} variant="outline">
+                                            <Pause className="mr-2 h-4 w-4" /> Pausar
+                                        </Button>
+                                        <Button onClick={handleEndRoute} variant="destructive">
+                                            <Square className="mr-2 h-4 w-4" /> Finalizar Rota
+                                        </Button>
+                                    </>
+                                )}
+                                {driverProfile?.status === 'pausa' && (
+                                    <>
+                                        <Button onClick={handleResumeRoute}>
+                                            <Play className="mr-2 h-4 w-4" /> Retomar Rota
+                                        </Button>
+                                        <Button onClick={handleEndRoute} variant="destructive">
+                                            <Square className="mr-2 h-4 w-4" /> Finalizar Rota
+                                        </Button>
+                                    </>
+                                )}
+                                <Button variant="outline" size="sm" onClick={handleRecalculate} disabled={isRecalculating || driverProfile?.status !== 'em_rota'}>
                                     {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                                    Recalcular Rota
+                                    Recalcular
                                 </Button>
-                                {route && <Badge variant="outline">{activeShift}</Badge>}
                             </div>
                         </div>
-                        <p className="text-muted-foreground text-sm pt-2">
-                        {route ? route.name : 'Carregando rota...'}
-                        </p>
                     </CardHeader>
                     <CardContent>
                         {isLoading && (
@@ -772,3 +829,4 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
