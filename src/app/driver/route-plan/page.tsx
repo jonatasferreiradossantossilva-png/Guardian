@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef, memo, useCallback } from 'react';
@@ -225,7 +226,7 @@ const StudentListItem = memo(({ student, index, isNextStop, onStatusChange, onNa
                 </p>
             </div>
         </div>
-        <div className="flex items-center gap-2 w-[220px] self-end sm:self-center">
+        <div className="flex items-center gap-2 w-full sm:w-[220px]">
             {student.status === 'aguardando' && (
                 <>
                 <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => onStatusChange(student.id, 'a_bordo')}>
