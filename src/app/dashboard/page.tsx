@@ -17,13 +17,13 @@ export default function DashboardPage() {
       <OverviewCards />
 
       <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
-        <div>
-            <h2 className="text-2xl font-semibold mb-4">Status dos Motoristas</h2>
-            <DriverStatusList />
-        </div>
         <div className="flex flex-col gap-8">
             <MonthlyRevenueChart />
             <InvoicesStatusChart />
+        </div>
+        <div>
+            <h2 className="text-2xl font-semibold mb-4">Status dos Motoristas</h2>
+            <DriverStatusList />
         </div>
       </div>
     </div>
