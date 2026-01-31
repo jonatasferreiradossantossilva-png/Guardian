@@ -9,7 +9,7 @@ export default function LandingPage() {
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
-          <Link href="/" className="flex items-center gap-2 font-bold">
+          <Link href="/login" className="flex items-center gap-2 font-bold">
             <Rocket className="h-6 w-6 text-primary" />
             <span>Guardian</span>
           </Link>
@@ -21,7 +21,7 @@ export default function LandingPage() {
               <Link href="#pricing">Preços</Link>
             </Button>
             <Button asChild>
-              <Link href="/login">Entrar</Link>
+              <Link href="/">Entrar</Link>
             </Button>
           </nav>
         </div>
@@ -39,7 +39,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-8 flex justify-center gap-4">
               <Button size="lg" asChild>
-                <Link href="/login">Começar Agora</Link>
+                <Link href="/">Começar Agora</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="/presentation">Ver Apresentação</Link>
