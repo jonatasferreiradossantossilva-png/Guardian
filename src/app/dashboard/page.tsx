@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { IncidentMap } from "@/components/dashboard/incident-map";
 import { DriverStatusList } from "@/components/dashboard/driver-status-list";
-import { MonthlyRevenueChart } from '@/components/dashboard/charts';
+import { MonthlyRevenueChart, InvoicesStatusChart } from '@/components/dashboard/charts';
 
 export default function DashboardPage() {
   const [mapTarget, setMapTarget] = useState<google.maps.LatLngLiteral | null>(null);
@@ -33,6 +33,7 @@ export default function DashboardPage() {
                  <DriverStatusList onLocateDriver={setMapTarget} />
             </div>
             <MonthlyRevenueChart />
+            <InvoicesStatusChart />
         </div>
       </div>
     </div>
