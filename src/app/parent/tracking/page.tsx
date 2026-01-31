@@ -377,11 +377,6 @@ export default function ParentTrackingPage() {
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Acompanhamento</h1>
           <div className="flex items-center gap-2">
-            <Button asChild variant="outline">
-              <Link href="/parent/messages">
-                <MessageCircle className="mr-2 h-4 w-4" /> Mensagens
-              </Link>
-            </Button>
             <Link href="/" passHref>
               <Button variant="outline">Voltar ao Login</Button>
             </Link>
@@ -470,6 +465,11 @@ export default function ParentTrackingPage() {
                    <CardFooter className="flex flex-col gap-2 pt-6">
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 w-full">
                             <Button asChild variant="outline" className="w-full">
+                                <Link href="/parent/messages">
+                                    <MessageCircle className="mr-2 h-4 w-4" /> Mensagens
+                                </Link>
+                            </Button>
+                            <Button asChild variant="outline" className="w-full">
                                 <Link href="/parent/authorized">
                                     <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
                                 </Link>
@@ -479,12 +479,12 @@ export default function ParentTrackingPage() {
                                     <DollarSign className="mr-2 h-4 w-4" /> Visualizar Financeiro
                                 </Link>
                             </Button>
+                            <Button asChild variant="outline" className="w-full">
+                                <Link href="/parent/requests">
+                                    <Route className="mr-2 h-4 w-4" /> Solicitar Viagem Avulsa
+                                </Link>
+                            </Button>
                         </div>
-                        <Button asChild variant="outline" className="w-full">
-                            <Link href="/parent/requests">
-                                <Route className="mr-2 h-4 w-4" /> Solicitar Viagem Avulsa
-                            </Link>
-                        </Button>
                         <Button variant="ghost" className="w-full border-dashed border" onClick={() => setIsNearby(v => !v)}>
                             <Bell className="mr-2 h-4 w-4" />
                             Testar Notificação de Proximidade
