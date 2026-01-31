@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle, Users, Car, Bot, Shield, DollarSign, BarChart, Rocket } from 'lucide-react';
+import { CheckCircle, Users, Car, Bot, Shield, DollarSign, Rocket, MessageSquareX, Map, ShieldOff, Sparkles, ShieldCheck } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -19,6 +19,9 @@ export default function LandingPage() {
               <Link href="#features">Funcionalidades</Link>
             </Button>
             <Button variant="ghost" asChild>
+              <Link href="#differentiators">Diferenciais</Link>
+            </Button>
+            <Button variant="ghost" asChild>
               <Link href="#pricing">Preços</Link>
             </Button>
             <Button asChild>
@@ -35,7 +38,7 @@ export default function LandingPage() {
             <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
               A jornada do seu filho, <span className="text-primary">protegida em tempo real.</span>
             </h1>
-            <p className="mx-auto mt-6 max-w-xl text-lg text-muted-foreground md:text-xl">
+            <p className="mx-auto mt-6 max-w-2xl text-lg text-muted-foreground md:text-xl">
               Transforme a gestão do transporte escolar com otimização de rotas por IA, comunicação integrada e tranquilidade para os pais.
             </p>
             <div className="mt-8 flex justify-center gap-4">
@@ -49,71 +52,137 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Pain Point Section */}
+        <section id="pain-points" className="w-full py-20 md:py-28">
+            <div className="container mx-auto">
+                <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Chega de Operar no Escuro</h2>
+                <p className="mt-4 max-w-2xl mx-auto text-center text-muted-foreground md:text-lg">
+                    O mercado de transporte escolar ainda depende de ferramentas que geram mais trabalho e incerteza. Nós resolvemos as 3 dores principais:
+                </p>
+                <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+                    <div className="flex flex-col items-center text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20">
+                            <MessageSquareX className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Caos do WhatsApp</h3>
+                        <p className="mt-2 text-muted-foreground">Comunicação fragmentada, informações perdidas em grupos, e a sobrecarga de gerenciar avisos, cobranças e emergências de forma desorganizada.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20">
+                            <Map className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Rotas Ineficientes</h3>
+                        <p className="mt-2 text-muted-foreground">Custos elevados de combustível e tempo precioso perdido em trajetos definidos manualmente, sem adaptação a imprevistos ou otimização real.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20">
+                            <ShieldOff className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Insegurança e Risco</h3>
+                        <p className="mt-2 text-muted-foreground">A ansiedade dos pais pela falta de visibilidade da jornada e o imenso risco operacional e legal para a empresa por não ter registros precisos.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
         {/* Features Section */}
-        <section id="features" className="w-full py-20 md:py-28">
+        <section id="features" className="w-full py-20 md:py-28 bg-secondary/50">
           <div className="container mx-auto">
             <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">
-              Uma Plataforma Completa para Todos
+              Uma Plataforma Completa para Cada Elo da Jornada
             </h2>
             <p className="mt-4 max-w-2xl mx-auto text-center text-muted-foreground md:text-lg">
-              Soluções dedicadas para cada perfil, centralizando a operação em um único lugar.
+              Soluções dedicadas para gestores, motoristas e pais, centralizando toda a operação em um único lugar.
             </p>
             <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {/* Feature Card: Gestor */}
-              <Card className="flex flex-col">
+              <Card className="flex flex-col border-primary/20 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3"><BarChart className="text-primary"/> Para o Gestor</CardTitle>
-                  <CardDescription>Visão 360° e eficiência máxima.</CardDescription>
+                  <CardTitle className="flex items-center gap-3"><Bot className="text-primary"/>Para o Gestor</CardTitle>
+                  <CardDescription>O centro de comando para máxima eficiência e controle.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/guardian-dashboard/600/400" alt="Painel do Gestor" layout="fill" objectFit="cover" data-ai-hint="app screenshot" />
+                     <Image src="https://picsum.photos/seed/guardian-dashboard/600/400" alt="Painel do Gestor" fill objectFit="cover" data-ai-hint="app screenshot" />
                   </div>
                   <div className="space-y-4 pt-4">
-                    <FeatureItem icon={Bot} text="Otimizador de Rotas com IA" />
-                    <FeatureItem icon={DollarSign} text="Gestão Financeira Simplificada" />
-                    <FeatureItem icon={Users} text="Cadastro Centralizado" />
+                    <FeatureItem icon={Sparkles} title="Otimizador de Rotas com IA" description="Reduza custos com combustível e tempo com rotas inteligentes que se adaptam a imprevistos." />
+                    <FeatureItem icon={DollarSign} title="Gestão Financeira Simplificada" description="Automatize faturas, controle pagamentos e visualize a saúde financeira do seu negócio sem esforço." />
+                    <FeatureItem icon={Users} title="Comunicação e Gestão Centralizada" description="Visão 360° da sua frota, motoristas e alunos, com canais de comunicação diretos e registrados." />
                   </div>
                 </CardContent>
               </Card>
 
               {/* Feature Card: Motorista & Auxiliar */}
-              <Card className="flex flex-col">
+              <Card className="flex flex-col border-primary/20 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3"><Car className="text-primary"/> Para Motorista e Auxiliar</CardTitle>
-                  <CardDescription>Rotas claras e comunicação direta.</CardDescription>
+                  <CardTitle className="flex items-center gap-3"><Car className="text-primary"/>Para Motorista e Auxiliar</CardTitle>
+                  <CardDescription>O copiloto digital para uma rotina mais segura e tranquila.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/guardian-driver-app/600/400" alt="Painel do Motorista" layout="fill" objectFit="cover" data-ai-hint="mobile interface" />
+                     <Image src="https://picsum.photos/seed/guardian-driver-app/600/400" alt="Painel do Motorista" fill objectFit="cover" data-ai-hint="mobile interface" />
                   </div>
                   <div className="space-y-4 pt-4">
-                    <FeatureItem icon={CheckCircle} text="Plano de Rota Interativo" />
-                    <FeatureItem icon={Users} text="Controle de Embarque e Desembarque" />
-                    <FeatureItem icon={Shield} text="Comunicação Direta com Pais e Gestão" />
+                    <FeatureItem icon={CheckCircle} title="Plano de Rota Interativo" description="Receba a rota otimizada no app com a sequência de paradas e informações de cada aluno em um toque." />
+                    <FeatureItem icon={Users} title="Controle de Embarque e Desembarque" description="Registre a entrada e saída de cada aluno com um clique, notificando pais e gestores instantaneamente." />
+                    <FeatureItem icon={Shield} title="Comunicação Direta e Focada" description="Converse com pais e gestores dentro do app, com mensagens rápidas para agilizar o dia a dia sem distrações." />
                   </div>
                 </CardContent>
               </Card>
 
               {/* Feature Card: Pais */}
-              <Card className="flex flex-col">
+              <Card className="flex flex-col border-primary/20 shadow-lg">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3"><Users className="text-primary"/> Para os Pais</CardTitle>
-                  <CardDescription>Tranquilidade e controle na palma da mão.</CardDescription>
+                  <CardTitle className="flex items-center gap-3"><Users className="text-primary"/>Para os Pais</CardTitle>
+                  <CardDescription>A tranquilidade e o controle que você sempre quis.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                    <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/guardian-parent-app/600/400" alt="Painel dos Pais" layout="fill" objectFit="cover" data-ai-hint="map view" />
+                     <Image src="https://picsum.photos/seed/guardian-parent-app/600/400" alt="Painel dos Pais" fill objectFit="cover" data-ai-hint="map view" />
                   </div>
                   <div className="space-y-4 pt-4">
-                    <FeatureItem icon={Shield} text="Acompanhamento em Tempo Real" />
-                    <FeatureItem icon={CheckCircle} text="Status do Aluno (Embarque/Desembarque)" />
-                    <FeatureItem icon={DollarSign} text="Gestão de Pagamentos e Viagens Avulsas" />
+                    <FeatureItem icon={Map} title="Acompanhamento em Tempo Real" description="Saiba exatamente onde a van está no mapa e receba alertas inteligentes quando ela estiver se aproximando." />
+                    <FeatureItem icon={CheckCircle} title="Confirmação de Embarque e Desembarque" description="Veja se seu filho(a) embarcou, desembarcou na escola e chegou em casa em segurança. Fim da ansiedade." />
+                    <FeatureItem icon={DollarSign} title="Autonomia e Conveniência" description="Solicite viagens avulsas, gerencie pagamentos e autorize pessoas para a retirada de forma simples e segura." />
                   </div>
                 </CardContent>
               </Card>
             </div>
           </div>
+        </section>
+
+        {/* Differentiators Section */}
+        <section id="differentiators" className="w-full py-20 md:py-28">
+            <div className="container mx-auto">
+                <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Nossos Diferenciais: Além do Básico</h2>
+                 <p className="mt-4 max-w-2xl mx-auto text-center text-muted-foreground md:text-lg">
+                    Não somos apenas um mapa. Somos uma plataforma de inteligência operacional.
+                </p>
+                <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <Sparkles className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Inteligência Artificial a seu Favor</h3>
+                        <p className="mt-2 text-muted-foreground">Nossa IA analisa as paradas, o trânsito e incidentes para criar a rota mais econômica em tempo e dinheiro, um diferencial que nenhum concorrente oferece de forma integrada.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <ShieldCheck className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Segurança de Ponta a Ponta</h3>
+                        <p className="mt-2 text-muted-foreground">Do controle de embarque digital à gestão de pessoas autorizadas, cada funcionalidade foi desenhada para criar um registro seguro e dar tranquilidade aos pais e gestores.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <Users className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Ecossistema 360° Integrado</h3>
+                        <p className="mt-2 text-muted-foreground">Conectamos gestores, motoristas e pais em uma única plataforma, eliminando a necessidade de apps fragmentados e criando uma fonte única de verdade para toda a operação.</p>
+                    </div>
+                </div>
+            </div>
         </section>
         
         {/* Pricing Section */}
@@ -133,11 +202,11 @@ export default function LandingPage() {
                             <p className="text-5xl font-bold">R$ 89</p>
                             <p className="text-muted-foreground font-medium">por veículo / mês</p>
                             <ul className="text-left space-y-3 mt-8">
-                                <FeatureItem icon={CheckCircle} text="Gestão Completa de Cadastros" />
-                                <FeatureItem icon={CheckCircle} text="Rastreamento em Tempo Real" />
-                                <FeatureItem icon={CheckCircle} text="Comunicação Integrada" />
-                                <FeatureItem icon={CheckCircle} text="Otimizador de Rotas com IA" />
-                                <FeatureItem icon={CheckCircle} text="Gestão Financeira Completa" />
+                                <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Gestão Completa de Cadastros</span></li>
+                                <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Rastreamento em Tempo Real</span></li>
+                                <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Comunicação Integrada</span></li>
+                                <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Otimizador de Rotas com IA</span></li>
+                                <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Gestão Financeira Completa</span></li>
                             </ul>
                         </CardContent>
                     </Card>
@@ -161,9 +230,12 @@ export default function LandingPage() {
   );
 }
 
-const FeatureItem = ({ icon: Icon, text }) => (
-  <div className="flex items-center gap-3">
-    <Icon className="h-5 w-5 text-primary" />
-    <span className="font-medium text-foreground">{text}</span>
+const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
+  <div className="flex items-start gap-4">
+    <Icon className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+    <div>
+        <h4 className="font-semibold text-foreground">{title}</h4>
+        <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
   </div>
 );
