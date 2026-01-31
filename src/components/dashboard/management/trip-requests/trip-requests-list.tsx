@@ -105,7 +105,10 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const isLoading = areRequestsLoading || areStudentsLoading || areParentsLoading || areSchoolsLoading;
   
   const studentsMap = useMemo(() => new Map(students?.map(s => [s.id, s.name])), [students]);
-  const parentUserMap = useMemo(() => new Map(parents?.map(p => [p.userId, p])), [parents]);
+  const parentDataMap = useMemo(() => {
+    if (!parents) return new Map();
+    return new Map(parents.map(p => [p.userId, { id: p.id, name: p.name }]));
+  }, [parents]);
   const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
 
   const handleStatusChange = (requestId: string, newStatus: TripRequest['status']) => {
@@ -178,8 +181,9 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
               {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
                 sortedRequests.map((request) => {
                   const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
-                  const parent = parentUserMap.get(request.parentUserId);
-                  const parentName = parent?.name || 'Responsável não encontrado';
+                  const parentInfo = parentDataMap.get(request.parentUserId);
+                  const parentName = parentInfo?.name || 'Responsável não encontrado';
+                  const parentIdForAvatar = parentInfo?.id;
                   const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
 
                   return (
@@ -208,7 +212,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                       <TableCell>
                         <div className="flex items-center gap-3">
                             <Avatar className="h-8 w-8">
-                                <AvatarImage src={`https://picsum.photos/seed/parent-${parent?.id}/100/100`} />
+                                <AvatarImage src={`https://picsum.photos/seed/parent-${parentIdForAvatar}/100/100`} />
                                 <AvatarFallback>{(parentName || '?')[0]}</AvatarFallback>
                             </Avatar>
                             <span>{parentName}</span>
