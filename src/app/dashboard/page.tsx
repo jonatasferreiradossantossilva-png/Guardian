@@ -20,14 +20,14 @@ export default function DashboardPage() {
 
       <OverviewCards />
 
-      <div className="grid gap-8 lg:grid-cols-3">
-        <div className="lg:col-span-2">
+      <div className="grid gap-8 md:grid-cols-3">
+        <div className="md:col-span-2">
           <h2 className="text-2xl font-semibold mb-4">Mapa de Incidentes</h2>
           <div className="aspect-[16/9] rounded-lg overflow-hidden border">
              <IncidentMap target={mapTarget} />
           </div>
         </div>
-        <div className="lg:col-span-1 flex flex-col gap-8">
+        <div className="md:col-span-1 flex flex-col gap-8">
             <div>
                  <h2 className="text-2xl font-semibold mb-4">Status dos Motoristas</h2>
                  <DriverStatusList onLocateDriver={setMapTarget} />
