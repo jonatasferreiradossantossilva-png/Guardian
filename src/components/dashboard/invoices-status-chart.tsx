@@ -4,7 +4,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
-import { ChartContainer, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
+import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
 import { Loader2 } from 'lucide-react';
 
 const statusTextMap: Record<string, string> = {
