@@ -2,7 +2,6 @@
 
 import { useState } from 'react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
-import { IncidentList } from "@/components/dashboard/incident-list";
 import { IncidentMap } from "@/components/dashboard/incident-map";
 import { DriverStatusList } from "@/components/dashboard/driver-status-list";
 
@@ -31,10 +30,6 @@ export default function DashboardPage() {
             <div>
                  <h2 className="text-2xl font-semibold mb-4">Status dos Motoristas</h2>
                  <DriverStatusList onLocateDriver={setMapTarget} />
-            </div>
-            <div>
-                 <h2 className="text-2xl font-semibold mb-4">Incidentes Recentes</h2>
-                 <IncidentList onLocateIncident={setMapTarget} />
             </div>
         </div>
       </div>
