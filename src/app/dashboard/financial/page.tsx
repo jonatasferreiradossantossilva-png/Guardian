@@ -314,6 +314,14 @@ export default function FinancialPage() {
                         </div>
                     </div>
                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+                        {statusCardsData.map(stat => (
+                            <StatCard 
+                                key={stat.status}
+                                {...stat}
+                                selectedStatus={selectedStatus}
+                                onSelect={handleSelectStatus}
+                            />
+                        ))}
                         <Card 
                             className={cn(
                                 "cursor-pointer transition-all hover:bg-secondary/50",
@@ -330,14 +338,6 @@ export default function FinancialPage() {
                                 <p className="text-xs text-muted-foreground">{summaryStats.total.count} fatura(s)</p>
                             </CardContent>
                         </Card>
-                        {statusCardsData.map(stat => (
-                            <StatCard 
-                                key={stat.status}
-                                {...stat}
-                                selectedStatus={selectedStatus}
-                                onSelect={handleSelectStatus}
-                            />
-                        ))}
                     </div>
                 </CardContent>
             </Card>
