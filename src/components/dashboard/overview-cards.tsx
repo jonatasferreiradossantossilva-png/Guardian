@@ -6,60 +6,52 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, TrendingDown, FileText } from "lucide-react";
 import { useMockCollection } from "@/hooks/use-mock-data";
 
-export function OverviewCards() {
-  const { data: allInvoices, isLoading: areInvoicesLoading } = useMockCollection('invoices');
-  const { data: allExpenses, isLoading: areExpensesLoading } = useMockCollection('expenses');
+interface OverviewCardsProps {
+    filters: {
+        year: string;
+        month: string;
+    }
+}
+
+export function OverviewCards({ filters }: OverviewCardsProps) {
+  const { data: allInvoices, isLoading: areInvoicesLoading } = useMockCollection('invoices', undefined);
+  const { data: allExpenses, isLoading: areExpensesLoading } = useMockCollection('expenses', undefined);
 
   const isLoading = areInvoicesLoading || areExpensesLoading;
 
   const financialStats = useMemo(() => {
-    if (!allInvoices || !allExpenses) return { monthlyRevenue: 0, monthlyReceivables: 0, monthlyExpenses: 0, monthlyBalance: 0, displayMonth: 'N/A' };
+    if (!allInvoices || !allExpenses) return { monthlyRevenue: 0, monthlyReceivables: 0, monthlyExpenses: 0, monthlyBalance: 0, displayPeriod: 'N/A' };
 
-    // Find the latest month string (e.g., "2024-08") from both invoices and expenses to define the "current" month.
-    const latestInvoiceMonth = allInvoices.reduce((latest, inv) => (inv.dueDate.substring(0, 7) > latest ? inv.dueDate.substring(0, 7) : latest), '0000-00');
-    const latestExpenseMonth = allExpenses.reduce((latest, exp) => (exp.date.substring(0, 7) > latest ? exp.date.substring(0, 7) : latest), '0000-00');
+    const { year, month } = filters;
+    const isYearlyView = month === 'all';
     
-    const latestMonthStr = latestInvoiceMonth > latestExpenseMonth ? latestInvoiceMonth : latestExpenseMonth;
-
-    if (latestMonthStr === '0000-00') return { monthlyRevenue: 0, monthlyReceivables: 0, monthlyExpenses: 0, monthlyBalance: 0, displayMonth: 'N/A' };
+    let filteredInvoices = allInvoices.filter(inv => inv.dueDate.startsWith(year));
+    let filteredExpenses = allExpenses.filter(exp => exp.date.startsWith(year));
     
-    let monthlyRevenue = 0;
-    let monthlyReceivables = 0;
-    let monthlyExpenses = 0;
-
-    allInvoices.forEach(invoice => {
-        if (invoice.dueDate.substring(0, 7) === latestMonthStr) {
-            if (invoice.status === 'paid') {
-                monthlyRevenue += invoice.amount;
-            }
-            if (invoice.status === 'pending' || invoice.status === 'overdue' || invoice.status === 'pagamento_em_analise') {
-                monthlyReceivables += invoice.amount;
-            }
-        }
-    });
-
-    allExpenses.forEach(expense => {
-        if (expense.date.substring(0, 7) === latestMonthStr) {
-            monthlyExpenses += expense.amount;
-        }
-    });
+    if (!isYearlyView) {
+        const monthStr = `${year}-${month}`;
+        filteredInvoices = filteredInvoices.filter(inv => inv.dueDate.startsWith(monthStr));
+        filteredExpenses = filteredExpenses.filter(exp => exp.date.startsWith(monthStr));
+    }
     
+    const monthlyRevenue = filteredInvoices.filter(inv => inv.status === 'paid').reduce((acc, inv) => acc + inv.amount, 0);
+    const monthlyReceivables = filteredInvoices.filter(inv => ['pending', 'overdue', 'pagamento_em_analise'].includes(inv.status)).reduce((acc, inv) => acc + inv.amount, 0);
+    const monthlyExpenses = filteredExpenses.reduce((acc, exp) => acc + exp.amount, 0);
     const monthlyBalance = monthlyRevenue - monthlyExpenses;
-    
-    const monthNames: Record<string, string> = {
-      '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
-      '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
-      '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
-    };
-    
-    const [year, monthNum] = latestMonthStr.split('-');
-    const monthName = monthNames[monthNum] || '';
-    const capitalizedDisplayMonth = `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} de ${year}`;
 
+    let displayPeriod = `Ano de ${year}`;
+    if (!isYearlyView) {
+        const monthNames: Record<string, string> = {
+            '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
+            '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
+            '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
+        };
+        displayPeriod = `${monthNames[month]} de ${year}`;
+    }
 
-    return { monthlyRevenue, monthlyReceivables, monthlyExpenses, monthlyBalance, displayMonth: capitalizedDisplayMonth };
+    return { monthlyRevenue, monthlyReceivables, monthlyExpenses, monthlyBalance, displayPeriod };
 
-  }, [allInvoices, allExpenses]);
+  }, [allInvoices, allExpenses, filters]);
   
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(value);
@@ -67,32 +59,32 @@ export function OverviewCards() {
 
   const overviewStats = [
     {
-      title: "Receita do Mês",
+      title: "Receita",
       value: isLoading ? "-" : formatCurrency(financialStats.monthlyRevenue),
+      changeText: isLoading ? "Calculando..." : `Total recebido em ${financialStats.displayPeriod}`,
       icon: DollarSign,
-      changeText: isLoading || financialStats.displayMonth === 'N/A' ? "Calculando..." : `Total recebido em ${financialStats.displayMonth}`,
       href: "/dashboard/financial"
     },
     {
-      title: "Despesas do Mês",
+      title: "Despesas",
       value: isLoading ? "-" : formatCurrency(financialStats.monthlyExpenses),
+      changeText: isLoading ? "Calculando..." : `Total gasto em ${financialStats.displayPeriod}`,
       icon: TrendingDown,
-      changeText: isLoading || financialStats.displayMonth === 'N/A' ? "Calculando..." : `Total gasto em ${financialStats.displayMonth}`,
       href: "/dashboard/financial"
     },
     {
-      title: "Balanço do Mês",
+      title: "Balanço",
       value: isLoading ? "-" : formatCurrency(financialStats.monthlyBalance),
+      changeText: isLoading ? "Calculando..." : `Receitas - Despesas em ${financialStats.displayPeriod}`,
       icon: financialStats.monthlyBalance >= 0 ? TrendingUp : TrendingDown,
-      changeText: isLoading || financialStats.displayMonth === 'N/A' ? "Calculando..." : `Receitas - Despesas em ${financialStats.displayMonth}`,
       href: "/dashboard/financial",
       isBalance: true,
     },
     {
       title: "Contas a Receber",
       value: isLoading ? "-" : formatCurrency(financialStats.monthlyReceivables),
+      changeText: isLoading ? "Calculando..." : `Pendente ou em análise para ${financialStats.displayPeriod}`,
       icon: FileText,
-      changeText: isLoading || financialStats.displayMonth === 'N/A' ? "Calculando..." : `Pendente ou em análise para ${financialStats.displayMonth}`,
       href: "/dashboard/financial"
     },
   ];

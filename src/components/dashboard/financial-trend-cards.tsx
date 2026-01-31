@@ -5,14 +5,22 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { TrendingUp, TrendingDown } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { subMonths, subYears, format } from 'date-fns';
 
-export function FinancialTrendCards() {
-    const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection('invoices');
-    const { data: expenses, isLoading: areExpensesLoading } = useMockCollection('expenses');
+interface FinancialTrendCardsProps {
+    filters: {
+        year: string;
+        month: string;
+    }
+}
+
+export function FinancialTrendCards({ filters }: FinancialTrendCardsProps) {
+    const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection('invoices', undefined);
+    const { data: expenses, isLoading: areExpensesLoading } = useMockCollection('expenses', undefined);
     const [trends, setTrends] = useState<{
         revenue: { value: string; change: string; changeType: 'increase' | 'decrease' };
         expenses: { value: string; change: string; changeType: 'increase' | 'decrease' };
-        lastMonthName: string;
+        comparisonPeriod: string;
     } | null>(null);
 
     useEffect(() => {
@@ -21,60 +29,82 @@ export function FinancialTrendCards() {
             return;
         }
 
-        const now = new Date();
-        const currentMonthStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+        const { year, month } = filters;
+        const isYearlyView = month === 'all';
+        const currentPeriodDate = new Date(parseInt(year), isYearlyView ? 0 : parseInt(month) - 1, 1);
         
-        const lastMonthDate = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-        const lastMonthStr = `${lastMonthDate.getFullYear()}-${String(lastMonthDate.getMonth() + 1).padStart(2, '0')}`;
-        const lastMonthName = lastMonthDate.toLocaleString('pt-BR', { month: 'long' });
+        let previousPeriodDate: Date;
+        let comparisonPeriod: string;
+        
+        const monthNames: Record<number, string> = {
+            0: 'Jan', 1: 'Fev', 2: 'Mar', 3: 'Abr', 4: 'Mai', 5: 'Jun',
+            6: 'Jul', 7: 'Ago', 8: 'Set', 9: 'Out', 10: 'Nov', 11: 'Dez'
+        };
 
-        let currentMonthRevenue = 0;
-        let lastMonthRevenue = 0;
+        if (isYearlyView) {
+            previousPeriodDate = subYears(currentPeriodDate, 1);
+            comparisonPeriod = `vs. ${previousPeriodDate.getFullYear()}`;
+        } else {
+            previousPeriodDate = subMonths(currentPeriodDate, 1);
+            comparisonPeriod = `vs. ${monthNames[previousPeriodDate.getMonth()]}`;
+        }
+        
+        const currentPeriodYearStr = String(currentPeriodDate.getFullYear());
+        const currentPeriodMonthStr = String(currentPeriodDate.getMonth() + 1).padStart(2, '0');
+
+        const prevPeriodYearStr = String(previousPeriodDate.getFullYear());
+        const prevPeriodMonthStr = String(previousPeriodDate.getMonth() + 1).padStart(2, '0');
+
+        let currentPeriodRevenue = 0, prevPeriodRevenue = 0;
+        let currentPeriodExpenses = 0, prevPeriodExpenses = 0;
+
         invoices.filter(inv => inv.status === 'paid').forEach(inv => {
-        if (inv.dueDate.startsWith(currentMonthStr)) {
-            currentMonthRevenue += inv.amount;
-        } else if (inv.dueDate.startsWith(lastMonthStr)) {
-            lastMonthRevenue += inv.amount;
-        }
+            if (isYearlyView) {
+                if (inv.dueDate.startsWith(currentPeriodYearStr)) currentPeriodRevenue += inv.amount;
+                else if (inv.dueDate.startsWith(prevPeriodYearStr)) prevPeriodRevenue += inv.amount;
+            } else {
+                if (inv.dueDate.startsWith(`${currentPeriodYearStr}-${currentPeriodMonthStr}`)) currentPeriodRevenue += inv.amount;
+                else if (inv.dueDate.startsWith(`${prevPeriodYearStr}-${prevPeriodMonthStr}`)) prevPeriodRevenue += inv.amount;
+            }
         });
 
-        let currentMonthExpenses = 0;
-        let lastMonthExpenses = 0;
         expenses.forEach(exp => {
-        if (exp.date.startsWith(currentMonthStr)) {
-            currentMonthExpenses += exp.amount;
-        } else if (exp.date.startsWith(lastMonthStr)) {
-            lastMonthExpenses += exp.amount;
-        }
+            if (isYearlyView) {
+                if (exp.date.startsWith(currentPeriodYearStr)) currentPeriodExpenses += exp.amount;
+                else if (exp.date.startsWith(prevPeriodYearStr)) prevPeriodExpenses += exp.amount;
+            } else {
+                if (exp.date.startsWith(`${currentPeriodYearStr}-${currentPeriodMonthStr}`)) currentPeriodExpenses += exp.amount;
+                else if (exp.date.startsWith(`${prevPeriodYearStr}-${prevPeriodMonthStr}`)) prevPeriodExpenses += exp.amount;
+            }
         });
+
+        const revenueDiff = currentPeriodRevenue - prevPeriodRevenue;
+        const revenueChange = prevPeriodRevenue > 0 ? (revenueDiff / prevPeriodRevenue) * 100 : (currentPeriodRevenue > 0 ? 100 : 0);
+
+        const expensesDiff = currentPeriodExpenses - prevPeriodExpenses;
+        const expenseChange = prevPeriodExpenses > 0 ? (expensesDiff / prevPeriodExpenses) * 100 : (currentPeriodExpenses > 0 ? 100 : 0);
         
-        const revenueDiff = currentMonthRevenue - lastMonthRevenue;
-        const revenueChange = lastMonthRevenue > 0 ? (revenueDiff / lastMonthRevenue) * 100 : (currentMonthRevenue > 0 ? 100 : 0);
-
-        const expensesDiff = currentMonthExpenses - lastMonthExpenses;
-        const expenseChange = lastMonthExpenses > 0 ? (expensesDiff / lastMonthExpenses) * 100 : (currentMonthExpenses > 0 ? 100 : 0);
-
         setTrends({
             revenue: {
-                value: `R$ ${currentMonthRevenue.toFixed(2)}`,
+                value: `R$ ${currentPeriodRevenue.toFixed(2)}`,
                 change: `${revenueChange >= 0 ? '+' : ''}${revenueChange.toFixed(1)}%`,
                 changeType: revenueDiff >= 0 ? 'increase' : 'decrease'
             },
             expenses: {
-                value: `R$ ${currentMonthExpenses.toFixed(2)}`,
+                value: `R$ ${currentPeriodExpenses.toFixed(2)}`,
                 change: `${expenseChange >= 0 ? '+' : ''}${expenseChange.toFixed(1)}%`,
-                // For expenses, an increase is a "bad" trend (red), decrease is "good" (green)
                 changeType: expensesDiff >= 0 ? 'decrease' : 'increase'
             },
-            lastMonthName
+            comparisonPeriod
         });
-    }, [invoices, expenses]);
+
+    }, [invoices, expenses, filters]);
 
 
     if (areInvoicesLoading || areExpensesLoading || !trends) {
         return (
             <Card>
-                <CardHeader><CardTitle>Tendências Mensais</CardTitle></CardHeader>
+                <CardHeader><CardTitle>Tendências</CardTitle></CardHeader>
                 <CardContent className="h-[230px] flex items-center justify-center text-muted-foreground">Calculando...</CardContent>
             </Card>
         )
@@ -83,8 +113,8 @@ export function FinancialTrendCards() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Tendências Mensais</CardTitle>
-                <CardDescription>Receita e despesas do mês atual comparadas com o mês anterior.</CardDescription>
+                <CardTitle>Tendências</CardTitle>
+                <CardDescription>Receita e despesas do período selecionado comparadas com o período anterior.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                  <div className="flex items-center gap-4">
@@ -92,7 +122,7 @@ export function FinancialTrendCards() {
                        <TrendingUp className="h-6 w-6 text-primary"/>
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Receita (vs. {trends.lastMonthName})</p>
+                        <p className="text-sm text-muted-foreground">Receita ({trends.comparisonPeriod})</p>
                         <p className="text-2xl font-bold">{trends.revenue.value}</p>
                     </div>
                     <div className={cn(
@@ -107,7 +137,7 @@ export function FinancialTrendCards() {
                        <TrendingDown className="h-6 w-6 text-destructive"/>
                     </div>
                     <div>
-                        <p className="text-sm text-muted-foreground">Despesas (vs. {trends.lastMonthName})</p>
+                        <p className="text-sm text-muted-foreground">Despesas ({trends.comparisonPeriod})</p>
                         <p className="text-2xl font-bold">{trends.expenses.value}</p>
                     </div>
                      <div className={cn(

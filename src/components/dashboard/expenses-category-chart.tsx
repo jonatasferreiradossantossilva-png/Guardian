@@ -7,6 +7,13 @@ import { PieChart, Pie, Cell } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
 import { Loader2 } from 'lucide-react';
 
+interface ExpensesCategoryChartProps {
+    filters: {
+        year: string;
+        month: string;
+    }
+}
+
 const categoryColors: Record<string, string> = {
     Combustível: 'hsl(var(--chart-1))',
     Manutenção: 'hsl(var(--chart-2))',
@@ -15,13 +22,24 @@ const categoryColors: Record<string, string> = {
     Outros: 'hsl(var(--chart-5))',
 };
 
-export function ExpensesCategoryChart() {
-  const { data: expenses, isLoading } = useMockCollection('expenses');
+export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
+  const { data: allExpenses, isLoading } = useMockCollection('expenses', undefined);
 
   const chartData = useMemo(() => {
-    if (!expenses) return [];
+    if (!allExpenses) return [];
 
-    const categoryTotals = expenses.reduce((acc, expense) => {
+    const { year, month } = filters;
+    const isYearlyView = month === 'all';
+
+    let filteredExpenses = allExpenses.filter(exp => exp.date.startsWith(year));
+    if (!isYearlyView) {
+        const monthStr = `${year}-${month}`;
+        filteredExpenses = filteredExpenses.filter(exp => exp.date.startsWith(monthStr));
+    }
+
+    if (filteredExpenses.length === 0) return [];
+
+    const categoryTotals = filteredExpenses.reduce((acc, expense) => {
       const category = expense.category || 'Outros';
       acc[category] = (acc[category] || 0) + expense.amount;
       return acc;
@@ -32,11 +50,8 @@ export function ExpensesCategoryChart() {
       total,
       fill: categoryColors[category] || 'hsl(var(--muted))',
     }));
-  }, [expenses]);
+  }, [allExpenses, filters]);
   
-  const totalExpenses = useMemo(() => chartData.reduce((acc, item) => acc + item.total, 0), [chartData]);
-
-
   const chartConfig = useMemo(() => {
     return chartData.reduce((acc, item) => {
       acc[item.category] = {
@@ -66,11 +81,12 @@ export function ExpensesCategoryChart() {
     <Card>
       <CardHeader>
         <CardTitle>Composição das Despesas</CardTitle>
-        <CardDescription>Distribuição de custos por categoria.</CardDescription>
+        <CardDescription>Distribuição de custos do período selecionado.</CardDescription>
       </CardHeader>
       <CardContent className="flex-1 pb-0">
         <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[230px]">
-          <PieChart>
+          {chartData.length > 0 ? (
+            <PieChart>
               <ChartTooltip
                 cursor={false}
                 content={<ChartTooltipContent hideLabel />}
@@ -91,6 +107,11 @@ export function ExpensesCategoryChart() {
                   className="-translate-y-4"
                 />
             </PieChart>
+          ) : (
+            <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
+                Nenhuma despesa no período.
+            </div>
+          )}
         </ChartContainer>
       </CardContent>
     </Card>
