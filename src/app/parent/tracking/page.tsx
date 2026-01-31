@@ -75,6 +75,34 @@ const statusIconMap: Record<Student['status'], React.ReactNode> = {
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
+const Polyline = (props: google.maps.PolylineOptions) => {
+  const map = useMap();
+  const polylineRef = useRef<google.maps.Polyline>();
+
+  useEffect(() => {
+    if (!map) {
+      return;
+    }
+    polylineRef.current = new google.maps.Polyline();
+    polylineRef.current.setMap(map);
+
+    return () => {
+      if (polylineRef.current) {
+        polylineRef.current.setMap(null);
+      }
+    };
+  }, [map]);
+
+  useEffect(() => {
+    if (polylineRef.current) {
+      polylineRef.current.setOptions(props);
+    }
+  }, [props]);
+
+  return null;
+};
+
+
 // A simple hook to simulate onSnapshot for a single nested doc
 const useMockNestedDocSnapshot = (path) => {
     const { getNestedDoc, db } = useMockData();
@@ -150,6 +178,14 @@ function ParentRouteMap({ busLocation, student, school }: { busLocation: Locatio
 
   }, [map, busLocation, student, school]);
 
+  const routePath = useMemo(() => {
+    if (!busLocation || !student?.latitude || !student.longitude) return [];
+    return [
+        { lat: busLocation.latitude, lng: busLocation.longitude },
+        { lat: student.latitude, lng: student.longitude }
+    ];
+  }, [busLocation, student]);
+
   return (
     <>
       {busLocation && (
@@ -172,6 +208,14 @@ function ParentRouteMap({ busLocation, student, school }: { busLocation: Locatio
             <School className="h-5 w-5 text-white" />
           </div>
         </AdvancedMarker>
+      )}
+       {routePath.length > 1 && (
+        <Polyline
+            path={routePath}
+            strokeColor="#1877F2"
+            strokeOpacity={0.7}
+            strokeWeight={6}
+        />
       )}
     </>
   );
