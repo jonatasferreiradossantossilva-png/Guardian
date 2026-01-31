@@ -52,6 +52,7 @@ type Route = {
 type Driver = { id: string; name: string };
 type Student = { id: string; name: string };
 type Assistant = { id: string; name: string; profile: string };
+type Vehicle = { id: string; model: string; licensePlate: string; capacity: number };
 
 
 interface RoutesListProps {
@@ -59,9 +60,10 @@ interface RoutesListProps {
   initialDrivers: Driver[];
   initialStudents: Student[];
   initialAssistants: Assistant[];
+  initialVehicles: Vehicle[];
 }
 
-export function RoutesList({ initialRoutes, initialDrivers, initialStudents, initialAssistants }: RoutesListProps) {
+export function RoutesList({ initialRoutes, initialDrivers, initialStudents, initialAssistants, initialVehicles }: RoutesListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
 
@@ -73,13 +75,15 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
   const { data: liveDrivers, isLoading: areDriversLoading } = useMockCollection('drivers');
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
   const { data: liveUsers, isLoading: areUsersLoading } = useMockCollection('users');
+  const { data: liveVehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
 
 
   const routes = liveRoutes ?? initialRoutes;
   const drivers = liveDrivers ?? initialDrivers;
   const students = liveStudents ?? initialStudents;
   const assistants = useMemo(() => (liveUsers ?? initialAssistants)?.filter(u => u.profile === 'auxiliar'), [liveUsers, initialAssistants]);
-  const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading || areUsersLoading;
+  const vehicles = liveVehicles ?? initialVehicles;
+  const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading || areUsersLoading || areVehiclesLoading;
 
   const driversMap = useMemo(() => {
     if (!drivers) return new Map();
@@ -139,6 +143,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             drivers={drivers || []}
             students={students || []}
             assistants={assistants || []}
+            vehicles={vehicles || []}
             onFormSubmit={handleFormSubmit}
           />
         </Dialog>

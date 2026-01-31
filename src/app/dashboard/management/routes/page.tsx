@@ -9,7 +9,8 @@ export default async function RoutesPage() {
   const students = initialMockData.students;
   const users = initialMockData.users || [];
   const assistants = users.filter(u => u.profile === 'auxiliar');
+  const vehicles = initialMockData.vehicles;
 
   // The client component receives the initial data as props
-  return <RoutesList initialRoutes={routes} initialDrivers={drivers} initialStudents={students} initialAssistants={assistants} />;
+  return <RoutesList initialRoutes={routes} initialDrivers={drivers} initialStudents={students} initialAssistants={assistants} initialVehicles={vehicles} />;
 }

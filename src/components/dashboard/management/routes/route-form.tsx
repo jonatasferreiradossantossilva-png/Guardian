@@ -33,7 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users, AlertCircle } from 'lucide-react';
 import { Card } from '@/components/ui/card';
 
 const formSchema = z.object({
@@ -45,15 +45,17 @@ const formSchema = z.object({
 });
 
 type RouteFormValues = z.infer<typeof formSchema>;
-type Driver = { id: string; name: string };
+type Driver = { id: string; name: string; vehicleId?: string; };
 type Student = { id: string; name: string, routeId?: string, shift: string };
 type Assistant = { id: string; name: string };
+type Vehicle = { id: string; model: string; capacity: number; };
 
 interface RouteFormProps {
   route?: { id: string } & Partial<RouteFormValues>;
   drivers: Driver[];
   students: Student[];
   assistants: Assistant[];
+  vehicles: Vehicle[];
   onFormSubmit: () => void;
 }
 
@@ -62,6 +64,7 @@ export function RouteForm({
   drivers,
   students,
   assistants,
+  vehicles,
   onFormSubmit,
 }: RouteFormProps) {
   const { toast } = useToast();
@@ -82,6 +85,21 @@ export function RouteForm({
 
   const shift = form.watch('shift');
   const studentIdsInForm = form.watch('studentIds');
+  const driverId = form.watch('driverId');
+
+  const { vehicle, vehicleCapacity } = useMemo(() => {
+    if (!driverId || !drivers || !vehicles) return { vehicle: null, vehicleCapacity: Infinity };
+    const driver = drivers.find(d => d.id === driverId);
+    if (!driver?.vehicleId) return { vehicle: null, vehicleCapacity: Infinity };
+    const vehicle = vehicles.find(v => v.id === driver.vehicleId);
+    if (!vehicle) return { vehicle: null, vehicleCapacity: Infinity };
+    return { vehicle, vehicleCapacity: vehicle.capacity };
+  }, [driverId, drivers, vehicles]);
+
+  const isCapacityExceeded = useMemo(() => {
+    return studentIdsInForm.length > vehicleCapacity;
+  }, [studentIdsInForm, vehicleCapacity]);
+
   
   const { availableStudents, studentsInCurrentRoute } = useMemo(() => {
     const shiftInForm = shift === 'manha' ? 'Manhã' : 'Tarde';
@@ -115,14 +133,29 @@ export function RouteForm({
 
   const moveStudents = (direction: 'toRoute' | 'fromRoute' | 'allToRoute' | 'allFromRoute') => {
     const currentStudentIds = form.getValues('studentIds');
+    let studentsToAdd: string[] = [];
+
     if (direction === 'toRoute') {
-      form.setValue('studentIds', [...currentStudentIds, ...Array.from(selectedAvailable)]);
+      studentsToAdd = [...Array.from(selectedAvailable)];
+    } else if (direction === 'allToRoute') {
+      studentsToAdd = availableStudents.map(s => s.id);
+    }
+    
+    if (direction === 'toRoute' || direction === 'allToRoute') {
+      if (currentStudentIds.length + studentsToAdd.length > vehicleCapacity) {
+        toast({
+          title: "Capacidade do veículo excedida!",
+          description: `A rota não pode ter mais de ${vehicleCapacity} alunos para este veículo.`,
+          variant: "destructive",
+        });
+        return;
+      }
+      form.setValue('studentIds', [...currentStudentIds, ...studentsToAdd]);
       setSelectedAvailable(new Set());
-    } else if (direction === 'fromRoute') {
+    } 
+    else if (direction === 'fromRoute') {
       form.setValue('studentIds', currentStudentIds.filter(id => !selectedInRoute.has(id)));
       setSelectedInRoute(new Set());
-    } else if (direction === 'allToRoute') {
-        form.setValue('studentIds', [...currentStudentIds, ...availableStudents.map(s => s.id)]);
     } else if (direction === 'allFromRoute') {
         form.setValue('studentIds', []);
     }
@@ -191,7 +224,16 @@ export function RouteForm({
               <FormItem><FormLabel>Nome da Rota</FormLabel><FormControl><Input placeholder="Ex: Rota Matinal - Zona Sul" {...field} /></FormControl><FormMessage /></FormItem>
             )}/>
             <FormField control={form.control} name="driverId" render={({ field }) => (
-              <FormItem><FormLabel>Motorista</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione um motorista" /></SelectTrigger></FormControl><SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent></Select><FormMessage /></FormItem>
+              <FormItem>
+                <FormLabel>Motorista</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione um motorista" /></SelectTrigger></FormControl><SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent></Select>
+                {vehicle && (
+                    <FormDescription>
+                    Veículo: {vehicle.model} (Capacidade: {vehicle.capacity} alunos)
+                    </FormDescription>
+                )}
+                <FormMessage />
+                </FormItem>
             )}/>
              <FormField control={form.control} name="shift" render={({ field }) => (
               <FormItem><FormLabel>Turno</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione o turno" /></SelectTrigger></FormControl><SelectContent><SelectItem value="manha">Manhã</SelectItem><SelectItem value="tarde">Tarde</SelectItem></SelectContent></Select><FormMessage /></FormItem>
@@ -221,6 +263,12 @@ export function RouteForm({
           <div className="pt-4">
             <FormLabel>Alunos na Rota</FormLabel>
             <FormDescription className="mb-2">Mova os alunos para a lista da direita e ordene-os para definir as paradas.</FormDescription>
+             {isCapacityExceeded && (
+                <div className="text-destructive text-sm font-medium flex items-center gap-2 p-2 bg-destructive/10 rounded-md my-2">
+                    <AlertCircle className="h-4 w-4" />
+                    Capacidade de {vehicleCapacity} alunos excedida! Salve ou remova alunos.
+                </div>
+            )}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-2 items-center">
                 {/* Available Students */}
                 <CardWithListHeader title="Alunos Disponíveis" count={availableStudents.length}>
@@ -263,7 +311,7 @@ export function RouteForm({
           
           <DialogFooter className="pt-4">
             <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-            <Button type="submit">Salvar</Button>
+            <Button type="submit" disabled={isCapacityExceeded}>Salvar</Button>
           </DialogFooter>
         </form>
       </Form>
