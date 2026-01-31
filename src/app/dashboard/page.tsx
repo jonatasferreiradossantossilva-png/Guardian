@@ -1,7 +1,9 @@
 'use client';
 
 import { OverviewCards } from "@/components/dashboard/overview-cards";
-import { MonthlyRevenueChart, InvoicesStatusChart } from '@/components/dashboard/charts';
+import { FinancialTrendCards } from "@/components/dashboard/financial-trend-cards";
+import { RecentInvoicesList } from "@/components/dashboard/recent-invoices-list";
+
 
 export default function DashboardPage() {
   return (
@@ -16,8 +18,8 @@ export default function DashboardPage() {
       <OverviewCards />
 
       <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
-        <MonthlyRevenueChart />
-        <InvoicesStatusChart />
+        <FinancialTrendCards />
+        <RecentInvoicesList />
       </div>
     </div>
   );
