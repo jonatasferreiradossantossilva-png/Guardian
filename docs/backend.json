@@ -539,6 +539,23 @@
         "status"
       ]
     },
+     "Expense": {
+      "title": "Expense",
+      "type": "object",
+      "description": "Represents a business expense.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier." },
+        "description": { "type": "string", "description": "Description of the expense." },
+        "amount": { "type": "number", "description": "Value of the expense." },
+        "date": { "type": "string", "format": "date", "description": "Date the expense occurred." },
+        "category": {
+          "type": "string",
+          "description": "Category of the expense.",
+          "enum": ["Combustível", "Manutenção", "Salários", "Impostos", "Outros"]
+        }
+      },
+      "required": ["id", "description", "amount", "date", "category"]
+    },
     "Message": {
       "$schema": "http://json-schema.org/draft-07/schema#",
       "title": "Message",
@@ -885,6 +902,22 @@
             {
               "name": "invoiceId",
               "description": "The unique identifier for the invoice."
+            }
+          ]
+        }
+      },
+      {
+        "path": "/expenses/{expenseId}",
+        "definition": {
+          "entityName": "Expense",
+          "schema": {
+            "$ref": "#/backend/entities/Expense"
+          },
+          "description": "Stores business expenses. Only accessible by admins.",
+          "params": [
+            {
+              "name": "expenseId",
+              "description": "The unique identifier for the expense."
             }
           ]
         }

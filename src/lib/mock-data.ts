@@ -398,6 +398,13 @@ export const initialMockData = {
         {id: "inv-avulsa-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Viagem Avulsa - 12/08/2024", amount: 25.00, dueDate: "2024-08-12", status: "paid" },
 
     ],
+    expenses: [
+        { id: "exp-1", description: "Abastecimento da Sprinter (BRA2E19)", amount: 350.75, date: "2024-08-01", category: "Combustível" },
+        { id: "exp-2", description: "Troca de óleo - Renault Master", amount: 250.00, date: "2024-08-02", category: "Manutenção" },
+        { id: "exp-3", description: "Pagamento do salário - Mariana Costa", amount: 2500.00, date: "2024-08-05", category: "Salários" },
+        { id: "exp-4", description: "Compra de material de limpeza para os veículos", amount: 89.90, date: "2024-07-28", category: "Outros" },
+        { id: "exp-5", description: "Abastecimento da Ducato (XYZ7W89)", amount: 410.50, date: "2024-07-25", category: "Combustível" },
+    ],
     messages: [
         { id: "msg-1", senderId: "user-pai-1", recipientId: "user-admin-1", text: "Bom dia! O Lucas já está esperando.", timestamp: "2024-07-30T08:00:00Z" },
         { id: "msg-2", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Bom dia! Chego em 5 minutos.", timestamp: "2024-07-30T08:01:00Z" },
