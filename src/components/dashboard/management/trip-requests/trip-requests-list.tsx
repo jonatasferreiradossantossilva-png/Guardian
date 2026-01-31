@@ -39,6 +39,7 @@ import {
 import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 type TripRequest = {
   id: string;
@@ -99,7 +100,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const isLoading = areRequestsLoading || areStudentsLoading || areParentsLoading;
   
   const studentsMap = useMemo(() => new Map(students?.map(s => [s.id, s.name])), [students]);
-  const parentsMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
+  const parentUserMap = useMemo(() => new Map(parents?.map(p => [p.userId, p])), [parents]);
 
   const handleStatusChange = (requestId: string, newStatus: TripRequest['status']) => {
     updateDoc('trip_requests', requestId, { status: newStatus });
@@ -168,51 +169,73 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                 </TableRow>
               )}
               {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
-                sortedRequests.map((request) => (
-                  <TableRow key={request.id}>
-                    <TableCell className="font-medium flex items-center gap-2">
-                        {studentsMap.get(request.studentId) || 'Aluno não encontrado'}
-                        {request.reason && (
-                           <TooltipProvider>
-                             <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
-                                </TooltipTrigger>
-                                <TooltipContent><p>{request.reason}</p></TooltipContent>
-                             </Tooltip>
-                           </TooltipProvider>
-                        )}
-                    </TableCell>
-                    <TableCell>{parentsMap.get(request.parentUserId) || 'Responsável não encontrado'}</TableCell>
-                    <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
-                    <TableCell>{typeMap[request.type]}</TableCell>
-                    <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
-                    <TableCell><Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge></TableCell>
-                    <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                           <Button variant="ghost" className="h-8 w-8 p-0" disabled={request.status === 'aprovada' || request.status === 'rejeitada'}>
-                                <span className="sr-only">Abrir menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                             <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                             <DropdownMenuItem onClick={() => handleStatusChange(request.id, 'aprovada')} disabled={request.status !== 'pendente'}>
-                                <Check className="mr-2" /> Aprovar Direto
-                             </DropdownMenuItem>
-                             <DropdownMenuItem onClick={() => setPriceDialogRequest(request)} disabled={request.status !== 'pendente'}>
-                                 <DollarSign className="mr-2" /> Atribuir Valor
-                             </DropdownMenuItem>
-                             <DropdownMenuSeparator />
-                             <DropdownMenuItem className="text-red-600" onClick={() => handleStatusChange(request.id, 'rejeitada')}>
-                                <X className="mr-2"/> Rejeitar
-                             </DropdownMenuItem>
-                        </DropdownMenuContent>
-                       </DropdownMenu>
-                    </TableCell>
-                  </TableRow>
-                ))
+                sortedRequests.map((request) => {
+                  const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
+                  const parent = parentUserMap.get(request.parentUserId);
+                  const parentName = parent?.name || 'Responsável não encontrado';
+
+                  return (
+                    <TableRow key={request.id}>
+                      <TableCell>
+                         <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={`https://picsum.photos/seed/student-${request.studentId}/100/100`} />
+                                <AvatarFallback>{(studentName || '?')[0]}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex items-center gap-2">
+                               <span>{studentName}</span>
+                                {request.reason && (
+                                   <TooltipProvider>
+                                     <Tooltip>
+                                        <TooltipTrigger asChild>
+                                            <Info className="h-4 w-4 text-muted-foreground cursor-pointer" />
+                                        </TooltipTrigger>
+                                        <TooltipContent><p>{request.reason}</p></TooltipContent>
+                                     </Tooltip>
+                                   </TooltipProvider>
+                                )}
+                            </div>
+                        </div>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={`https://picsum.photos/seed/parent-${parent?.id}/100/100`} />
+                                <AvatarFallback>{(parentName || '?')[0]}</AvatarFallback>
+                            </Avatar>
+                            <span>{parentName}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
+                      <TableCell>{typeMap[request.type]}</TableCell>
+                      <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
+                      <TableCell><Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge></TableCell>
+                      <TableCell className="text-right">
+                         <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                             <Button variant="ghost" className="h-8 w-8 p-0" disabled={request.status === 'aprovada' || request.status === 'rejeitada'}>
+                                  <span className="sr-only">Abrir menu</span>
+                                  <MoreHorizontal className="h-4 w-4" />
+                              </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                               <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                               <DropdownMenuItem onClick={() => handleStatusChange(request.id, 'aprovada')} disabled={request.status !== 'pendente'}>
+                                  <Check className="mr-2" /> Aprovar Direto
+                               </DropdownMenuItem>
+                               <DropdownMenuItem onClick={() => setPriceDialogRequest(request)} disabled={request.status !== 'pendente'}>
+                                   <DollarSign className="mr-2" /> Atribuir Valor
+                               </DropdownMenuItem>
+                               <DropdownMenuSeparator />
+                               <DropdownMenuItem className="text-red-600" onClick={() => handleStatusChange(request.id, 'rejeitada')}>
+                                  <X className="mr-2"/> Rejeitar
+                               </DropdownMenuItem>
+                          </DropdownMenuContent>
+                         </DropdownMenu>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               ) : (
                 !isLoading && (
                   <TableRow>

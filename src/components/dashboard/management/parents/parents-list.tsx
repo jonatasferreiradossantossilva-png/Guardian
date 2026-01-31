@@ -34,6 +34,7 @@ import {
 import { ParentForm } from "@/components/dashboard/management/parents/parent-form";
 import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 type Parent = {
@@ -103,7 +104,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
-          Gerenciamento de Pais
+          Gerenciamento de Pais e Responsáveis
         </h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
@@ -112,7 +113,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
               setIsFormOpen(true);
             }}>
               <PlusCircle className="mr-2 h-4 w-4" />
-              Adicionar Pai
+              Adicionar Responsável
             </Button>
           </DialogTrigger>
           <ParentForm parent={selectedParent || undefined} onFormSubmit={handleFormSubmit} />
@@ -120,25 +121,23 @@ export function ParentsList({ initialParents }: ParentsListProps) {
       </div>
       <Card>
         <CardHeader>
-          <CardTitle>Lista de Pais</CardTitle>
+          <CardTitle>Lista de Responsáveis</CardTitle>
         </CardHeader>
         <CardContent>
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Nome</TableHead>
-                <TableHead>Email</TableHead>
+                <TableHead>Responsável</TableHead>
                 <TableHead>Telefone</TableHead>
                 <TableHead>CPF</TableHead>
                 <TableHead>Endereço</TableHead>
-                <TableHead>User ID</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">
+                  <TableCell colSpan={5} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -146,12 +145,21 @@ export function ParentsList({ initialParents }: ParentsListProps) {
               {!isLoading && parents && parents.length > 0 ? (
                 parents.map((parent) => (
                   <TableRow key={parent.id}>
-                    <TableCell>{parent.name}</TableCell>
-                    <TableCell>{parent.email}</TableCell>
+                    <TableCell>
+                       <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={`https://picsum.photos/seed/parent-${parent.id}/100/100`} alt={parent.name} />
+                          <AvatarFallback>{parent.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{parent.name}</p>
+                          <p className="text-xs text-muted-foreground">{parent.email}</p>
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell>{parent.phone}</TableCell>
                     <TableCell>{parent.cpf || 'N/A'}</TableCell>
                     <TableCell>{formatAddress(parent)}</TableCell>
-                    <TableCell className="font-mono text-xs">{parent.userId || 'N/A'}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -180,8 +188,8 @@ export function ParentsList({ initialParents }: ParentsListProps) {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center">
-                       Nenhum pai cadastrado.
+                    <TableCell colSpan={5} className="text-center">
+                       Nenhum responsável cadastrado.
                     </TableCell>
                   </TableRow>
                 )

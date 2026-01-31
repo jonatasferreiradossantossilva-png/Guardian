@@ -35,6 +35,7 @@ import { StudentForm } from "@/components/dashboard/management/students/student-
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 type Student = {
@@ -174,7 +175,15 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
               {!isLoading && students && students.length > 0 ? (
                 students.map((student) => (
                   <TableRow key={student.id}>
-                    <TableCell className="font-medium">{student.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
+                          <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <span className="font-medium">{student.name}</span>
+                      </div>
+                    </TableCell>
                     <TableCell>{formatAddress(student)}</TableCell>
                     <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
                     <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>

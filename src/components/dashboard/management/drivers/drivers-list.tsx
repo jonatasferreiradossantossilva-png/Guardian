@@ -35,6 +35,7 @@ import {
 import { DriverForm } from "@/components/dashboard/management/drivers/driver-form";
 import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 type Driver = {
@@ -161,14 +162,13 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                 <TableHead>Endereço</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Veículo</TableHead>
-                <TableHead>User ID</TableHead>
                 <TableHead className="text-right">Ações</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={8} className="text-center">
+                  <TableCell colSpan={7} className="text-center">
                     Carregando...
                   </TableCell>
                 </TableRow>
@@ -176,7 +176,18 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
               {!isLoading && drivers && drivers.length > 0 ? (
                 drivers.map((driver) => (
                   <TableRow key={driver.id}>
-                    <TableCell>{driver.name}</TableCell>
+                    <TableCell>
+                      <div className="flex items-center gap-3">
+                        <Avatar>
+                          <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
+                          <AvatarFallback>{driver.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                        </Avatar>
+                        <div>
+                          <p className="font-medium">{driver.name}</p>
+                          <p className="text-xs text-muted-foreground font-mono">{driver.userId}</p>
+                        </div>
+                      </div>
+                    </TableCell>
                     <TableCell>{driver.cpf || 'N/A'}</TableCell>
                     <TableCell>{driver.cnh || 'N/A'}</TableCell>
                     <TableCell>{formatAddress(driver)}</TableCell>
@@ -186,7 +197,6 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                       </Badge>
                     </TableCell>
                     <TableCell>{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</TableCell>
-                    <TableCell className="font-mono text-xs">{driver.userId}</TableCell>
                     <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -215,7 +225,7 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center">
+                    <TableCell colSpan={7} className="text-center">
                       Nenhum motorista cadastrado.
                     </TableCell>
                   </TableRow>
