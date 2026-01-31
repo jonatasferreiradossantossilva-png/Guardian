@@ -96,7 +96,7 @@ export function MainSidebar() {
 
 
   return (
-    <Sidebar collapsible="icon">
+    <Sidebar collapsible="icon" defaultOpen={false}>
       <SidebarHeader className="p-4">
         <div className="flex items-center gap-3">
           <div className="p-2 rounded-lg bg-primary/20">
