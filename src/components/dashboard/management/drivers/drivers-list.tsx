@@ -271,10 +271,6 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                     </div>
                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                        <div>
-                        <p className="text-muted-foreground text-xs">Status</p>
-                        <Badge variant={statusVariantMap[driver.status]} className="mt-1">{statusLabelMap[driver.status]}</Badge>
-                      </div>
-                       <div>
                         <p className="text-muted-foreground text-xs">Veículo</p>
                         <p className="font-medium">{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</p>
                       </div>
@@ -285,6 +281,10 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                        <div>
                         <p className="text-muted-foreground text-xs">CNH</p>
                         <p className="font-medium">{driver.cnh || 'N/A'}</p>
+                      </div>
+                       <div>
+                        <p className="text-muted-foreground text-xs">Status</p>
+                        <Badge variant={statusVariantMap[driver.status]} className="mt-1">{statusLabelMap[driver.status]}</Badge>
                       </div>
                       <div className="col-span-2">
                          <p className="text-muted-foreground text-xs">Endereço</p>
