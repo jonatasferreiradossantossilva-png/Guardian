@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/com
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
-import { format, subMonths } from 'date-fns';
+import { format, subMonths, parse } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Loader2 } from 'lucide-react';
 
@@ -21,17 +21,29 @@ export function MonthlyRevenueChart() {
   const [chartData, setChartData] = useState<{ month: string; receita: number }[]>([]);
 
   useEffect(() => {
-    if (!invoices) {
+    if (!invoices || invoices.length === 0) {
+      setChartData([]);
+      return;
+    }
+    
+    // Find the latest month from the invoice data
+    const latestMonthStr = invoices.reduce((latest, inv) => {
+        const invMonth = inv.dueDate.substring(0, 7);
+        return invMonth > latest ? invMonth : latest;
+    }, '0000-00');
+
+    if (latestMonthStr === '0000-00') {
       setChartData([]);
       return;
     }
 
-    const monthlyRevenue = new Map<string, number>();
-    const now = new Date();
+    const latestMonthDate = parse(latestMonthStr, 'yyyy-MM', new Date());
 
-    // Initialize last 6 months
+    const monthlyRevenue = new Map<string, number>();
+
+    // Initialize last 6 months based on the latest data point
     for (let i = 5; i >= 0; i--) {
-      const month = subMonths(now, i);
+      const month = subMonths(latestMonthDate, i);
       const monthKey = format(month, 'yyyy-MM');
       monthlyRevenue.set(monthKey, 0);
     }
@@ -70,7 +82,7 @@ export function MonthlyRevenueChart() {
     <Card>
       <CardHeader>
         <CardTitle>Receita Mensal</CardTitle>
-        <CardDescription>Receita paga dos últimos 6 meses.</CardDescription>
+        <CardDescription>Receita paga dos últimos 6 meses (baseado nos dados mais recentes).</CardDescription>
       </CardHeader>
       <CardContent>
         <ChartContainer config={chartConfig} className="h-[350px] w-full">
