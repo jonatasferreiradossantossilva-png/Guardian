@@ -20,10 +20,12 @@ type ConversationParticipant = {
 export default function AssistantMessagesPage() {
   const { addDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    setIsClient(true);
   }, []);
 
   const { data: assistantUser, isLoading: areUsersLoading } = useMockDoc('users', mockUserId);
@@ -189,7 +191,7 @@ export default function AssistantMessagesPage() {
                         <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === assistantUserId ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                           <p className="text-sm">{msg.text}</p>
                            <p className="text-xs text-right mt-1 opacity-70">
-                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {isClient ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                           </p>
                         </div>
                       </div>

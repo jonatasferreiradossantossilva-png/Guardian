@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import Link from 'next/link';
 import {
   Table,
@@ -70,6 +70,11 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
   
   const { data: liveRoutes, isLoading: areRoutesLoading } = useMockCollection('routes');
   const { data: liveDrivers, isLoading: areDriversLoading } = useMockCollection('drivers');
@@ -189,7 +194,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                       <TableCell>
                           {route.lastOptimizedAt ? (
                               <span className="text-sm text-muted-foreground">
-                                  {formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR })}
+                                  {isClient ? formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR }) : '...'}
                               </span>
                           ) : (
                               <Badge variant="secondary">Não otimizada</Badge>
@@ -285,7 +290,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                         <p className="text-muted-foreground text-xs">Otimização</p>
                         <div className="font-medium text-sm">
                           {route.lastOptimizedAt ? (
-                            formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR })
+                              isClient ? formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR }) : '...'
                           ) : (
                             <Badge variant="secondary" className="mt-1">Não otimizada</Badge>
                           )}

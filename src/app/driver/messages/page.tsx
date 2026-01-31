@@ -20,10 +20,12 @@ type ConversationParticipant = {
 export default function DriverMessagesPage() {
   const { addDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    setIsClient(true);
   }, []);
   
   // 1. Fetch Driver Profile
@@ -200,7 +202,7 @@ export default function DriverMessagesPage() {
                         <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === driverUserId ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                           <p className="text-sm">{msg.text}</p>
                            <p className="text-xs text-right mt-1 opacity-70">
-                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {isClient ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                           </p>
                         </div>
                       </div>
