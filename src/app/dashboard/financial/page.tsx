@@ -277,9 +277,9 @@ export default function FinancialPage() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">Gestão Financeira</h1>
-        <Button onClick={handleGenerateInvoices} disabled={isGenerating}>
+        <Button onClick={handleGenerateInvoices} disabled={isGenerating} className="w-full sm:w-auto">
           {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <FilePlus className="mr-2" />}
           Gerar Faturas do Mês
         </Button>
