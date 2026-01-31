@@ -3,11 +3,6 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
-import {
   Sidebar,
   SidebarHeader,
   SidebarContent,
@@ -22,8 +17,6 @@ import {
   Route,
   Truck,
   School,
-  FolderKanban,
-  ChevronDown,
   MessageSquare,
   DollarSign,
   UserCheck,
@@ -34,14 +27,11 @@ import {
   Sparkles,
   MessageCircle,
   Rocket,
-  Briefcase,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
-import { useEffect, useState } from "react";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 
-// NEW: Links for the "Operational" section
 const operationalLinks = [
   { href: "/dashboard/optimizer", label: "Otimizador (IA)", icon: Sparkles },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
@@ -49,7 +39,6 @@ const operationalLinks = [
   { href: "/dashboard/management/trip-requests", label: "Viagens Avulsas", icon: Route },
 ];
 
-// RENAMED & UPDATED: Links for the "Registrations" section (formerly Management)
 const registrationLinks = [
   { href: "/dashboard/management/schools", label: "Escolas", icon: School },
   { href: "/dashboard/management/drivers", label: "Motoristas", icon: Car },
@@ -77,24 +66,7 @@ const profileLinks = [
 
 export function MainSidebar() {
   const pathname = usePathname();
-  const [isMounted, setIsMounted] = useState(false);
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-  
   const isActive = (href: string) => pathname === href;
-  
-  // UPDATED: Check for active link in "Registrations"
-  const isRegistrationActive = registrationLinks.some((link) =>
-    pathname.startsWith(link.href)
-  );
-
-  // NEW: Check for active link in "Operational"
-  const isOperationalActive = operationalLinks.some((link) =>
-    pathname.startsWith(link.href)
-  );
-
 
   return (
     <Sidebar collapsible="icon">
@@ -111,7 +83,6 @@ export function MainSidebar() {
       </SidebarHeader>
       <SidebarContent className="p-2">
         <SidebarMenu>
-          {/* Dashboard Link - Unchanged */}
           <SidebarMenuItem>
             <Link href="/dashboard" passHref>
               <SidebarMenuButton
@@ -123,99 +94,48 @@ export function MainSidebar() {
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
-
-          {/* NEW: Operational Group */}
-          <SidebarMenuItem>
-            {isMounted ? (
-              <Collapsible defaultOpen={isOperationalActive}>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    className="w-full justify-start"
-                    isActive={isOperationalActive}
-                  >
-                    <Briefcase />
-                    <span className="group-data-[collapsible=icon]:hidden">Operacional</span>
-                    <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180 group-data-[collapsible=icon]:hidden" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenu className="pl-6 pt-1">
-                    {operationalLinks.map((link) => (
-                      <SidebarMenuItem key={link.href}>
-                        <Link href={link.href} passHref>
-                          <SidebarMenuButton
-                            variant="ghost"
-                            size="sm"
-                            isActive={isActive(link.href)}
-                          >
-                            <link.icon />
-                            <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
-                          </SidebarMenuButton>
-                        </Link>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </CollapsibleContent>
-              </Collapsible>
-            ) : (
-              <SidebarMenuButton
-                className="w-full justify-start"
-                isActive={isOperationalActive}
-              >
-                <Briefcase />
-                <span className="group-data-[collapsible=icon]:hidden">Operacional</span>
-                <ChevronDown className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden" />
-              </SidebarMenuButton>
-            )}
-          </SidebarMenuItem>
-
-          {/* UPDATED: Registrations Group (formerly Management) */}
-          <SidebarMenuItem>
-            {isMounted ? (
-              <Collapsible defaultOpen={isRegistrationActive}>
-                <CollapsibleTrigger asChild>
-                  <SidebarMenuButton
-                    className="w-full justify-start"
-                    isActive={isRegistrationActive}
-                  >
-                    <FolderKanban />
-                    <span className="group-data-[collapsible=icon]:hidden">Cadastros</span>
-                    <ChevronDown className="ml-auto h-4 w-4 transition-transform group-data-[state=open]:rotate-180 group-data-[collapsible=icon]:hidden" />
-                  </SidebarMenuButton>
-                </CollapsibleTrigger>
-                <CollapsibleContent>
-                  <SidebarMenu className="pl-6 pt-1">
-                    {registrationLinks.map((link) => (
-                      <SidebarMenuItem key={link.href}>
-                        <Link href={link.href} passHref>
-                          <SidebarMenuButton
-                            variant="ghost"
-                            size="sm"
-                            isActive={isActive(link.href)}
-                          >
-                            <link.icon />
-                            <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
-                          </SidebarMenuButton>
-                        </Link>
-                      </SidebarMenuItem>
-                    ))}
-                  </SidebarMenu>
-                </CollapsibleContent>
-              </Collapsible>
-            ) : (
-              <SidebarMenuButton
-                className="w-full justify-start"
-                isActive={isRegistrationActive}
-              >
-                <FolderKanban />
-                <span className="group-data-[collapsible=icon]:hidden">Cadastros</span>
-                <ChevronDown className="ml-auto h-4 w-4 group-data-[collapsible=icon]:hidden" />
-              </SidebarMenuButton>
-            )}
-          </SidebarMenuItem>
+        </SidebarMenu>
+        
+        <p className="px-4 text-xs text-muted-foreground mt-3 mb-2 group-data-[collapsible=icon]:hidden">
+          Operacional
+        </p>
+        <SidebarMenu>
+          {operationalLinks.map((link) => (
+            <SidebarMenuItem key={link.href}>
+              <Link href={link.href} passHref>
+                <SidebarMenuButton
+                  variant="ghost"
+                  isActive={isActive(link.href)}
+                  tooltip={link.label}
+                >
+                  <link.icon />
+                  <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          ))}
+        </SidebarMenu>
+        
+        <p className="px-4 text-xs text-muted-foreground mt-3 mb-2 group-data-[collapsible=icon]:hidden">
+          Cadastros
+        </p>
+        <SidebarMenu>
+          {registrationLinks.map((link) => (
+            <SidebarMenuItem key={link.href}>
+              <Link href={link.href} passHref>
+                <SidebarMenuButton
+                  variant="ghost"
+                  isActive={isActive(link.href)}
+                  tooltip={link.label}
+                >
+                  <link.icon />
+                  <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          ))}
         </SidebarMenu>
 
-        {/* Other Profile Links - Unchanged */}
         <SidebarMenu className="mt-4">
           <p className="px-4 text-xs text-muted-foreground mb-2 group-data-[collapsible=icon]:hidden">
             Outras Visões
