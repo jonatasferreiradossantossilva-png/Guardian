@@ -3,7 +3,7 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useMockCollection } from '@/hooks/use-mock-data';
-import { PieChart, Pie, Cell } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
 import { Loader2 } from 'lucide-react';
 
@@ -70,7 +70,7 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
                 <CardTitle>Composição das Despesas</CardTitle>
                 <CardDescription>Distribuição de custos por categoria.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[230px] flex items-center justify-center">
+            <CardContent className="h-[350px] flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </CardContent>
         </Card>
@@ -83,32 +83,61 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
         <CardTitle>Composição das Despesas</CardTitle>
         <CardDescription>Distribuição de custos do período selecionado.</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 pb-0">
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[230px]">
+      <CardContent>
+        <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[350px]">
           {chartData.length > 0 ? (
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Pie
-                data={chartData}
-                dataKey="total"
-                nameKey="category"
-                innerRadius={60}
-                strokeWidth={5}
-              >
-                 {chartData.map((entry) => (
-                    <Cell key={`cell-${entry.category}`} fill={entry.fill} />
-                ))}
-              </Pie>
-              <ChartLegend
-                  content={<ChartLegendContent nameKey="category" />}
-                  className="-translate-y-4"
+            <ResponsiveContainer width="100%" height="100%">
+              <PieChart>
+                <ChartTooltip
+                  cursor={false}
+                  content={<ChartTooltipContent hideLabel />}
                 />
-            </PieChart>
+                <Pie
+                  data={chartData}
+                  dataKey="total"
+                  nameKey="category"
+                  innerRadius={60}
+                  strokeWidth={5}
+                  labelLine={false}
+                  label={({
+                    cx,
+                    cy,
+                    midAngle,
+                    innerRadius,
+                    outerRadius,
+                    percent,
+                  }) => {
+                    const RADIAN = Math.PI / 180;
+                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5;
+                    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+                    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+                  
+                    return (
+                      <text
+                        x={x}
+                        y={y}
+                        fill="hsl(var(--foreground))"
+                        textAnchor={x > cx ? "start" : "end"}
+                        dominantBaseline="central"
+                        className="text-xs font-medium"
+                      >
+                        {`${(percent * 100).toFixed(0)}%`}
+                      </text>
+                    );
+                  }}
+                >
+                  {chartData.map((entry) => (
+                      <Cell key={`cell-${entry.category}`} fill={entry.fill} />
+                  ))}
+                </Pie>
+                <ChartLegend
+                    content={<ChartLegendContent nameKey="category" />}
+                    className="-translate-y-4"
+                  />
+              </PieChart>
+            </ResponsiveContainer>
           ) : (
-            <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
+            <div className="flex h-[350px] items-center justify-center text-muted-foreground text-sm">
                 Nenhuma despesa no período.
             </div>
           )}
