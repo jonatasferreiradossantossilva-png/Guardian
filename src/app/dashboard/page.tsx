@@ -17,13 +17,14 @@ export default function DashboardPage() {
 
       <OverviewCards />
 
-      <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
-        <FinancialTrendCards />
-        <InvoicesStatusChart />
-      </div>
-
-      <div className="grid gap-8 grid-cols-1">
-        <MonthlyRevenueChart />
+      <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <MonthlyRevenueChart />
+        </div>
+        <div className="space-y-8">
+          <FinancialTrendCards />
+          <InvoicesStatusChart />
+        </div>
       </div>
 
     </div>
