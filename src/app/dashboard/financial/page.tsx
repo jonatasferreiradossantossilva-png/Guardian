@@ -224,12 +224,12 @@ export default function FinancialPage() {
         <CardHeader>
           <CardTitle>Histórico de Faturas</CardTitle>
           <CardDescription>Visualize, filtre e gerencie todas as faturas geradas para os alunos.</CardDescription>
-          <div className="flex items-center gap-4 pt-4">
-            <Filter className="text-muted-foreground" />
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 pt-4">
+            <Filter className="text-muted-foreground hidden sm:block" />
              <div className="flex items-center gap-2">
                 <Users className="text-muted-foreground h-4 w-4"/>
                 <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-full sm:w-[200px]">
                         <SelectValue placeholder="Filtrar por aluno..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -243,7 +243,7 @@ export default function FinancialPage() {
              <div className="flex items-center gap-2">
                 <Calendar className="text-muted-foreground h-4 w-4"/>
                 <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                    <SelectTrigger className="w-[200px]">
+                    <SelectTrigger className="w-full sm:w-[200px]">
                         <SelectValue placeholder="Filtrar por mês..." />
                     </SelectTrigger>
                     <SelectContent>
@@ -268,44 +268,82 @@ export default function FinancialPage() {
                         return (
                             <AccordionItem value={monthKey} key={monthKey}>
                                 <AccordionTrigger className="capitalize text-lg hover:no-underline px-2">
-                                    <div className="flex items-center justify-between w-full">
+                                    <div className="flex flex-col sm:flex-row sm:items-center justify-between w-full">
                                         <span>{formatMonth(monthKey)}</span>
-                                        <div className="flex items-center gap-4 text-sm font-normal text-muted-foreground pr-4">
+                                        <div className="flex items-center gap-4 text-sm font-normal text-muted-foreground sm:pr-4 mt-1 sm:mt-0">
                                             <span>Total: <span className="font-semibold text-foreground">R$ {totalAmount.toFixed(2)}</span></span>
                                             <span>Recebido: <span className="font-semibold text-green-500">R$ {totalPaid.toFixed(2)}</span></span>
                                         </div>
                                     </div>
                                 </AccordionTrigger>
                                 <AccordionContent>
-                                    <Table>
-                                        <TableHeader>
-                                        <TableRow>
-                                            <TableHead>Aluno</TableHead>
-                                            <TableHead>Responsável</TableHead>
-                                            <TableHead>Descrição</TableHead>
-                                            <TableHead>Vencimento</TableHead>
-                                            <TableHead>Valor</TableHead>
-                                            <TableHead>Status</TableHead>
-                                            <TableHead className="text-right">Ações</TableHead>
-                                        </TableRow>
-                                        </TableHeader>
-                                        <TableBody>
+                                    {/* Desktop Table */}
+                                    <div className="hidden md:block">
+                                        <Table>
+                                            <TableHeader>
+                                            <TableRow>
+                                                <TableHead>Aluno</TableHead>
+                                                <TableHead>Responsável</TableHead>
+                                                <TableHead>Descrição</TableHead>
+                                                <TableHead>Vencimento</TableHead>
+                                                <TableHead>Valor</TableHead>
+                                                <TableHead>Status</TableHead>
+                                                <TableHead className="text-right">Ações</TableHead>
+                                            </TableRow>
+                                            </TableHeader>
+                                            <TableBody>
+                                            {monthInvoices.map((invoice) => (
+                                                <TableRow key={invoice.id}>
+                                                    <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
+                                                    <TableCell>{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</TableCell>
+                                                    <TableCell>{invoice.description}</TableCell>
+                                                    <TableCell>{invoice.dueDate.split('-').reverse().join('/')}</TableCell>
+                                                    <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
+                                                    <TableCell>
+                                                        <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
+                                                            {statusTextMap[invoice.status]}
+                                                        </Badge>
+                                                    </TableCell>
+                                                    <TableCell className="text-right">
+                                                        <DropdownMenu>
+                                                            <DropdownMenuTrigger asChild>
+                                                                <Button variant="ghost" className="h-8 w-8 p-0">
+                                                                    <span className="sr-only">Abrir menu</span>
+                                                                    <MoreHorizontal className="h-4 w-4" />
+                                                                </Button>
+                                                            </DropdownMenuTrigger>
+                                                            <DropdownMenuContent align="end">
+                                                                <DropdownMenuLabel>Alterar Status</DropdownMenuLabel>
+                                                                <DropdownMenuSeparator />
+                                                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>
+                                                                    Marcar como Paga
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>
+                                                                    Marcar como Pendente
+                                                                </DropdownMenuItem>
+                                                                <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">
+                                                                    Marcar como Vencida
+                                                                </DropdownMenuItem>
+                                                            </DropdownMenuContent>
+                                                        </DropdownMenu>
+                                                    </TableCell>
+                                                </TableRow>
+                                            ))}
+                                            </TableBody>
+                                        </Table>
+                                    </div>
+                                    {/* Mobile Cards */}
+                                    <div className="md:hidden space-y-4 p-2">
                                         {monthInvoices.map((invoice) => (
-                                            <TableRow key={invoice.id}>
-                                                <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
-                                                <TableCell>{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</TableCell>
-                                                <TableCell>{invoice.description}</TableCell>
-                                                <TableCell>{invoice.dueDate.split('-').reverse().join('/')}</TableCell>
-                                                <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
-                                                <TableCell>
-                                                    <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
-                                                        {statusTextMap[invoice.status]}
-                                                    </Badge>
-                                                </TableCell>
-                                                <TableCell className="text-right">
+                                            <Card key={invoice.id} className="p-4">
+                                                <div className="flex justify-between items-start">
+                                                    <div>
+                                                        <p className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</p>
+                                                        <p className="text-sm text-muted-foreground">{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</p>
+                                                    </div>
                                                     <DropdownMenu>
                                                         <DropdownMenuTrigger asChild>
-                                                            <Button variant="ghost" className="h-8 w-8 p-0">
+                                                            <Button variant="ghost" className="h-8 w-8 p-0 -mt-1 -mr-2">
                                                                 <span className="sr-only">Abrir menu</span>
                                                                 <MoreHorizontal className="h-4 w-4" />
                                                             </Button>
@@ -313,22 +351,35 @@ export default function FinancialPage() {
                                                         <DropdownMenuContent align="end">
                                                             <DropdownMenuLabel>Alterar Status</DropdownMenuLabel>
                                                             <DropdownMenuSeparator />
-                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>
-                                                                Marcar como Paga
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>
-                                                                Marcar como Pendente
-                                                            </DropdownMenuItem>
-                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">
-                                                                Marcar como Vencida
-                                                            </DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>Marcar como Paga</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>Marcar como Pendente</DropdownMenuItem>
+                                                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">Marcar como Vencida</DropdownMenuItem>
                                                         </DropdownMenuContent>
                                                     </DropdownMenu>
-                                                </TableCell>
-                                            </TableRow>
+                                                </div>
+                                                <div className="mt-4 grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
+                                                    <div className="col-span-2">
+                                                        <p className="text-xs text-muted-foreground">Descrição</p>
+                                                        <p>{invoice.description}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Vencimento</p>
+                                                        <p>{invoice.dueDate.split('-').reverse().join('/')}</p>
+                                                    </div>
+                                                    <div>
+                                                        <p className="text-xs text-muted-foreground">Valor</p>
+                                                        <p>R$ {invoice.amount.toFixed(2)}</p>
+                                                    </div>
+                                                    <div className="col-span-2">
+                                                        <p className="text-xs text-muted-foreground">Status</p>
+                                                        <Badge variant={statusVariantMap[invoice.status]} className={cn('mt-1', invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
+                                                            {statusTextMap[invoice.status]}
+                                                        </Badge>
+                                                    </div>
+                                                </div>
+                                            </Card>
                                         ))}
-                                        </TableBody>
-                                    </Table>
+                                    </div>
                                 </AccordionContent>
                             </AccordionItem>
                         )
