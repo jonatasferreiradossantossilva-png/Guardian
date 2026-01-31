@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { CheckCircle, Users, Car, Bot, Shield, DollarSign, Rocket, MessageSquareX, Map, ShieldOff, Sparkles, ShieldCheck } from 'lucide-react';
+import { CheckCircle, Users, Car, Bot, Shield, DollarSign, Rocket, Map, ShieldOff, Sparkles, ShieldCheck, Wallet, Briefcase, Target, MessageSquareX } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 
@@ -16,10 +16,13 @@ export default function LandingPage() {
           </Link>
           <nav className="flex items-center gap-4">
             <Button variant="ghost" asChild>
+              <Link href="#problema">O Problema</Link>
+            </Button>
+            <Button variant="ghost" asChild>
               <Link href="#features">Funcionalidades</Link>
             </Button>
             <Button variant="ghost" asChild>
-              <Link href="#differentiators">Diferenciais</Link>
+              <Link href="#oportunidade">Mercado</Link>
             </Button>
             <Button variant="ghost" asChild>
               <Link href="#pricing">Preços</Link>
@@ -52,35 +55,32 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Pain Point Section */}
-        <section id="pain-points" className="w-full py-20 md:py-28">
+        {/* The Problem Section */}
+        <section id="problema" className="w-full py-20 md:py-28">
             <div className="container mx-auto">
-                <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Chega de Operar no Escuro</h2>
+                <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Sua Operação Está Vazando Dinheiro e Segurança</h2>
                 <p className="mt-4 max-w-2xl mx-auto text-center text-muted-foreground md:text-lg">
-                    O mercado de transporte escolar ainda depende de ferramentas que geram mais trabalho e incerteza. Nós resolvemos as 3 dores principais:
+                    O mercado de transporte escolar ainda depende de ferramentas que geram mais trabalho e incerteza. Nós atacamos os principais pontos de perda.
                 </p>
-                <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-                    <div className="flex flex-col items-center text-center">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20">
-                            <MessageSquareX className="h-8 w-8" />
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold">Caos do WhatsApp</h3>
-                        <p className="mt-2 text-muted-foreground">Comunicação fragmentada, informações perdidas em grupos, e a sobrecarga de gerenciar avisos, cobranças e emergências de forma desorganizada.</p>
-                    </div>
-                    <div className="flex flex-col items-center text-center">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20">
-                            <Map className="h-8 w-8" />
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold">Rotas Ineficientes</h3>
-                        <p className="mt-2 text-muted-foreground">Custos elevados de combustível e tempo precioso perdido em trajetos definidos manualmente, sem adaptação a imprevistos ou otimização real.</p>
-                    </div>
-                    <div className="flex flex-col items-center text-center">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20">
-                            <ShieldOff className="h-8 w-8" />
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold">Insegurança e Risco</h3>
-                        <p className="mt-2 text-muted-foreground">A ansiedade dos pais pela falta de visibilidade da jornada e o imenso risco operacional e legal para a empresa por não ter registros precisos.</p>
-                    </div>
+                <div className="mt-12 grid md:grid-cols-3 gap-8">
+                    <StatCard 
+                        icon={<Wallet size={32} />} 
+                        title="Ineficiência Operacional" 
+                        value="-20%"
+                        description="Potencial de redução em custos com combustível e manutenção, otimizando rotas e tempo."
+                    />
+                    <StatCard 
+                        icon={<Briefcase size={32} />} 
+                        title="Risco e Insegurança" 
+                        value="Incalculável"
+                        description="O custo de um incidente legal ou da perda de confiança de um pai é um risco que nenhuma empresa pode correr."
+                    />
+                    <StatCard 
+                        icon={<MessageSquareX size={32} />} 
+                        title="Comunicação Fragmentada" 
+                        value="5+ horas/semana"
+                        description="Tempo que um gestor perde gerenciando múltiplos grupos de WhatsApp, gerando retrabalho e falhas."
+                    />
                 </div>
             </div>
         </section>
@@ -103,7 +103,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/guardian-dashboard/600/400" alt="Painel do Gestor" fill objectFit="cover" data-ai-hint="app screenshot" />
+                     <Image src="https://picsum.photos/seed/app-dashboard/600/400" alt="Painel do Gestor" fill objectFit="cover" data-ai-hint="app screenshot" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Sparkles} title="Otimizador de Rotas com IA" description="Reduza custos com combustível e tempo com rotas inteligentes que se adaptam a imprevistos." />
@@ -121,7 +121,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/guardian-driver-app/600/400" alt="Painel do Motorista" fill objectFit="cover" data-ai-hint="mobile interface" />
+                     <Image src="https://picsum.photos/seed/driver-app-ui/600/400" alt="Painel do Motorista" fill objectFit="cover" data-ai-hint="mobile interface" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={CheckCircle} title="Plano de Rota Interativo" description="Receba a rota otimizada no app com a sequência de paradas e informações de cada aluno em um toque." />
@@ -139,7 +139,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                    <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/guardian-parent-app/600/400" alt="Painel dos Pais" fill objectFit="cover" data-ai-hint="map view" />
+                     <Image src="https://picsum.photos/seed/parent-map-view/600/400" alt="Painel dos Pais" fill objectFit="cover" data-ai-hint="map view" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Map} title="Acompanhamento em Tempo Real" description="Saiba exatamente onde a van está no mapa e receba alertas inteligentes quando ela estiver se aproximando." />
@@ -152,8 +152,38 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Market Opportunity Section */}
+        <section id="oportunidade" className="w-full py-20 md:py-28">
+            <div className="container mx-auto">
+                 <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">
+                    <Target className="inline-block text-primary h-12 w-12 mr-4" />
+                    Uma Oportunidade Bilionária
+                 </h2>
+                 <p className="mt-4 max-w-2xl mx-auto text-center text-muted-foreground md:text-lg">
+                    Estamos posicionados para capturar uma fatia de um mercado gigante e carente de tecnologia.
+                </p>
+                 <div className="mt-12 grid md:grid-cols-3 gap-6 text-center w-full">
+                    <div className="bg-background/50 border border-border p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold text-muted-foreground">Mercado Total (TAM)</h3>
+                        <p className="text-5xl font-bold text-primary mt-2">R$ 4.5 Bi</p>
+                        <p className="text-sm text-muted-foreground mt-2">Mercado total de transporte escolar no Brasil (anual).</p>
+                    </div>
+                     <div className="bg-background/50 border-2 border-primary/50 p-6 rounded-lg ring-4 ring-primary/10">
+                        <h3 className="text-lg font-semibold text-muted-foreground">Mercado Endereçável (SAM)</h3>
+                        <p className="text-5xl font-bold text-primary mt-2">R$ 1.3 Bi</p>
+                        <p className="text-sm text-muted-foreground mt-2">Empresas privadas em centros urbanos no Brasil.</p>
+                    </div>
+                     <div className="bg-background/50 border border-border p-6 rounded-lg">
+                        <h3 className="text-lg font-semibold text-muted-foreground">Mercado Obtível (SOM)</h3>
+                        <p className="text-5xl font-bold text-primary mt-2">R$ 13 Mi</p>
+                        <p className="text-sm text-muted-foreground mt-2">Nossa meta inicial: Conquistar 1% do mercado endereçável.</p>
+                    </div>
+                 </div>
+            </div>
+        </section>
+
         {/* Differentiators Section */}
-        <section id="differentiators" className="w-full py-20 md:py-28">
+        <section id="differentiators" className="w-full py-20 md:py-28 bg-secondary/50">
             <div className="container mx-auto">
                 <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Nossos Diferenciais: Além do Básico</h2>
                  <p className="mt-4 max-w-2xl mx-auto text-center text-muted-foreground md:text-lg">
@@ -186,7 +216,7 @@ export default function LandingPage() {
         </section>
         
         {/* Pricing Section */}
-        <section id="pricing" className="w-full py-20 md:py-28 bg-secondary/50">
+        <section id="pricing" className="w-full py-20 md:py-28 bg-background">
             <div className="container mx-auto text-center">
                  <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">Preço simples e escalável</h2>
                  <p className="mt-4 max-w-xl mx-auto text-muted-foreground md:text-lg">
@@ -238,4 +268,15 @@ const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementTy
         <p className="text-sm text-muted-foreground">{description}</p>
     </div>
   </div>
+);
+
+const StatCard = ({ icon, title, value, description }: { icon: React.ReactNode, title: string, value: string, description: string }) => (
+    <div className="bg-background/50 rounded-xl p-6 border border-primary/20 backdrop-blur-sm h-full flex flex-col items-center text-center">
+        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20 mb-4">
+            {icon}
+        </div>
+        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
+        <p className="text-4xl font-bold text-primary my-2">{value}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
 );
