@@ -10,7 +10,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
+import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -40,6 +40,12 @@ interface LocationUpdate {
   latitude: number;
   longitude: number;
   timestamp: string;
+}
+interface School {
+    id: string;
+    name: string;
+    latitude: number;
+    longitude: number;
 }
 
 const statusText: Record<Student["status"], string> = {
@@ -106,6 +112,69 @@ function haversineDistance(coords1, coords2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 
   return R * c;
+}
+
+
+function ParentRouteMap({ busLocation, student, school }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!map) return;
+    
+    if (!busLocation && !student && !school) {
+        map.setCenter({ lat: -23.55052, lng: -46.633308 });
+        map.setZoom(12);
+        return;
+    }
+
+    const bounds = new google.maps.LatLngBounds();
+    if (busLocation?.latitude && busLocation?.longitude) {
+        bounds.extend({ lat: busLocation.latitude, lng: busLocation.longitude });
+    }
+    if (student?.latitude && student?.longitude) {
+        bounds.extend({ lat: student.latitude, lng: student.longitude });
+    }
+     if (school?.latitude && school?.longitude) {
+        bounds.extend({ lat: school.latitude, lng: school.longitude });
+    }
+
+    if (bounds.isEmpty()) {
+       if (busLocation) {
+         map.setCenter({ lat: busLocation.latitude, lng: busLocation.longitude });
+         map.setZoom(15);
+       }
+    } else {
+        map.fitBounds(bounds, 100);
+    }
+    
+
+  }, [map, busLocation, student, school]);
+
+  return (
+    <>
+      {busLocation && (
+        <AdvancedMarker position={{ lat: busLocation.latitude, lng: busLocation.longitude }} title="Posição da Van">
+          <div className="p-1 bg-primary rounded-full shadow-lg">
+            <Bus className="h-6 w-6 text-primary-foreground" />
+          </div>
+        </AdvancedMarker>
+      )}
+      {student && (
+        <AdvancedMarker position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
+          <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
+            <User className="h-4 w-4 text-white" />
+          </div>
+        </AdvancedMarker>
+      )}
+      {school && (
+        <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
+          <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+            <School className="h-5 w-5 text-white" />
+          </div>
+        </AdvancedMarker>
+      )}
+    </>
+  );
 }
 
 
@@ -387,37 +456,23 @@ export default function ParentTrackingPage() {
                     ) : (
                         <APIProvider apiKey={API_KEY}>
                         <GoogleMap
-                            center={displayLocation ? { lat: displayLocation.latitude, lng: displayLocation.longitude } : { lat: -23.55052, lng: -46.633308 }}
-                            zoom={displayLocation ? 15 : 12}
+                            defaultCenter={{ lat: -23.55052, lng: -46.633308 }}
+                            defaultZoom={12}
                             mapId="rota_segura_parent_map"
                             disableDefaultUI={true}
                             gestureHandling={'greedy'}
                             className="w-full h-full"
                         >
-                            {displayLocation ? (
-                            <AdvancedMarker
-                                position={{ lat: displayLocation.latitude, lng: displayLocation.longitude }}
-                            >
-                                <div className="p-1 bg-primary rounded-full shadow-lg">
-                                    <Bus className="h-6 w-6 text-primary-foreground" />
+                           <ParentRouteMap 
+                                busLocation={displayLocation}
+                                student={student}
+                                school={school}
+                           />
+                           {!displayLocation && !isLocationLoading && (
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
+                                    Aguardando localização da van...
                                 </div>
-                            </AdvancedMarker>
-                            ) : (
-                            !isLocationLoading && 
-                            <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
-                                Aguardando localização da van...
-                            </div>
                             )}
-                            {student && <AdvancedMarker position={{lat: student.latitude, lng: student.longitude}} title={student.name}>
-                                <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
-                                    <User className="h-4 w-4 text-white" />
-                                </div>
-                            </AdvancedMarker>}
-                            {school && <AdvancedMarker position={{lat: school.latitude, lng: school.longitude}} title={school.name}>
-                                <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
-                                    <School className="h-5 w-5 text-white" />
-                                </div>
-                            </AdvancedMarker>}
                         </GoogleMap>
                         </APIProvider>
                     )}
