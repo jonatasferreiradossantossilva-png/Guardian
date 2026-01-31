@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { CheckCircle, Users, Car, Bot, Shield, DollarSign, Rocket, Map, ShieldOff, Sparkles, ShieldCheck, Wallet, Briefcase, Target, MessageSquareX } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -103,7 +103,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/app-dashboard/600/400" alt="Painel do Gestor" fill objectFit="cover" data-ai-hint="app screenshot" />
+                     <Image src="https://picsum.photos/seed/dashboard-ui/600/400" alt="Painel do Gestor" fill objectFit="cover" data-ai-hint="dashboard analytics" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Sparkles} title="Otimizador de Rotas com IA" description="Reduza custos com combustível e tempo com rotas inteligentes que se adaptam a imprevistos." />
@@ -121,7 +121,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/driver-app-ui/600/400" alt="Painel do Motorista" fill objectFit="cover" data-ai-hint="mobile interface" />
+                     <Image src="https://picsum.photos/seed/driver-panel-ui/600/400" alt="Painel do Motorista" fill objectFit="cover" data-ai-hint="mobile interface" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={CheckCircle} title="Plano de Rota Interativo" description="Receba a rota otimizada no app com a sequência de paradas e informações de cada aluno em um toque." />
@@ -139,7 +139,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                    <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/parent-map-view/600/400" alt="Painel dos Pais" fill objectFit="cover" data-ai-hint="map view" />
+                     <Image src="https://picsum.photos/seed/parent-tracking/600/400" alt="Painel dos Pais" fill objectFit="cover" data-ai-hint="map view mobile" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Map} title="Acompanhamento em Tempo Real" description="Saiba exatamente onde a van está no mapa e receba alertas inteligentes quando ela estiver se aproximando." />
@@ -218,9 +218,9 @@ export default function LandingPage() {
         {/* Pricing Section */}
         <section id="pricing" className="w-full py-20 md:py-28 bg-background">
             <div className="container mx-auto text-center">
-                 <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">Preço simples e escalável</h2>
+                 <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">Planos flexíveis para sua frota</h2>
                  <p className="mt-4 max-w-xl mx-auto text-muted-foreground md:text-lg">
-                    Comece hoje e escale conforme sua frota cresce. Sem surpresas.
+                    O Guardian cresce com você. Entre em contato para uma demonstração e cotação personalizada.
                 </p>
                 <div className="mt-12 flex justify-center">
                     <Card className="max-w-md border-2 border-primary shadow-2xl shadow-primary/10">
@@ -229,9 +229,7 @@ export default function LandingPage() {
                             <CardDescription>Tudo que você precisa para uma operação de ponta.</CardDescription>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-5xl font-bold">R$ 89</p>
-                            <p className="text-muted-foreground font-medium">por veículo / mês</p>
-                            <ul className="text-left space-y-3 mt-8">
+                            <ul className="text-left space-y-3">
                                 <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Gestão Completa de Cadastros</span></li>
                                 <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Rastreamento em Tempo Real</span></li>
                                 <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Comunicação Integrada</span></li>
@@ -239,6 +237,11 @@ export default function LandingPage() {
                                 <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Gestão Financeira Completa</span></li>
                             </ul>
                         </CardContent>
+                        <CardFooter>
+                           <Button asChild size="lg" className="w-full">
+                                <Link href="/">Agendar Demonstração</Link>
+                           </Button>
+                        </CardFooter>
                     </Card>
                 </div>
             </div>
