@@ -2,8 +2,8 @@
 
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { FinancialTrendCards } from "@/components/dashboard/financial-trend-cards";
-import { MonthlyRevenueChart } from "@/components/dashboard/monthly-revenue-chart";
-import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
+import { MonthlyBalanceChart } from "@/components/dashboard/monthly-balance-chart";
+import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
 
 export default function DashboardPage() {
   return (
@@ -19,11 +19,11 @@ export default function DashboardPage() {
 
       <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
         <div className="lg:col-span-2">
-          <MonthlyRevenueChart />
+          <MonthlyBalanceChart />
         </div>
         <div className="space-y-8">
           <FinancialTrendCards />
-          <InvoicesStatusChart />
+          <ExpensesCategoryChart />
         </div>
       </div>
 
