@@ -44,6 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 type TripRequest = {
   id: string;
   studentId: string;
+  schoolId: string;
   parentUserId: string;
   date: string;
   type: 'ida' | 'volta' | 'ida_e_volta';
@@ -56,11 +57,13 @@ type TripRequest = {
 
 type Student = { id: string; name: string };
 type Parent = { id: string; name: string; userId: string };
+type School = { id: string; name: string };
 
 interface TripRequestsListProps {
   initialRequests: TripRequest[];
   initialStudents: Student[];
   initialParents: Parent[];
+  initialSchools: School[];
 }
 
 const statusVariantMap: Record<TripRequest['status'], 'secondary' | 'default' | 'destructive' | 'outline'> = {
@@ -83,7 +86,7 @@ const typeMap = {
   ida_e_volta: 'Ida e Volta',
 };
 
-export function TripRequestsList({ initialRequests, initialStudents, initialParents }: TripRequestsListProps) {
+export function TripRequestsList({ initialRequests, initialStudents, initialParents, initialSchools }: TripRequestsListProps) {
   const { toast } = useToast();
   const { updateDoc } = useMockData();
 
@@ -93,14 +96,17 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const { data: liveRequests, isLoading: areRequestsLoading } = useMockCollection('trip_requests');
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
   const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents');
+  const { data: liveSchools, isLoading: areSchoolsLoading } = useMockCollection('schools');
 
   const requests = liveRequests ?? initialRequests;
   const students = liveStudents ?? initialStudents;
   const parents = liveParents ?? initialParents;
-  const isLoading = areRequestsLoading || areStudentsLoading || areParentsLoading;
+  const schools = liveSchools ?? initialSchools;
+  const isLoading = areRequestsLoading || areStudentsLoading || areParentsLoading || areSchoolsLoading;
   
   const studentsMap = useMemo(() => new Map(students?.map(s => [s.id, s.name])), [students]);
   const parentUserMap = useMemo(() => new Map(parents?.map(p => [p.userId, p])), [parents]);
+  const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
 
   const handleStatusChange = (requestId: string, newStatus: TripRequest['status']) => {
     updateDoc('trip_requests', requestId, { status: newStatus });
@@ -155,6 +161,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
               <TableRow>
                 <TableHead>Aluno</TableHead>
                 <TableHead>Responsável</TableHead>
+                <TableHead>Escola</TableHead>
                 <TableHead>Data</TableHead>
                 <TableHead>Tipo</TableHead>
                 <TableHead>Valor</TableHead>
@@ -165,7 +172,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
             <TableBody>
               {isLoading && (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center">Carregando...</TableCell>
+                  <TableCell colSpan={8} className="text-center">Carregando...</TableCell>
                 </TableRow>
               )}
               {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
@@ -173,6 +180,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                   const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
                   const parent = parentUserMap.get(request.parentUserId);
                   const parentName = parent?.name || 'Responsável não encontrado';
+                  const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
 
                   return (
                     <TableRow key={request.id}>
@@ -206,6 +214,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                             <span>{parentName}</span>
                         </div>
                       </TableCell>
+                      <TableCell>{schoolName}</TableCell>
                       <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
                       <TableCell>{typeMap[request.type]}</TableCell>
                       <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
@@ -239,7 +248,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="h-24 text-center">Nenhuma solicitação encontrada.</TableCell>
+                    <TableCell colSpan={8} className="h-24 text-center">Nenhuma solicitação encontrada.</TableCell>
                   </TableRow>
                 )
               )}

@@ -30,6 +30,7 @@ type TripRequest = {
   id: string;
   studentId: string;
   parentUserId: string;
+  schoolId: string;
   date: string;
   type: 'ida' | 'volta' | 'ida_e_volta';
   shift: 'manha' | 'tarde';
@@ -149,6 +150,7 @@ export default function TripRequestsPage() {
                         <TripRequestForm
                             request={selectedRequest || undefined}
                             studentId={student.id}
+                            schoolId={student.schoolId}
                             parentUserId={mockUserId}
                             onFormSubmit={handleFormSubmit}
                         />

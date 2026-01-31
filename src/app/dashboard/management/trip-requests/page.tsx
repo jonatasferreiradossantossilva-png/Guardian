@@ -7,10 +7,11 @@ export default async function TripRequestsPage() {
   const requests = initialMockData.trip_requests;
   const students = initialMockData.students;
   const parents = initialMockData.parents;
+  const schools = initialMockData.schools;
 
 
   // The client component receives the initial data as props
-  return <TripRequestsList initialRequests={requests} initialStudents={students} initialParents={parents} />;
+  return <TripRequestsList initialRequests={requests} initialStudents={students} initialParents={parents} initialSchools={schools} />;
 }
 
     

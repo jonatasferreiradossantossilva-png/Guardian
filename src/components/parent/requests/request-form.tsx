@@ -51,11 +51,12 @@ type FormValues = z.infer<typeof formSchema>;
 interface TripRequestFormProps {
   request?: { id: string; date?: string | Date } & Partial<FormValues>;
   studentId: string;
+  schoolId: string;
   parentUserId: string;
   onFormSubmit: () => void;
 }
 
-export function TripRequestForm({ request, studentId, parentUserId, onFormSubmit }: TripRequestFormProps) {
+export function TripRequestForm({ request, studentId, schoolId, parentUserId, onFormSubmit }: TripRequestFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
 
@@ -100,6 +101,7 @@ export function TripRequestForm({ request, studentId, parentUserId, onFormSubmit
             date: format(data.date, 'yyyy-MM-dd'),
             studentId,
             parentUserId,
+            schoolId,
             createdAt: new Date().toISOString(),
             status: 'pendente',
         };

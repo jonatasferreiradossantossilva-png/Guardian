@@ -426,10 +426,10 @@ export const initialMockData = {
         { id: "ap-3", studentId: "student-2", parentUserId: "user-pai-2", name: "Ricardo Costa (Tio)", cpf: "111.222.333-44", phone: "1197777-1234" }
     ],
     trip_requests: [
-        { id: "tr-1", studentId: "student-1", parentUserId: "user-pai-1", date: "2024-08-15", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "O aluno precisa ir a uma consulta médica e voltará para a escola.", createdAt: "2024-07-30T10:00:00Z" },
-        { id: "tr-2", studentId: "student-1", parentUserId: "user-pai-1", date: "2024-08-12", type: "volta", shift: "manha", status: "aprovada", reason: "", createdAt: "2024-07-29T11:30:00Z", amount: 25.00 },
-        { id: "tr-3", studentId: "student-2", parentUserId: "user-pai-2", date: "2024-08-14", type: "ida", shift: "manha", status: "rejeitada", reason: "", createdAt: "2024-07-28T15:00:00Z" },
-        { id: "tr-4", studentId: "student-5", parentUserId: "user-pai-3", date: "2024-08-16", type: "volta", shift: "manha", status: "aguardando_aprovacao_pai", reason: "Sairá mais cedo para um compromisso.", createdAt: "2024-07-31T09:00:00Z", amount: 30.00 },
-        { id: "tr-5", studentId: "student-7", parentUserId: "user-pai-4", date: "2024-08-20", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "Participará de uma feira de ciências.", createdAt: "2024-07-31T11:00:00Z" }
+        { id: "tr-1", studentId: "student-1", schoolId: "school-2", parentUserId: "user-pai-1", date: "2024-08-15", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "O aluno precisa ir a uma consulta médica e voltará para a escola.", createdAt: "2024-07-30T10:00:00Z" },
+        { id: "tr-2", studentId: "student-1", schoolId: "school-2", parentUserId: "user-pai-1", date: "2024-08-12", type: "volta", shift: "manha", status: "aprovada", reason: "", createdAt: "2024-07-29T11:30:00Z", amount: 25.00 },
+        { id: "tr-3", studentId: "student-2", schoolId: "school-2", parentUserId: "user-pai-2", date: "2024-08-14", type: "ida", shift: "manha", status: "rejeitada", reason: "", createdAt: "2024-07-28T15:00:00Z" },
+        { id: "tr-4", studentId: "student-5", schoolId: "school-2", parentUserId: "user-pai-3", date: "2024-08-16", type: "volta", shift: "manha", status: "aguardando_aprovacao_pai", reason: "Sairá mais cedo para um compromisso.", createdAt: "2024-07-31T09:00:00Z", amount: 30.00 },
+        { id: "tr-5", studentId: "student-7", schoolId: "school-2", parentUserId: "user-pai-4", date: "2024-08-20", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "Participará de uma feira de ciências.", createdAt: "2024-07-31T11:00:00Z" }
     ]
 };
