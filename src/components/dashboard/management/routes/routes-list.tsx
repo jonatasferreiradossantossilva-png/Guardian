@@ -283,13 +283,13 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                       </div>
                       <div>
                         <p className="text-muted-foreground text-xs">Otimização</p>
-                        <p className="font-medium">
-                           {route.lastOptimizedAt ? (
-                                formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR })
-                            ) : (
-                                <Badge variant="secondary" className="mt-1">Não otimizada</Badge>
-                            )}
-                        </p>
+                        <div className="font-medium text-sm">
+                          {route.lastOptimizedAt ? (
+                            formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR })
+                          ) : (
+                            <Badge variant="secondary" className="mt-1">Não otimizada</Badge>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </Card>

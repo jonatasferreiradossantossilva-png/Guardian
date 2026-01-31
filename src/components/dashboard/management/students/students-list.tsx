@@ -270,7 +270,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                       </div>
                       <div>
                         <p className="text-muted-foreground text-xs">Turno</p>
-                        <p><Badge variant="outline">{student.shift}</Badge></p>
+                        <Badge variant="outline" className="mt-1">{student.shift}</Badge>
                       </div>
                       <div>
                         <p className="text-muted-foreground text-xs">Mensalidade</p>
