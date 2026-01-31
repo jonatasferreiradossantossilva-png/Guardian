@@ -1,8 +1,8 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
-import { MonthlyBalanceChart } from "@/components/dashboard/monthly-balance-chart";
+import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,6 +20,11 @@ export default function DashboardPage() {
 
   const [selectedYear, setSelectedYear] = useState<string>('latest');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -73,13 +78,9 @@ export default function DashboardPage() {
 
       <OverviewCards filters={filters} />
 
-      <div className="grid gap-8 grid-cols-1 lg:grid-cols-3">
-        <div className="lg:col-span-2">
-          <MonthlyBalanceChart />
-        </div>
-        <div className="lg:col-span-1">
-          <ExpensesCategoryChart filters={filters}/>
-        </div>
+      <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
+        <InvoicesStatusChart filters={filters}/>
+        <ExpensesCategoryChart filters={filters} />
       </div>
     </div>
   );

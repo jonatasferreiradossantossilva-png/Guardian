@@ -7,6 +7,13 @@ import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
 import { Loader2 } from 'lucide-react';
 
+interface InvoicesStatusChartProps {
+    filters: {
+        year: string;
+        month: string;
+    }
+}
+
 const statusTextMap: Record<string, string> = {
   paid: 'Pagas',
   pending: 'Pendentes',
@@ -21,13 +28,24 @@ const statusColors: Record<string, string> = {
   pagamento_em_analise: 'hsl(var(--chart-1))', // blue
 };
 
-export function InvoicesStatusChart() {
-  const { data: invoices, isLoading } = useMockCollection('invoices');
+export function InvoicesStatusChart({ filters }: InvoicesStatusChartProps) {
+  const { data: allInvoices, isLoading } = useMockCollection('invoices');
 
   const chartData = useMemo(() => {
-    if (!invoices) return [];
+    if (!allInvoices) return [];
 
-    const statusCounts = invoices.reduce((acc, invoice) => {
+    const { year, month } = filters;
+    const isYearlyView = month === 'all';
+
+    let filteredInvoices = allInvoices.filter(inv => inv.dueDate.startsWith(year));
+    if (!isYearlyView) {
+        const monthStr = `${year}-${month}`;
+        filteredInvoices = filteredInvoices.filter(inv => inv.dueDate.startsWith(monthStr));
+    }
+
+    if (filteredInvoices.length === 0) return [];
+
+    const statusCounts = filteredInvoices.reduce((acc, invoice) => {
       const statusKey = invoice.status;
       acc[statusKey] = (acc[statusKey] || 0) + 1;
       return acc;
@@ -38,7 +56,7 @@ export function InvoicesStatusChart() {
       count: count,
       fill: statusColors[status],
     }));
-  }, [invoices]);
+  }, [allInvoices, filters]);
 
   const chartConfig = useMemo(() => {
     return chartData.reduce((acc, item) => {
@@ -55,10 +73,10 @@ export function InvoicesStatusChart() {
     return (
         <Card>
             <CardHeader>
-                <CardTitle>Composição das Faturas</CardTitle>
+                <CardTitle>Status das Faturas</CardTitle>
                 <CardDescription>Distribuição de faturas por status.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[230px] flex items-center justify-center">
+            <CardContent className="h-[350px] flex items-center justify-center">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </CardContent>
         </Card>
@@ -68,61 +86,67 @@ export function InvoicesStatusChart() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle>Composição das Faturas</CardTitle>
-        <CardDescription>Distribuição de faturas por status no período total.</CardDescription>
+        <CardTitle>Status das Faturas</CardTitle>
+        <CardDescription>Distribuição de faturas no período selecionado.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[230px]">
-          <ResponsiveContainer width="100%" height="100%">
-            <PieChart>
-              <ChartTooltip
-                cursor={false}
-                content={<ChartTooltipContent hideLabel />}
-              />
-              <Pie
-                data={chartData}
-                dataKey="count"
-                nameKey="status"
-                innerRadius={60}
-                strokeWidth={5}
-                labelLine={false}
-                label={({
-                  cx,
-                  cy,
-                  midAngle,
-                  innerRadius,
-                  outerRadius,
-                  percent,
-                }) => {
-                   const RADIAN = Math.PI / 180
-                   const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-                   const x = cx + radius * Math.cos(-midAngle * RADIAN)
-                   const y = cy + radius * Math.sin(-midAngle * RADIAN)
-            
-                   return (
-                     <text
-                       x={x}
-                       y={y}
-                       fill="hsl(var(--card-foreground))"
-                       textAnchor={x > cx ? "start" : "end"}
-                       dominantBaseline="central"
-                       className="text-xs font-medium"
-                     >
-                       {`${(percent * 100).toFixed(0)}%`}
-                     </text>
-                   )
-                 }}
-              >
-                 {chartData.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={entry.fill} />
-                ))}
-              </Pie>
-              <ChartLegend
-                  content={<ChartLegendContent nameKey="status" />}
-                  className="-translate-y-4"
+        <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[350px]">
+          {chartData.length > 0 ? (
+            <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                <ChartTooltip
+                    cursor={false}
+                    content={<ChartTooltipContent hideLabel />}
                 />
-            </PieChart>
-          </ResponsiveContainer>
+                <Pie
+                    data={chartData}
+                    dataKey="count"
+                    nameKey="status"
+                    innerRadius={60}
+                    strokeWidth={5}
+                    labelLine={false}
+                    label={({
+                    cx,
+                    cy,
+                    midAngle,
+                    innerRadius,
+                    outerRadius,
+                    percent,
+                    }) => {
+                    const RADIAN = Math.PI / 180
+                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+                    const x = cx + radius * Math.cos(-midAngle * RADIAN)
+                    const y = cy + radius * Math.sin(-midAngle * RADIAN)
+                
+                    return (
+                        <text
+                        x={x}
+                        y={y}
+                        fill="hsl(var(--foreground))"
+                        textAnchor={x > cx ? "start" : "end"}
+                        dominantBaseline="central"
+                        className="text-xs font-medium"
+                        >
+                        {`${(percent * 100).toFixed(0)}%`}
+                        </text>
+                    )
+                    }}
+                >
+                    {chartData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.fill} />
+                    ))}
+                </Pie>
+                <ChartLegend
+                    content={<ChartLegendContent nameKey="status" />}
+                    className="-translate-y-4"
+                    />
+                </PieChart>
+            </ResponsiveContainer>
+          ) : (
+             <div className="flex h-[350px] items-center justify-center text-muted-foreground text-sm">
+                Nenhuma fatura no período.
+            </div>
+          )}
         </ChartContainer>
       </CardContent>
     </Card>
