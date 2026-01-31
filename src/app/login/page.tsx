@@ -67,7 +67,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/gestor-dashboard/600/400" alt="Painel do Gestor" layout="fill" objectFit="cover" data-ai-hint="dashboard analytics" />
+                     <Image src="https://picsum.photos/seed/guardian-dashboard/600/400" alt="Painel do Gestor" layout="fill" objectFit="cover" data-ai-hint="app screenshot" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Bot} text="Otimizador de Rotas com IA" />
@@ -85,7 +85,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/driver-app/600/400" alt="Painel do Motorista" layout="fill" objectFit="cover" data-ai-hint="mobile app" />
+                     <Image src="https://picsum.photos/seed/guardian-driver-app/600/400" alt="Painel do Motorista" layout="fill" objectFit="cover" data-ai-hint="mobile interface" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={CheckCircle} text="Plano de Rota Interativo" />
@@ -103,7 +103,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                    <div className="relative aspect-video rounded-md overflow-hidden">
-                     <Image src="https://picsum.photos/seed/parent-app/600/400" alt="Painel dos Pais" layout="fill" objectFit="cover" data-ai-hint="map tracking" />
+                     <Image src="https://picsum.photos/seed/guardian-parent-app/600/400" alt="Painel dos Pais" layout="fill" objectFit="cover" data-ai-hint="map view" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Shield} text="Acompanhamento em Tempo Real" />
