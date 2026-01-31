@@ -9,8 +9,9 @@ import {
   useMockData,
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APIProvider, Map as GoogleMap, AdvancedMarker } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -291,63 +292,68 @@ export default function ParentTrackingPage() {
              </CardContent>
           </Card>
         ) : (
-          <div className="space-y-6">
-            <Card>
-              {isNearby && (
-                <div className="p-4 border-b-2 border-amber-400 bg-amber-50 dark:bg-amber-950/20">
-                    <div className="flex items-center gap-3">
-                        <Siren className="h-6 w-6 text-amber-500 animate-pulse" />
-                        <div>
-                            <h3 className="font-bold text-amber-700 dark:text-amber-300">A Van está Próxima!</h3>
-                            <p className="text-sm text-amber-600 dark:text-amber-400">Prepare-se para o embarque de {student.name}.</p>
-                        </div>
-                    </div>
-                </div>
-              )}
+          <Card>
+            <Tabs defaultValue="status" className="w-full">
               <CardHeader>
-                <div className="flex justify-between items-start">
-                    <div>
-                      <CardTitle className="flex items-center gap-2">
-                          <User />
-                          Status de {student.name}
-                      </CardTitle>
-                      <CardDescription className={cn('pt-2', studentStatus === 'ausente' && 'text-destructive')}>
-                        {studentStatus === 'aguardando' && 'A presença está confirmada. Use o botão abaixo apenas se o aluno for faltar.'}
-                        {studentStatus === 'ausente' && 'A ausência foi comunicada. O motorista não passará para o embarque.'}
-                        {(studentStatus === 'a_bordo' || studentStatus === 'desembarcou') && 'Acompanhe em tempo real o transporte escolar.'}
-                      </CardDescription>
-                    </div>
-                     <Badge variant={statusBadgeVariant[studentStatus]}>{statusText[studentStatus]}</Badge>
-                </div>
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="status"><Activity className="mr-2 h-4 w-4"/>Status e Ações</TabsTrigger>
+                  <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa em Tempo Real</TabsTrigger>
+                </TabsList>
               </CardHeader>
-              <CardContent>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <Button
-                        variant="destructive"
-                        className="w-full"
-                        onClick={handleCommunicateAbsence}
-                    >
-                        <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
-                    </Button>
-                    <Button
-                        variant="secondary"
-                        className="w-full"
-                        onClick={handleConfirmPresence}
-                    >
-                        <CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença
-                    </Button>
-                 </div>
-              </CardContent>
-            </Card>
+              
+              <TabsContent value="status" className="m-0">
+                  <div className="p-6 pt-0">
+                    {isNearby && (
+                        <div className="p-4 mb-4 border-b-2 border-amber-400 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
+                            <div className="flex items-center gap-3">
+                                <Siren className="h-6 w-6 text-amber-500 animate-pulse" />
+                                <div>
+                                    <h3 className="font-bold text-amber-700 dark:text-amber-300">A Van está Próxima!</h3>
+                                    <p className="text-sm text-amber-600 dark:text-amber-400">Prepare-se para o embarque de {student.name}.</p>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                    <CardHeader className="p-0">
+                        <div className="flex justify-between items-start">
+                            <div>
+                                <CardTitle className="flex items-center gap-2">
+                                    <User />
+                                    Status de {student.name}
+                                </CardTitle>
+                                <CardDescription className={cn('pt-2', studentStatus === 'ausente' && 'text-destructive')}>
+                                    {studentStatus === 'aguardando' && 'A presença está confirmada. Use o botão abaixo apenas se o aluno for faltar.'}
+                                    {studentStatus === 'ausente' && 'A ausência foi comunicada. O motorista não passará para o embarque.'}
+                                    {(studentStatus === 'a_bordo' || studentStatus === 'desembarcou') && 'Acompanhe em tempo real o transporte escolar.'}
+                                </CardDescription>
+                            </div>
+                            <Badge variant={statusBadgeVariant[studentStatus]}>{statusText[studentStatus]}</Badge>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="p-0 pt-6">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <Button
+                                variant="destructive"
+                                className="w-full"
+                                onClick={handleCommunicateAbsence}
+                            >
+                                <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
+                            </Button>
+                            <Button
+                                variant="secondary"
+                                className="w-full"
+                                onClick={handleConfirmPresence}
+                            >
+                                <CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença
+                            </Button>
+                        </div>
+                    </CardContent>
+                  </div>
+              </TabsContent>
 
-            <Card>
-                <CardHeader>
-                     <h3 className="font-semibold flex items-center gap-2 mb-2">
-                        <MapPin /> Localização da Van {simulatedLocation && <Badge variant="outline">Simulação</Badge>}
-                    </h3>
-                </CardHeader>
-                <CardContent>
-                    <div className="aspect-video bg-secondary rounded-lg flex items-center justify-center overflow-hidden">
+              <TabsContent value="map" className="m-0">
+                <CardContent className="p-0">
+                    <div className="h-[50vh] md:h-[60vh] bg-secondary flex items-center justify-center overflow-hidden">
                     {!API_KEY ? (
                         <div className="text-center p-4">
                             <p className="font-semibold text-lg">Mapa Indisponível</p>
@@ -394,7 +400,9 @@ export default function ParentTrackingPage() {
                     )}
                     </div>
                 </CardContent>
-                <CardFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+              </TabsContent>
+            </Tabs>
+            <CardFooter className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-6">
                 <Button asChild variant="outline" className="w-full">
                     <Link href="/parent/authorized">
                         <Users className="mr-2 h-4 w-4" /> Gerenciar Autorizados
@@ -414,9 +422,8 @@ export default function ParentTrackingPage() {
                     <Bell className="mr-2 h-4 w-4" />
                     Testar Notificação de Proximidade
                 </Button>
-                </CardFooter>
-            </Card>
-          </div>
+            </CardFooter>
+          </Card>
         )}
       </div>
     </div>
