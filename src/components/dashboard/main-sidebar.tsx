@@ -39,6 +39,7 @@ import {
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { useEffect, useState } from "react";
+import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 
 // NEW: Links for the "Operational" section
 const operationalLinks = [
@@ -250,11 +251,18 @@ export function MainSidebar() {
             <p className="font-semibold">Admin</p>
             <p className="text-xs text-muted-foreground">admin@guardian.com</p>
           </div>
-          <Link href="/" className="ml-auto group-data-[collapsible=icon]:hidden">
-            <Button variant="ghost" size="icon">
-              <LogOut className="h-5 w-5 text-muted-foreground" />
-            </Button>
-          </Link>
+            <Tooltip>
+                <TooltipTrigger asChild>
+                    <Link href="/" className="ml-auto">
+                        <Button variant="ghost" size="icon">
+                        <LogOut className="h-5 w-5 text-muted-foreground" />
+                        </Button>
+                    </Link>
+                </TooltipTrigger>
+                <TooltipContent side="right" align="center">
+                    Sair
+                </TooltipContent>
+            </Tooltip>
         </div>
       </SidebarFooter>
     </Sidebar>
