@@ -1,5 +1,6 @@
 import { MainSidebar } from "@/components/dashboard/main-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { DashboardHeader } from "@/components/dashboard/dashboard-header";
 
 export default function DashboardLayout({
   children,
@@ -8,11 +9,14 @@ export default function DashboardLayout({
 }) {
   return (
     <SidebarProvider>
-      <div className="flex h-screen">
+      <div className="flex h-screen bg-background">
         <MainSidebar />
-        <main className="flex-1 flex flex-col p-4 md:p-6 lg:p-8 bg-background">
-          {children}
-        </main>
+        <div className="flex flex-1 flex-col">
+          <DashboardHeader />
+          <main className="flex-1 overflow-y-auto p-4 md:p-6 lg:p-8">
+            {children}
+          </main>
+        </div>
       </div>
     </SidebarProvider>
   );
