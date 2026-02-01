@@ -18,7 +18,7 @@ const StudentStopSchema = z.object({
 });
 
 const OptimizeSchoolVanRouteInputSchema = z.object({
-  startAddress: z.string().optional().describe("O endereço de partida da rota (ex: casa do motorista). Se não for fornecido, a rota começa no primeiro aluno."),
+  startAddress: z.string().optional().describe("O endereço de partida ou as coordenadas (lat,lng) da rota. Se não for fornecido, a rota começa no primeiro aluno."),
   students: z.array(StudentStopSchema).describe("Lista de alunos com seus endereços para serem incluídos na rota."),
   schoolAddress: z.string().describe("O endereço da escola, que é o destino final."),
   vehicleCapacity: z.number().optional().describe("A capacidade máxima de passageiros do veículo."),
@@ -49,7 +49,7 @@ Você receberá uma lista de alunos com seus endereços residenciais e o endere�
 
 Considere as seguintes informações:
 {{#if startAddress}}
-- **Endereço de Partida (Obrigatório):** {{{startAddress}}} (Comece a rota a partir deste ponto)
+- **Ponto de Partida (Obrigatório se fornecido):** {{{startAddress}}} (Comece a rota a partir deste ponto, que pode ser um endereço ou coordenadas lat,lng)
 {{/if}}
 - Lista de Alunos e Endereços (Paradas): {{{json students}}}
 - Endereço da Escola (Destino Final): {{{schoolAddress}}}

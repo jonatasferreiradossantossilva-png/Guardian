@@ -79,6 +79,10 @@ interface School {
   neighborhood?: string;
 }
 
+const formatAddress = (entity) => {
+    if (!entity?.street) return 'Endereço indisponível';
+    return `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
+};
 
 const statusText: Record<StudentStatus, string> = {
   aguardando: 'Aguardando',
@@ -220,7 +224,9 @@ export default function DriverRoutePlanPage() {
     
   const [dynamicRoute, setDynamicRoute] = useState<{ students: Student[] } | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
-  const [isAutoNavigateEnabled, setIsAutoNavigateEnabled] = useState(true);
+  const [isAutoRecalculateEnabled, setIsAutoRecalculateEnabled] = useState(true);
+  const [isStartingRoute, setIsStartingRoute] = useState(false);
+
 
   const [isClient, setIsClient] = useState(false);
   const [selectedTrip, setSelectedTrip] = useState<'manha-ida' | 'tarde-volta'>('manha-ida');
@@ -366,12 +372,95 @@ export default function DriverRoutePlanPage() {
     };
   }, [driverId, driverProfile?.status, nextStop, setDoc]);
 
+  const handleRecalculate = useCallback(async () => {
+    if (direction === 'volta' || !displayStudents || displayStudents.length === 0 || !school) {
+        toast({ title: "Não é possível recalcular", description: "Recalcular só está disponível para viagens de ida.", variant: "destructive" });
+        return;
+    }
+
+    setIsRecalculating(true);
+    
+    const studentsToReroute = displayStudents.filter(s => s.status === 'aguardando');
+    
+    if (studentsToReroute.length === 0) {
+        toast({ title: "Nenhuma parada restante", description: "Todos os alunos já foram visitados." });
+        setIsRecalculating(false);
+        return;
+    }
+    
+    try {
+        const studentInputs = studentsToReroute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) }));
+        const schoolAddress = formatAddress(school);
+        const startAddress = driverLocation ? `${driverLocation.latitude},${driverLocation.longitude}` : undefined;
+
+        const input = {
+            startAddress,
+            students: studentInputs,
+            schoolAddress: schoolAddress,
+            context: "Recalcule a rota mais eficiente para as paradas restantes, partindo da minha localização atual e terminando na escola. Um ou mais alunos podem ter sido marcados como ausentes.",
+        };
+
+        const result = await optimizeSchoolVanRoute(input);
+        
+        const processedStudents = displayStudents.filter(s => s.status !== 'aguardando');
+        
+        const reorderedWaitingStudents = result.optimizedStudentIds
+            .map(id => students.find(s => s.id === id))
+            .filter((s): s is Student => !!s);
+
+        const newDisplayOrder = [...processedStudents, ...reorderedWaitingStudents];
+
+        setDynamicRoute({ students: newDisplayOrder });
+
+        toast({ title: "Rota Recalculada!", description: "A ordem das paradas foi atualizada." });
+
+    } catch (error) {
+        console.error("Error recalculating route:", error);
+        toast({ title: "Erro ao Recalcular", description: "Não foi possível otimizar a rota. Tente novamente.", variant: "destructive" });
+    } finally {
+        setIsRecalculating(false);
+    }
+  }, [direction, displayStudents, school, driverLocation, students, toast]);
+
   // Route control handlers
-  const handleStartRoute = useCallback(() => {
-      if (!driverId) return;
+  const handleStartRoute = useCallback(async () => {
+      if (!driverId || !orderedStudents || !school) {
+          toast({ title: "Erro", description: "Não foi possível iniciar a rota. Dados incompletos.", variant: "destructive"});
+          return;
+      }
+
+      setIsStartingRoute(true);
+      
+      const studentsForTrip = orderedStudents.filter(s => s.status !== 'ausente');
+
+      if (direction === 'ida' && studentsForTrip.length > 0) {
+          try {
+              const startAddress = driverProfile ? formatAddress(driverProfile) : undefined;
+              const schoolAddress = formatAddress(school);
+              const studentInputs = studentsForTrip.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) }));
+              
+              const result = await optimizeSchoolVanRoute({ students: studentInputs, schoolAddress, startAddress });
+              const optimizedStudentOrder = result.optimizedStudentIds.map(id => students.find(s => s.id === id)).filter(Boolean);
+
+              setDynamicRoute({ students: optimizedStudentOrder });
+              toast({ title: "Rota Otimizada para Início!", description: "Sua rota de ida foi otimizada a partir da sua localização." });
+
+          } catch (error) {
+              console.error("Pre-flight optimization failed:", error);
+              toast({ title: "Falha na otimização inicial", description: "Iniciando com a rota padrão.", variant: "destructive" });
+              setDynamicRoute({ students: studentsForTrip }); // Fallback to non-optimized list
+          }
+      } else if (direction === 'volta') {
+          // For the return trip, just reverse the order of students present
+          const returnTripStudents = studentsForTrip.slice().reverse();
+          setDynamicRoute({ students: returnTripStudents });
+          toast({ title: "Rota de Volta Iniciada!", description: "Prepare-se para o desembarque." });
+      }
+
       updateDoc('drivers', driverId, { status: 'em_rota' });
-      toast({ title: "Rota Iniciada!", description: "Boa viagem!" });
-  }, [driverId, updateDoc, toast]);
+      setIsStartingRoute(false);
+  }, [driverId, updateDoc, toast, orderedStudents, school, direction, driverProfile, students]);
+
 
   const handlePauseRoute = useCallback(() => {
       if (!driverId) return;
@@ -433,129 +522,10 @@ export default function DriverRoutePlanPage() {
         description: `${studentName} foi marcado(a) como ${statusText[newStatus]}.`,
     });
 
-    if (isAutoNavigateEnabled) {
-        const currentStudents = displayStudents;
-        // Find the next student in the list who is still 'aguardando', AFTER the current one.
-        const currentIndex = currentStudents.findIndex(s => s.id === studentId);
-        
-        let nextNavigableStop: Student | School | null = null;
-        for (let i = currentIndex + 1; i < currentStudents.length; i++) {
-            if (currentStudents[i].status === 'aguardando') {
-                nextNavigableStop = currentStudents[i];
-                break;
-            }
-        }
-        
-        if (nextNavigableStop) {
-             toast({
-                title: "Próximo Destino",
-                description: `Navegação simulada para: ${nextNavigableStop.name}.`,
-            });
-        } else if (currentStudents.every(s => s.status === 'desembarcado' || s.status === 'ausente')) {
-            nextNavigableStop = school;
-             if (nextNavigableStop) {
-                toast({
-                    title: "Próximo Destino",
-                    description: `Todos os alunos a bordo! Navegação simulada para a escola: ${nextNavigableStop.name}.`,
-                });
-            }
-        }
+    if (newStatus === 'ausente' && isAutoRecalculateEnabled && direction === 'ida') {
+        handleRecalculate();
     }
-  }, [updateDoc, students, toast, displayStudents, school, isAutoNavigateEnabled]);
-
-  const handleRecalculate = async () => {
-    if (!orderedStudents || orderedStudents.length === 0 || !school) {
-        toast({ 
-            title: "Dados insuficientes",
-            description: "Não é possível recalcular sem uma rota e escola definidos.",
-            variant: "destructive"
-        });
-        return;
-    }
-
-    setIsRecalculating(true);
-    
-    const studentsToReroute = orderedStudents.filter(s => s.status === 'aguardando');
-    
-    if (studentsToReroute.length === 0) {
-        toast({ title: "Nenhuma parada restante", description: "Todos os alunos já foram visitados." });
-        setIsRecalculating(false);
-        return;
-    }
-    
-    try {
-        const studentInputs = studentsToReroute.map(s => ({ 
-            id: s.id, 
-            name: s.name, 
-            address: `${s.street || ''}, ${s.number || ''}, ${s.neighborhood || ''}`.trim()
-        }));
-
-        const schoolAddress = `${school.street || ''}, ${school.number || ''}, ${school.neighborhood || ''}`.trim();
-
-        const input = {
-            students: studentInputs,
-            schoolAddress: schoolAddress,
-            context: "Recalcule a rota mais eficiente para as paradas restantes, terminando na escola. Um ou mais alunos podem ter sido marcados como ausentes.",
-        };
-
-        const result = await optimizeSchoolVanRoute(input);
-        
-        const processedStudents = orderedStudents.filter(s => s.status !== 'aguardando');
-        
-        const reorderedWaitingStudents = result.optimizedStudentIds
-            .map(id => students.find(s => s.id === id))
-            .filter((s): s is Student => !!s);
-
-        const newDisplayOrder = [...processedStudents, ...reorderedWaitingStudents];
-
-        setDynamicRoute({
-            students: newDisplayOrder,
-        });
-
-        toast({
-            title: "Rota Recalculada!",
-            description: "A ordem das paradas foi atualizada.",
-        });
-
-    } catch (error) {
-        console.error("Error recalculating route:", error);
-        toast({
-            title: "Erro ao Recalcular",
-            description: "Não foi possível otimizar a rota. Tente novamente.",
-            variant: "destructive"
-        });
-    } finally {
-        setIsRecalculating(false);
-    }
-};
-
- const handleShareToWhatsApp = useCallback(() => {
-    if (!route || !driverProfile || !displayStudents || !school) {
-        toast({
-            title: "Não é possível compartilhar",
-            description: "Dados da rota ou do motorista não estão disponíveis.",
-            variant: "destructive",
-        });
-        return;
-    }
-
-    const studentList = displayStudents.map((student, index) => `${index + 1}. ${student.name}`).join('\n');
-    
-    const message = `*Plano de Rota: ${route.name}*\n\n` +
-                    `*Motorista:* ${driverProfile.name}\n\n` +
-                    `*Paradas:*\n${studentList}\n` +
-                    `${displayStudents.length + 1}. ${school.name} (Destino Final)`;
-
-    const encodedMessage = encodeURIComponent(message);
-    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
-    
-    window.open(whatsappUrl, '_blank');
-
-    toast({
-        title: "Preparando compartilhamento",
-        description: "Abrindo WhatsApp com o plano de rota pronto para ser enviado.",
-    });
-  }, [route, driverProfile, displayStudents, school, toast]);
+  }, [updateDoc, students, toast, isAutoRecalculateEnabled, direction, handleRecalculate]);
 
 
   const isLoading =
@@ -652,8 +622,9 @@ export default function DriverRoutePlanPage() {
                                 ) : (
                                     <>
                                         {driverProfile?.status === 'inativo' && (
-                                            <Button onClick={handleStartRoute} className="bg-green-600 hover:bg-green-700">
-                                                <Play className="mr-2 h-4 w-4" /> Iniciar Rota
+                                            <Button onClick={handleStartRoute} className="bg-green-600 hover:bg-green-700" disabled={isStartingRoute}>
+                                                {isStartingRoute ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                                                Iniciar Rota
                                             </Button>
                                         )}
                                         {driverProfile?.status === 'em_rota' && (
@@ -678,20 +649,20 @@ export default function DriverRoutePlanPage() {
                                         )}
                                     </>
                                 )}
-                                <Button variant="outline" size="sm" onClick={handleRecalculate} disabled={!isClient || isRecalculating || driverProfile?.status !== 'em_rota' || direction === 'volta'}>
+                                <Button variant="outline" size="sm" onClick={() => handleRecalculate()} disabled={!isClient || isRecalculating || driverProfile?.status !== 'em_rota' || direction === 'volta'}>
                                     {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                                     Recalcular
                                 </Button>
                             </div>
                         </div>
                         <div className="flex items-center justify-end space-x-2 pt-4 border-t mt-4">
-                            <Label htmlFor="auto-navigate-toggle" className="text-sm font-normal text-muted-foreground">Navegação Automática</Label>
+                            <Label htmlFor="auto-recalculate-toggle" className="text-sm font-normal text-muted-foreground">Recalculagem automática ao marcar ausência</Label>
                             <Switch
-                                id="auto-navigate-toggle"
-                                checked={isAutoNavigateEnabled}
-                                onCheckedChange={setIsAutoNavigateEnabled}
-                                aria-label="Ativar ou desativar navegação automática"
-                                disabled={!isClient}
+                                id="auto-recalculate-toggle"
+                                checked={isAutoRecalculateEnabled}
+                                onCheckedChange={setIsAutoRecalculateEnabled}
+                                aria-label="Ativar ou desativar recalcular rota automaticamente"
+                                disabled={!isClient || direction === 'volta'}
                             />
                         </div>
                     </CardHeader>
@@ -938,5 +909,6 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
 
 
