@@ -28,6 +28,7 @@ import Link from 'next/link';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { cn } from '@/lib/utils';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Shift = 'Manhã' | 'Tarde';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
@@ -130,15 +131,13 @@ export default function AssistantRoutePlanPage() {
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
-  // State for the modal
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedStudentForModal, setSelectedStudentForModal] =
-    useState<Student | null>(null);
+  const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
+  const [selectedShift, setSelectedShift] = useState<Shift>('Manhã');
 
   useEffect(() => {
-    // For this prototype, we get the logged-in user's ID from session storage.
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || 'user-aux-1'); // Default to a known assistant for direct page access
+    setMockUserId(storedUserId || 'user-aux-1');
   }, []);
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
@@ -149,10 +148,7 @@ export default function AssistantRoutePlanPage() {
         ]
       : []
   );
-  const route = useMemo(
-    () => (routes && routes.length > 0 ? routes[0] : null),
-    [routes]
-  );
+  const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
   const { data: students, isLoading: areStudentsLoading } = useMockCollection(
     'students',
@@ -166,8 +162,8 @@ export default function AssistantRoutePlanPage() {
     const studentMap = new Map(students.map((s) => [s.id, s]));
     return route.studentIds
       .map((id) => studentMap.get(id))
-      .filter((s): s is Student => !!s);
-  }, [route?.studentIds, students]);
+      .filter((s): s is Student => !!s && s.shift === selectedShift);
+  }, [route?.studentIds, students, selectedShift]);
 
   const school = useMemo(() => {
     if (!orderedStudents.length || !schools) return null;
@@ -186,12 +182,6 @@ export default function AssistantRoutePlanPage() {
   }, []);
 
   const isLoading = isRouteLoading || areStudentsLoading || areSchoolsLoading;
-
-  // Derive shift from the active route
-  const activeShift = useMemo(
-    () => (route?.shift === 'manha' ? 'Manhã' : 'Tarde'),
-    [route]
-  );
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
@@ -215,15 +205,27 @@ export default function AssistantRoutePlanPage() {
         <Card>
           <CardHeader>
             <div className="flex justify-between items-start">
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardCheck />
-                Controle de Embarque/Desembarque
-              </CardTitle>
-              {route && <Badge variant="outline">{activeShift}</Badge>}
+                <div>
+                    <CardTitle className="flex items-center gap-2">
+                        <ClipboardCheck />
+                        Controle de Embarque/Desembarque
+                    </CardTitle>
+                    <p className="text-muted-foreground text-sm pt-2">
+                    {route ? route.name : 'Carregando rota...'}
+                    </p>
+                </div>
+                <div className="w-[150px]">
+                    <Select value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione o turno" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Manhã">Manhã</SelectItem>
+                            <SelectItem value="Tarde">Tarde</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
             </div>
-            <p className="text-muted-foreground text-sm pt-2">
-              {route ? route.name : 'Carregando rota...'}
-            </p>
           </CardHeader>
           <CardContent>
             {isLoading && (
@@ -263,7 +265,7 @@ export default function AssistantRoutePlanPage() {
                 {orderedStudents.length === 0 && (
                     <div className="text-center text-muted-foreground py-10">
                     <p>
-                        Nenhum aluno para o turno da {activeShift?.toLowerCase()}.
+                        Nenhum aluno para o turno da {selectedShift?.toLowerCase()}.
                     </p>
                     </div>
                 )}

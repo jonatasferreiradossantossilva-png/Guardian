@@ -459,14 +459,6 @@
             "type": "string"
           }
         },
-        "shift": {
-          "type": "string",
-          "description": "The route's operating shift.",
-          "enum": [
-            "manha",
-            "tarde"
-          ]
-        },
         "turnByTurnDirections": {
           "type": "array",
           "description": "A list of turn-by-turn navigation instructions for the route.",
@@ -483,8 +475,7 @@
       "required": [
         "id",
         "name",
-        "driverId",
-        "shift"
+        "driverId"
       ]
     },
     "Invoice": {

@@ -41,7 +41,6 @@ const formSchema = z.object({
   driverId: z.string().min(1, { message: 'Selecione um motorista.' }),
   assistantId: z.string().optional(),
   studentIds: z.array(z.string()).default([]),
-  shift: z.enum(['manha', 'tarde'], { required_error: 'Selecione um turno.' }),
 });
 
 type RouteFormValues = z.infer<typeof formSchema>;
@@ -71,6 +70,7 @@ export function RouteForm({
   const { addDoc, updateDoc, db } = useMockData();
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [selectedInRoute, setSelectedInRoute] = useState<Set<string>>(new Set());
+  const [studentSearch, setStudentSearch] = useState('');
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
@@ -79,11 +79,9 @@ export function RouteForm({
       driverId: '',
       assistantId: '',
       studentIds: [],
-      shift: 'manha',
     },
   });
 
-  const shift = form.watch('shift');
   const studentIdsInForm = form.watch('studentIds');
   const driverId = form.watch('driverId');
 
@@ -102,20 +100,19 @@ export function RouteForm({
 
   
   const { availableStudents, studentsInCurrentRoute } = useMemo(() => {
-    const shiftInForm = shift === 'manha' ? 'Manhã' : 'Tarde';
     const studentsInCurrentRoute = (studentIdsInForm || [])
         .map(id => db.students.find(s => s.id === id))
         .filter(Boolean);
 
     const availableStudents = db.students.filter(s => {
-        const isSameShift = s.shift === shiftInForm;
         const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
         const isAlreadyInThisRoute = studentIdsInForm.includes(s.id);
-        return isSameShift && !isInAnotherRoute && !isAlreadyInThisRoute;
+        const matchesSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase());
+        return !isInAnotherRoute && !isAlreadyInThisRoute && matchesSearch;
     });
 
     return { availableStudents, studentsInCurrentRoute };
-  }, [shift, studentIdsInForm, db.students, route]);
+  }, [studentIdsInForm, db.students, route, studentSearch]);
 
   useEffect(() => {
     if (route) {
@@ -124,7 +121,6 @@ export function RouteForm({
         driverId: route.driverId || '',
         assistantId: route.assistantId || '',
         studentIds: route.studentIds || [],
-        shift: route.shift || 'manha',
       });
     } else {
       form.reset(form.defaultValues);
@@ -235,9 +231,6 @@ export function RouteForm({
                 <FormMessage />
                 </FormItem>
             )}/>
-             <FormField control={form.control} name="shift" render={({ field }) => (
-              <FormItem><FormLabel>Turno</FormLabel><Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione o turno" /></SelectTrigger></FormControl><SelectContent><SelectItem value="manha">Manhã</SelectItem><SelectItem value="tarde">Tarde</SelectItem></SelectContent></Select><FormMessage /></FormItem>
-            )}/>
             <FormField control={form.control} name="assistantId" render={({ field }) => (
                 <FormItem>
                     <FormLabel>Auxiliar</FormLabel>
@@ -271,15 +264,30 @@ export function RouteForm({
             )}
             <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-2 items-center">
                 {/* Available Students */}
-                <CardWithListHeader title="Alunos Disponíveis" count={availableStudents.length}>
-                    <ScrollArea className="h-48">
-                        {availableStudents.map(s => (
-                            <div key={s.id} onClick={() => toggleSelection('available', s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent">
-                                {s.name}
-                            </div>
-                        ))}
-                    </ScrollArea>
-                </CardWithListHeader>
+                 <Card>
+                    <div className="p-2 border-b">
+                        <h4 className="text-sm font-semibold flex items-center justify-between">
+                            <span>Alunos Disponíveis</span>
+                            <span className="text-xs font-normal text-muted-foreground flex items-center gap-1"><Users size={14}/> {availableStudents.length}</span>
+                        </h4>
+                        <Input
+                          placeholder="Buscar aluno..."
+                          value={studentSearch}
+                          onChange={(e) => setStudentSearch(e.target.value)}
+                          className="h-8 mt-2"
+                        />
+                    </div>
+                    <div className="p-2">
+                        <ScrollArea className="h-48">
+                            {availableStudents.map(s => (
+                                <div key={s.id} onClick={() => toggleSelection('available', s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex justify-between">
+                                  <span>{s.name}</span>
+                                  <span className="text-muted-foreground text-xs">{s.shift}</span>
+                                </div>
+                            ))}
+                        </ScrollArea>
+                    </div>
+                </Card>
 
                 {/* Controls */}
                 <div className="flex flex-row md:flex-col gap-2 justify-center">
