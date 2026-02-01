@@ -284,7 +284,7 @@ export const initialMockData = {
     routes: [
         { 
             id: "route-1", 
-            name: "Rota Principal (Manhã e Tarde)", 
+            name: "Rota Principal", 
             driverId: "driver-1", 
             assistantId: "user-aux-1", 
             studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12"], 
@@ -331,7 +331,7 @@ export const initialMockData = {
         { id: "route-7", name: "Rota Itaim", driverId: "driver-7", assistantId: "", studentIds: [] },
         { 
             id: "route-8", 
-            name: "Rota Jardins da Tarde", 
+            name: "Rota Jardins", 
             driverId: "driver-1", 
             assistantId: "user-aux-3", 
             studentIds: ["student-13", "student-14", "student-15"], 
