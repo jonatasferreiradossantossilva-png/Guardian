@@ -819,8 +819,8 @@ export default function DriverRoutePlanPage() {
                     </CardContent>
                 </Card>
             </TabsContent>
-            <TabsContent value="map" className="mt-6 space-y-4">
-                <div className="flex justify-center flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 text-xs sm:text-sm text-muted-foreground">
+            <TabsContent value="map" className="mt-2">
+                <div className="flex justify-center flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 text-xs sm:text-sm text-muted-foreground mb-2">
                     <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-[10px] animate-pulse">1</div>Próxima</div>
                     <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div>A Bordo</div>
                     <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
