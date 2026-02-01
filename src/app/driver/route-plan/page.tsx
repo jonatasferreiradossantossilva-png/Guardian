@@ -52,6 +52,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 
 type Shift = 'Manhã' | 'Tarde';
@@ -76,6 +77,15 @@ interface School {
   street?: string;
   number?: string;
   neighborhood?: string;
+}
+interface Route {
+  id: string;
+  name: string;
+  driverId: string;
+  assistantId?: string;
+  studentIds: string[];
+  turnByTurnDirections?: string[];
+  lastOptimizedAt?: string;
 }
 
 const formatAddress = (entity) => {
@@ -221,7 +231,7 @@ export default function DriverRoutePlanPage() {
   const [selectedStudentForModal, setSelectedStudentForModal] =
     useState<Student | null>(null);
     
-  const [dynamicRoute, setDynamicRoute] = useState<{ students: Student[] } | null>(null);
+  const [dynamicRoute, setDynamicRoute] = useState<{ students: Student[], directions?: string[] } | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isAutoRecalculateEnabled, setIsAutoRecalculateEnabled] = useState(true);
   const [isStartingRoute, setIsStartingRoute] = useState(false);
@@ -320,6 +330,7 @@ export default function DriverRoutePlanPage() {
     locationRef.current = driverLocation;
   }, [driverLocation]);
 
+  const directionsToShow = dynamicRoute?.directions || route?.turnByTurnDirections;
 
   // Location simulation effect
   useEffect(() => {
@@ -409,7 +420,7 @@ export default function DriverRoutePlanPage() {
 
         const newDisplayOrder = [...processedStudents, ...reorderedWaitingStudents];
 
-        setDynamicRoute({ students: newDisplayOrder });
+        setDynamicRoute({ students: newDisplayOrder, directions: result.turnByTurnDirections });
 
         toast({ title: "Rota Recalculada!", description: "A ordem das paradas foi atualizada." });
 
@@ -439,20 +450,20 @@ export default function DriverRoutePlanPage() {
               const studentInputs = studentsForTrip.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) }));
               
               const result = await optimizeSchoolVanRoute({ students: studentInputs, schoolAddress, startAddress });
-              const optimizedStudentOrder = result.optimizedStudentIds.map(id => students.find(s => s.id === id)).filter(Boolean);
+              const optimizedStudentOrder = result.optimizedStudentIds.map(id => students.find(s => s.id === id)).filter(Boolean) as Student[];
 
-              setDynamicRoute({ students: optimizedStudentOrder });
+              setDynamicRoute({ students: optimizedStudentOrder, directions: result.turnByTurnDirections });
               toast({ title: "Rota Otimizada para Início!", description: "Sua rota de ida foi otimizada a partir da sua localização." });
 
           } catch (error) {
               console.error("Pre-flight optimization failed:", error);
               toast({ title: "Falha na otimização inicial", description: "Iniciando com a rota padrão.", variant: "destructive" });
-              setDynamicRoute({ students: studentsForTrip }); // Fallback to non-optimized list
+              setDynamicRoute({ students: studentsForTrip, directions: [] }); // Fallback to non-optimized list
           }
       } else if (direction === 'volta') {
           // For the return trip, just reverse the order of students present
           const returnTripStudents = studentsForTrip.slice().reverse();
-          setDynamicRoute({ students: returnTripStudents });
+          setDynamicRoute({ students: returnTripStudents, directions: [] });
           toast({ title: "Rota de Volta Iniciada!", description: "Prepare-se para o desembarque." });
       }
 
@@ -719,31 +730,59 @@ export default function DriverRoutePlanPage() {
                         )}
 
                         {!isLoading && route && (
-                        <ol className="space-y-2">
-                            {direction === 'volta' && school && <SchoolStop isStart={true} />}
-                            {displayStudents.map((student, index) => {
-                                const isNextStop = student.id === nextStop?.id;
-                                return (
-                                <StudentListItem
-                                    key={student.id}
-                                    student={student}
-                                    index={index + (direction === 'volta' ? 1 : 0)}
-                                    isNextStop={isNextStop}
-                                    onStatusChange={handleStatusChange}
-                                    onNavigate={handleNavigateToStudent}
-                                    onOpenAuthorizedModal={handleOpenAuthorizedModal}
-                                />
-                                );
-                            })}
-                            {direction === 'ida' && school && <SchoolStop isStart={false} />}
-                            {displayStudents.length === 0 && (
-                                <div className="text-center text-muted-foreground py-10">
-                                <p>
-                                    Nenhum aluno para o turno da {shift?.toLowerCase()}.
-                                </p>
+                        <>
+                            <ol className="space-y-2">
+                                {direction === 'volta' && school && <SchoolStop isStart={true} />}
+                                {displayStudents.map((student, index) => {
+                                    const isNextStop = student.id === nextStop?.id;
+                                    return (
+                                    <StudentListItem
+                                        key={student.id}
+                                        student={student}
+                                        index={index + (direction === 'volta' ? 1 : 0)}
+                                        isNextStop={isNextStop}
+                                        onStatusChange={handleStatusChange}
+                                        onNavigate={handleNavigateToStudent}
+                                        onOpenAuthorizedModal={handleOpenAuthorizedModal}
+                                    />
+                                    );
+                                })}
+                                {direction === 'ida' && school && <SchoolStop isStart={false} />}
+                                {displayStudents.length === 0 && (
+                                    <div className="text-center text-muted-foreground py-10">
+                                    <p>
+                                        Nenhum aluno para o turno da {shift?.toLowerCase()}.
+                                    </p>
+                                    </div>
+                                )}
+                            </ol>
+                            {directionsToShow && directionsToShow.length > 0 && (
+                                <div className="mt-6 pt-4 border-t">
+                                    <Accordion type="single" collapsible className="w-full">
+                                        <AccordionItem value="directions">
+                                            <AccordionTrigger>
+                                                <div className="flex items-center gap-2 text-base">
+                                                    <Navigation className="h-5 w-5 text-primary" />
+                                                    Instruções de Rota (Sugestão da IA)
+                                                </div>
+                                            </AccordionTrigger>
+                                            <AccordionContent>
+                                                <ScrollArea className="h-40">
+                                                    <ol className="space-y-1.5 text-sm text-muted-foreground list-decimal list-inside pr-4">
+                                                        {directionsToShow.map((direction, index) => (
+                                                            <li key={index}>{direction}</li>
+                                                        ))}
+                                                    </ol>
+                                                </ScrollArea>
+                                                <p className="text-xs text-muted-foreground/80 mt-3 italic">
+                                                    Atenção: Estas são instruções geradas por IA para planejamento e podem não refletir as condições de trânsito em tempo real.
+                                                </p>
+                                            </AccordionContent>
+                                        </AccordionItem>
+                                    </Accordion>
                                 </div>
                             )}
-                        </ol>
+                        </>
                         )}
                     </CardContent>
                 </Card>
