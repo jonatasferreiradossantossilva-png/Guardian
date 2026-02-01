@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useRef, memo, useCallback } from 'react';
@@ -526,6 +525,40 @@ export default function DriverRoutePlanPage() {
         handleRecalculate();
     }
   }, [updateDoc, students, toast, isAutoRecalculateEnabled, direction, handleRecalculate]);
+  
+  const handleShareToWhatsApp = useCallback(() => {
+    if (!displayStudents || displayStudents.length === 0) {
+      toast({
+        title: "Rota vazia",
+        description: "Não há alunos na rota para compartilhar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const routeName = route?.name || "Rota";
+    const tripType = `${shift} - ${direction === 'ida' ? 'Ida para Escola' : 'Volta para Casa'}`;
+
+    let message = `*Plano de Rota: ${routeName} (${tripType})*\n\n`;
+    let stopCounter = 1;
+
+    if (direction === 'volta' && school) {
+        message += `*${stopCounter++}. Partida:* ${school.name}\n`;
+    }
+
+    displayStudents.forEach((student) => {
+        message += `*${stopCounter++}. Aluno:* ${student.name}\n   - Status: ${statusText[student.status]}\n`;
+    });
+
+    if (direction === 'ida' && school) {
+        message += `*${stopCounter++}. Destino:* ${school.name}\n`;
+    }
+    
+    message += `\n*Motorista:* ${driverProfile?.name || 'N/A'}`;
+
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, '_blank');
+  }, [displayStudents, route, shift, direction, school, driverProfile, toast]);
 
 
   const isLoading =
@@ -909,6 +942,3 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
-
-
-
