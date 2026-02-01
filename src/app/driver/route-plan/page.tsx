@@ -470,7 +470,31 @@ export default function DriverRoutePlanPage() {
         title: 'Status Atualizado',
         description: `${studentName} foi marcado(a) como ${statusText[newStatus]}.`,
     });
-  }, [updateDoc, students, toast]);
+
+    // Simulate navigation to the next stop
+    const currentStudents = displayStudents;
+    const currentIndex = currentStudents.findIndex(s => s.id === studentId);
+    
+    let nextNavigableStop = null;
+    for (let i = currentIndex + 1; i < currentStudents.length; i++) {
+        if (currentStudents[i].status === 'aguardando') {
+            nextNavigableStop = currentStudents[i];
+            break;
+        }
+    }
+
+    if (nextNavigableStop) {
+        toast({
+            title: "Próximo Destino",
+            description: `Navegação simulada para: ${nextNavigableStop.name}.`,
+        });
+    } else if (currentStudents.every(s => s.status !== 'aguardando')) {
+        toast({
+            title: "Próximo Destino",
+            description: `Todos os alunos a bordo! Navegação simulada para a escola: ${school?.name}.`,
+        });
+    }
+  }, [updateDoc, students, toast, displayStudents, school]);
 
   const handleRecalculate = async () => {
     if (!orderedStudents || orderedStudents.length === 0 || !school) {
@@ -877,4 +901,5 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
 
