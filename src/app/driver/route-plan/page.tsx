@@ -719,12 +719,12 @@ export default function DriverRoutePlanPage() {
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
-                        <div className="flex justify-center flex-wrap gap-x-4 gap-y-2 mb-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-xs animate-pulse">1</div>Próxima</div>
-                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500"></div>A Bordo</div>
-                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
-                            <div className="flex items-center gap-2"><div className="w-4 h-4 rounded-full bg-slate-400"></div>Concluída</div>
-                            <div className="flex items-center gap-2"><div className="p-1 rounded-full bg-red-600"><School size={12} className="text-white"/></div>Escola</div>
+                        <div className="flex justify-center flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 mb-4 text-xs sm:text-sm text-muted-foreground">
+                            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-[10px] animate-pulse">1</div>Próxima</div>
+                            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div>A Bordo</div>
+                            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
+                            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-slate-400"></div>Concluída</div>
+                            <div className="flex items-center gap-1.5"><div className="p-0.5 rounded-full bg-red-600"><School size={10} className="text-white"/></div>Escola</div>
                         </div>
                         <div className="aspect-video w-full rounded-lg overflow-hidden border bg-secondary">
                             {!API_KEY ? (
@@ -877,3 +877,4 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
