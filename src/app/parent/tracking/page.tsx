@@ -508,6 +508,26 @@ export default function ParentTrackingPage() {
 
               <TabsContent value="map" className="m-0">
                 <CardContent className="p-0">
+                    <div className="p-4 border-b flex justify-center flex-wrap gap-x-6 gap-y-2 text-sm text-muted-foreground bg-background">
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-full bg-primary shadow-md">
+                                <Bus className="h-4 w-4 text-primary-foreground" />
+                            </div>
+                            <span>Van</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-full bg-blue-500 shadow-md">
+                                <User className="h-4 w-4 text-white" />
+                            </div>
+                            <span>Sua Casa</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-full bg-red-600 shadow-md">
+                                <School className="h-4 w-4 text-white" />
+                            </div>
+                            <span>Escola</span>
+                        </div>
+                    </div>
                     <div className="h-[70vh] bg-secondary flex items-center justify-center overflow-hidden">
                     {!API_KEY ? (
                         <div className="text-center p-4">
