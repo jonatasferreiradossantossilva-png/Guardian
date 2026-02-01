@@ -223,6 +223,7 @@ export default function DriverRoutePlanPage() {
   const [isAutoNavigateEnabled, setIsAutoNavigateEnabled] = useState(true);
 
   const [isClient, setIsClient] = useState(false);
+  const [selectedTrip, setSelectedTrip] = useState<'manha-ida' | 'tarde-volta'>('manha-ida');
 
 
   useEffect(() => {
@@ -230,6 +231,14 @@ export default function DriverRoutePlanPage() {
     setMockUserId('user-admin-1'); 
     setIsClient(true);
   }, []);
+
+  const { shift, direction } = useMemo(() => {
+    const [shiftStr, dir] = selectedTrip.split('-');
+    return { 
+        shift: shiftStr === 'manha' ? 'Manhã' : 'Tarde', 
+        direction: dir 
+    };
+  }, [selectedTrip]);
 
   // Fetch driver profile based on logged-in user ID
   const driverFilter = useMemo(
@@ -258,7 +267,7 @@ export default function DriverRoutePlanPage() {
   // Effect to select a default route
   useEffect(() => {
     if (routes && routes.length > 0 && !selectedRouteId) {
-      setSelectedRouteId(routes.find(r => r.shift === 'manha')?.id || routes[0].id);
+      setSelectedRouteId(routes[0].id);
     }
   }, [routes, selectedRouteId]);
 
@@ -282,8 +291,8 @@ export default function DriverRoutePlanPage() {
     const studentMap = new Map(students.map((s) => [s.id, s]));
     return route.studentIds
       .map((id) => studentMap.get(id))
-      .filter((s): s is Student => !!s);
-  }, [route?.studentIds, students]);
+      .filter((s): s is Student => !!s && s.shift === shift);
+  }, [route?.studentIds, students, shift]);
   
   const displayStudents = dynamicRoute ? dynamicRoute.students : orderedStudents;
 
@@ -379,9 +388,14 @@ export default function DriverRoutePlanPage() {
   const handleEndRoute = useCallback(() => {
       if (!driverId || !route) return;
       updateDoc('drivers', driverId, { status: 'inativo' });
-      route.studentIds.forEach(studentId => {
-          updateDoc('students', studentId, { status: 'aguardando' });
+      // Only reset students of the current shift
+      const studentsToReset = (students || []).filter(s => s.shift === shift);
+      studentsToReset.forEach(student => {
+          if (student.status !== 'ausente') { // Don't reset absent students
+            updateDoc('students', student.id, { status: 'aguardando' });
+          }
       });
+
       if (simulationIntervalRef.current) {
           clearInterval(simulationIntervalRef.current);
       }
@@ -390,7 +404,7 @@ export default function DriverRoutePlanPage() {
           title: "Rota Finalizada!",
           description: "Bom descanso! Os status dos alunos foram reiniciados.",
       });
-  }, [driverId, route, updateDoc, toast]);
+  }, [driverId, route, updateDoc, toast, students, shift]);
 
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
@@ -546,10 +560,14 @@ export default function DriverRoutePlanPage() {
 
   const isLoading =
     areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading || isLocationLoading;
-
-  const activeShift = useMemo(
-    () => (route?.shift === 'manha' ? 'Manhã' : 'Tarde'),
-    [route]
+    
+  const SchoolStop = ({ isStart }: { isStart: boolean }) => (
+    <li className="flex items-center gap-4 p-3">
+        <div className="w-8 h-8 flex items-center justify-center">
+            <School className="h-5 w-5 text-muted-foreground/50"/>
+        </div>
+        <span className="font-medium text-muted-foreground">{school?.name || "Escola"} ({isStart ? 'Ponto de Partida' : 'Destino Final'})</span>
+    </li>
   );
 
   return (
@@ -566,28 +584,41 @@ export default function DriverRoutePlanPage() {
           </div>
         </div>
 
-        {routes && routes.length > 1 && (
-            <Card>
-                <CardHeader>
-                    <CardTitle>Selecionar Rota</CardTitle>
-                    <CardDescription>Você tem múltiplas rotas. Escolha qual deseja visualizar.</CardDescription>
-                </CardHeader>
-                <CardContent>
-                    <Select value={selectedRouteId || ''} onValueChange={setSelectedRouteId}>
+        <Card>
+            <CardHeader>
+                <CardTitle>Selecionar Viagem</CardTitle>
+                <CardDescription>Escolha a rota e o tipo de viagem que irá realizar.</CardDescription>
+            </CardHeader>
+            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                    <Label>Rota</Label>
+                    <Select value={selectedRouteId || ''} onValueChange={setSelectedRouteId} disabled={!routes || routes.length === 0}>
                         <SelectTrigger>
                             <SelectValue placeholder="Selecione uma rota..." />
                         </SelectTrigger>
                         <SelectContent>
-                            {routes.map(r => (
+                            {routes?.map(r => (
                                 <SelectItem key={r.id} value={r.id}>
-                                    {r.name} ({r.shift === 'manha' ? 'Manhã' : 'Tarde'})
+                                    {r.name}
                                 </SelectItem>
                             ))}
                         </SelectContent>
                     </Select>
-                </CardContent>
-            </Card>
-        )}
+                </div>
+                 <div className="space-y-2">
+                    <Label>Viagem</Label>
+                    <Select value={selectedTrip} onValueChange={(v) => setSelectedTrip(v as any)}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione a viagem..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="manha-ida">Manhã - Ida para Escola</SelectItem>
+                            <SelectItem value="tarde-volta">Tarde - Volta para Casa</SelectItem>
+                        </SelectContent>
+                    </Select>
+                </div>
+            </CardContent>
+        </Card>
 
         <Tabs defaultValue="plan" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -610,7 +641,7 @@ export default function DriverRoutePlanPage() {
                                     Progresso da Rota
                                 </CardTitle>
                                 <p className="text-muted-foreground text-sm pt-2">
-                                {route ? `${route.name} - Turno ${activeShift}` : 'Carregando rota...'}
+                                {route ? `${route.name} - ${shift}` : 'Carregando rota...'}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -647,7 +678,7 @@ export default function DriverRoutePlanPage() {
                                         )}
                                     </>
                                 )}
-                                <Button variant="outline" size="sm" onClick={handleRecalculate} disabled={!isClient || isRecalculating || driverProfile?.status !== 'em_rota'}>
+                                <Button variant="outline" size="sm" onClick={handleRecalculate} disabled={!isClient || isRecalculating || driverProfile?.status !== 'em_rota' || direction === 'volta'}>
                                     {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                                     Recalcular
                                 </Button>
@@ -685,13 +716,14 @@ export default function DriverRoutePlanPage() {
 
                         {!isLoading && route && (
                         <ol className="space-y-2">
+                            {direction === 'volta' && school && <SchoolStop isStart={true} />}
                             {displayStudents.map((student, index) => {
                                 const isNextStop = student.id === nextStop?.id;
                                 return (
                                 <StudentListItem
                                     key={student.id}
                                     student={student}
-                                    index={index}
+                                    index={index + (direction === 'volta' ? 1 : 0)}
                                     isNextStop={isNextStop}
                                     onStatusChange={handleStatusChange}
                                     onNavigate={handleNavigateToStudent}
@@ -699,16 +731,11 @@ export default function DriverRoutePlanPage() {
                                 />
                                 );
                             })}
-                            <li className="flex items-center gap-4 p-3">
-                                <div className="w-8 h-8 flex items-center justify-center">
-                                <School className="h-5 w-5 text-muted-foreground/50"/>
-                                </div>
-                                <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
-                            </li>
+                            {direction === 'ida' && school && <SchoolStop isStart={false} />}
                             {displayStudents.length === 0 && (
                                 <div className="text-center text-muted-foreground py-10">
                                 <p>
-                                    Nenhum aluno para o turno da {activeShift?.toLowerCase()}.
+                                    Nenhum aluno para o turno da {shift?.toLowerCase()}.
                                 </p>
                                 </div>
                             )}
@@ -781,6 +808,7 @@ export default function DriverRoutePlanPage() {
                                             currentRouteStudents={displayStudents}
                                             originalRouteStudents={dynamicRoute ? orderedStudents : null}
                                             school={school}
+                                            direction={direction}
                                         />
                                     </GoogleMap>
                                 </APIProvider>
@@ -804,7 +832,7 @@ export default function DriverRoutePlanPage() {
   );
 }
 
-const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStudents, school }) => {
+const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStudents, school, direction }) => {
   const map = useMap();
 
   const nextStop = useMemo(() => 
@@ -846,14 +874,16 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   
   const originalPath = originalRouteStudents ? [
     ...(driverLocation ? [{ lat: driverLocation.latitude, lng: driverLocation.longitude }] : []),
+    ...(direction === 'volta' ? [{ lat: school.latitude, lng: school.longitude }] : []),
     ...originalRouteStudents.map(s => ({ lat: s.latitude, lng: s.longitude })),
-    { lat: school.latitude, lng: school.longitude }
+    ...(direction === 'ida' ? [{ lat: school.latitude, lng: school.longitude }] : []),
   ].filter(p => p.lat && p.lng) : [];
 
   const currentPath = [
     ...(driverLocation ? [{ lat: driverLocation.latitude, lng: driverLocation.longitude }] : []),
+    ...(direction === 'volta' ? [{ lat: school.latitude, lng: school.longitude }] : []),
     ...currentRouteStudents.map(s => ({ lat: s.latitude, lng: s.longitude })),
-    { lat: school.latitude, lng: school.longitude }
+    ...(direction === 'ida' ? [{ lat: school.latitude, lng: school.longitude }] : []),
   ].filter(p => p.lat && p.lng);
 
   return (
@@ -884,7 +914,7 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
                     !isFinished && !isOnBoard && isNextStop && "bg-green-500 border-green-200 scale-125 animate-pulse",
                     !isFinished && !isOnBoard && !isNextStop && "bg-blue-500 border-blue-200 opacity-50"
                   )}>
-                      {index + 1}
+                      {index + 1 + (direction === 'volta' ? 1 : 0)}
                   </div>
               </AdvancedMarker>
             )
@@ -908,4 +938,5 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
 

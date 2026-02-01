@@ -39,7 +39,7 @@ const formSchema = z.object({
   longitude: z.coerce.number().optional(),
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
-  shift: z.enum(['manha', 'tarde'], { required_error: 'Selecione um turno.' }),
+  shift: z.enum(['Manhã', 'Tarde'], { required_error: 'Selecione um turno.' }),
   monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
   zipCode: z.string().optional(),
   street: z.string().min(1, { message: 'A rua é obrigatória.' }),
@@ -90,7 +90,7 @@ export function StudentForm({
       longitude: undefined,
       schoolId: '',
       parentId: '',
-      shift: 'manha',
+      shift: 'Manhã',
       monthlyFee: undefined,
       zipCode: '',
       street: '',
@@ -149,20 +149,8 @@ export function StudentForm({
   useEffect(() => {
     if (student) {
       form.reset({
-        name: student.name || '',
-        latitude: student.latitude,
-        longitude: student.longitude,
-        schoolId: student.schoolId || '',
-        parentId: student.parentId || '',
-        shift: (student.shift || 'manha').toLowerCase().startsWith('m') ? 'manha' : 'tarde',
-        monthlyFee: student.monthlyFee,
-        zipCode: student.zipCode || '',
-        street: student.street || '',
-        number: student.number || '',
-        complement: student.complement || '',
-        neighborhood: student.neighborhood || '',
-        city: student.city || '',
-        state: student.state || '',
+        ...student,
+        shift: student.shift || 'Manhã',
       });
     } else {
       form.reset(form.defaultValues);
@@ -206,7 +194,6 @@ export function StudentForm({
   const onSubmit = (data: StudentFormValues) => {
     const finalData = {
         ...data,
-        shift: data.shift === 'manha' ? 'Manhã' : 'Tarde'
     }
 
     if (student) {
@@ -435,8 +422,8 @@ export function StudentForm({
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      <SelectItem value="manha">Manhã</SelectItem>
-                      <SelectItem value="tarde">Tarde</SelectItem>
+                      <SelectItem value="Manhã">Manhã</SelectItem>
+                      <SelectItem value="Tarde">Tarde</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
