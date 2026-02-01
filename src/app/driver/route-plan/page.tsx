@@ -50,6 +50,8 @@ import { useToast } from '@/hooks/use-toast';
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Label } from '@/components/ui/label';
+import { Switch } from '@/components/ui/switch';
 
 
 type Shift = 'Manhã' | 'Tarde';
@@ -272,6 +274,7 @@ export default function DriverRoutePlanPage() {
     
   const [dynamicRoute, setDynamicRoute] = useState<{ students: Student[], turnByTurnDirections: string[] } | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [isAutoNavigateEnabled, setIsAutoNavigateEnabled] = useState(true);
 
   const [isClient, setIsClient] = useState(false);
 
@@ -309,7 +312,7 @@ export default function DriverRoutePlanPage() {
   // Effect to select a default route
   useEffect(() => {
     if (routes && routes.length > 0 && !selectedRouteId) {
-      setSelectedRouteId(routes[0].id);
+      setSelectedRouteId(routes.find(r => r.shift === 'manha')?.id || routes[0].id);
     }
   }, [routes, selectedRouteId]);
 
@@ -471,30 +474,32 @@ export default function DriverRoutePlanPage() {
         description: `${studentName} foi marcado(a) como ${statusText[newStatus]}.`,
     });
 
-    // Simulate navigation to the next stop
-    const currentStudents = displayStudents;
-    const currentIndex = currentStudents.findIndex(s => s.id === studentId);
-    
-    let nextNavigableStop = null;
-    for (let i = currentIndex + 1; i < currentStudents.length; i++) {
-        if (currentStudents[i].status === 'aguardando') {
-            nextNavigableStop = currentStudents[i];
-            break;
+    if (isAutoNavigateEnabled) {
+        const currentStudents = displayStudents;
+        // Find the next student in the list who is still 'aguardando', AFTER the current one.
+        const currentIndex = currentStudents.findIndex(s => s.id === studentId);
+        
+        let nextNavigableStop = null;
+        for (let i = currentIndex + 1; i < currentStudents.length; i++) {
+            if (currentStudents[i].status === 'aguardando') {
+                nextNavigableStop = currentStudents[i];
+                break;
+            }
+        }
+        
+        if (nextNavigableStop) {
+            toast({
+                title: "Próximo Destino",
+                description: `Navegação simulada para: ${nextNavigableStop.name}.`,
+            });
+        } else if (currentStudents.every(s => s.status === 'desembarcado' || s.status === 'ausente')) {
+            toast({
+                title: "Próximo Destino",
+                description: `Todos os alunos a bordo! Navegação simulada para a escola: ${school?.name}.`,
+            });
         }
     }
-
-    if (nextNavigableStop) {
-        toast({
-            title: "Próximo Destino",
-            description: `Navegação simulada para: ${nextNavigableStop.name}.`,
-        });
-    } else if (currentStudents.every(s => s.status !== 'aguardando')) {
-        toast({
-            title: "Próximo Destino",
-            description: `Todos os alunos a bordo! Navegação simulada para a escola: ${school?.name}.`,
-        });
-    }
-  }, [updateDoc, students, toast, displayStudents, school]);
+  }, [updateDoc, students, toast, displayStudents, school, isAutoNavigateEnabled]);
 
   const handleRecalculate = async () => {
     if (!orderedStudents || orderedStudents.length === 0 || !school) {
@@ -678,6 +683,16 @@ export default function DriverRoutePlanPage() {
                                     Recalcular
                                 </Button>
                             </div>
+                        </div>
+                        <div className="flex items-center justify-end space-x-2 pt-4 border-t mt-4">
+                            <Label htmlFor="auto-navigate-toggle" className="text-sm font-normal text-muted-foreground">Navegação Automática</Label>
+                            <Switch
+                                id="auto-navigate-toggle"
+                                checked={isAutoNavigateEnabled}
+                                onCheckedChange={setIsAutoNavigateEnabled}
+                                aria-label="Ativar ou desativar navegação automática"
+                                disabled={!isClient}
+                            />
                         </div>
                     </CardHeader>
                     <CardContent>
@@ -903,3 +918,6 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
 RouteMap.displayName = 'RouteMap';
 
 
+
+
+    
