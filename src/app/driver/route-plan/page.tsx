@@ -227,7 +227,7 @@ const StudentListItem = memo(({ student, index, isNextStop, onStatusChange, onNa
                     </Button>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">
-                    {student.street ? `${'\'\'\''}${student.street}, ${'\'\'\''}${student.number} - ${'\'\'\''}${student.neighborhood}` : 'Endereço indisponível'}
+                    {student.street ? `${student.street}, ${student.number} - ${student.neighborhood}` : 'Endereço indisponível'}
                 </p>
             </div>
         </div>
@@ -276,8 +276,8 @@ export default function DriverRoutePlanPage() {
 
 
   useEffect(() => {
-    const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || 'user-admin-1'); // Default to a known driver for direct page access
+    // For this prototype, we'll force the user to be the main driver with a full route.
+    setMockUserId('user-admin-1'); 
     setIsClient(true);
   }, []);
 
@@ -337,7 +337,7 @@ export default function DriverRoutePlanPage() {
     return schools.find(s => s.id === studentWithSchool.schoolId);
   }, [orderedStudents, schools]);
   
-  const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDoc(driverId ? `locations/${'\'\'\''}${driverId}` : null);
+  const { data: driverLocation, isLoading: isLocationLoading } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
   
   const locationRef = useRef(driverLocation);
   useEffect(() => {
@@ -370,7 +370,7 @@ export default function DriverRoutePlanPage() {
       step++;
       if (step > totalSteps) {
         clearInterval(simulationIntervalRef.current);
-        setDoc(`locations/${'\'\'\''}${driverId}`, { 
+        setDoc(`locations/${driverId}`, { 
           latitude: endPoint.lat, 
           longitude: endPoint.lng,
           timestamp: new Date().toISOString()
@@ -381,7 +381,7 @@ export default function DriverRoutePlanPage() {
       const newLat = startPoint.lat + (endPoint.lat - startPoint.lat) * factor;
       const newLng = startPoint.lng + (endPoint.lng - startPoint.lng) * factor;
 
-      setDoc(`locations/${'\'\'\''}${driverId}`, { 
+      setDoc(`locations/${driverId}`, { 
         latitude: newLat, 
         longitude: newLng,
         timestamp: new Date().toISOString()
@@ -438,7 +438,7 @@ export default function DriverRoutePlanPage() {
   
   const handleNavigateToStudent = useCallback((student: Student) => {
     if (student.latitude && student.longitude) {
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${'\'\'\''}${student.latitude},${'\'\'\''}${student.longitude}`;
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`;
         window.open(url, '_blank');
     } else {
         toast({
@@ -454,7 +454,7 @@ export default function DriverRoutePlanPage() {
     const studentName = students?.find(s => s.id === studentId)?.name || 'o aluno';
     toast({
         title: 'Status Atualizado',
-        description: `${'\'\'\''}${studentName} foi marcado(a) como ${'\'\'\''}${statusText[newStatus]}.`,
+        description: `${studentName} foi marcado(a) como ${statusText[newStatus]}.`,
     });
   }, [updateDoc, students, toast]);
 
@@ -482,10 +482,10 @@ export default function DriverRoutePlanPage() {
         const studentInputs = studentsToReroute.map(s => ({ 
             id: s.id, 
             name: s.name, 
-            address: `${'\'\'\''}${s.street || ''}, ${'\'\'\''}${s.number || ''}, ${'\'\'\''}${s.neighborhood || ''}`.trim()
+            address: `${s.street || ''}, ${s.number || ''}, ${s.neighborhood || ''}`.trim()
         }));
 
-        const schoolAddress = `${'\'\'\''}${school.street || ''}, ${'\'\'\''}${school.number || ''}, ${'\'\'\''}${school.neighborhood || ''}`.trim();
+        const schoolAddress = `${school.street || ''}, ${school.number || ''}, ${school.neighborhood || ''}`.trim();
 
         const input = {
             students: studentInputs,
@@ -575,7 +575,7 @@ export default function DriverRoutePlanPage() {
                                     Progresso da Rota
                                 </CardTitle>
                                 <p className="text-muted-foreground text-sm pt-2">
-                                {route ? `${'\'\'\''}${route.name} - Turno ${'\'\'\''}${activeShift}` : 'Carregando rota...'}
+                                {route ? `${route.name} - Turno ${activeShift}` : 'Carregando rota...'}
                                 </p>
                             </div>
                             <div className="flex items-center gap-2 flex-wrap">
@@ -808,7 +808,7 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
             const isNextStop = student.id === nextStop?.id;
 
             return (
-              <AdvancedMarker key={`marker-${'\'\'\''}${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
+              <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
                   <div className={cn(
                     "w-8 h-8 rounded-full shadow border-2 border-white flex items-center justify-center font-bold text-white text-sm",
                     isFinished && "bg-slate-400 border-slate-200 opacity-70",
