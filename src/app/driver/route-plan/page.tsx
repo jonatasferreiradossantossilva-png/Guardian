@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useRef, memo, useCallback } from 'react';
@@ -818,54 +819,44 @@ export default function DriverRoutePlanPage() {
                     </CardContent>
                 </Card>
             </TabsContent>
-            <TabsContent value="map" className="mt-6">
-                <Card>
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2"><MapPin /> Mapa da Rota</CardTitle>
-                        <CardDescription>
-                            {dynamicRoute ? 'Visualização da rota original (pontilhada) e da rota recalculada (verde).' : 'Acompanhe a rota planejada em tempo real.'}
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex justify-center flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 mb-4 text-xs sm:text-sm text-muted-foreground">
-                            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-[10px] animate-pulse">1</div>Próxima</div>
-                            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div>A Bordo</div>
-                            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
-                            <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-slate-400"></div>Concluída</div>
-                            <div className="flex items-center gap-1.5"><div className="p-0.5 rounded-full bg-red-600"><School size={10} className="text-white"/></div>Escola</div>
+            <TabsContent value="map" className="mt-6 space-y-4">
+                <div className="flex justify-center flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 text-xs sm:text-sm text-muted-foreground">
+                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-[10px] animate-pulse">1</div>Próxima</div>
+                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div>A Bordo</div>
+                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
+                    <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-slate-400"></div>Concluída</div>
+                    <div className="flex items-center gap-1.5"><div className="p-0.5 rounded-full bg-red-600"><School size={10} className="text-white"/></div>Escola</div>
+                </div>
+                <div className="h-[70vh] w-full rounded-lg overflow-hidden border bg-secondary">
+                    {!API_KEY ? (
+                        <div className="flex h-full w-full items-center justify-center bg-secondary/30">
+                        <div className="text-center p-4">
+                            <p className="font-semibold text-lg">Mapa Indisponível</p>
+                            <p className="text-muted-foreground text-sm">
+                                A chave da API do Google Maps não foi configurada.
+                            </p>
                         </div>
-                        <div className="h-[70vh] w-full rounded-lg overflow-hidden border bg-secondary">
-                            {!API_KEY ? (
-                                <div className="flex h-full w-full items-center justify-center bg-secondary/30">
-                                <div className="text-center p-4">
-                                    <p className="font-semibold text-lg">Mapa Indisponível</p>
-                                    <p className="text-muted-foreground text-sm">
-                                        A chave da API do Google Maps não foi configurada.
-                                    </p>
-                                </div>
-                                </div>
-                            ) : (
-                                <APIProvider apiKey={API_KEY}>
-                                    <GoogleMap
-                                        defaultCenter={{ lat: -23.55, lng: -46.63 }}
-                                        defaultZoom={12}
-                                        mapId="driver-route-map"
-                                        gestureHandling={'greedy'}
-                                        disableDefaultUI={true}
-                                    >
-                                        <RouteMap
-                                            driverLocation={driverLocation}
-                                            currentRouteStudents={displayStudents}
-                                            originalRouteStudents={dynamicRoute ? orderedStudents : null}
-                                            school={school}
-                                            direction={direction}
-                                        />
-                                    </GoogleMap>
-                                </APIProvider>
-                            )}
                         </div>
-                    </CardContent>
-                </Card>
+                    ) : (
+                        <APIProvider apiKey={API_KEY}>
+                            <GoogleMap
+                                defaultCenter={{ lat: -23.55, lng: -46.63 }}
+                                defaultZoom={12}
+                                mapId="driver-route-map"
+                                gestureHandling={'greedy'}
+                                disableDefaultUI={true}
+                            >
+                                <RouteMap
+                                    driverLocation={driverLocation}
+                                    currentRouteStudents={displayStudents}
+                                    originalRouteStudents={dynamicRoute ? orderedStudents : null}
+                                    school={school}
+                                    direction={direction}
+                                />
+                            </GoogleMap>
+                        </APIProvider>
+                    )}
+                </div>
             </TabsContent>
         </Tabs>
         
