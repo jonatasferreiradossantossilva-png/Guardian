@@ -834,7 +834,7 @@ export default function DriverRoutePlanPage() {
                             <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-slate-400"></div>Concluída</div>
                             <div className="flex items-center gap-1.5"><div className="p-0.5 rounded-full bg-red-600"><School size={10} className="text-white"/></div>Escola</div>
                         </div>
-                        <div className="aspect-video w-full rounded-lg overflow-hidden border bg-secondary">
+                        <div className="h-[70vh] w-full rounded-lg overflow-hidden border bg-secondary">
                             {!API_KEY ? (
                                 <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                                 <div className="text-center p-4">
