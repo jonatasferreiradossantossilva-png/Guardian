@@ -32,6 +32,7 @@ import {
   Play,
   Pause,
   Square,
+  Share2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -125,61 +126,6 @@ const Polyline = (props: google.maps.PolylineOptions) => {
   return null;
 };
 
-function getDirectionDetails(instruction: string) {
-  const lowerInstruction = instruction.toLowerCase();
-  
-  if (lowerInstruction.includes("direita")) return { icon: <ArrowRight className="text-blue-500" />, text: instruction };
-  if (lowerInstruction.includes("esquerda")) return { icon: <ArrowLeft className="text-blue-500" />, text: instruction };
-  if (lowerInstruction.includes("frente")) return { icon: <ArrowUp className="text-blue-500" />, text: instruction };
-  if (lowerInstruction.includes("retorno")) return { icon: <Undo2 className="text-orange-500" />, text: instruction };
-  if (lowerInstruction.includes("rotatória")) return { icon: <GitCommitHorizontal className="text-purple-500" />, text: instruction };
-  
-  return { icon: <Navigation className="text-muted-foreground" />, text: instruction };
-}
-
-function RouteDirections({ directions }: { directions?: string[] }) {
-    if (!directions || directions.length === 0) {
-        return (
-            <Card>
-                <CardHeader>
-                    <CardTitle className="flex items-center gap-2"><Navigation /> Instruções de Rota</CardTitle>
-                </CardHeader>
-                <CardContent>
-                    <p className="text-muted-foreground text-center p-4">Nenhuma instrução de rota salva para este percurso.</p>
-                </CardContent>
-            </Card>
-        );
-    }
-
-    return (
-        <Card>
-            <CardHeader>
-                <CardTitle className="flex items-center gap-2"><Navigation /> Instruções de Rota (Plano)</CardTitle>
-                 <CardDescription>
-                    Este é um plano de rota gerado por IA. Use um app de navegação em tempo real para dirigir.
-                </CardDescription>
-            </CardHeader>
-            <CardContent>
-                <ScrollArea className="h-64">
-                    <ul className="space-y-3 pr-4">
-                        {directions.map((instruction, index) => {
-                            const { icon, text } = getDirectionDetails(instruction);
-                            return (
-                                <li key={index} className="flex items-center gap-4 p-2 bg-secondary rounded-md">
-                                    <div className="flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full bg-background border">
-                                        {icon}
-                                    </div>
-                                    <span className="text-sm font-medium">{text}</span>
-                                </li>
-                            );
-                        })}
-                    </ul>
-                </ScrollArea>
-            </CardContent>
-        </Card>
-    )
-}
-
 interface StudentListItemProps {
   student: Student;
   index: number;
@@ -272,7 +218,7 @@ export default function DriverRoutePlanPage() {
   const [selectedStudentForModal, setSelectedStudentForModal] =
     useState<Student | null>(null);
     
-  const [dynamicRoute, setDynamicRoute] = useState<{ students: Student[], turnByTurnDirections: string[] } | null>(null);
+  const [dynamicRoute, setDynamicRoute] = useState<{ students: Student[] } | null>(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isAutoNavigateEnabled, setIsAutoNavigateEnabled] = useState(true);
 
@@ -340,7 +286,6 @@ export default function DriverRoutePlanPage() {
   }, [route?.studentIds, students]);
   
   const displayStudents = dynamicRoute ? dynamicRoute.students : orderedStudents;
-  const displayDirections = dynamicRoute ? dynamicRoute.turnByTurnDirections : route?.turnByTurnDirections;
 
   const nextStop = useMemo(() => 
     displayStudents.find(s => s.status === 'aguardando'),
@@ -548,12 +493,11 @@ export default function DriverRoutePlanPage() {
 
         setDynamicRoute({
             students: newDisplayOrder,
-            turnByTurnDirections: result.turnByTurnDirections,
         });
 
         toast({
             title: "Rota Recalculada!",
-            description: "A ordem das paradas e as instruções foram atualizadas.",
+            description: "A ordem das paradas foi atualizada.",
         });
 
     } catch (error) {
@@ -567,6 +511,34 @@ export default function DriverRoutePlanPage() {
         setIsRecalculating(false);
     }
 };
+
+ const handleShareToWhatsApp = useCallback(() => {
+    if (!route || !driverProfile || !displayStudents || !school) {
+        toast({
+            title: "Não é possível compartilhar",
+            description: "Dados da rota ou do motorista não estão disponíveis.",
+            variant: "destructive",
+        });
+        return;
+    }
+
+    const studentList = displayStudents.map((student, index) => `${index + 1}. ${student.name}`).join('\n');
+    
+    const message = `*Plano de Rota: ${route.name}*\n\n` +
+                    `*Motorista:* ${driverProfile.name}\n\n` +
+                    `*Paradas:*\n${studentList}\n` +
+                    `${displayStudents.length + 1}. ${school.name} (Destino Final)`;
+
+    const encodedMessage = encodeURIComponent(message);
+    const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+    
+    window.open(whatsappUrl, '_blank');
+
+    toast({
+        title: "Preparando compartilhamento",
+        description: "Abrindo WhatsApp com o plano de rota pronto para ser enviado.",
+    });
+  }, [route, driverProfile, displayStudents, school, toast]);
 
 
   const isLoading =
@@ -747,7 +719,22 @@ export default function DriverRoutePlanPage() {
                         )}
                     </CardContent>
                 </Card>
-                <RouteDirections directions={displayDirections} />
+                <Card>
+                    <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                            <Share2 /> Comunicação
+                        </CardTitle>
+                        <CardDescription>
+                        Compartilhe o plano de paradas com auxiliares ou gestores.
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <Button onClick={handleShareToWhatsApp} className="w-full">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-whatsapp mr-2 h-5 w-5"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.297-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.898 6.988c-.001 5.45-4.436 9.884-9.888-9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.204-1.639a11.819 11.819 0 0 0 5.79 1.583h.003c6.556 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z"/></svg>
+                            Compartilhar Plano via WhatsApp
+                        </Button>
+                    </CardContent>
+                </Card>
             </TabsContent>
             <TabsContent value="map" className="mt-6">
                 <Card>
@@ -916,8 +903,3 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
-
-
-
-
-    
