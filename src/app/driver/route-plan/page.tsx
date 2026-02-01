@@ -568,16 +568,17 @@ export default function DriverRoutePlanPage() {
     
     message += `\n*Motorista:* ${driverProfile?.name || 'N/A'}`;
     
-    if (directionsToShow && directionsToShow.length > 0) {
+    const currentDirections = dynamicRoute?.directions || route?.turnByTurnDirections;
+    if (currentDirections && currentDirections.length > 0) {
         message += `\n\n---\n\n*Instruções de Rota (Sugestão IA):*\n`;
-        directionsToShow.forEach((direction, index) => {
+        currentDirections.forEach((direction, index) => {
             message += `${index + 1}. ${direction}\n`;
         });
     }
 
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
-  }, [displayStudents, route, shift, direction, school, driverProfile, toast, directionsToShow]);
+  }, [displayStudents, route, shift, direction, school, driverProfile, toast, dynamicRoute]);
 
 
   const isLoading =
@@ -819,8 +820,8 @@ export default function DriverRoutePlanPage() {
                     </CardContent>
                 </Card>
             </TabsContent>
-            <TabsContent value="map" className="mt-2">
-                <div className="flex justify-center flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 text-xs sm:text-sm text-muted-foreground mb-2">
+            <TabsContent value="map" className="mt-4 space-y-4">
+                <div className="flex justify-center flex-wrap gap-x-3 sm:gap-x-4 gap-y-2 text-xs sm:text-sm text-muted-foreground">
                     <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-green-500 flex items-center justify-center text-white font-bold text-[10px] animate-pulse">1</div>Próxima</div>
                     <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500"></div>A Bordo</div>
                     <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-blue-500 opacity-50"></div>Futura</div>
