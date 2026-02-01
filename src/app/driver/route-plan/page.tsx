@@ -566,10 +566,17 @@ export default function DriverRoutePlanPage() {
     }
     
     message += `\n*Motorista:* ${driverProfile?.name || 'N/A'}`;
+    
+    if (directionsToShow && directionsToShow.length > 0) {
+        message += `\n\n---\n\n*Instruções de Rota (Sugestão IA):*\n`;
+        directionsToShow.forEach((direction, index) => {
+            message += `${index + 1}. ${direction}\n`;
+        });
+    }
 
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
-  }, [displayStudents, route, shift, direction, school, driverProfile, toast]);
+  }, [displayStudents, route, shift, direction, school, driverProfile, toast, directionsToShow]);
 
 
   const isLoading =
