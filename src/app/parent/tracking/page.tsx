@@ -179,12 +179,26 @@ function ParentRouteMap({ busLocation, student, school }: { busLocation: Locatio
   }, [map, busLocation, student, school]);
 
   const routePath = useMemo(() => {
-    if (!busLocation || !student?.latitude || !student.longitude) return [];
-    return [
-        { lat: busLocation.latitude, lng: busLocation.longitude },
-        { lat: student.latitude, lng: student.longitude }
-    ];
-  }, [busLocation, student]);
+    if (!busLocation) return [];
+    
+    // After boarding, show path to school
+    if (student?.status === 'a_bordo' && school?.latitude && school?.longitude) {
+        return [
+            { lat: busLocation.latitude, lng: busLocation.longitude },
+            { lat: school.latitude, lng: school.longitude }
+        ];
+    }
+
+    // Before boarding, show path to student's home
+    if (student?.latitude && student.longitude) {
+        return [
+            { lat: busLocation.latitude, lng: busLocation.longitude },
+            { lat: student.latitude, lng: student.longitude }
+        ];
+    }
+
+    return [];
+  }, [busLocation, student, school]);
 
   return (
     <>
