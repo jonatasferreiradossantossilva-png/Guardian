@@ -50,6 +50,8 @@ const formSchema = z.object({
   neighborhood: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
+  latitude: z.coerce.number().optional(),
+  longitude: z.coerce.number().optional(),
 });
 
 type DriverFormValues = z.infer<typeof formSchema>;
@@ -89,6 +91,8 @@ export function DriverForm({
       neighborhood: '',
       city: '',
       state: '',
+      latitude: undefined,
+      longitude: undefined,
     },
   });
 
@@ -153,6 +157,8 @@ export function DriverForm({
         neighborhood: driver.neighborhood || '',
         city: driver.city || '',
         state: driver.state || '',
+        latitude: driver.latitude,
+        longitude: driver.longitude,
       });
     } else {
       form.reset(form.defaultValues);
@@ -364,6 +370,35 @@ export function DriverForm({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
             <FormField
               control={form.control}
+              name="latitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Latitude</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="any" placeholder="-23.55052" {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="longitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Longitude</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="any" placeholder="-46.633308" {...field} value={field.value ?? ''}/>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+            <FormField
+              control={form.control}
               name="status"
               render={({ field }) => (
                 <FormItem>
@@ -424,3 +459,5 @@ export function DriverForm({
     </DialogContent>
   );
 }
+
+    

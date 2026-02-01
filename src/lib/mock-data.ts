@@ -190,7 +190,9 @@ export const initialMockData = {
             neighborhood: "Lapa",
             city: "São Paulo",
             state: "SP",
-            zipCode: "05061-000"
+            zipCode: "05061-000",
+            latitude: -23.5234,
+            longitude: -46.7027
         },
         {
             id: "driver-2",
@@ -207,7 +209,9 @@ export const initialMockData = {
             neighborhood: "Barra Funda",
             city: "São Paulo",
             state: "SP",
-            zipCode: "01152-000"
+            zipCode: "01152-000",
+            latitude: -23.5262,
+            longitude: -46.6626
         },
         {
             id: "driver-3",
@@ -224,7 +228,9 @@ export const initialMockData = {
             neighborhood: "Mooca",
             city: "São Paulo",
             state: "SP",
-            zipCode: "03101-000"
+            zipCode: "03101-000",
+            latitude: -23.5585,
+            longitude: -46.6067
         },
         {
             id: "driver-4",
@@ -241,7 +247,9 @@ export const initialMockData = {
             neighborhood: "Tatuapé",
             city: "São Paulo",
             state: "SP",
-            zipCode: "03309-000"
+            zipCode: "03309-000",
+            latitude: -23.5422,
+            longitude: -46.574
         },
         {
             id: "driver-5",
@@ -258,7 +266,9 @@ export const initialMockData = {
             neighborhood: "Santana",
             city: "São Paulo",
             state: "SP",
-            zipCode: "02011-000"
+            zipCode: "02011-000",
+            latitude: -23.5042,
+            longitude: -46.626
         },
         { id: "driver-6", userId: "user-motorista-6", name: "Paulo Lima", status: "em_rota", vehicleId: "vehicle-6", cpf: "666.777.888-99" },
         { id: "driver-7", userId: "user-motorista-7", name: "Cristina Borges", status: "inativo", vehicleId: "vehicle-7", cpf: "777.888.999-00" },
@@ -501,3 +511,5 @@ export const initialMockData = {
         { id: "tr-5", studentId: "student-7", schoolId: "school-2", parentUserId: "user-pai-4", date: "2024-08-20", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "Participará de uma feira de ciências.", createdAt: "2024-07-31T11:00:00Z" }
     ]
 };
+
+    
