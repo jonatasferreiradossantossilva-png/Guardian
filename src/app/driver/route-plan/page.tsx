@@ -607,42 +607,6 @@ export default function DriverRoutePlanPage() {
           </div>
         </div>
 
-        <Card>
-            <CardHeader>
-                <CardTitle>Selecionar Viagem</CardTitle>
-                <CardDescription>Escolha a rota e o tipo de viagem que irá realizar.</CardDescription>
-            </CardHeader>
-            <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label>Rota</Label>
-                    <Select value={selectedRouteId || ''} onValueChange={setSelectedRouteId} disabled={!routes || routes.length === 0}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Selecione uma rota..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {routes?.map(r => (
-                                <SelectItem key={r.id} value={r.id}>
-                                    {r.name}
-                                </SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </div>
-                 <div className="space-y-2">
-                    <Label>Viagem</Label>
-                    <Select value={selectedTrip} onValueChange={(v) => setSelectedTrip(v as any)}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Selecione a viagem..." />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="manha-ida">Manhã - Ida para Escola</SelectItem>
-                            <SelectItem value="tarde-volta">Tarde - Volta para Casa</SelectItem>
-                        </SelectContent>
-                    </Select>
-                </div>
-            </CardContent>
-        </Card>
-
         <Tabs defaultValue="plan" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
                 <TabsTrigger value="plan">
@@ -655,6 +619,41 @@ export default function DriverRoutePlanPage() {
                 </TabsTrigger>
             </TabsList>
             <TabsContent value="plan" className="mt-6 space-y-6">
+                 <Card>
+                    <CardHeader>
+                        <CardTitle>Selecionar Viagem</CardTitle>
+                        <CardDescription>Escolha a rota e o tipo de viagem que irá realizar.</CardDescription>
+                    </CardHeader>
+                    <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>Rota</Label>
+                            <Select value={selectedRouteId || ''} onValueChange={setSelectedRouteId} disabled={!routes || routes.length === 0}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione uma rota..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    {routes?.map(r => (
+                                        <SelectItem key={r.id} value={r.id}>
+                                            {r.name}
+                                        </SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Viagem</Label>
+                            <Select value={selectedTrip} onValueChange={(v) => setSelectedTrip(v as any)}>
+                                <SelectTrigger>
+                                    <SelectValue placeholder="Selecione a viagem..." />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="manha-ida">Manhã - Ida para Escola</SelectItem>
+                                    <SelectItem value="tarde-volta">Tarde - Volta para Casa</SelectItem>
+                                </SelectContent>
+                            </Select>
+                        </div>
+                    </CardContent>
+                </Card>
                  <Card>
                     <CardHeader>
                         <div className="flex flex-col sm:flex-row justify-between items-start gap-4">
@@ -980,3 +979,5 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
+    
