@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, Bot, School, Navigation, Siren } from "lucide-react";
+import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, Bot, School, Navigation, Siren, Home } from "lucide-react";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
@@ -15,6 +15,8 @@ import { Badge } from "@/components/ui/badge";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import { Switch } from "@/components/ui/switch";
+import { Label } from "@/components/ui/label";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -67,6 +69,7 @@ export default function OptimizerPage() {
     const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
     const [context, setContext] = useState<string>("");
     const [isLoading, setIsLoading] = useState<boolean>(false);
+    const [startFromDriverHome, setStartFromDriverHome] = useState(true);
     const [optimizationResult, setOptimizationResult] = useState<OptimizeSchoolVanRouteOutput | null>(null);
     const [autoOptimizeTriggered, setAutoOptimizeTriggered] = useState(false);
     const isInitialMount = useRef(true);
@@ -87,12 +90,15 @@ export default function OptimizerPage() {
         return routes.find(r => r.id === selectedRouteId);
     }, [selectedRouteId, routes]);
 
+    const driverForRoute = useMemo(() => {
+        if (!selectedRoute || !drivers) return null;
+        return drivers.find(d => d.id === selectedRoute.driverId);
+    }, [selectedRoute, drivers]);
+
     const vehicleForRoute = useMemo(() => {
-        if (!selectedRoute || !drivers || !vehicles) return null;
-        const driver = drivers.find(d => d.id === selectedRoute.driverId);
-        if (!driver || !driver.vehicleId) return null;
-        return vehicles.find(v => v.id === driver.vehicleId);
-    }, [selectedRoute, drivers, vehicles]);
+        if (!driverForRoute || !driverForRoute.vehicleId || !vehicles) return null;
+        return vehicles.find(v => v.id === driverForRoute.vehicleId);
+    }, [driverForRoute, vehicles]);
 
     const studentsInRoute = useMemo(() => {
         if (!selectedRoute) return [];
@@ -127,7 +133,11 @@ export default function OptimizerPage() {
             
             const combinedContext = [context, incidentsContext].filter(Boolean).join('\n\n');
 
+            const driverAddress = driverForRoute ? formatAddress(driverForRoute) : undefined;
+            const startAddress = (startFromDriverHome && driverAddress !== 'Endereço indisponível') ? driverAddress : undefined;
+
             const input = {
+                startAddress,
                 students: studentsInRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
                 schoolAddress: formatAddress(schoolForRoute),
                 vehicleCapacity: vehicleForRoute?.capacity,
@@ -151,7 +161,7 @@ export default function OptimizerPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast, incidents, vehicleForRoute]);
+    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast, incidents, vehicleForRoute, driverForRoute, startFromDriverHome]);
     
     // This effect is specifically for the 'autoOptimize=true' parameter from the routes page
     useEffect(() => {
@@ -168,7 +178,7 @@ export default function OptimizerPage() {
         }
     }, [searchParams, autoOptimizeTriggered, selectedRoute, schoolForRoute, handleOptimize, router]);
 
-    // This effect triggers optimization whenever the selected route changes, except for the very first render
+    // This effect triggers optimization whenever the selected route, context or switch changes, except for the very first render
     useEffect(() => {
         if (isInitialMount.current) {
             isInitialMount.current = false;
@@ -181,7 +191,7 @@ export default function OptimizerPage() {
         if (selectedRouteId) {
             handleOptimize();
         }
-    }, [selectedRouteId, context]); // Also re-optimizes when context changes
+    }, [selectedRouteId, context, startFromDriverHome]); 
 
 
     const handleSaveChanges = () => {
@@ -229,6 +239,10 @@ export default function OptimizerPage() {
                                         ))}
                                     </SelectContent>
                                 </Select>
+                            </div>
+                             <div className="flex items-center space-x-2 pt-2">
+                                <Switch id="start-from-home" checked={startFromDriverHome} onCheckedChange={setStartFromDriverHome} disabled={!driverForRoute} />
+                                <Label htmlFor="start-from-home" className="text-sm font-normal text-muted-foreground">Incluir ponto de partida do motorista</Label>
                             </div>
                             <div>
                                 <label htmlFor="context-textarea" className="text-sm font-medium mb-2 block">Contexto Adicional (Opcional)</label>
@@ -368,6 +382,10 @@ export default function OptimizerPage() {
                                 <span>Rota Otimizada</span>
                             </div>
                             <div className="flex items-center gap-2">
+                                <Home className="text-purple-600" size={16} />
+                                <span>Partida Motorista</span>
+                            </div>
+                            <div className="flex items-center gap-2">
                                 <School className="text-red-600" size={16} />
                                 <span>Escola</span>
                             </div>
@@ -400,6 +418,7 @@ export default function OptimizerPage() {
                                             originalRoute={studentsInRoute} 
                                             optimizedRoute={optimizedStudentsResult} 
                                             school={schoolForRoute}
+                                            driver={startFromDriverHome ? driverForRoute : null}
                                         />
                                     </GoogleMap>
                                 </APIProvider>
@@ -412,37 +431,44 @@ export default function OptimizerPage() {
     );
 }
 
-function RouteMap({ originalRoute, optimizedRoute, school }) {
+function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
     const map = useMap();
 
     useEffect(() => {
-        if (!map || !school) return;
+        if (!map) return;
 
         const allStops = Array.from(new Set([...originalRoute, ...optimizedRoute]));
-        if (allStops.length === 0) return;
+        if (allStops.length === 0 && !school) return;
 
         const bounds = new google.maps.LatLngBounds();
+        if (driver?.latitude && driver?.longitude) {
+            bounds.extend({ lat: driver.latitude, lng: driver.longitude });
+        }
         allStops.forEach(stop => {
             if (stop.latitude && stop.longitude) {
                 bounds.extend({ lat: stop.latitude, lng: stop.longitude });
             }
         });
-         if (school.latitude && school.longitude) {
+         if (school?.latitude && school?.longitude) {
             bounds.extend({ lat: school.latitude, lng: school.longitude });
         }
         if (bounds.isEmpty()) return;
         map.fitBounds(bounds, 100);
 
-    }, [map, originalRoute, optimizedRoute, school]);
+    }, [map, originalRoute, optimizedRoute, school, driver]);
     
     if (!school) return null;
 
+    const driverStartPoint = (driver?.latitude && driver?.longitude) ? [{ lat: driver.latitude, lng: driver.longitude }] : [];
+
     const originalPath = [
+        ...driverStartPoint,
         ...originalRoute.map(s => ({ lat: s.latitude, lng: s.longitude })),
         { lat: school.latitude, lng: school.longitude }
     ].filter(p => p.lat && p.lng);
 
     const optimizedPath = [
+        ...driverStartPoint,
         ...optimizedRoute.map(s => ({ lat: s.latitude, lng: s.longitude })),
         { lat: school.latitude, lng: school.longitude }
     ].filter(p => p.lat && p.lng);
@@ -453,6 +479,13 @@ function RouteMap({ originalRoute, optimizedRoute, school }) {
     return (
         <>
             {/* Markers */}
+            {driver && (
+                 <AdvancedMarker position={{ lat: driver.latitude, lng: driver.longitude }} title={`Partida: ${driver.name}`}>
+                     <div className="p-2 rounded-full shadow border-2 border-white bg-purple-600">
+                        <Home className="h-5 w-5 text-white" />
+                     </div>
+                </AdvancedMarker>
+            )}
             {allStudents.map(student => (
                 <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
                     <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
