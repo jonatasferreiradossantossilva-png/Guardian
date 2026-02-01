@@ -214,7 +214,7 @@ export const initialMockData = {
             userId: "user-motorista-3",
             name: "Roberto Almeida",
             status: "inativo",
-            vehicleId: "",
+            vehicleId: "vehicle-4",
             cpf: "111.222.333-44",
             rg: "99.888.777-6",
             cnh: "11122233344",
@@ -276,18 +276,18 @@ export const initialMockData = {
         { id: "student-10", name: "Alice Martins", schoolId: "school-3", parentId: "parent-6", routeId: "route-1", shift: "Manhã", status: "aguardando", latitude: -23.62, longitude: -46.73, street: "Rua J", number: "100", neighborhood: "Panamby", city: "São Paulo", state: "SP", zipCode: "05707-430", monthlyFee: 550.00 },
         { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", routeId: "route-1", shift: "Manhã", status: "aguardando", latitude: -23.558, longitude: -46.662, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP", monthlyFee: 430.00 },
         { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", routeId: "route-1", shift: "Manhã", status: "aguardando", latitude: -23.559, longitude: -46.663, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP", monthlyFee: 490.00 },
-        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", routeId: "route-1", shift: "Manhã", status: "aguardando", latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
-        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", routeId: "route-1", shift: "Manhã", status: "aguardando", latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
-        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", routeId: "route-1", shift: "Manhã", status: "aguardando", latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
-        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", routeId: "route-1", shift: "Manhã", status: "aguardando", latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 }
+        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", routeId: "route-8", shift: "Tarde", status: "aguardando", latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
+        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", routeId: "route-8", shift: "Tarde", status: "aguardando", latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
+        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", routeId: "route-8", shift: "Tarde", status: "aguardando", latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
+        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", routeId: null, shift: "Tarde", status: "aguardando", latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 }
     ],
     routes: [
         { 
             id: "route-1", 
-            name: "Rota de Simulação (15 Alunos)", 
+            name: "Rota de Simulação (Manhã)", 
             driverId: "driver-1", 
             assistantId: "user-aux-1", 
-            studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12", "student-13", "student-14", "student-15"], 
+            studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12"], 
             shift: "manha",
             turnByTurnDirections: [
               "Siga para o sudeste na Rua A em direção à Rua B",
@@ -304,18 +304,12 @@ export const initialMockData = {
               "Vire à direita na Rua H",
               "Vire à esquerda na Rua I",
               "Continue em frente para a Rua J",
-              "Vire à direita na Rua K",
-              "Vire à esquerda na Rua L",
-              "Continue para a Rua M",
-              "Vire à direita na Rua N",
-              "Vire à esquerda na Rua O",
-              "Continue para a Rua do Conhecimento",
-              "Seu destino, Escola Primária do Saber, estará à esquerda"
+              "Seu destino, Colégio Vanguarda, estará à sua direita"
             ]
         },
         { 
             id: "route-2", 
-            name: "Rota Vespertina - Centro (Vazia)", 
+            name: "Rota Vespertina - Centro", 
             driverId: "driver-2", 
             assistantId: "user-aux-2", 
             studentIds: [], 
@@ -333,10 +327,19 @@ export const initialMockData = {
             ]
         },
         { id: "route-3", name: "Rota Matinal - Zona Oeste", driverId: "driver-3", assistantId: "user-aux-3", studentIds: [], shift: "manha" },
-        { id: "route-4", name: "Rota Vespertina - Eixo Jardins", driverId: "driver-4", assistantId: "", studentIds: [], shift: "tarde" },
+        { id: "route-4", name: "Rota Vespertina - Eixo Jardins (Motorista 4)", driverId: "driver-4", assistantId: "", studentIds: [], shift: "tarde" },
         { id: "route-5", name: "Rota Matinal - Morumbi", driverId: "driver-5", assistantId: "user-aux-1", studentIds: [], shift: "manha" },
-        { id: "route-6", name: "Rota Matinal - Jardins", driverId: "driver-6", assistantId: "user-aux-2", studentIds: [], shift: "manha" },
+        { id: "route-6", name: "Rota Matinal - Jardins (Motorista 6)", driverId: "driver-6", assistantId: "user-aux-2", studentIds: [], shift: "manha" },
         { id: "route-7", name: "Rota Tarde - Itaim", driverId: "driver-7", assistantId: "", studentIds: [], shift: "tarde" },
+        { 
+            id: "route-8", 
+            name: "Rota da Tarde - Jardins", 
+            driverId: "driver-1", 
+            assistantId: "user-aux-3", 
+            studentIds: ["student-13", "student-14", "student-15"], 
+            shift: "tarde",
+            turnByTurnDirections: []
+        },
     ],
     locations: {
       "driver-1": { latitude: -23.55052, longitude: -46.633308, timestamp: new Date().toISOString() },

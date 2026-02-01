@@ -49,6 +49,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToast } from '@/hooks/use-toast';
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 
 type Shift = 'Manhã' | 'Tarde';
@@ -263,7 +264,7 @@ export default function DriverRoutePlanPage() {
   const { updateDoc, setDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const { toast } = useToast();
-  const simulationIntervalRef = useRef(null);
+  const simulationIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] =
@@ -302,9 +303,22 @@ export default function DriverRoutePlanPage() {
         ]
       : []
   );
+
+  const [selectedRouteId, setSelectedRouteId] = useState<string | null>(null);
+
+  // Effect to select a default route
+  useEffect(() => {
+    if (routes && routes.length > 0 && !selectedRouteId) {
+      setSelectedRouteId(routes[0].id);
+    }
+  }, [routes, selectedRouteId]);
+
   const route = useMemo(
-    () => (routes && routes.length > 0 ? routes[0] : null),
-    [routes]
+    () => {
+        if (!routes || !selectedRouteId) return null;
+        return routes.find(r => r.id === selectedRouteId) ?? null;
+    },
+    [routes, selectedRouteId]
   );
 
   const { data: students, isLoading: areStudentsLoading } = useMockCollection(
@@ -369,7 +383,7 @@ export default function DriverRoutePlanPage() {
     simulationIntervalRef.current = setInterval(() => {
       step++;
       if (step > totalSteps) {
-        clearInterval(simulationIntervalRef.current);
+        if(simulationIntervalRef.current) clearInterval(simulationIntervalRef.current);
         setDoc(`locations/${driverId}`, { 
           latitude: endPoint.lat, 
           longitude: endPoint.lng,
@@ -553,6 +567,29 @@ export default function DriverRoutePlanPage() {
             </Link>
           </div>
         </div>
+
+        {routes && routes.length > 1 && (
+            <Card>
+                <CardHeader>
+                    <CardTitle>Selecionar Rota</CardTitle>
+                    <CardDescription>Você tem múltiplas rotas. Escolha qual deseja visualizar.</CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Select value={selectedRouteId || ''} onValueChange={setSelectedRouteId}>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione uma rota..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                            {routes.map(r => (
+                                <SelectItem key={r.id} value={r.id}>
+                                    {r.name} ({r.shift === 'manha' ? 'Manhã' : 'Tarde'})
+                                </SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
+        )}
 
         <Tabs defaultValue="plan" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
