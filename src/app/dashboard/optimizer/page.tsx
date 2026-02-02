@@ -405,7 +405,7 @@ export default function OptimizerPage() {
                             </div>
                         </div>
 
-                        <div className="aspect-video w-full rounded-lg overflow-hidden border">
+                        <div className="h-[60vh] w-full rounded-lg overflow-hidden border">
                             {!API_KEY ? (
                                 <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                                     <div className="text-center p-4">
@@ -519,5 +519,7 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
         </>
     );
 }
+
+    
 
     
