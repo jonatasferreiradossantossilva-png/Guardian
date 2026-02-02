@@ -140,8 +140,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
               Adicionar Rota
             </Button>
           </DialogTrigger>
-          <RouteForm 
-            key={selectedRoute?.id || 'new-route'}
+          <RouteForm
             route={selectedRoute || undefined} 
             drivers={drivers || []}
             students={students || []}
