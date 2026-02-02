@@ -268,8 +268,52 @@ export default function ParentTrackingPage() {
 
   const { data: school } = useMockDoc('schools', student?.schoolId);
 
-  // The location to display is ONLY the real location from the database
-  const displayLocation = realLocation;
+  // State for simulated location
+  const [simulatedLocation, setSimulatedLocation] = useState<LocationUpdate | null>(null);
+
+  // This effect will run the simulation
+  useEffect(() => {
+    if (!realLocation || !student || !school) {
+        setSimulatedLocation(null);
+        return;
+    }
+    
+    // Set initial position only once
+    if (!simulatedLocation) {
+        setSimulatedLocation(realLocation);
+    }
+    
+    const destination = student.status === 'a_bordo' ? school : student;
+    
+    const interval = setInterval(() => {
+      setSimulatedLocation(prevLocation => {
+        if (!prevLocation) return realLocation;
+
+        const start = { lat: prevLocation.latitude, lng: prevLocation.longitude };
+        const end = { lat: destination.latitude, lng: destination.longitude };
+        
+        // Simple linear interpolation
+        const step = 0.05; // Move 5% of the remaining distance each step
+        const newLat = start.lat + (end.lat - start.lat) * step;
+        const newLng = start.lng + (end.lng - start.lng) * step;
+        
+        // Stop simulation when very close to the destination
+        const distance = haversineDistance({lat: newLat, lng: newLng}, end);
+        if (distance < 0.1) { // less than 100 meters
+          clearInterval(interval);
+          return { latitude: end.lat, longitude: end.lng, timestamp: new Date().toISOString() };
+        }
+
+        return { latitude: newLat, longitude: newLng, timestamp: new Date().toISOString() };
+      });
+    }, 2000); // Update every 2 seconds
+
+    return () => clearInterval(interval);
+
+  }, [realLocation, student, school, student?.status]); // Rerun simulation if destination changes
+
+  // The location to display is the simulated location
+  const displayLocation = simulatedLocation;
 
   // Effect for proximity check
   useEffect(() => {
@@ -353,12 +397,12 @@ export default function ParentTrackingPage() {
              </CardContent>
           </Card>
         ) : (
-          <Tabs defaultValue="actions" className="w-full">
+          <Tabs defaultValue="status" className="w-full">
             <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="actions"><Activity className="mr-2 h-4 w-4"/>Status & Ações</TabsTrigger>
+              <TabsTrigger value="status"><Activity className="mr-2 h-4 w-4"/>Status & Ações</TabsTrigger>
               <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa</TabsTrigger>
             </TabsList>
-            <TabsContent value="actions" className="mt-4">
+            <TabsContent value="status" className="mt-4">
               <div className="flex flex-col gap-6">
                  <Card>
                     <CardHeader>
@@ -371,7 +415,7 @@ export default function ParentTrackingPage() {
                             </div>
                             <Badge variant={statusBadgeVariant[studentStatus]}>{statusText[studentStatus]}</Badge>
                         </div>
-                        {isNearby && (
+                        {isNearby && student.status === 'aguardando' && (
                             <div className="!mt-4 p-3 border-b-2 border-amber-400 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
                                 <div className="flex items-center gap-3">
                                     <Siren className="h-6 w-6 text-amber-500 animate-pulse" />
@@ -389,6 +433,7 @@ export default function ParentTrackingPage() {
                                 variant="destructive"
                                 className="w-full"
                                 onClick={handleCommunicateAbsence}
+                                disabled={student.status === 'ausente'}
                             >
                                 <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
                             </Button>
@@ -396,6 +441,7 @@ export default function ParentTrackingPage() {
                                 variant="secondary"
                                 className="w-full"
                                 onClick={handleConfirmPresence}
+                                disabled={student.status === 'aguardando'}
                             >
                                 <CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença
                             </Button>
