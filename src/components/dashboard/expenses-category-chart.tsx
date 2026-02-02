@@ -78,16 +78,16 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
   }
 
   return (
-    <Card className="flex flex-col">
+    <Card>
       <CardHeader>
         <CardTitle>Composição das Despesas</CardTitle>
         <CardDescription>Distribuição de custos do período selecionado.</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 flex flex-col items-center justify-center p-0">
+      <CardContent className="flex items-center justify-center p-0">
           {chartData.length > 0 ? (
             <ChartContainer
               config={chartConfig}
-              className="w-full h-[250px]"
+              className="w-full h-[300px]"
             >
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -132,23 +132,18 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
                         <Cell key={`cell-${entry.category}`} fill={entry.fill} />
                     ))}
                   </Pie>
+                   <ChartLegend
+                    content={<ChartLegendContent nameKey="category" className="flex-wrap justify-center"/>}
+                  />
                 </PieChart>
               </ResponsiveContainer>
             </ChartContainer>
           ) : (
-            <div className="flex h-[250px] items-center justify-center text-muted-foreground text-sm">
+            <div className="flex h-[300px] items-center justify-center text-muted-foreground text-sm">
                 Nenhuma despesa no período.
             </div>
           )}
       </CardContent>
-      <div className="flex items-center justify-center p-4 pt-0">
-        {chartData.length > 0 && (
-          <ChartLegend
-            content={<ChartLegendContent nameKey="category" />}
-            className="flex-wrap"
-          />
-        )}
-      </div>
     </Card>
   );
 }
