@@ -105,56 +105,40 @@ function haversineDistance(coords1, coords2) {
 }
 
 
-// --- New component to render directions on the map ---
-function Directions({ directions }: { directions: google.maps.DirectionsResult | null }) {
+function ParentRouteMap({ busLocation, student, school, recenterRequest }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, recenterRequest: any }) {
   const map = useMap();
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
+  const lastDestinationRef = useRef<string | null>(null);
 
+  // Effect to manage the DirectionsRenderer instance
   useEffect(() => {
     if (!map) return;
-    
-    // Initialize renderer if it doesn't exist
-    if (!directionsRendererRef.current) {
-      directionsRendererRef.current = new google.maps.DirectionsRenderer({
-        suppressMarkers: true, // We use our own custom markers
-        polylineOptions: {
-          strokeColor: "#2ab0c1", // Teal color from our theme
-          strokeOpacity: 0.8,
-          strokeWeight: 6,
-        },
-      });
-      directionsRendererRef.current.setMap(map);
-    }
-    
-    // Update directions when they change
-    if (directions) {
-      directionsRendererRef.current.setDirections(directions);
-    } else {
-      // Clear directions if they are null
-      directionsRendererRef.current.setDirections({ routes: [] });
-    }
 
+    if (!directionsRendererRef.current) {
+        directionsRendererRef.current = new google.maps.DirectionsRenderer({
+            suppressMarkers: true, // We use our own custom markers
+            polylineOptions: {
+                strokeColor: "#2ab0c1", // Theme's primary color
+                strokeOpacity: 0.8,
+                strokeWeight: 6,
+            },
+        });
+        directionsRendererRef.current.setMap(map);
+    }
+    
     // Cleanup on unmount
     return () => {
       if (directionsRendererRef.current) {
         directionsRendererRef.current.setMap(null);
       }
     };
-  }, [map, directions]);
-
-  return null; // This component does not render anything directly
-}
+  }, [map]);
 
 
-function ParentRouteMap({ busLocation, student, school, recenterRequest }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, recenterRequest: any }) {
-  const map = useMap();
-  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
-  const lastDestinationRef = useRef<string | null>(null);
-
-  // Effect to fetch directions from Google Maps API
+  // Effect to fetch and render directions
   useEffect(() => {
-    if (!map || !busLocation || !student || !school) {
-      setDirections(null); // Clear route if essential data is missing
+    if (!map || !busLocation || !student || !school || !directionsRendererRef.current) {
+      directionsRendererRef.current?.setDirections({ routes: [] }); // Clear route if data is missing
       return;
     }
 
@@ -178,11 +162,11 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest }: { bus
       },
       (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
-          setDirections(result);
+          directionsRendererRef.current?.setDirections(result);
           lastDestinationRef.current = destinationKey;
         } else {
           console.error(`Directions request failed due to ${status}`);
-          setDirections(null);
+          directionsRendererRef.current?.setDirections({ routes: [] });
         }
       }
     );
@@ -210,7 +194,6 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest }: { bus
 
   return (
     <>
-      <Directions directions={directions} />
       {busLocation && (
         <AdvancedMarker position={{ lat: busLocation.latitude, lng: busLocation.longitude }} title="Posição da Van">
           <div className="p-1 bg-primary rounded-full shadow-lg">
@@ -221,7 +204,7 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest }: { bus
       {student && (
         <AdvancedMarker position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
              <Avatar className="h-10 w-10 border-2 border-blue-500 shadow-lg">
-                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
+                <AvatarImage src="https://images.unsplash.com/photo-1503944186934-a1e6704b2a86?q=80&w=200&h=200&auto=format&fit=crop" data-ai-hint="child portrait" />
                 <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
             </Avatar>
         </AdvancedMarker>
@@ -481,7 +464,7 @@ export default function ParentTrackingPage() {
             <TabsContent value="map" className="mt-4">
                <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Van</span></div>
-                    <div className="flex items-center gap-1.5"><Avatar className="h-4 w-4 border-blue-500"><AvatarImage src={`https://picsum.photos/seed/student-legend/100/100`} /><AvatarFallback>A</AvatarFallback></Avatar><span>Aluno</span></div>
+                    <div className="flex items-center gap-1.5"><Avatar className="h-4 w-4 border-blue-500"><AvatarImage src="https://images.unsplash.com/photo-1503944186934-a1e6704b2a86?q=80&w=100&h=100&auto=format&fit=crop" data-ai-hint="child portrait"/><AvatarFallback>A</AvatarFallback></Avatar><span>Aluno</span></div>
                     <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
                 </div>
               <Card className="h-[75vh]">
