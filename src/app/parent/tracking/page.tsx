@@ -10,7 +10,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, LocateFixed } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, LocateFixed, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -359,6 +359,51 @@ export default function ParentTrackingPage() {
         description: `O motorista foi notificado que ${student.name} aguardará o transporte.`,
     });
   };
+
+  const handleShareTrip = useCallback(() => {
+    if (!student || !displayLocation) {
+      toast({
+        title: "Informações incompletas",
+        description: "Aguarde a localização da van e do aluno para compartilhar.",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    const studentCoords = { lat: student.latitude, lng: student.longitude };
+    const busCoords = { lat: displayLocation.latitude, lng: displayLocation.longitude };
+
+    const distance = haversineDistance(busCoords, studentCoords);
+
+    // Assume average speed of 25km/h in a city for ETA calculation.
+    const avgSpeedKmH = 25;
+    const timeHours = distance / avgSpeedKmH;
+    const timeMinutes = Math.round(timeHours * 60);
+
+    const arrivalTime = new Date();
+    arrivalTime.setMinutes(arrivalTime.getMinutes() + timeMinutes);
+    const etaString = arrivalTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+
+    const studentName = student.name;
+    // In a real app, this would be a dynamic, shareable link to this page.
+    const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${busCoords.lat},${busCoords.lng}&destination=${studentCoords.lat},${studentCoords.lng}`;
+
+    let message;
+    if (timeMinutes < 2) {
+        message = `Olá! A van do(a) ${studentName} está quase chegando. Acompanhe em tempo real aqui: ${mapLink}`;
+    } else {
+        message = `Olá! A van do(a) ${studentName} está a caminho. A previsão de chegada é por volta das ${etaString} (aprox. ${timeMinutes} min). Acompanhe em tempo real aqui: ${mapLink}`;
+    }
+    
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+    window.open(whatsappUrl, '_blank');
+
+    toast({
+      title: "Pronto para compartilhar!",
+      description: "Sua mensagem foi gerada para ser enviada no WhatsApp.",
+    });
+  }, [student, displayLocation, toast]);
   
   const handleRecenterMap = () => {
     setRecenterRequest(Date.now());
@@ -456,7 +501,10 @@ export default function ParentTrackingPage() {
                     <CardHeader>
                         <CardTitle>Ações Rápidas</CardTitle>
                     </CardHeader>
-                     <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                     <CardContent className="grid grid-cols-2 gap-2">
+                        <Button variant="outline" className="w-full" onClick={handleShareTrip}>
+                            <Share2 className="mr-2 h-4 w-4" /> Compartilhar Viagem
+                        </Button>
                         <Button asChild variant="outline" className="w-full">
                             <Link href="/parent/messages">
                                 <MessageCircle className="mr-2 h-4 w-4" /> Mensagens
@@ -472,7 +520,7 @@ export default function ParentTrackingPage() {
                                 <DollarSign className="mr-2 h-4 w-4" /> Financeiro
                             </Link>
                         </Button>
-                        <Button asChild variant="outline" className="w-full">
+                        <Button asChild variant="outline" className="w-full col-span-2 sm:col-span-1">
                             <Link href="/parent/requests">
                                 <Route className="mr-2 h-4 w-4" /> Viagens Avulsas
                             </Link>
