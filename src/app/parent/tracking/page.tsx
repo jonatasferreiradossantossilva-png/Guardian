@@ -397,22 +397,39 @@ export default function ParentTrackingPage() {
   const handleSetUserLocation = () => {
     setRecenterRequest(null);
     if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => {
-                const loc = {
-                    lat: position.coords.latitude,
-                    lng: position.coords.longitude,
-                };
-                setUserLocation(loc);
-                setRecenterRequest(loc);
-                toast({ title: "Mapa centralizado na sua localização." });
-            },
-            () => {
-                toast({ title: "Não foi possível obter a localização.", description: "Verifique as permissões do seu navegador.", variant: "destructive" });
-            }
-        );
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const loc = {
+            lat: position.coords.latitude,
+            lng: position.coords.longitude,
+          };
+          setUserLocation(loc);
+          setRecenterRequest(loc);
+          toast({ title: "Mapa centralizado na sua localização." });
+        },
+        (error) => {
+          // Check the error code to provide a more specific message
+          if (error.code === error.PERMISSION_DENIED) {
+            toast({
+              title: "Permissão de localização negada.",
+              description: "Para usar este recurso, você precisa permitir o acesso à sua localização nas configurações do seu navegador ou dispositivo.",
+              variant: "destructive",
+            });
+          } else {
+             toast({
+              title: "Não foi possível obter a localização.",
+              description: "Ocorreu um erro ao tentar buscar sua localização. Tente novamente.",
+              variant: "destructive",
+            });
+          }
+        }
+      );
     } else {
-        toast({ title: "Geolocalização não suportada.", variant: "destructive" });
+      toast({
+        title: "Geolocalização não suportada",
+        description: "Seu navegador não suporta este recurso.",
+        variant: "destructive"
+      });
     }
   };
 
@@ -456,10 +473,12 @@ export default function ParentTrackingPage() {
           <Card>
             <Tabs defaultValue="status" className="w-full">
               <CardHeader>
-                <TabsList className="grid w-full grid-cols-2">
-                  <TabsTrigger value="status"><Activity className="mr-2 h-4 w-4"/>Status e Ações</TabsTrigger>
-                  <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa em Tempo Real</TabsTrigger>
-                </TabsList>
+                <div className="flex items-center justify-between">
+                    <TabsList className="grid w-full grid-cols-2">
+                      <TabsTrigger value="status"><Activity className="mr-2 h-4 w-4"/>Status e Ações</TabsTrigger>
+                      <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa em Tempo Real</TabsTrigger>
+                    </TabsList>
+                </div>
               </CardHeader>
               
               <TabsContent value="status" className="m-0">
