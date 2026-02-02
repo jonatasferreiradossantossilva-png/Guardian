@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -501,7 +500,7 @@ export default function ParentTrackingPage() {
                     <CardHeader>
                         <CardTitle>Ações Rápidas</CardTitle>
                     </CardHeader>
-                     <CardContent className="grid grid-cols-2 gap-2">
+                     <CardContent className="flex flex-col gap-2">
                         <Button variant="outline" className="w-full" onClick={handleShareTrip}>
                             <Share2 className="mr-2 h-4 w-4" /> Compartilhar Viagem
                         </Button>
@@ -520,7 +519,7 @@ export default function ParentTrackingPage() {
                                 <DollarSign className="mr-2 h-4 w-4" /> Financeiro
                             </Link>
                         </Button>
-                        <Button asChild variant="outline" className="w-full col-span-2">
+                        <Button asChild variant="outline" className="w-full">
                             <Link href="/parent/requests">
                                 <Route className="mr-2 h-4 w-4" /> Viagens Avulsas
                             </Link>
