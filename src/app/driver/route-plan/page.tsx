@@ -50,6 +50,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
 type Shift = 'Manhã' | 'Tarde';
@@ -149,7 +151,7 @@ const UpcomingStopsList = ({ students }) => {
   );
 };
 
-const FixedBottomBar = ({ onPause, onResume, onEnd, onRecalculate, onShare, status }) => (
+const FixedBottomBar = ({ onPause, onResume, onEnd, onRecalculate, onShare, status, canRecalculate }) => (
     <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-2 flex justify-around items-center shadow-lg z-50">
         {status === 'em_rota' && (
             <>
@@ -168,8 +170,10 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, onRecalculate, onShare, stat
                 <Button variant="ghost" size="icon"><MoreVertical/></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="mb-2">
-                <DropdownMenuItem onClick={onRecalculate}><Siren className="mr-2"/>Recalcular por Ausência</DropdownMenuItem>
-                <DropdownMenuItem onClick={onShare}><Share2 className="mr-2"/>Compartilhar Rota</DropdownMenuItem>
+                <DropdownMenuItem onClick={onRecalculate} disabled={!canRecalculate}>
+                    <Siren className="mr-2"/>Recalcular por Ausência
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={onShare} disabled><Share2 className="mr-2"/>Compartilhar Rota</DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/driver/messages"><MessageSquare className="mr-2"/>Mensagens Internas</Link>
                 </DropdownMenuItem>
@@ -271,7 +275,7 @@ function RouteMap({ driverLocation, students, school, route, recenterRequest, to
                 </AdvancedMarker>
             )}
             {students.map((student) => {
-                if (!student.latitude || !student.longitude) return null;
+                 if (!student?.latitude || !student?.longitude) return null;
                 return (
                     <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
                         <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
@@ -280,11 +284,11 @@ function RouteMap({ driverLocation, students, school, route, recenterRequest, to
                     </AdvancedMarker>
                 );
             })}
-            {school && (
+            {school && school.latitude && school.longitude && (
                 <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-                    <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+                     <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
                         <School className="h-5 w-5 text-white" />
-                    </div>
+                     </div>
                 </AdvancedMarker>
             )}
         </>
@@ -300,6 +304,8 @@ export default function DriverRoutePlanPage() {
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<'manha-ida' | 'tarde-volta'>('manha-ida');
   const [recenterRequest, setRecenterRequest] = useState(null);
+  const [isRecalculateDialogOpen, setIsRecalculateDialogOpen] = useState(false);
+  const [isRecalculating, setIsRecalculating] = useState(false);
 
   useEffect(() => {
     setMockUserId('user-admin-1'); 
@@ -348,15 +354,12 @@ export default function DriverRoutePlanPage() {
     return schools.find(s => s.id === studentWithSchool.schoolId);
   }, [studentsOnRoute, schools]);
 
-
   const nextStop = useMemo(() => {
     if (driverProfile?.status !== 'em_rota' || !studentsOnRoute) return null;
 
     if (direction === 'ida') {
-        // Find the first student waiting
         return studentsOnRoute.find(s => s.status === 'aguardando') || null;
-    } else { // 'volta'
-        // Find the last student on board
+    } else {
         const onBoardStudents = studentsOnRoute.filter(s => s.status === 'a_bordo');
         return onBoardStudents[onBoardStudents.length - 1] || null;
     }
@@ -367,12 +370,14 @@ export default function DriverRoutePlanPage() {
      if (direction === 'ida') {
         const nextStopIndex = studentsOnRoute.findIndex(s => s.id === nextStop.id);
         return studentsOnRoute.slice(nextStopIndex + 1);
-    } else { // 'volta'
+    } else {
         const nextStopIndex = studentsOnRoute.findIndex(s => s.id === nextStop.id);
         return studentsOnRoute.slice(0, nextStopIndex).reverse();
     }
   }, [nextStop, studentsOnRoute, direction]);
   
+  const canRecalculate = useMemo(() => studentsOnRoute.some(s => s.status === 'ausente'), [studentsOnRoute]);
+
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     const student = studentsOnRoute.find(s => s.id === studentId);
     let effectiveStatus = newStatus;
@@ -435,6 +440,46 @@ export default function DriverRoutePlanPage() {
         });
     }
   }, [toast]);
+  
+   const handleConfirmRecalculate = useCallback(async () => {
+        if (!route || !studentsOnRoute || !schoolForRoute) return;
+
+        setIsRecalculating(true);
+        try {
+            const presentStudents = studentsOnRoute.filter(s => s.status !== 'ausente');
+            const formatAddress = (entity) => `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
+            
+            const input = {
+                students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+                schoolAddress: formatAddress(schoolForRoute),
+                startAddress: (driverProfile && driverProfile.latitude) ? `${driverProfile.latitude},${driverProfile.longitude}` : undefined,
+            };
+
+            const result = await optimizeSchoolVanRoute(input);
+            
+            updateDoc('routes', route.id, { 
+                studentIds: result.optimizedStudentIds,
+                turnByTurnDirections: result.turnByTurnDirections
+            });
+
+            toast({
+                title: 'Rota Recalculada!',
+                description: 'A rota foi otimizada para pular os alunos ausentes.',
+            });
+
+        } catch (error) {
+            console.error("Failed to recalculate route:", error);
+            toast({
+                title: "Erro ao Recalcular",
+                description: "Não foi possível otimizar a rota. Tente novamente.",
+                variant: "destructive"
+            });
+        } finally {
+            setIsRecalculating(false);
+            setIsRecalculateDialogOpen(false);
+        }
+    }, [route, studentsOnRoute, schoolForRoute, driverProfile, updateDoc, toast]);
+
 
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
@@ -497,7 +542,7 @@ export default function DriverRoutePlanPage() {
                     <Play className="mr-2 h-5 w-5"/>
                     Retomar Rota
                  </Button>
-                  <FixedBottomBar status={driverProfile.status} onEnd={handleEndRoute} onResume={handleResumeRoute} />
+                  <FixedBottomBar status={driverProfile.status} onEnd={handleEndRoute} onResume={handleResumeRoute} canRecalculate={canRecalculate} onRecalculate={() => setIsRecalculateDialogOpen(true)} />
             </div>
         );
     }
@@ -583,8 +628,8 @@ export default function DriverRoutePlanPage() {
                 onPause={handlePauseRoute} 
                 onResume={handleResumeRoute}
                 onEnd={handleEndRoute}
-                onRecalculate={() => toast({ title: "Ainda não implementado" })}
-                onShare={() => toast({ title: "Ainda não implementado" })}
+                onRecalculate={() => setIsRecalculateDialogOpen(true)}
+                canRecalculate={canRecalculate}
             />
 
             {isModalOpen && selectedStudentForModal && (
@@ -595,8 +640,25 @@ export default function DriverRoutePlanPage() {
                 studentName={selectedStudentForModal.name}
                 />
             )}
+            
+            <AlertDialog open={isRecalculateDialogOpen} onOpenChange={setIsRecalculateDialogOpen}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Recalcular Rota?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                            Isso irá gerar uma nova rota otimizada, pulando os alunos marcados como ausentes. Deseja continuar?
+                        </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={handleConfirmRecalculate} disabled={isRecalculating}>
+                            {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
+                            Recalcular
+                        </AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
+
         </div>
     );
 }
-
-    
