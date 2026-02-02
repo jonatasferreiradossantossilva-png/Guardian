@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
-import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,27 +17,25 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Shield, Car, Users, ClipboardCheck } from "lucide-react";
 import { useAuth, initiateAnonymousSignIn } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
-import { useMockData } from "@/hooks/use-mock-data";
-
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 
 const formSchema = z.object({
-  email: z.string().email({
-    message: "Por favor, insira um email válido.",
-  }),
-  password: z.string().min(1, {
-    message: "A senha é obrigatória.",
+  email: z.string().optional(),
+  password: z.string().optional(),
+  profile: z.enum(["gestor", "motorista", "pai", "auxiliar"], {
+      required_error: "Você precisa selecionar um perfil para entrar."
   }),
 });
 
-// Map specific emails to user profiles for this prototype
-const emailToProfileMap = {
-    'admin@guardian.com': { profile: 'gestor', name: 'Admin User' },
-    'mariana.costa@rotasegura.com': { profile: 'motorista', name: 'Mariana Costa' },
-    'ana.pereira@email.com': { profile: 'pai', name: 'Ana Pereira' },
-    'fernanda.lima@rotasegura.com': { profile: 'auxiliar', name: 'Fernanda Lima' }
+// Map profiles to mock user IDs for this prototype
+const profileToMockIdMap = {
+    'gestor': 'user-admin-1',
+    'motorista': 'user-motorista-2', // Default driver for demo
+    'pai': 'user-pai-1', // Default parent for demo
+    'auxiliar': 'user-aux-1' // Default assistant for demo
 };
 
 export function LoginForm() {
@@ -46,39 +43,22 @@ export function LoginForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const auth = useAuth();
-  const { db } = useMockData();
-
-  const allUsersMap = useMemo(() => {
-      if (!db?.users) return new Map();
-      return new Map(db.users.map(u => [u.email, u]));
-  }, [db]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "admin@guardian.com",
-      password: "senha",
+      profile: "gestor",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    const userProfile = allUsersMap.get(values.email);
+    const mockUserId = profileToMockIdMap[values.profile];
 
-    if (!userProfile) {
-        toast({
-            title: "Usuário não encontrado",
-            description: "O e-mail inserido não corresponde a nenhum usuário de teste.",
-            variant: "destructive"
-        });
-        setIsLoading(false);
-        return;
-    }
-    
     // For this prototype, we store the selected mock user ID in session storage
     // to simulate a real user login for each role.
-    sessionStorage.setItem('mockUserId', userProfile.id);
+    sessionStorage.setItem('mockUserId', mockUserId);
 
     if (auth) {
       // Non-blocking anonymous sign-in. The onAuthStateChanged listener will handle the rest.
@@ -90,12 +70,12 @@ export function LoginForm() {
     }
 
     toast({
-        title: `Bem-vindo(a), ${userProfile.name}!`,
-        description: `Redirecionando para o painel de ${userProfile.profile}.`
+        title: `Bem-vindo(a)!`,
+        description: `Redirecionando para o painel de ${values.profile}.`
     });
 
     // Redirect immediately. The protected pages will handle the auth state.
-    switch (userProfile.profile) {
+    switch (values.profile) {
       case "gestor":
         router.push("/dashboard");
         break;
@@ -119,37 +99,43 @@ export function LoginForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
+             <FormField
               control={form.control}
-              name="email"
+              name="profile"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
+                <FormItem className="space-y-3">
+                  <FormLabel>Selecione seu perfil para entrar:</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="seu@email.com"
-                      {...field}
-                      type="email"
-                      disabled={isLoading}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="password"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Senha</FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="••••••••"
-                      {...field}
-                      type="password"
-                      disabled={isLoading}
-                    />
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      className="grid grid-cols-2 gap-4"
+                    >
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="gestor" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center gap-2"><Shield/> Gestor</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="motorista" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center gap-2"><Car/> Motorista</FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="pai" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center gap-2"><Users/> Pais</FormLabel>
+                      </FormItem>
+                       <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="auxiliar" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center gap-2"><ClipboardCheck/> Auxiliar</FormLabel>
+                      </FormItem>
+                    </RadioGroup>
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -166,9 +152,9 @@ export function LoginForm() {
         </Form>
       </CardContent>
       <CardFooter className="flex justify-center">
-        <Button variant="link" size="sm" className="text-muted-foreground">
-          Esqueceu sua senha?
-        </Button>
+        <p className="text-xs text-center text-muted-foreground">
+            O perfil selecionado determina o acesso para a demonstração.
+        </p>
       </CardFooter>
     </Card>
   );
