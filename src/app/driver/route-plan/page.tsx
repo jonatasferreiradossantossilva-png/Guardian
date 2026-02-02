@@ -10,6 +10,13 @@ import {
   CardDescription,
 } from '@/components/ui/card';
 import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
+import {
   List,
   Bus,
   User,
@@ -677,7 +684,7 @@ export default function DriverRoutePlanPage() {
                                     <>
                                         {driverProfile?.status === 'inativo' && (
                                             <Button onClick={handleStartRoute} className="bg-green-600 hover:bg-green-700" disabled={isStartingRoute}>
-                                                {isStartingRoute ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Play className="mr-2 h-4 w-4" />}
+                                                <Play className="mr-2 h-4 w-4" />
                                                 Iniciar Rota
                                             </Button>
                                         )}
@@ -874,6 +881,21 @@ export default function DriverRoutePlanPage() {
             studentName={selectedStudentForModal.name}
             />
         )}
+
+        <Dialog open={isStartingRoute}>
+            <DialogContent className="sm:max-w-md" onInteractOutside={(e) => { e.preventDefault(); }}>
+                <DialogHeader className="items-center text-center pt-4">
+                <Sparkles className="h-10 w-10 text-primary mb-2" />
+                <DialogTitle className="text-xl">Otimizando sua rota...</DialogTitle>
+                <DialogDescription>
+                    Aguarde um momento. Nossa IA está calculando o melhor trajeto com base nas paradas e no trânsito.
+                </DialogDescription>
+                </DialogHeader>
+                <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+            </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
