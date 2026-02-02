@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect, useRef, useCallback } from "react";
 import Link from "next/link";
 import {
   useMockCollection,
@@ -235,8 +235,10 @@ export default function ParentTrackingPage() {
   const { toast } = useToast();
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
-  const [isNearby, setIsNearby] = useState(false);
   const [recenterRequest, setRecenterRequest] = useState<number | null>(null);
+
+  // Real-time location simulation
+  const [simulatedLocation, setSimulatedLocation] = useState<LocationUpdate | null>(null);
 
   useEffect(() => {
     // For this prototype, we get the logged-in user's ID from session storage.
@@ -259,30 +261,53 @@ export default function ParentTrackingPage() {
   // Real location from DB
   const { data: realLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(route?.driverId ? `locations/${route.driverId}`: null);
   
-  const displayLocation = realLocation;
+  // Simulation Logic
+  useEffect(() => {
+    if (!realLocation || !student || !school) {
+        setSimulatedLocation(realLocation);
+        return;
+    }
+    
+    // Start with the real location
+    if (!simulatedLocation) {
+        setSimulatedLocation(realLocation);
+    }
+    
+    const interval = setInterval(() => {
+        setSimulatedLocation(prevLocation => {
+            if (!prevLocation) return realLocation;
+
+            const destination = student.status === 'a_bordo' ? school : student;
+            const targetLat = destination.latitude;
+            const targetLng = destination.longitude;
+
+            const latDiff = targetLat - prevLocation.latitude;
+            const lngDiff = targetLng - prevLocation.longitude;
+
+            // Stop if very close to destination
+            if (Math.abs(latDiff) < 0.0001 && Math.abs(lngDiff) < 0.0001) {
+                return prevLocation;
+            }
+
+            // Move a small step towards the destination
+            const newLat = prevLocation.latitude + latDiff * 0.1;
+            const newLng = prevLocation.longitude + lngDiff * 0.1;
+
+            return {
+                latitude: newLat,
+                longitude: newLng,
+                timestamp: new Date().toISOString()
+            };
+        });
+    }, 5000); // Update every 5 seconds
+
+    return () => clearInterval(interval);
+
+  }, [realLocation, student, school, simulatedLocation]);
+
+  const displayLocation = simulatedLocation;
 
   const { data: school } = useMockDoc('schools', student?.schoolId);
-
-  // Effect for proximity check
-  useEffect(() => {
-      if (displayLocation && student) {
-        const distance = haversineDistance(
-          { lat: displayLocation.latitude, lng: displayLocation.longitude },
-          { lat: student.latitude, lng: student.longitude }
-        );
-
-        // Threshold in kilometers (1km)
-        const NEARBY_THRESHOLD_KM = 1;
-
-        if (distance < NEARBY_THRESHOLD_KM) {
-          setIsNearby(true);
-        } else {
-          setIsNearby(false);
-        }
-      } else {
-        setIsNearby(false);
-      }
-    }, [displayLocation, student]);
   
   const handleCommunicateAbsence = () => {
     if (!student) return;
@@ -363,37 +388,34 @@ export default function ParentTrackingPage() {
                             </div>
                             <Badge variant={statusBadgeVariant[studentStatus]}>{statusText[studentStatus]}</Badge>
                         </div>
-                        {isNearby && student.status === 'aguardando' && (
-                            <div className="!mt-4 p-3 border-b-2 border-amber-400 bg-amber-50 dark:bg-amber-950/20 rounded-lg">
-                                <div className="flex items-center gap-3">
-                                    <Siren className="h-6 w-6 text-amber-500 animate-pulse" />
-                                    <div>
-                                        <h3 className="font-bold text-amber-700 dark:text-amber-300">A Van está Próxima!</h3>
-                                        <p className="text-sm text-amber-600 dark:text-amber-400">Prepare-se para o embarque.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
                     </CardHeader>
                     <CardContent>
-                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                            <Button
-                                variant="destructive"
-                                className="w-full"
-                                onClick={handleCommunicateAbsence}
-                                disabled={student.status === 'ausente'}
-                            >
-                                <Siren className="mr-2 h-4 w-4" /> Comunicar Ausência
-                            </Button>
-                            <Button
-                                variant="secondary"
-                                className="w-full"
-                                onClick={handleConfirmPresence}
-                                disabled={student.status === 'aguardando'}
-                            >
-                                <CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença
-                            </Button>
-                        </div>
+                        {studentStatus === 'ausente' ? (
+                            <div className="space-y-3 text-center">
+                                <p className="text-sm text-muted-foreground">Você comunicou que {student.name} não precisará de transporte hoje.</p>
+                                <Button
+                                    variant="secondary"
+                                    className="w-full"
+                                    onClick={handleConfirmPresence}
+                                >
+                                    <CheckCircle className="mr-2 h-4 w-4" /> Desfazer Ausência
+                                </Button>
+                            </div>
+                        ) : (
+                            <div className="space-y-3">
+                                <p className="text-center text-sm text-muted-foreground">
+                                    Presença confirmada. Avise-nos apenas se houver ausência.
+                                </p>
+                                <Button
+                                    variant="destructive"
+                                    className="w-full"
+                                    onClick={handleCommunicateAbsence}
+                                    disabled={student.status !== 'aguardando'}
+                                >
+                                    <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje
+                                </Button>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
