@@ -84,7 +84,7 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
         <CardDescription>Distribuição de custos do período selecionado.</CardDescription>
       </CardHeader>
       <CardContent>
-        <ChartContainer config={chartConfig} className="mx-auto aspect-square h-[350px]">
+        <ChartContainer config={chartConfig} className="h-[350px]">
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
