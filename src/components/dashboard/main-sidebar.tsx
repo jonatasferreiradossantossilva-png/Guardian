@@ -10,6 +10,7 @@ import {
   SidebarMenu,
   SidebarMenuItem,
   SidebarMenuButton,
+  SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
   Home,
@@ -31,6 +32,7 @@ import {
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
+import { DriverRouteInfoCard } from "./driver-route-info-card";
 
 const operationalLinks = [
   { href: "/dashboard/optimizer", label: "Otimizador de Rotas (IA)", icon: Sparkles },
@@ -135,6 +137,10 @@ export function MainSidebar() {
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
+        
+        <SidebarSeparator className="my-2 group-data-[collapsible=icon]:hidden" />
+        
+        <DriverRouteInfoCard />
 
         <SidebarMenu className="mt-4">
           <p className="px-4 text-xs text-muted-foreground mb-2 group-data-[collapsible=icon]:hidden">

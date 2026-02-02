@@ -69,37 +69,53 @@ export function DriverRouteInfoCard() {
   }
 
   return (
-    <div className="group-data-[collapsible=icon]:hidden px-2 mt-4">
+    <div className="group-data-[collapsible=icon]:hidden px-2">
       {isLoading ? (
         <div className="flex items-center justify-center p-6">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
       ) : (
-        <div className="p-3 rounded-lg bg-sidebar-accent border border-sidebar-border/50 text-sidebar-foreground">
-            <div className="flex items-center gap-3">
-              <Car className="text-sidebar-accent-foreground/80 h-5 w-5"/>
-              <div>
-                <p className="text-xs text-sidebar-accent-foreground/80">Minha Rota (Motorista)</p>
-                <p className="text-sm font-semibold">{activeRoute.name}</p>
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <div className="p-3 rounded-lg bg-sidebar-accent border border-sidebar-border/50 text-sidebar-foreground">
+              <div className="flex items-center gap-3">
+                <Car className="text-sidebar-accent-foreground/80 h-5 w-5"/>
+                <div>
+                  <p className="text-xs text-sidebar-accent-foreground/80">Minha Rota (Motorista)</p>
+                  <p className="text-sm font-semibold">{activeRoute.name}</p>
+                </div>
               </div>
-            </div>
-            <div className="text-xs space-y-2 mt-3">
-              <div className="flex justify-between">
-                <span>Progresso:</span>
-                <span className="font-medium">{studentsOnBoard} / {totalStudents} a bordo</span>
+              <div className="text-xs space-y-2 mt-3">
+                <div className="flex justify-between">
+                  <span>Progresso:</span>
+                  <span className="font-medium">{studentsOnBoard} / {totalStudents} a bordo</span>
+                </div>
+                 <div className="flex justify-between items-center">
+                    <span>Auxiliar:</span>
+                    <div className="flex items-center gap-1">
+                      <span className="font-medium truncate max-w-[100px]">{currentAssistantName}</span>
+                       <DialogTrigger asChild>
+                          <Button variant="ghost" size="icon" className="h-5 w-5" title="Trocar auxiliar">
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                       </DialogTrigger>
+                    </div>
+                </div>
               </div>
-               <div className="flex justify-between">
-                <span>Turno:</span>
-                <span className="font-medium">{activeRoute.shift === 'manha' ? 'Manhã' : 'Tarde'}</span>
-              </div>
-            </div>
-            <Button asChild size="sm" className="w-full mt-3">
-                <Link href="/driver/route-plan">
-                    Ver Plano de Rota
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                </Link>
-            </Button>
-        </div>
+              <Button asChild size="sm" className="w-full mt-3">
+                  <Link href="/driver/route-plan">
+                      Ver Plano de Rota
+                      <ArrowRight className="ml-2 h-4 w-4" />
+                  </Link>
+              </Button>
+          </div>
+           {assistants && (
+              <AssistantQuickEditForm 
+                route={activeRoute} 
+                assistants={assistants} 
+                onFormSubmit={handleFormSubmit}
+              />
+            )}
+        </Dialog>
       )}
     </div>
   );
