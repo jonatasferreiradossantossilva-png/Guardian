@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
@@ -75,32 +75,20 @@ export function RouteForm({
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      driverId: '',
-      assistantId: '',
-      studentIds: [],
-    },
+    defaultValues: route
+      ? {
+          name: route.name || '',
+          driverId: route.driverId || '',
+          assistantId: route.assistantId || '',
+          studentIds: route.studentIds || [],
+        }
+      : {
+          name: '',
+          driverId: '',
+          assistantId: '',
+          studentIds: [],
+        },
   });
-  
-  useEffect(() => {
-    if (route) {
-      form.reset({
-        name: route.name || '',
-        driverId: route.driverId || '',
-        assistantId: route.assistantId || '',
-        studentIds: route.studentIds || [],
-      });
-    } else {
-        form.reset({
-            name: '',
-            driverId: '',
-            assistantId: '',
-            studentIds: [],
-        });
-    }
-  }, [route, form]);
-
 
   const studentIdsInForm = form.watch('studentIds');
   const driverId = form.watch('driverId');
