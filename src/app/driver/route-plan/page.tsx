@@ -622,7 +622,8 @@ export default function DriverRoutePlanPage() {
         <div className="min-h-screen bg-background text-foreground pb-24">
             <div className="text-center pt-4">
                 <h1 className="text-xl font-bold tracking-tight">{route?.name}</h1>
-                <p className="text-muted-foreground">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
+                {schoolForRoute && <p className="text-sm text-muted-foreground">{schoolForRoute.name}</p>}
+                <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
             </div>
              <Tabs defaultValue="plan" className="w-full mt-4">
                 <div className="flex justify-center">
@@ -662,7 +663,12 @@ export default function DriverRoutePlanPage() {
                     </div>
                 </TabsContent>
                 <TabsContent value="map" className="p-0">
-                     <div className="relative h-[calc(100vh-170px)] w-full">
+                     <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Sua Posição</span></div>
+                        <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Aluno</span></div>
+                        <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
+                    </div>
+                     <div className="relative h-[calc(100vh-210px)] w-full">
                          {!API_KEY ? (
                                 <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                                     <div className="text-center p-4">
