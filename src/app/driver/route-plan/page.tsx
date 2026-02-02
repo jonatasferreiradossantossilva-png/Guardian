@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useMockCollection, useMockData, useMockDoc, useMockNestedDoc } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData, useMockNestedDoc } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -428,7 +428,6 @@ export default function DriverRoutePlanPage() {
     setActiveRouteId(route.id);
 
     if (direction === 'ida') {
-        // For simulation, ensure students are reset when starting an 'ida' trip
         studentsOnRoute.forEach(student => {
             updateDoc('students', student.id, { status: 'aguardando' });
         });
@@ -786,6 +785,8 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
+    
 
     
 
