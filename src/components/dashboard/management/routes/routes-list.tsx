@@ -129,10 +129,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Gerenciamento de Rotas
-        </h1>
+      <div className="flex items-center justify-end mb-6">
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
@@ -298,12 +295,12 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                             </div>
                         </div>
                     </div>
-                    <CardFooter className="p-2 border-t bg-secondary/50 grid grid-cols-2 gap-2">
-                        <Button variant="outline" size="sm" onClick={() => handleEdit(route)}>
+                    <CardFooter className="p-2 border-t bg-secondary/50 flex flex-col sm:flex-row gap-2">
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(route)}>
                             <Edit className="mr-2 h-4 w-4" />
                             Editar Rota
                         </Button>
-                        <Button asChild size="sm">
+                        <Button asChild size="sm" className="w-full">
                             <Link href={`/dashboard/optimizer?routeId=${route.id}&autoOptimize=true`}>
                                 <Sparkles className="mr-2 h-4 w-4" />
                                 Otimizar
