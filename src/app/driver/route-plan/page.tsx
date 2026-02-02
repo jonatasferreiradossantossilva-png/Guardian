@@ -163,7 +163,7 @@ const UpcomingStopsList = ({ students }) => {
   );
 };
 
-const FixedBottomBar = ({ onPause, onResume, onEnd, onRecalculate, canRecalculate, status }) => (
+const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
     <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-2 flex justify-around items-center shadow-lg z-50">
         {status === 'em_rota' && (
             <>
@@ -182,9 +182,6 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, onRecalculate, canRecalculat
                 <Button variant="ghost" size="icon"><MoreVertical/></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="mb-2">
-                <DropdownMenuItem onClick={onRecalculate} disabled={!canRecalculate}>
-                    <Sparkles className="mr-2 h-4 w-4"/>Recalcular por Ausência
-                </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/driver/messages"><MessageSquare className="mr-2"/>Mensagens Internas</Link>
                 </DropdownMenuItem>
@@ -317,7 +314,6 @@ export default function DriverRoutePlanPage() {
   const [recenterRequest, setRecenterRequest] = useState(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [showRecalculatePrompt, setShowRecalculatePrompt] = useState(false);
-  const [isRecalculateConfirmOpen, setIsRecalculateConfirmOpen] = useState(false);
   const prevStudentsRef = useRef<Student[]>();
 
 
@@ -525,12 +521,6 @@ export default function DriverRoutePlanPage() {
      handleRecalculate();
    }
    
-   const canRecalculate = useMemo(() => {
-    if (!studentsOnRoute) return false;
-    return studentsOnRoute.some(s => s.status === 'ausente');
-   }, [studentsOnRoute]);
-
-
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
   if (isLoading) {
@@ -596,8 +586,6 @@ export default function DriverRoutePlanPage() {
                     status={driverProfile.status} 
                     onEnd={handleEndRoute} 
                     onResume={handleResumeRoute} 
-                    onRecalculate={() => setIsRecalculateConfirmOpen(true)}
-                    canRecalculate={canRecalculate}
                   />
             </div>
         );
@@ -706,28 +694,7 @@ export default function DriverRoutePlanPage() {
                 onPause={handlePauseRoute} 
                 onResume={handleResumeRoute}
                 onEnd={handleEndRoute}
-                onRecalculate={() => setIsRecalculateConfirmOpen(true)}
-                canRecalculate={canRecalculate}
             />
-            
-            <AlertDialog open={isRecalculateConfirmOpen} onOpenChange={setIsRecalculateConfirmOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Confirmar Recálculo da Rota?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Isso irá gerar uma nova rota otimizada, pulando os alunos marcados como ausentes. Esta ação não pode ser desfeita para a rota atual.
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => {
-                            handleRecalculate();
-                            setIsRecalculateConfirmOpen(false);
-                        }}>Confirmar e Recalcular</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
 
             {isModalOpen && selectedStudentForModal && (
                 <AuthorizedContactsModal
