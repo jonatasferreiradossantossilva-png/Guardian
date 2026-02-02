@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useMockCollection, useMockData, useMockNestedDoc } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -300,7 +300,7 @@ export default function DriverRoutePlanPage() {
   useEffect(() => {
     // In a real app, you'd get this from your auth state.
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || 'user-admin-1'); 
+    setMockUserId(storedUserId || "user-admin-1"); 
     const storedActiveRouteId = sessionStorage.getItem('activeRouteId');
     setActiveRouteId(storedActiveRouteId);
   }, []);
@@ -316,7 +316,7 @@ export default function DriverRoutePlanPage() {
   const driverProfile = useMemo(() => (drivers ? drivers[0] : null), [drivers]);
   const driverId = driverProfile?.id;
   
-  const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
+  const { data: driverLocation } = useMockCollection(driverId ? `locations/${driverId}` : null);
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
     'routes',
@@ -787,3 +787,4 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
