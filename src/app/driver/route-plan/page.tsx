@@ -33,6 +33,7 @@ import {
   Pause,
   Square,
   Share2,
+  LocateFixed,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -236,6 +237,7 @@ export default function DriverRoutePlanPage() {
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [isAutoRecalculateEnabled, setIsAutoRecalculateEnabled] = useState(true);
   const [isStartingRoute, setIsStartingRoute] = useState(false);
+  const [recenterRequest, setRecenterRequest] = useState(null);
 
 
   const [isClient, setIsClient] = useState(false);
@@ -827,7 +829,7 @@ export default function DriverRoutePlanPage() {
                     <div className="flex items-center gap-1.5"><div className="w-3 h-3 rounded-full bg-slate-400"></div>Concluída</div>
                     <div className="flex items-center gap-1.5"><div className="p-0.5 rounded-full bg-red-600"><School size={10} className="text-white"/></div>Escola</div>
                 </div>
-                <div className="h-[70vh] w-full rounded-lg overflow-hidden border bg-secondary">
+                <div className="relative h-[70vh] w-full rounded-lg overflow-hidden border bg-secondary">
                     {!API_KEY ? (
                         <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                         <div className="text-center p-4">
@@ -852,10 +854,14 @@ export default function DriverRoutePlanPage() {
                                     originalRouteStudents={dynamicRoute ? orderedStudents : null}
                                     school={school}
                                     direction={direction}
+                                    recenterRequest={recenterRequest}
                                 />
                             </GoogleMap>
                         </APIProvider>
                     )}
+                     <Button size="icon" variant="secondary" onClick={() => setRecenterRequest(Date.now())} className="absolute bottom-4 right-4 z-10 shadow-lg">
+                        <LocateFixed className="h-5 w-5" />
+                    </Button>
                 </div>
             </TabsContent>
         </Tabs>
@@ -873,16 +879,23 @@ export default function DriverRoutePlanPage() {
   );
 }
 
-const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStudents, school, direction }) => {
+const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStudents, school, direction, recenterRequest }) => {
   const map = useMap();
 
   const nextStop = useMemo(() => 
     currentRouteStudents.find(s => s.status === 'aguardando'),
     [currentRouteStudents]
   );
+  
+  useEffect(() => {
+    if (recenterRequest && map && driverLocation) {
+        map.panTo({ lat: driverLocation.latitude, lng: driverLocation.longitude });
+        map.setZoom(16);
+    }
+  }, [recenterRequest, map, driverLocation]);
 
   useEffect(() => {
-    if (!map) return;
+    if (!map || recenterRequest) return; // Don't auto-fit if a recenter was just requested
 
     const allStops = [...currentRouteStudents, ...(originalRouteStudents || [])];
     if (allStops.length === 0 && !school) return;
@@ -909,7 +922,7 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
     };
     map.fitBounds(bounds, 100);
 
-  }, [map, driverLocation, currentRouteStudents, originalRouteStudents, school]);
+  }, [map, driverLocation, currentRouteStudents, originalRouteStudents, school, recenterRequest]);
   
   if (!school) return null;
   
@@ -979,5 +992,7 @@ const RouteMap = memo(({ driverLocation, currentRouteStudents, originalRouteStud
   );
 });
 RouteMap.displayName = 'RouteMap';
+
+    
 
     

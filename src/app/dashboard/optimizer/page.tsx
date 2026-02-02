@@ -7,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, Bot, School, Navigation, Siren, Home, MapPin, ListTree } from "lucide-react";
+import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, Bot, School, Navigation, Siren, Home, MapPin, ListTree, LocateFixed } from "lucide-react";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
@@ -74,6 +74,7 @@ export default function OptimizerPage() {
     const [optimizationResult, setOptimizationResult] = useState<OptimizeSchoolVanRouteOutput | null>(null);
     const [autoOptimizeTriggered, setAutoOptimizeTriggered] = useState(false);
     const isInitialMount = useRef(true);
+    const [fitBoundsRequest, setFitBoundsRequest] = useState(null);
 
 
     useEffect(() => {
@@ -405,7 +406,7 @@ export default function OptimizerPage() {
                             </div>
                         </div>
 
-                        <div className="h-[60vh] w-full rounded-lg overflow-hidden border">
+                        <div className="relative h-[70vh] w-full rounded-lg overflow-hidden border">
                             {!API_KEY ? (
                                 <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                                     <div className="text-center p-4">
@@ -429,10 +430,14 @@ export default function OptimizerPage() {
                                             optimizedRoute={optimizedStudentsResult} 
                                             school={schoolForRoute}
                                             driver={startFromDriverHome ? driverForRoute : null}
+                                            fitBoundsRequest={fitBoundsRequest}
                                         />
                                     </GoogleMap>
                                 </APIProvider>
                             )}
+                             <Button size="icon" variant="secondary" onClick={() => setFitBoundsRequest(Date.now())} className="absolute bottom-4 right-4 z-10 shadow-lg">
+                                <LocateFixed className="h-5 w-5" />
+                            </Button>
                         </div>
                     </div>
                 </TabsContent>
@@ -441,7 +446,7 @@ export default function OptimizerPage() {
     );
 }
 
-function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
+function RouteMap({ originalRoute, optimizedRoute, school, driver, fitBoundsRequest }) {
     const map = useMap();
 
     useEffect(() => {
@@ -465,7 +470,7 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
         if (bounds.isEmpty()) return;
         map.fitBounds(bounds, 100);
 
-    }, [map, originalRoute, optimizedRoute, school, driver]);
+    }, [map, originalRoute, optimizedRoute, school, driver, fitBoundsRequest]);
     
     if (!school) return null;
 
@@ -519,6 +524,8 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
         </>
     );
 }
+
+    
 
     
 

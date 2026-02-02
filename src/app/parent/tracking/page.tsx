@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef } from "react";
@@ -11,7 +12,7 @@ import {
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, LocateFixed, Crosshair } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -143,16 +144,16 @@ function haversineDistance(coords1, coords2) {
 }
 
 
-function ParentRouteMap({ busLocation, student, school }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null }) {
+function ParentRouteMap({ busLocation, student, school, userLocation, recenterRequest }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, userLocation: any, recenterRequest: any }) {
   const map = useMap();
 
   useEffect(() => {
     if (!map) return;
     
-    if (!busLocation && !student && !school) {
-        map.setCenter({ lat: -23.55052, lng: -46.633308 });
-        map.setZoom(12);
-        return;
+    if (recenterRequest) {
+        map.panTo(recenterRequest);
+        map.setZoom(16);
+        return; // Don't fit bounds if we are recentering
     }
 
     const bounds = new google.maps.LatLngBounds();
@@ -165,6 +166,9 @@ function ParentRouteMap({ busLocation, student, school }: { busLocation: Locatio
      if (school?.latitude && school?.longitude) {
         bounds.extend({ lat: school.latitude, lng: school.longitude });
     }
+     if (userLocation) {
+        bounds.extend(userLocation);
+    }
 
     if (bounds.isEmpty()) {
        if (busLocation) {
@@ -175,8 +179,7 @@ function ParentRouteMap({ busLocation, student, school }: { busLocation: Locatio
         map.fitBounds(bounds, 100);
     }
     
-
-  }, [map, busLocation, student, school]);
+  }, [map, busLocation, student, school, userLocation, recenterRequest]);
 
   const routePath = useMemo(() => {
     if (!busLocation) return [];
@@ -223,6 +226,13 @@ function ParentRouteMap({ busLocation, student, school }: { busLocation: Locatio
           </div>
         </AdvancedMarker>
       )}
+       {userLocation && (
+        <AdvancedMarker position={userLocation} title="Sua Posição">
+          <div className="p-1.5 bg-indigo-600 rounded-full border-2 border-white shadow-md">
+            <Crosshair className="h-4 w-4 text-white" />
+          </div>
+        </AdvancedMarker>
+      )}
        {routePath.length > 1 && (
         <Polyline
             path={routePath}
@@ -243,6 +253,8 @@ export default function ParentTrackingPage() {
   const [simulatedLocation, setSimulatedLocation] = useState(null);
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [isNearby, setIsNearby] = useState(false);
+  const [userLocation, setUserLocation] = useState(null);
+  const [recenterRequest, setRecenterRequest] = useState(null);
 
   useEffect(() => {
     // For this prototype, we get the logged-in user's ID from session storage.
@@ -380,6 +392,28 @@ export default function ParentTrackingPage() {
         title: "Presença Confirmada!",
         description: `O motorista foi notificado que ${student.name} aguardará o transporte.`,
     });
+  };
+  
+  const handleSetUserLocation = () => {
+    setRecenterRequest(null);
+    if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                const loc = {
+                    lat: position.coords.latitude,
+                    lng: position.coords.longitude,
+                };
+                setUserLocation(loc);
+                setRecenterRequest(loc);
+                toast({ title: "Mapa centralizado na sua localização." });
+            },
+            () => {
+                toast({ title: "Não foi possível obter a localização.", description: "Verifique as permissões do seu navegador.", variant: "destructive" });
+            }
+        );
+    } else {
+        toast({ title: "Geolocalização não suportada.", variant: "destructive" });
+    }
   };
 
   const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading;
@@ -527,38 +561,51 @@ export default function ParentTrackingPage() {
                             </div>
                             <span>Escola</span>
                         </div>
-                    </div>
-                    <div className="h-[70vh] bg-secondary flex items-center justify-center overflow-hidden">
-                    {!API_KEY ? (
-                        <div className="text-center p-4">
-                            <p className="font-semibold text-lg">Mapa Indisponível</p>
-                            <p className="text-muted-foreground text-sm">
-                                A chave da API do Google Maps não foi configurada.
-                            </p>
+                         <div className="flex items-center gap-2">
+                            <div className="p-1.5 rounded-full bg-indigo-600 shadow-md">
+                                <Crosshair className="h-4 w-4 text-white" />
+                            </div>
+                            <span>Você</span>
                         </div>
-                    ) : (
-                        <APIProvider apiKey={API_KEY}>
-                        <GoogleMap
-                            defaultCenter={{ lat: -23.55052, lng: -46.633308 }}
-                            defaultZoom={12}
-                            mapId="rota_segura_parent_map"
-                            disableDefaultUI={true}
-                            gestureHandling={'greedy'}
-                            className="w-full h-full"
-                        >
-                           <ParentRouteMap 
-                                busLocation={displayLocation}
-                                student={student}
-                                school={school}
-                           />
-                           {!displayLocation && !isLocationLoading && (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
-                                    Aguardando localização da van...
-                                </div>
-                            )}
-                        </GoogleMap>
-                        </APIProvider>
-                    )}
+                    </div>
+                    <div className="relative h-[70vh]">
+                        <div className="absolute inset-0 bg-secondary flex items-center justify-center overflow-hidden">
+                        {!API_KEY ? (
+                            <div className="text-center p-4">
+                                <p className="font-semibold text-lg">Mapa Indisponível</p>
+                                <p className="text-muted-foreground text-sm">
+                                    A chave da API do Google Maps não foi configurada.
+                                </p>
+                            </div>
+                        ) : (
+                            <APIProvider apiKey={API_KEY}>
+                            <GoogleMap
+                                defaultCenter={{ lat: -23.55052, lng: -46.633308 }}
+                                defaultZoom={12}
+                                mapId="rota_segura_parent_map"
+                                disableDefaultUI={true}
+                                gestureHandling={'greedy'}
+                                className="w-full h-full"
+                            >
+                               <ParentRouteMap 
+                                    busLocation={displayLocation}
+                                    student={student}
+                                    school={school}
+                                    userLocation={userLocation}
+                                    recenterRequest={recenterRequest}
+                               />
+                               {!displayLocation && !isLocationLoading && (
+                                    <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
+                                        Aguardando localização da van...
+                                    </div>
+                                )}
+                            </GoogleMap>
+                            </APIProvider>
+                        )}
+                        </div>
+                        <Button size="icon" variant="secondary" onClick={handleSetUserLocation} className="absolute bottom-4 right-4 z-10 shadow-lg">
+                            <LocateFixed className="h-5 w-5" />
+                        </Button>
                     </div>
                 </CardContent>
               </TabsContent>
@@ -569,3 +616,5 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
+
+    
