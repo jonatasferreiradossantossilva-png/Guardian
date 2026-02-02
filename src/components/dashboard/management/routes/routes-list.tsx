@@ -265,24 +265,28 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
-                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p className="text-muted-foreground text-xs">Motorista</p>
-                                <p className="font-medium truncate">{driversMap.get(route.driverId) || 'N/A'}</p>
+                        <div className="mt-4 space-y-3 text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Motorista:</span>
+                                <span className="font-medium truncate">{driversMap.get(route.driverId) || 'N/A'}</span>
                             </div>
-                            <div>
-                                <p className="text-muted-foreground text-xs">Alunos</p>
-                                <p className="font-medium">{route.studentIds?.length || 0}</p>
+                             <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Auxiliar:</span>
+                                <span className="font-medium truncate">{assistantsMap.get(route.assistantId) || 'N/A'}</span>
                             </div>
-                            <div className="col-span-2">
-                                <p className="text-muted-foreground text-xs">Última Otimização</p>
-                                <div className="font-medium text-sm">
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Alunos:</span>
+                                <span className="font-medium">{route.studentIds?.length || 0}</span>
+                            </div>
+                            <div className="flex justify-between items-center">
+                                <span className="text-muted-foreground">Otimização:</span>
                                 {route.lastOptimizedAt ? (
-                                    isClient ? formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR }) : '...'
+                                    <span className="font-medium text-xs">
+                                    {isClient ? formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR }) : '...'}
+                                    </span>
                                 ) : (
                                     <Badge variant="secondary" className="mt-1">Não otimizada</Badge>
                                 )}
-                                </div>
                             </div>
                         </div>
                     </div>

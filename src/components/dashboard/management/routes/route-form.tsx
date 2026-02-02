@@ -33,9 +33,10 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users, AlertCircle, X, GripVertical } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Checkbox } from '@/components/ui/checkbox';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -70,7 +71,6 @@ export function RouteForm({
   const { toast } = useToast();
   const { addDoc, updateDoc, db } = useMockData();
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
-  const [selectedInRoute, setSelectedInRoute] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
 
   const form = useForm<RouteFormValues>({
@@ -151,41 +151,36 @@ export function RouteForm({
       setSelectedAvailable(new Set());
     } 
     else if (direction === 'fromRoute') {
-      form.setValue('studentIds', currentStudentIds.filter(id => !selectedInRoute.has(id)));
-      setSelectedInRoute(new Set());
+      // In this version, removal is handled directly by the 'X' button
+      return;
     } else if (direction === 'allFromRoute') {
         form.setValue('studentIds', []);
     }
   };
 
-  const moveInRoute = (direction: 'up' | 'down') => {
-    const ids = Array.from(selectedInRoute);
-    if (ids.length !== 1) return;
-    const studentId = ids[0];
+  const moveInRoute = (studentId: string, direction: 'up' | 'down') => {
     const currentList = form.getValues('studentIds');
     const index = currentList.indexOf(studentId);
 
     if (direction === 'up' && index > 0) {
         const newList = [...currentList];
         [newList[index - 1], newList[index]] = [newList[index], newList[index-1]];
-        form.setValue('studentIds', newList);
+        form.setValue('studentIds', newList, { shouldDirty: true });
     } else if (direction === 'down' && index < currentList.length - 1) {
         const newList = [...currentList];
         [newList[index + 1], newList[index]] = [newList[index], newList[index+1]];
-        form.setValue('studentIds', newList);
+        form.setValue('studentIds', newList, { shouldDirty: true });
     }
   };
   
-  const toggleSelection = (list: 'available' | 'inRoute', id: string) => {
-    const setter = list === 'available' ? setSelectedAvailable : setSelectedInRoute;
-    const currentSet = list === 'available' ? selectedAvailable : selectedInRoute;
-    const newSet = new Set(currentSet);
+  const toggleSelection = (id: string) => {
+    const newSet = new Set(selectedAvailable);
     if (newSet.has(id)) {
         newSet.delete(id);
     } else {
         newSet.add(id);
     }
-    setter(newSet);
+    setSelectedAvailable(newSet);
   };
 
   const removeStudentFromRoute = (studentId: string) => {
@@ -288,7 +283,7 @@ export function RouteForm({
                     <div className="p-2">
                         <ScrollArea className="h-48">
                             {availableStudents.map(s => (
-                                <div key={s.id} onClick={() => toggleSelection('available', s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex justify-between">
+                                <div key={s.id} onClick={() => toggleSelection(s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex justify-between">
                                   <span>{s.name}</span>
                                   <span className="text-muted-foreground text-xs">{s.shift}</span>
                                 </div>
@@ -301,27 +296,21 @@ export function RouteForm({
                 <div className="flex flex-row md:flex-col gap-2 justify-center">
                     <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('allToRoute')}><ChevronsRight/></Button>
                     <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('toRoute')}><ArrowRight/></Button>
-                    <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('fromRoute')}><ArrowLeft/></Button>
+                    <Button type="button" size="icon" variant="outline" onClick={() => form.setValue('studentIds', studentIdsInForm.filter(id => !selectedAvailable.has(id)))}><ArrowLeft/></Button>
                     <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('allFromRoute')}><ChevronsLeft/></Button>
                 </div>
 
                 {/* Students in Route */}
-                <div className="grid grid-cols-1 md:grid-cols-[1fr_auto] gap-4 md:gap-2 items-center">
-                    <CardWithListHeader title="Alunos na Rota (Paradas)" count={studentsInCurrentRoute.length}>
-                        <ScrollArea className="h-48">
-                            {studentsInCurrentRoute.map((s, index) => (
-                                <div key={s.id} onClick={() => toggleSelection('inRoute', s.id)} data-state={selectedInRoute.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex items-center gap-2">
-                                    <span className="text-muted-foreground w-4">{index + 1}.</span>
-                                    <span>{s.name}</span>
-                                </div>
-                            ))}
-                        </ScrollArea>
-                    </CardWithListHeader>
-                     <div className="flex flex-row md:flex-col gap-2 justify-center">
-                        <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('up')}><ArrowUp/></Button>
-                        <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('down')}><ArrowDown/></Button>
-                    </div>
-                </div>
+                <CardWithListHeader title="Alunos na Rota (Paradas)" count={studentsInCurrentRoute.length}>
+                    <ScrollArea className="h-48">
+                        {studentsInCurrentRoute.map((s, index) => (
+                            <div key={s.id} className="p-2 text-sm rounded-md hover:bg-accent flex items-center gap-2">
+                                <span className="text-muted-foreground w-6 text-center font-mono text-xs">{index + 1}.</span>
+                                <span>{s.name}</span>
+                            </div>
+                        ))}
+                    </ScrollArea>
+                </CardWithListHeader>
             </div>
 
             {/* MOBILE VIEW */}
@@ -329,30 +318,34 @@ export function RouteForm({
                 <Tabs defaultValue="inRoute">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="inRoute">Na Rota ({studentsInCurrentRoute.length})</TabsTrigger>
-                        <TabsTrigger value="available">Disponíveis ({availableStudents.length})</TabsTrigger>
+                        <TabsTrigger value="available">Adicionar Alunos ({availableStudents.length})</TabsTrigger>
                     </TabsList>
                     <TabsContent value="inRoute">
                         <Card>
                             <CardContent className="p-2">
                                 <ScrollArea className="h-56">
                                     {studentsInCurrentRoute.length > 0 ? studentsInCurrentRoute.map((s, index) => (
-                                        <div key={s.id} onClick={() => toggleSelection('inRoute', s.id)} data-state={selectedInRoute.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex items-center justify-between gap-2">
-                                             <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                <span className="text-muted-foreground w-4">{index + 1}.</span>
-                                                <span className="truncate font-medium">{s.name}</span>
+                                        <div key={s.id} className="flex items-center justify-between p-1 rounded-md hover:bg-accent/50">
+                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                <span className="text-muted-foreground font-mono text-xs w-6 text-center">{index + 1}</span>
+                                                <span className="truncate font-medium text-sm">{s.name}</span>
                                             </div>
-                                             <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={(e) => { e.stopPropagation(); removeStudentFromRoute(s.id); }}>
-                                                <X className="h-4 w-4 text-destructive"/>
-                                            </Button>
+                                            <div className="flex items-center">
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveInRoute(s.id, 'up')} disabled={index === 0}>
+                                                    <ArrowUp className="h-4 w-4" />
+                                                </Button>
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveInRoute(s.id, 'down')} disabled={index === studentsInCurrentRoute.length - 1}>
+                                                    <ArrowDown className="h-4 w-4" />
+                                                </Button>
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStudentFromRoute(s.id)}>
+                                                    <X className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </div>
                                     )) : <p className="text-center text-sm text-muted-foreground p-8">Nenhum aluno na rota.</p>}
                                 </ScrollArea>
                             </CardContent>
                         </Card>
-                        <div className="flex gap-2 mt-2 justify-center">
-                            <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('up')} disabled={selectedInRoute.size !== 1}><ArrowUp/></Button>
-                            <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('down')} disabled={selectedInRoute.size !== 1}><ArrowDown/></Button>
-                        </div>
                     </TabsContent>
                     <TabsContent value="available">
                         <Card>
@@ -367,15 +360,22 @@ export function RouteForm({
                             <CardContent className="p-2">
                                 <ScrollArea className="h-48">
                                     {availableStudents.length > 0 ? availableStudents.map(s => (
-                                        <div key={s.id} onClick={() => toggleSelection('available', s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex justify-between items-center gap-2">
-                                            <span className="truncate font-medium">{s.name}</span>
-                                            <span className="text-muted-foreground text-xs shrink-0">{s.shift}</span>
+                                        <div key={s.id} onClick={() => toggleSelection(s.id)} className="flex items-center space-x-3 p-2 rounded-md hover:bg-accent/50">
+                                            <Checkbox
+                                                id={`add-${s.id}`}
+                                                checked={selectedAvailable.has(s.id)}
+                                                onCheckedChange={() => toggleSelection(s.id)}
+                                            />
+                                            <label htmlFor={`add-${s.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 truncate">
+                                               {s.name}
+                                            </label>
+                                            <span className="text-xs text-muted-foreground">{s.shift}</span>
                                         </div>
                                     )) : <p className="text-center text-sm text-muted-foreground p-8">Nenhum aluno disponível.</p>}
                                 </ScrollArea>
                             </CardContent>
                         </Card>
-                        <Button type="button" className="w-full mt-2" onClick={() => moveStudents('toRoute')} disabled={selectedAvailable.size === 0}>Adicionar selecionados</Button>
+                        <Button type="button" className="w-full mt-2" onClick={() => moveStudents('toRoute')} disabled={selectedAvailable.size === 0}>Adicionar ({selectedAvailable.size})</Button>
                     </TabsContent>
                 </Tabs>
             </div>
@@ -402,5 +402,3 @@ const CardWithListHeader = ({ title, count, children }) => (
         <div className="p-2">{children}</div>
     </Card>
 );
-
-    
