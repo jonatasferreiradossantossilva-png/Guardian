@@ -119,14 +119,17 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
         </Button>
       </CardContent>
        <CardFooter className="grid grid-cols-3 gap-2">
-           <Button variant="outline" onClick={() => onNavigate(student)}>
-              <Navigation className="mr-2 h-4 w-4" /> Navegar
+           <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={() => onNavigate(student)}>
+              <Navigation className="h-5 w-5" />
+              <span>Navegar</span>
             </Button>
-           <Button variant="outline" onClick={() => onOpenAuthorizedModal(student)}>
-              <IdCard className="mr-2 h-4 w-4"/> Contatos
+           <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={() => onOpenAuthorizedModal(student)}>
+              <IdCard className="h-5 w-5"/>
+              <span>Contatos</span>
             </Button>
-            <Button variant="outline">
-                <Phone className="mr-2 h-4 w-4"/> Ligar
+            <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs">
+                <Phone className="h-5 w-5"/>
+                <span>Ligar</span>
             </Button>
        </CardFooter>
     </Card>
@@ -704,4 +707,3 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
-
