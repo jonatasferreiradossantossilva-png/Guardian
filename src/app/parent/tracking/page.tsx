@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useMemo, useState, useEffect, useRef } from "react";
@@ -16,6 +15,8 @@ import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 
 // Types matching mock data
 interface Student {
@@ -361,7 +362,7 @@ export default function ParentTrackingPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold tracking-tight">Acompanhamento da Rota</h1>
           <div className="flex items-center gap-2">
@@ -393,52 +394,57 @@ export default function ParentTrackingPage() {
              </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="lg:col-span-2 order-1 lg:order-1">
-                <Card className="h-[75vh]">
-                     <CardContent className="p-0 h-full relative">
-                        <div className="absolute inset-0 bg-secondary flex items-center justify-center overflow-hidden rounded-lg">
-                        {!API_KEY ? (
-                            <div className="text-center p-4">
-                                <p className="font-semibold text-lg">Mapa Indisponível</p>
-                                <p className="text-muted-foreground text-sm">
-                                    A chave da API do Google Maps não foi configurada.
-                                </p>
-                            </div>
-                        ) : (
-                            <APIProvider apiKey={API_KEY}>
-                            <GoogleMap
-                                defaultCenter={{ lat: -23.55052, lng: -46.633308 }}
-                                defaultZoom={12}
-                                mapId="rota_segura_parent_map"
-                                disableDefaultUI={true}
-                                gestureHandling={'greedy'}
-                                className="w-full h-full"
-                            >
-                               <ParentRouteMap 
-                                    busLocation={displayLocation}
-                                    student={student}
-                                    school={school}
-                                    userLocation={userLocation}
-                                    recenterRequest={recenterRequest}
-                               />
-                               {!displayLocation && !isLocationLoading && (
-                                    <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
-                                        Aguardando localização da van...
-                                    </div>
-                                )}
-                            </GoogleMap>
-                            </APIProvider>
-                        )}
+          <Tabs defaultValue="map" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa</TabsTrigger>
+              <TabsTrigger value="actions"><Activity className="mr-2 h-4 w-4"/>Status & Ações</TabsTrigger>
+            </TabsList>
+            <TabsContent value="map" className="mt-4">
+              <Card className="h-[75vh]">
+                <CardContent className="p-0 h-full relative">
+                  <div className="absolute inset-0 bg-secondary flex items-center justify-center overflow-hidden rounded-lg">
+                    {!API_KEY ? (
+                        <div className="text-center p-4">
+                            <p className="font-semibold text-lg">Mapa Indisponível</p>
+                            <p className="text-muted-foreground text-sm">
+                                A chave da API do Google Maps não foi configurada.
+                            </p>
                         </div>
-                        <Button size="icon" variant="secondary" onClick={handleSetUserLocation} className="absolute bottom-4 right-4 z-10 shadow-lg">
-                            <LocateFixed className="h-5 w-5" />
-                        </Button>
-                    </CardContent>
-                </Card>
-            </div>
-            <div className="lg:col-span-1 order-2 lg:order-2 flex flex-col gap-6">
-                <Card>
+                    ) : (
+                        <APIProvider apiKey={API_KEY}>
+                        <GoogleMap
+                            defaultCenter={{ lat: -23.55052, lng: -46.633308 }}
+                            defaultZoom={12}
+                            mapId="rota_segura_parent_map"
+                            disableDefaultUI={true}
+                            gestureHandling={'greedy'}
+                            className="w-full h-full"
+                        >
+                           <ParentRouteMap 
+                                busLocation={displayLocation}
+                                student={student}
+                                school={school}
+                                userLocation={userLocation}
+                                recenterRequest={recenterRequest}
+                           />
+                           {!displayLocation && !isLocationLoading && (
+                                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
+                                    Aguardando localização da van...
+                                </div>
+                            )}
+                        </GoogleMap>
+                        </APIProvider>
+                    )}
+                  </div>
+                  <Button size="icon" variant="secondary" onClick={handleSetUserLocation} className="absolute bottom-4 right-4 z-10 shadow-lg">
+                      <LocateFixed className="h-5 w-5" />
+                  </Button>
+                </CardContent>
+              </Card>
+            </TabsContent>
+            <TabsContent value="actions" className="mt-4">
+              <div className="flex flex-col gap-6">
+                 <Card>
                     <CardHeader>
                         <div className="flex justify-between items-start">
                             <div>
@@ -508,10 +514,14 @@ export default function ParentTrackingPage() {
                         </Button>
                     </CardContent>
                 </Card>
-            </div>
-          </div>
+              </div>
+            </TabsContent>
+          </Tabs>
         )}
       </div>
     </div>
   );
 }
+
+
+    
