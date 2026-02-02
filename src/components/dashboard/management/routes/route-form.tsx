@@ -76,12 +76,31 @@ export function RouteForm({
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: route?.name || '',
-      driverId: route?.driverId || '',
-      assistantId: route?.assistantId || '',
-      studentIds: route?.studentIds || [],
+      name: '',
+      driverId: '',
+      assistantId: '',
+      studentIds: [],
     },
   });
+  
+  useEffect(() => {
+    if (route) {
+      form.reset({
+        name: route.name || '',
+        driverId: route.driverId || '',
+        assistantId: route.assistantId || '',
+        studentIds: route.studentIds || [],
+      });
+    } else {
+        form.reset({
+            name: '',
+            driverId: '',
+            assistantId: '',
+            studentIds: [],
+        });
+    }
+  }, [route, form]);
+
 
   const studentIdsInForm = form.watch('studentIds');
   const driverId = form.watch('driverId');
@@ -190,123 +209,122 @@ export function RouteForm({
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-          {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            <FormField control={form.control} name="name" render={({ field }) => (
-              <FormItem><FormLabel>Nome da Rota</FormLabel><FormControl><Input placeholder="Ex: Rota Matinal - Zona Sul" {...field} /></FormControl><FormMessage /></FormItem>
-            )}/>
-            <FormField control={form.control} name="driverId" render={({ field }) => (
-              <FormItem>
-                <FormLabel>Motorista</FormLabel>
-                <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione um motorista" /></SelectTrigger></FormControl><SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent></Select>
-                {vehicle && (
-                    <FormDescription>
-                    Veículo: {vehicle.model} (Capacidade: {vehicle.capacity} alunos)
-                    </FormDescription>
-                )}
-                <FormMessage />
-                </FormItem>
-            )}/>
-            <FormField control={form.control} name="assistantId" render={({ field }) => (
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <div className="max-h-[65vh] space-y-4 overflow-y-auto py-1 pr-6">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+              <FormField control={form.control} name="name" render={({ field }) => (
+                <FormItem><FormLabel>Nome da Rota</FormLabel><FormControl><Input placeholder="Ex: Rota Matinal - Zona Sul" {...field} /></FormControl><FormMessage /></FormItem>
+              )}/>
+              <FormField control={form.control} name="driverId" render={({ field }) => (
                 <FormItem>
-                    <FormLabel>Auxiliar</FormLabel>
-                    <Select onValueChange={field.onChange} value={field.value || ''}>
-                        <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Selecione um auxiliar (opcional)" />
-                            </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                            <SelectItem value="none">Nenhum</SelectItem>
-                            {assistants.map(a => (
-                                <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <FormMessage />
-                </FormItem>
-            )}/>
-          </div>
+                  <FormLabel>Motorista</FormLabel>
+                  <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione um motorista" /></SelectTrigger></FormControl><SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent></Select>
+                  {vehicle && (
+                      <FormDescription>
+                      Veículo: {vehicle.model} (Capacidade: {vehicle.capacity} alunos)
+                      </FormDescription>
+                  )}
+                  <FormMessage />
+                  </FormItem>
+              )}/>
+              <FormField control={form.control} name="assistantId" render={({ field }) => (
+                  <FormItem>
+                      <FormLabel>Auxiliar</FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value || ''}>
+                          <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Selecione um auxiliar (opcional)" />
+                              </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                              <SelectItem value="none">Nenhum</SelectItem>
+                              {assistants.map(a => (
+                                  <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                              ))}
+                          </SelectContent>
+                      </Select>
+                      <FormMessage />
+                  </FormItem>
+              )}/>
+            </div>
 
-          {/* Student Selector */}
-          <div className="pt-4">
-            <FormLabel>Alunos na Rota</FormLabel>
-            <FormDescription className="mb-2">Ordene os alunos para definir as paradas ou adicione novos alunos na aba ao lado.</FormDescription>
-             {isCapacityExceeded && (
-                <div className="text-destructive text-sm font-medium flex items-center gap-2 p-2 bg-destructive/10 rounded-md my-2">
-                    <AlertCircle className="h-4 w-4" />
-                    Capacidade de {vehicleCapacity} alunos excedida! Salve ou remova alunos.
-                </div>
-            )}
-            
-             <div className="flex flex-col gap-4">
-                <Tabs defaultValue="inRoute">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="inRoute">Na Rota ({studentsInCurrentRoute.length})</TabsTrigger>
-                        <TabsTrigger value="available">Adicionar Alunos ({availableStudents.length})</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="inRoute">
-                        <Card>
-                            <CardContent className="p-2">
-                                <ScrollArea className="h-56">
-                                    {studentsInCurrentRoute.length > 0 ? studentsInCurrentRoute.map((s, index) => (
-                                        <div key={s.id} className="flex items-center justify-between p-1 rounded-md hover:bg-accent/50">
-                                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                <span className="text-muted-foreground font-mono text-xs w-6 text-center">{index + 1}</span>
-                                                <span className="truncate font-medium text-sm">{s.name}</span>
-                                            </div>
-                                            <div className="flex items-center">
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveInRoute(s.id, 'up')} disabled={index === 0}>
-                                                    <ArrowUp className="h-4 w-4" />
-                                                </Button>
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveInRoute(s.id, 'down')} disabled={index === studentsInCurrentRoute.length - 1}>
-                                                    <ArrowDown className="h-4 w-4" />
-                                                </Button>
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStudentFromRoute(s.id)}>
-                                                    <X className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                    )) : <p className="text-center text-sm text-muted-foreground p-8">Nenhum aluno na rota.</p>}
-                                </ScrollArea>
-                            </CardContent>
-                        </Card>
-                    </TabsContent>
-                    <TabsContent value="available">
-                        <Card>
-                             <div className="p-2 border-b">
-                                <Input
-                                placeholder="Buscar aluno..."
-                                value={studentSearch}
-                                onChange={(e) => setStudentSearch(e.target.value)}
-                                className="h-8"
-                                />
-                            </div>
-                            <CardContent className="p-2">
-                                <ScrollArea className="h-48">
-                                    {availableStudents.length > 0 ? availableStudents.map(s => (
-                                        <div key={s.id} onClick={() => toggleSelection(s.id)} className="flex items-center space-x-3 p-2 rounded-md hover:bg-accent/50 cursor-pointer">
-                                            <Checkbox
-                                                id={`add-${s.id}`}
-                                                checked={selectedAvailable.has(s.id)}
-                                                onCheckedChange={() => toggleSelection(s.id)}
-                                            />
-                                            <label htmlFor={`add-${s.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 truncate cursor-pointer">
-                                               {s.name}
-                                            </label>
-                                            <span className="text-xs text-muted-foreground">{s.shift}</span>
-                                        </div>
-                                    )) : <p className="text-center text-sm text-muted-foreground p-8">Nenhum aluno disponível.</p>}
-                                </ScrollArea>
-                            </CardContent>
-                        </Card>
-                        <Button type="button" className="w-full mt-2" onClick={addSelectedStudents} disabled={selectedAvailable.size === 0}>Adicionar Selecionados ({selectedAvailable.size})</Button>
-                    </TabsContent>
-                </Tabs>
+            <div className="pt-4">
+              <FormLabel>Alunos na Rota</FormLabel>
+              <FormDescription className="mb-2">Ordene os alunos para definir as paradas ou adicione novos alunos na aba ao lado.</FormDescription>
+              {isCapacityExceeded && (
+                  <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      Capacidade de {vehicleCapacity} alunos excedida! Salve ou remova alunos.
+                  </div>
+              )}
+              
+              <div className="flex flex-col gap-4">
+                  <Tabs defaultValue="inRoute">
+                      <TabsList className="grid w-full grid-cols-2">
+                          <TabsTrigger value="inRoute">Na Rota ({studentsInCurrentRoute.length})</TabsTrigger>
+                          <TabsTrigger value="available">Adicionar Alunos ({availableStudents.length})</TabsTrigger>
+                      </TabsList>
+                      <TabsContent value="inRoute">
+                          <Card>
+                              <CardContent className="p-2">
+                                  <ScrollArea className="h-56">
+                                      {studentsInCurrentRoute.length > 0 ? studentsInCurrentRoute.map((s, index) => (
+                                          <div key={s.id} className="flex items-center justify-between rounded-md p-1 hover:bg-accent/50">
+                                              <div className="flex min-w-0 flex-1 items-center gap-2">
+                                                  <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                                  <span className="truncate font-medium text-sm">{s.name}</span>
+                                              </div>
+                                              <div className="flex items-center">
+                                                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveInRoute(s.id, 'up')} disabled={index === 0}>
+                                                      <ArrowUp className="h-4 w-4" />
+                                                  </Button>
+                                                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveInRoute(s.id, 'down')} disabled={index === studentsInCurrentRoute.length - 1}>
+                                                      <ArrowDown className="h-4 w-4" />
+                                                  </Button>
+                                                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStudentFromRoute(s.id)}>
+                                                      <X className="h-4 w-4 text-destructive" />
+                                                  </Button>
+                                              </div>
+                                          </div>
+                                      )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno na rota.</p>}
+                                  </ScrollArea>
+                              </CardContent>
+                          </Card>
+                      </TabsContent>
+                      <TabsContent value="available">
+                          <Card>
+                              <div className="border-b p-2">
+                                  <Input
+                                  placeholder="Buscar aluno..."
+                                  value={studentSearch}
+                                  onChange={(e) => setStudentSearch(e.target.value)}
+                                  className="h-8"
+                                  />
+                              </div>
+                              <CardContent className="p-2">
+                                  <ScrollArea className="h-48">
+                                      {availableStudents.length > 0 ? availableStudents.map(s => (
+                                          <div key={s.id} onClick={() => toggleSelection(s.id)} className="flex cursor-pointer items-center space-x-3 rounded-md p-2 hover:bg-accent/50">
+                                              <Checkbox
+                                                  id={`add-${s.id}`}
+                                                  checked={selectedAvailable.has(s.id)}
+                                                  onCheckedChange={() => toggleSelection(s.id)}
+                                              />
+                                              <label htmlFor={`add-${s.id}`} className="flex-1 cursor-pointer truncate text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                                                {s.name}
+                                              </label>
+                                              <span className="text-xs text-muted-foreground">{s.shift}</span>
+                                          </div>
+                                      )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível.</p>}
+                                  </ScrollArea>
+                              </CardContent>
+                          </Card>
+                          <Button type="button" className="mt-2 w-full" onClick={addSelectedStudents} disabled={selectedAvailable.size === 0}>Adicionar Selecionados ({selectedAvailable.size})</Button>
+                      </TabsContent>
+                  </Tabs>
+              </div>
             </div>
           </div>
-          
           <DialogFooter className="pt-4">
             <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
             <Button type="submit" disabled={isCapacityExceeded}>Salvar</Button>
