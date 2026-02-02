@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Sparkles, Users, AlertTriangle, Car } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Sparkles, Users, AlertTriangle, Car, Edit } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -168,14 +168,13 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                   <TableHead>Auxiliar</TableHead>
                   <TableHead>Alunos</TableHead>
                   <TableHead>Última Otimização</TableHead>
-                  <TableHead>Otimizar</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right w-[280px]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                       Carregando...
                     </TableCell>
                   </TableRow>
@@ -196,43 +195,43 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                               <Badge variant="secondary">Não otimizada</Badge>
                           )}
                       </TableCell>
-                      <TableCell>
-                        <Button asChild variant="outline" size="sm">
-                          <Link href={`/dashboard/optimizer?routeId=${route.id}&autoOptimize=true`}>
-                              <Sparkles className="mr-2 h-4 w-4" />
-                              Otimizar
-                          </Link>
-                        </Button>
-                      </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleEdit(route)}>
+                                <Edit className="mr-2 h-4 w-4" />
+                                Editar
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(route)}>
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(route)}
-                            >
-                              Deletar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                            <Button asChild variant="outline" size="sm">
+                                <Link href={`/dashboard/optimizer?routeId=${route.id}&autoOptimize=true`}>
+                                    <Sparkles className="mr-2 h-4 w-4" />
+                                    Otimizar
+                                </Link>
+                            </Button>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Abrir menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Mais Ações</DropdownMenuLabel>
+                                    <DropdownMenuItem
+                                        className="text-red-600"
+                                        onClick={() => handleDelete(route)}
+                                    >
+                                        Deletar
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   !isLoading && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center h-24">
+                      <TableCell colSpan={6} className="text-center h-24">
                         Nenhuma rota cadastrada.
                       </TableCell>
                     </TableRow>
@@ -255,18 +254,20 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                     <div className="p-4">
                         <div className="flex items-start justify-between mb-4">
                             <h3 className="font-bold text-lg pr-2">{route.name}</h3>
-                            <DropdownMenu>
+                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
-                                    <span className="sr-only">Abrir menu</span>
-                                    <MoreHorizontal className="h-4 w-4" />
+                                        <span className="sr-only">Abrir menu</span>
+                                        <MoreHorizontal className="h-4 w-4" />
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                    <DropdownMenuItem onClick={() => handleEdit(route)}>Editar</DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(route)}>Deletar</DropdownMenuItem>
+                                    <DropdownMenuItem
+                                        className="text-red-600"
+                                        onClick={() => handleDelete(route)}
+                                    >
+                                        Deletar Rota
+                                    </DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
@@ -296,11 +297,15 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                             </div>
                         </div>
                     </div>
-                    <CardFooter className="p-2 border-t bg-secondary/50">
-                        <Button asChild size="sm" className="w-full">
+                    <CardFooter className="p-2 border-t bg-secondary/50 grid grid-cols-2 gap-2">
+                        <Button variant="outline" size="sm" onClick={() => handleEdit(route)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            Editar Rota
+                        </Button>
+                        <Button asChild size="sm">
                             <Link href={`/dashboard/optimizer?routeId=${route.id}&autoOptimize=true`}>
                                 <Sparkles className="mr-2 h-4 w-4" />
-                                Otimizar com IA
+                                Otimizar
                             </Link>
                         </Button>
                     </CardFooter>
