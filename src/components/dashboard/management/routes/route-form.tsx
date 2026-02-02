@@ -33,7 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users, AlertCircle, X, GripVertical } from 'lucide-react';
+import { ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -128,34 +128,24 @@ export function RouteForm({
     }
   }, [route, form]);
 
-  const moveStudents = (direction: 'toRoute' | 'fromRoute' | 'allToRoute' | 'allFromRoute') => {
+  const addSelectedStudents = () => {
     const currentStudentIds = form.getValues('studentIds');
-    let studentsToAdd: string[] = [];
-
-    if (direction === 'toRoute') {
-      studentsToAdd = [...Array.from(selectedAvailable)];
-    } else if (direction === 'allToRoute') {
-      studentsToAdd = availableStudents.map(s => s.id);
-    }
+    const studentsToAdd = [...Array.from(selectedAvailable)];
     
-    if (direction === 'toRoute' || direction === 'allToRoute') {
-      if (currentStudentIds.length + studentsToAdd.length > vehicleCapacity) {
-        toast({
-          title: "Capacidade do veículo excedida!",
-          description: `A rota não pode ter mais de ${vehicleCapacity} alunos para este veículo.`,
-          variant: "destructive",
-        });
-        return;
-      }
-      form.setValue('studentIds', [...currentStudentIds, ...studentsToAdd]);
-      setSelectedAvailable(new Set());
-    } 
-    else if (direction === 'fromRoute') {
-      // In this version, removal is handled directly by the 'X' button
+    if (currentStudentIds.length + studentsToAdd.length > vehicleCapacity) {
+      toast({
+        title: "Capacidade do veículo excedida!",
+        description: `A rota não pode ter mais de ${vehicleCapacity} alunos para este veículo.`,
+        variant: "destructive",
+      });
       return;
-    } else if (direction === 'allFromRoute') {
-        form.setValue('studentIds', []);
     }
+    form.setValue('studentIds', [...currentStudentIds, ...studentsToAdd]);
+    setSelectedAvailable(new Set());
+    toast({
+        title: `${studentsToAdd.length} aluno(s) adicionado(s)!`,
+        description: 'Eles foram adicionados ao final da rota.',
+    });
   };
 
   const moveInRoute = (studentId: string, direction: 'up' | 'down') => {
@@ -185,9 +175,8 @@ export function RouteForm({
 
   const removeStudentFromRoute = (studentId: string) => {
     const currentStudentIds = form.getValues('studentIds');
-    form.setValue('studentIds', currentStudentIds.filter(id => id !== studentId));
+    form.setValue('studentIds', currentStudentIds.filter(id => id !== studentId), { shouldDirty: true });
   }
-
 
   const onSubmit = (data: RouteFormValues) => {
     const finalData = { ...data };
@@ -216,7 +205,7 @@ export function RouteForm({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
           {/* Form Fields */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <FormField control={form.control} name="name" render={({ field }) => (
               <FormItem><FormLabel>Nome da Rota</FormLabel><FormControl><Input placeholder="Ex: Rota Matinal - Zona Sul" {...field} /></FormControl><FormMessage /></FormItem>
             )}/>
@@ -256,65 +245,15 @@ export function RouteForm({
           {/* Student Selector */}
           <div className="pt-4">
             <FormLabel>Alunos na Rota</FormLabel>
-            <FormDescription className="mb-2">Mova os alunos para a lista da direita e ordene-os para definir as paradas.</FormDescription>
+            <FormDescription className="mb-2">Ordene os alunos para definir as paradas ou adicione novos alunos na aba ao lado.</FormDescription>
              {isCapacityExceeded && (
                 <div className="text-destructive text-sm font-medium flex items-center gap-2 p-2 bg-destructive/10 rounded-md my-2">
                     <AlertCircle className="h-4 w-4" />
                     Capacidade de {vehicleCapacity} alunos excedida! Salve ou remova alunos.
                 </div>
             )}
-
-            {/* DESKTOP VIEW */}
-            <div className="hidden md:grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-2 items-center">
-                {/* Available Students */}
-                 <Card>
-                    <div className="p-2 border-b">
-                        <h4 className="text-sm font-semibold flex items-center justify-between">
-                            <span>Alunos Disponíveis</span>
-                            <span className="text-xs font-normal text-muted-foreground flex items-center gap-1"><Users size={14}/> {availableStudents.length}</span>
-                        </h4>
-                        <Input
-                          placeholder="Buscar aluno..."
-                          value={studentSearch}
-                          onChange={(e) => setStudentSearch(e.target.value)}
-                          className="h-8 mt-2"
-                        />
-                    </div>
-                    <div className="p-2">
-                        <ScrollArea className="h-48">
-                            {availableStudents.map(s => (
-                                <div key={s.id} onClick={() => toggleSelection(s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex justify-between">
-                                  <span>{s.name}</span>
-                                  <span className="text-muted-foreground text-xs">{s.shift}</span>
-                                </div>
-                            ))}
-                        </ScrollArea>
-                    </div>
-                </Card>
-
-                {/* Controls */}
-                <div className="flex flex-row md:flex-col gap-2 justify-center">
-                    <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('allToRoute')}><ChevronsRight/></Button>
-                    <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('toRoute')}><ArrowRight/></Button>
-                    <Button type="button" size="icon" variant="outline" onClick={() => form.setValue('studentIds', studentIdsInForm.filter(id => !selectedAvailable.has(id)))}><ArrowLeft/></Button>
-                    <Button type="button" size="icon" variant="outline" onClick={() => moveStudents('allFromRoute')}><ChevronsLeft/></Button>
-                </div>
-
-                {/* Students in Route */}
-                <CardWithListHeader title="Alunos na Rota (Paradas)" count={studentsInCurrentRoute.length}>
-                    <ScrollArea className="h-48">
-                        {studentsInCurrentRoute.map((s, index) => (
-                            <div key={s.id} className="p-2 text-sm rounded-md hover:bg-accent flex items-center gap-2">
-                                <span className="text-muted-foreground w-6 text-center font-mono text-xs">{index + 1}.</span>
-                                <span>{s.name}</span>
-                            </div>
-                        ))}
-                    </ScrollArea>
-                </CardWithListHeader>
-            </div>
-
-            {/* MOBILE VIEW */}
-             <div className="md:hidden flex flex-col gap-4">
+            
+             <div className="flex flex-col gap-4">
                 <Tabs defaultValue="inRoute">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="inRoute">Na Rota ({studentsInCurrentRoute.length})</TabsTrigger>
@@ -360,13 +299,13 @@ export function RouteForm({
                             <CardContent className="p-2">
                                 <ScrollArea className="h-48">
                                     {availableStudents.length > 0 ? availableStudents.map(s => (
-                                        <div key={s.id} onClick={() => toggleSelection(s.id)} className="flex items-center space-x-3 p-2 rounded-md hover:bg-accent/50">
+                                        <div key={s.id} onClick={() => toggleSelection(s.id)} className="flex items-center space-x-3 p-2 rounded-md hover:bg-accent/50 cursor-pointer">
                                             <Checkbox
                                                 id={`add-${s.id}`}
                                                 checked={selectedAvailable.has(s.id)}
                                                 onCheckedChange={() => toggleSelection(s.id)}
                                             />
-                                            <label htmlFor={`add-${s.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 truncate">
+                                            <label htmlFor={`add-${s.id}`} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 flex-1 truncate cursor-pointer">
                                                {s.name}
                                             </label>
                                             <span className="text-xs text-muted-foreground">{s.shift}</span>
@@ -375,7 +314,7 @@ export function RouteForm({
                                 </ScrollArea>
                             </CardContent>
                         </Card>
-                        <Button type="button" className="w-full mt-2" onClick={() => moveStudents('toRoute')} disabled={selectedAvailable.size === 0}>Adicionar ({selectedAvailable.size})</Button>
+                        <Button type="button" className="w-full mt-2" onClick={addSelectedStudents} disabled={selectedAvailable.size === 0}>Adicionar Selecionados ({selectedAvailable.size})</Button>
                     </TabsContent>
                 </Tabs>
             </div>
@@ -390,15 +329,3 @@ export function RouteForm({
     </DialogContent>
   );
 }
-
-const CardWithListHeader = ({ title, count, children }) => (
-    <Card>
-        <div className="p-2 border-b">
-            <h4 className="text-sm font-semibold flex items-center justify-between">
-                <span>{title}</span>
-                <span className="text-xs font-normal text-muted-foreground flex items-center gap-1"><Users size={14}/> {count}</span>
-            </h4>
-        </div>
-        <div className="p-2">{children}</div>
-    </Card>
-);
