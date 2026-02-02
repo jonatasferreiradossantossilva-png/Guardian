@@ -33,7 +33,7 @@ const formSchema = z.object({
 // Map profiles to mock user IDs for this prototype
 const profileToMockIdMap = {
     'gestor': 'user-admin-1',
-    'motorista': 'user-motorista-2', // Default driver for demo
+    'motorista': 'user-admin-1', // Default driver for demo - Changed to a driver with routes
     'pai': 'user-pai-1', // Default parent for demo
     'auxiliar': 'user-aux-1' // Default assistant for demo
 };
