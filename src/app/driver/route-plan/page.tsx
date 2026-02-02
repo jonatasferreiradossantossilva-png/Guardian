@@ -118,25 +118,16 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
           <XCircle className="mr-2 h-5 w-5" /> Ausente
         </Button>
       </CardContent>
-       <CardFooter className="gap-2">
-           <Button size="lg" variant="outline" className="flex-1" onClick={() => onNavigate(student)}>
-              <Navigation className="mr-2 h-5 w-5" /> Navegar
+       <CardFooter className="grid grid-cols-3 gap-2">
+           <Button variant="outline" onClick={() => onNavigate(student)}>
+              <Navigation className="mr-2 h-4 w-4" /> Navegar
             </Button>
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button variant="outline" size="icon" className="h-12 w-12 flex-shrink-0">
-                        <MoreVertical />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={() => onOpenAuthorizedModal(student)}>
-                        <IdCard className="mr-2"/>Ver Contatos Autorizados
-                    </DropdownMenuItem>
-                    <DropdownMenuItem>
-                        <Phone className="mr-2"/>Ligar para Responsável
-                    </DropdownMenuItem>
-                </DropdownMenuContent>
-            </DropdownMenu>
+           <Button variant="outline" onClick={() => onOpenAuthorizedModal(student)}>
+              <IdCard className="mr-2 h-4 w-4"/> Contatos
+            </Button>
+            <Button variant="outline">
+                <Phone className="mr-2 h-4 w-4"/> Ligar
+            </Button>
        </CardFooter>
     </Card>
   );
