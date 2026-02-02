@@ -293,19 +293,24 @@ export default function ParentTrackingPage() {
       description: "O motorista foi notificado.",
     });
 
+    // Check if we can do a silent, automatic re-optimization
     const route = getDoc('routes', student.routeId);
     if (!route) return;
 
     const driver = getDoc('drivers', route.driverId);
+    // Only auto-optimize if the driver hasn't started the route yet
     if (!driver || driver.status !== 'inativo') {
+        // If driver is already on the way, the driver's screen will handle the suggestion
         return;
     }
 
     try {
+        // This is the automatic, silent recalculation for the driver
         const allStudentsOnRoute = getCollection('students', [{ field: 'id', op: 'in', value: route.studentIds }]);
+        // Important: Filter out the student who will be marked absent
         const presentStudents = allStudentsOnRoute.filter(s => s.id !== student.id); 
         
-        if (presentStudents.length === 0) return;
+        if (presentStudents.length === 0) return; // Don't optimize an empty route
 
         const school = getDoc('schools', student.schoolId);
         const vehicle = getDoc('vehicles', driver.vehicleId);
@@ -319,6 +324,8 @@ export default function ParentTrackingPage() {
         };
 
         const result = await optimizeSchoolVanRoute(input);
+        
+        // Add a notice for the driver to see when they start the route
         const optimizationNotice = `Rota otimizada. ${student.name} foi removido(a) por ausência.`;
         
         updateDoc('routes', route.id, { 
@@ -328,6 +335,7 @@ export default function ParentTrackingPage() {
             optimizationNotice: optimizationNotice,
         });
         
+        // This toast is for the parent, but we can also have one for the driver later.
         toast({
             title: "Rota do motorista otimizada!",
             description: "O motorista receberá o novo plano de rota automaticamente.",
@@ -527,4 +535,3 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
-
