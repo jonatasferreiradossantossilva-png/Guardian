@@ -164,29 +164,35 @@ const UpcomingStopsList = ({ students }) => {
 };
 
 const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
-    <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-2 flex justify-around items-center shadow-lg z-50">
-        {status === 'em_rota' && (
-            <>
-                <Button variant="outline" onClick={onPause}><Pause className="mr-2"/>Pausar</Button>
-                <Button variant="destructive" onClick={onEnd}><Square className="mr-2"/>Finalizar</Button>
-            </>
-        )}
-        {status === 'pausa' && (
-            <>
-                <Button onClick={onResume}><Play className="mr-2"/>Retomar</Button>
-                <Button variant="destructive" onClick={onEnd}><Square className="mr-2"/>Finalizar</Button>
-            </>
-        )}
-         <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon"><MoreVertical/></Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="mb-2">
-                <DropdownMenuItem asChild>
-                    <Link href="/driver/messages"><MessageSquare className="mr-2"/>Mensagens Internas</Link>
-                </DropdownMenuItem>
-            </DropdownMenuContent>
-        </DropdownMenu>
+    <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-3 z-50">
+        <div className="mx-auto max-w-md">
+            <div className="grid grid-cols-3 gap-3">
+                <Button asChild variant="outline" className="flex flex-col h-auto py-2 items-center justify-center gap-1">
+                    <Link href="/driver/messages">
+                        <MessageSquare className="h-5 w-5" />
+                        <span className="text-xs font-normal">Mensagens</span>
+                    </Link>
+                </Button>
+                
+                {status === 'em_rota' && (
+                    <Button variant="outline" className="flex flex-col h-auto py-2 items-center justify-center gap-1" onClick={onPause}>
+                        <Pause className="h-5 w-5" />
+                        <span className="text-xs font-normal">Pausar</span>
+                    </Button>
+                )}
+                {status === 'pausa' && (
+                    <Button className="flex flex-col h-auto py-2 items-center justify-center gap-1" onClick={onResume}>
+                        <Play className="h-5 w-5" />
+                        <span className="text-xs font-normal">Retomar</span>
+                    </Button>
+                )}
+
+                <Button variant="destructive" className="flex flex-col h-auto py-2 items-center justify-center gap-1" onClick={onEnd}>
+                    <Square className="h-5 w-5" />
+                    <span className="text-xs font-normal">Finalizar</span>
+                </Button>
+            </div>
+        </div>
     </div>
 );
 
@@ -707,3 +713,4 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
