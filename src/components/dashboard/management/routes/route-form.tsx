@@ -33,8 +33,9 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect, useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
 import { Card } from '@/components/ui/card';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -187,6 +188,11 @@ export function RouteForm({
     setter(newSet);
   };
 
+  const removeStudentFromRoute = (studentId: string) => {
+    const currentStudentIds = form.getValues('studentIds');
+    form.setValue('studentIds', currentStudentIds.filter(id => id !== studentId));
+  }
+
 
   const onSubmit = (data: RouteFormValues) => {
     const finalData = { ...data };
@@ -262,7 +268,9 @@ export function RouteForm({
                     Capacidade de {vehicleCapacity} alunos excedida! Salve ou remova alunos.
                 </div>
             )}
-            <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-2 items-center">
+
+            {/* DESKTOP VIEW */}
+            <div className="hidden md:grid md:grid-cols-[1fr_auto_1fr] gap-4 md:gap-2 items-center">
                 {/* Available Students */}
                  <Card>
                     <div className="p-2 border-b">
@@ -314,6 +322,62 @@ export function RouteForm({
                         <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('down')}><ArrowDown/></Button>
                     </div>
                 </div>
+            </div>
+
+            {/* MOBILE VIEW */}
+             <div className="md:hidden flex flex-col gap-4">
+                <Tabs defaultValue="inRoute">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="inRoute">Na Rota ({studentsInCurrentRoute.length})</TabsTrigger>
+                        <TabsTrigger value="available">Disponíveis ({availableStudents.length})</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="inRoute">
+                        <Card>
+                            <div className="p-2">
+                                <ScrollArea className="h-56">
+                                    {studentsInCurrentRoute.length > 0 ? studentsInCurrentRoute.map((s, index) => (
+                                        <div key={s.id} onClick={() => toggleSelection('inRoute', s.id)} data-state={selectedInRoute.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex items-center justify-between">
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-muted-foreground w-4">{index + 1}.</span>
+                                                <span>{s.name}</span>
+                                            </div>
+                                             <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); removeStudentFromRoute(s.id); }}>
+                                                <X className="h-4 w-4 text-destructive"/>
+                                            </Button>
+                                        </div>
+                                    )) : <p className="text-center text-sm text-muted-foreground p-8">Nenhum aluno na rota.</p>}
+                                </ScrollArea>
+                            </div>
+                        </Card>
+                        <div className="flex gap-2 mt-2 justify-center">
+                            <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('up')} disabled={selectedInRoute.size !== 1}><ArrowUp/></Button>
+                            <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('down')} disabled={selectedInRoute.size !== 1}><ArrowDown/></Button>
+                        </div>
+                    </TabsContent>
+                    <TabsContent value="available">
+                        <Card>
+                             <div className="p-2 border-b">
+                                <Input
+                                placeholder="Buscar aluno..."
+                                value={studentSearch}
+                                onChange={(e) => setStudentSearch(e.target.value)}
+                                className="h-8"
+                                />
+                            </div>
+                            <div className="p-2">
+                                <ScrollArea className="h-48">
+                                    {availableStudents.length > 0 ? availableStudents.map(s => (
+                                        <div key={s.id} onClick={() => toggleSelection('available', s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex justify-between">
+                                        <span>{s.name}</span>
+                                        <span className="text-muted-foreground text-xs">{s.shift}</span>
+                                        </div>
+                                    )) : <p className="text-center text-sm text-muted-foreground p-8">Nenhum aluno disponível.</p>}
+                                </ScrollArea>
+                            </div>
+                        </Card>
+                        <Button type="button" className="w-full mt-2" onClick={() => moveStudents('toRoute')} disabled={selectedAvailable.size === 0}>Adicionar selecionados</Button>
+                    </TabsContent>
+                </Tabs>
             </div>
           </div>
           

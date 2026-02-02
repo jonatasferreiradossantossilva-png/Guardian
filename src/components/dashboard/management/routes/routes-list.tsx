@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle, Sparkles } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -246,51 +246,54 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             {!isLoading && routes && routes.length > 0 ? (
               <div className="space-y-4">
                 {routes.map((route) => (
-                  <Card key={route.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium">{route.name}</p>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(route)}>Editar</DropdownMenuItem>
-                            <DropdownMenuItem asChild><Link href={`/dashboard/optimizer?routeId=${route.id}&autoOptimize=true`}>Otimizar com IA</Link></DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(route)}>Deletar</DropdownMenuItem>
-                          </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                       <div>
-                        <p className="text-muted-foreground text-xs">Motorista</p>
-                        <p className="font-medium">{driversMap.get(route.driverId) || 'N/A'}</p>
-                      </div>
-                       <div>
-                        <p className="text-muted-foreground text-xs">Auxiliar</p>
-                        <p className="font-medium">{assistantsMap.get(route.assistantId) || 'N/A'}</p>
-                      </div>
-                       <div>
-                        <p className="text-muted-foreground text-xs">Alunos</p>
-                        <p className="font-medium">{route.studentIds?.length || 0}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Otimização</p>
-                        <div className="font-medium text-sm">
-                          {route.lastOptimizedAt ? (
-                              isClient ? formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR }) : '...'
-                          ) : (
-                            <Badge variant="secondary" className="mt-1">Não otimizada</Badge>
-                          )}
+                  <Card key={route.id} className="p-0 overflow-hidden">
+                    <div className="p-4">
+                        <div className="flex items-start justify-between">
+                            <p className="font-medium pr-4">{route.name}</p>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
+                                    <span className="sr-only">Abrir menu</span>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                                    <DropdownMenuItem onClick={() => handleEdit(route)}>Editar</DropdownMenuItem>
+                                    <DropdownMenuSeparator />
+                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(route)}>Deletar</DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
                         </div>
-                      </div>
+                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <p className="text-muted-foreground text-xs">Motorista</p>
+                                <p className="font-medium truncate">{driversMap.get(route.driverId) || 'N/A'}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground text-xs">Alunos</p>
+                                <p className="font-medium">{route.studentIds?.length || 0}</p>
+                            </div>
+                            <div className="col-span-2">
+                                <p className="text-muted-foreground text-xs">Última Otimização</p>
+                                <div className="font-medium text-sm">
+                                {route.lastOptimizedAt ? (
+                                    isClient ? formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR }) : '...'
+                                ) : (
+                                    <Badge variant="secondary" className="mt-1">Não otimizada</Badge>
+                                )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
+                     <CardFooter className="p-2 border-t bg-secondary/50">
+                        <Button asChild variant="default" size="sm" className="w-full">
+                            <Link href={`/dashboard/optimizer?routeId=${route.id}&autoOptimize=true`}>
+                                <Sparkles className="mr-2 h-4 w-4" />
+                                Otimizar com IA
+                            </Link>
+                        </Button>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>
