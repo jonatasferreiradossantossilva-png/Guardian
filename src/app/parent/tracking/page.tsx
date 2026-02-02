@@ -520,7 +520,7 @@ export default function ParentTrackingPage() {
                                 <DollarSign className="mr-2 h-4 w-4" /> Financeiro
                             </Link>
                         </Button>
-                        <Button asChild variant="outline" className="w-full col-span-2 sm:col-span-1">
+                        <Button asChild variant="outline" className="w-full col-span-2">
                             <Link href="/parent/requests">
                                 <Route className="mr-2 h-4 w-4" /> Viagens Avulsas
                             </Link>
