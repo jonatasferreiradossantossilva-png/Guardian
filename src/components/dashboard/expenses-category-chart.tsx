@@ -70,7 +70,7 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
                 <CardTitle>Composição das Despesas</CardTitle>
                 <CardDescription>Distribuição de custos por categoria.</CardDescription>
             </CardHeader>
-            <CardContent className="h-[350px] flex items-center justify-center">
+            <CardContent className="flex items-center justify-center p-0" style={{ height: '300px' }}>
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </CardContent>
         </Card>
@@ -83,8 +83,11 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
         <CardTitle>Composição das Despesas</CardTitle>
         <CardDescription>Distribuição de custos do período selecionado.</CardDescription>
       </CardHeader>
-      <CardContent>
-        <ChartContainer config={chartConfig} className="h-[350px]">
+      <CardContent className="pb-0">
+        <ChartContainer
+          config={chartConfig}
+          className="mx-auto aspect-square h-[250px]"
+        >
           {chartData.length > 0 ? (
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -98,7 +101,6 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
                   nameKey="category"
                   innerRadius={60}
                   strokeWidth={5}
-                  labelLine={false}
                   label={({
                     cx,
                     cy,
@@ -130,19 +132,23 @@ export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
                       <Cell key={`cell-${entry.category}`} fill={entry.fill} />
                   ))}
                 </Pie>
-                <ChartLegend
-                    content={<ChartLegendContent nameKey="category" />}
-                    className="-translate-y-4"
-                  />
               </PieChart>
             </ResponsiveContainer>
           ) : (
-            <div className="flex h-[350px] items-center justify-center text-muted-foreground text-sm">
+            <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
                 Nenhuma despesa no período.
             </div>
           )}
         </ChartContainer>
       </CardContent>
+      <div className="flex items-center justify-center p-4">
+        {chartData.length > 0 && (
+          <ChartLegend
+            content={<ChartLegendContent nameKey="category" />}
+            className="flex-wrap"
+          />
+        )}
+      </div>
     </Card>
   );
 }
