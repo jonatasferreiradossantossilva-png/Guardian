@@ -67,6 +67,8 @@ interface Student {
   street?: string;
   number?: string;
   neighborhood?: string;
+  city?: string;
+  state?: string;
 }
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
