@@ -108,7 +108,7 @@ export function LoginForm() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="grid grid-cols-2 gap-4"
                     >
                       <FormItem className="flex items-center space-x-3 space-y-0">
