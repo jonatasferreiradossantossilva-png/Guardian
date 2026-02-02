@@ -429,7 +429,12 @@ export default function DriverRoutePlanPage() {
     sessionStorage.setItem('activeRouteId', route.id);
     setActiveRouteId(route.id);
 
-    if (direction === 'volta') {
+    if (direction === 'ida') {
+        // For simulation, ensure students are reset when starting an 'ida' trip
+        studentsOnRoute.forEach(student => {
+            updateDoc('students', student.id, { status: 'aguardando' });
+        });
+    } else if (direction === 'volta') {
         studentsOnRoute.forEach(student => {
              if (student.status !== 'ausente') { 
                 updateDoc('students', student.id, { status: 'a_bordo' });
@@ -773,3 +778,6 @@ export default function DriverRoutePlanPage() {
 
 
 
+
+
+    
