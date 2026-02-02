@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Sparkles } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Sparkles, Users, AlertTriangle, Car } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -38,6 +38,7 @@ import { Badge } from "@/components/ui/badge";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 type Route = {
@@ -245,11 +246,15 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             {isLoading && <p className="text-center py-10">Carregando...</p>}
             {!isLoading && routes && routes.length > 0 ? (
               <div className="space-y-4">
-                {routes.map((route) => (
-                  <Card key={route.id} className="p-0 overflow-hidden">
+                {routes.map((route) => {
+                  const driverName = driversMap.get(route.driverId) || 'N/A';
+                  const assistantName = assistantsMap.get(route.assistantId);
+
+                  return (
+                  <Card key={route.id} className="overflow-hidden">
                     <div className="p-4">
-                        <div className="flex items-start justify-between">
-                            <p className="font-medium pr-4">{route.name}</p>
+                        <div className="flex items-start justify-between mb-4">
+                            <h3 className="font-bold text-lg pr-2">{route.name}</h3>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
@@ -265,33 +270,34 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                                 </DropdownMenuContent>
                             </DropdownMenu>
                         </div>
-                        <div className="mt-4 space-y-3 text-sm">
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Motorista:</span>
-                                <span className="font-medium truncate">{driversMap.get(route.driverId) || 'N/A'}</span>
+                        <div className="space-y-4">
+                            <div className="flex items-center gap-3">
+                                <Avatar>
+                                    <AvatarImage src={`https://picsum.photos/seed/driver-${route.driverId}/100/100`} />
+                                    <AvatarFallback>{driverName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <p className="text-sm text-muted-foreground">Motorista</p>
+                                    <p className="font-medium">{driverName}</p>
+                                </div>
                             </div>
-                             <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Auxiliar:</span>
-                                <span className="font-medium truncate">{assistantsMap.get(route.assistantId) || 'N/A'}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Alunos:</span>
-                                <span className="font-medium">{route.studentIds?.length || 0}</span>
-                            </div>
-                            <div className="flex justify-between items-center">
-                                <span className="text-muted-foreground">Otimização:</span>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <Badge variant="outline"><Users className="mr-1.5 h-3 w-3" />{route.studentIds?.length || 0} alunos</Badge>
+                                <Badge variant="outline"><Car className="mr-1.5 h-3 w-3" />{assistantName ? `Aux: ${assistantName}` : 'Sem auxiliar'}</Badge>
                                 {route.lastOptimizedAt ? (
-                                    <span className="font-medium text-xs">
-                                    {isClient ? formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR }) : '...'}
-                                    </span>
+                                    <Badge variant="default" className="border-transparent bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700 hover:bg-green-100/80">
+                                        <Sparkles className="mr-1.5 h-3 w-3" /> Otimizada
+                                    </Badge>
                                 ) : (
-                                    <Badge variant="secondary" className="mt-1">Não otimizada</Badge>
+                                    <Badge variant="destructive" className="border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700 hover:bg-amber-100/80">
+                                        <AlertTriangle className="mr-1.5 h-3 w-3" /> Não Otimizada
+                                    </Badge>
                                 )}
                             </div>
                         </div>
                     </div>
-                     <CardFooter className="p-2 border-t bg-secondary/50">
-                        <Button asChild variant="default" size="sm" className="w-full">
+                    <CardFooter className="p-2 border-t bg-secondary/50">
+                        <Button asChild size="sm" className="w-full">
                             <Link href={`/dashboard/optimizer?routeId=${route.id}&autoOptimize=true`}>
                                 <Sparkles className="mr-2 h-4 w-4" />
                                 Otimizar com IA
@@ -299,7 +305,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                         </Button>
                     </CardFooter>
                   </Card>
-                ))}
+                )})}
               </div>
             ) : (
               !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma rota cadastrada.</p>
