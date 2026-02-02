@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData, useMockNestedDoc } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -316,7 +316,7 @@ export default function DriverRoutePlanPage() {
   const driverProfile = useMemo(() => (drivers ? drivers[0] : null), [drivers]);
   const driverId = driverProfile?.id;
   
-  const { data: driverLocation } = useMockCollection('locations', driverId ? [{ field: 'id', op: '==', value: driverId }] : undefined);
+  const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
     'routes',
@@ -730,7 +730,7 @@ export default function DriverRoutePlanPage() {
                                         disableDefaultUI={true}
                                     >
                                         <RouteMap 
-                                            driverLocation={driverLocation?.[0]}
+                                            driverLocation={driverLocation}
                                             students={studentsOnRoute} 
                                             school={schoolForRoute}
                                             route={route}
@@ -787,5 +787,7 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
+    
 
     
