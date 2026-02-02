@@ -69,7 +69,7 @@ export function RouteForm({
   onFormSubmit,
 }: RouteFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc, db } = useMockData();
+  const { addDoc, updateDoc } = useMockData();
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
 
@@ -107,10 +107,10 @@ export function RouteForm({
   
   const { availableStudents, studentsInCurrentRoute } = useMemo(() => {
     const studentsInCurrentRoute = (studentIdsInForm || [])
-        .map(id => db.students.find(s => s.id === id))
+        .map(id => students.find(s => s.id === id))
         .filter(Boolean);
 
-    const availableStudents = db.students.filter(s => {
+    const availableStudents = students.filter(s => {
         const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
         const isAlreadyInThisRoute = studentIdsInForm.includes(s.id);
         const matchesSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase());
@@ -118,7 +118,7 @@ export function RouteForm({
     });
 
     return { availableStudents, studentsInCurrentRoute };
-  }, [studentIdsInForm, db.students, route, studentSearch]);
+  }, [studentIdsInForm, students, route, studentSearch]);
 
   const addSelectedStudents = () => {
     const currentStudentIds = form.getValues('studentIds');
