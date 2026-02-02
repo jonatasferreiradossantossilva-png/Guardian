@@ -7,6 +7,7 @@ import {
   CardContent,
   CardHeader,
   CardTitle,
+  CardDescription,
 } from '@/components/ui/card';
 import {
   List,
@@ -21,6 +22,7 @@ import {
   IdCard,
   School,
   Circle,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -29,6 +31,8 @@ import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Progress } from '@/components/ui/progress';
+
 
 type Shift = 'Manhã' | 'Tarde';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
@@ -67,17 +71,19 @@ const statusIconMap: Record<Student['status'], React.ReactNode> = {
   ausente: <XCircle className="h-5 w-5 text-destructive/80" />,
 };
 
-interface StudentListItemProps {
+interface StudentCardProps {
   student: Student;
   onStatusChange: (studentId: string, newStatus: StudentStatus) => void;
   onOpenAuthorizedModal: (student: Student) => void;
 }
 
-const StudentListItem = memo(({ student, onStatusChange, onOpenAuthorizedModal }: StudentListItemProps) => {
+const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: StudentCardProps) => {
   const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
+
   return (
-    <li className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-3 rounded-lg bg-secondary gap-3">
-        <div className="flex items-center gap-4">
+    <Card className={cn("transition-opacity", isFinished && "opacity-60")}>
+      <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-4 flex-1">
             <div title={statusText[student.status]}>{statusIconMap[student.status]}</div>
             <div>
                 <div className="flex items-center gap-2">
@@ -99,7 +105,7 @@ const StudentListItem = memo(({ student, onStatusChange, onOpenAuthorizedModal }
                 </p>
             </div>
         </div>
-        <div className="flex items-center gap-2 w-full sm:w-[220px]">
+        <div className="flex items-center gap-2 w-full sm:w-auto sm:min-w-[220px]">
             {student.status === 'aguardando' && (
                 <>
                 <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => onStatusChange(student.id, 'a_bordo')}>
@@ -116,15 +122,16 @@ const StudentListItem = memo(({ student, onStatusChange, onOpenAuthorizedModal }
                 </Button>
             )}
             {(student.status === 'desembarcado' || student.status === 'ausente') && (
-                <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1.5 text-xs">
+                <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1.5 text-sm">
                 {statusText[student.status]}
                 </Badge>
             )}
         </div>
-    </li>
+      </CardContent>
+    </Card>
   );
 });
-StudentListItem.displayName = 'StudentListItem';
+StudentCard.displayName = 'StudentCard';
 
 
 export default function AssistantRoutePlanPage() {
@@ -164,6 +171,19 @@ export default function AssistantRoutePlanPage() {
       .map((id) => studentMap.get(id))
       .filter((s): s is Student => !!s && s.shift === selectedShift);
   }, [route?.studentIds, students, selectedShift]);
+  
+  const { pendingStudents, completedStudents } = useMemo(() => {
+    if (!orderedStudents) return { pendingStudents: [], completedStudents: [] };
+    const pending = orderedStudents.filter(s => s.status === 'aguardando');
+    const completed = orderedStudents.sort((a, b) => (a.status === 'aguardando' ? -1 : 1)).filter(s => s.status !== 'aguardando');
+    return { pendingStudents: pending, completedStudents: completed };
+  }, [orderedStudents]);
+  
+  const progress = useMemo(() => {
+    if (!orderedStudents || orderedStudents.length === 0) return 0;
+    return (completedStudents.length / orderedStudents.length) * 100;
+  }, [completedStudents, orderedStudents]);
+
 
   const school = useMemo(() => {
     if (!orderedStudents.length || !schools) return null;
@@ -185,7 +205,7 @@ export default function AssistantRoutePlanPage() {
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
-      <div className="max-w-4xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-center mb-6">
           <h1 className="text-3xl font-bold tracking-tight">
             Painel do Auxiliar
@@ -202,19 +222,41 @@ export default function AssistantRoutePlanPage() {
             </Link>
           </div>
         </div>
-        <Card>
-          <CardHeader>
-            <div className="flex justify-between items-start">
-                <div>
-                    <CardTitle className="flex items-center gap-2">
-                        <ClipboardCheck />
-                        Controle de Embarque/Desembarque
-                    </CardTitle>
-                    <p className="text-muted-foreground text-sm pt-2">
-                    {route ? route.name : 'Carregando rota...'}
+
+        {isLoading && (
+            <div className="flex items-center justify-center h-64">
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+        )}
+
+        {!isLoading && !route && (
+            <Card className="flex flex-col items-center justify-center h-64 text-center">
+                <CardHeader>
+                  <AlertTriangle className="h-8 w-8 text-destructive mx-auto mb-2" />
+                  <CardTitle>Nenhuma rota ativa encontrada</CardTitle>
+                </CardHeader>
+                <CardContent>
+                    <p className="text-muted-foreground text-sm">
+                        Verifique com o administrador se uma rota foi atribuída a você.
                     </p>
+                </CardContent>
+            </Card>
+        )}
+
+        {!isLoading && route && (
+          <>
+            <Card className="mb-8">
+              <CardHeader className="flex flex-col md:flex-row justify-between md:items-center">
+                <div>
+                  <CardTitle className="flex items-center gap-2">
+                    <ClipboardCheck />
+                    Controle de Embarque/Desembarque
+                  </CardTitle>
+                  <CardDescription className="mt-2">
+                    {route.name}
+                  </CardDescription>
                 </div>
-                <div className="w-[150px]">
+                 <div className="w-full md:w-[180px] mt-4 md:mt-0">
                     <Select value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)}>
                         <SelectTrigger>
                             <SelectValue placeholder="Selecione o turno" />
@@ -225,54 +267,73 @@ export default function AssistantRoutePlanPage() {
                         </SelectContent>
                     </Select>
                 </div>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {isLoading && (
-              <div className="flex items-center justify-center h-40">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            )}
-
-            {!isLoading && !route && (
-              <div className="flex flex-col items-center justify-center h-40 text-center">
-                <AlertTriangle className="h-8 w-8 text-destructive mb-2" />
-                <p className="font-semibold">
-                  Nenhuma rota ativa encontrada para você.
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  Verifique com o administrador se uma rota foi atribuída.
-                </p>
-              </div>
-            )}
-
-            {!isLoading && route && (
-              <ol className="space-y-2">
-                {orderedStudents.map((student) => (
-                   <StudentListItem
-                    key={student.id}
-                    student={student}
-                    onStatusChange={handleStatusChange}
-                    onOpenAuthorizedModal={handleOpenAuthorizedModal}
-                  />
-                ))}
-                <li className="flex items-center gap-4 p-3">
-                    <div className="w-8 h-8 flex items-center justify-center">
-                        <School className="h-5 w-5 text-muted-foreground/50"/>
-                    </div>
-                    <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
-                </li>
-                {orderedStudents.length === 0 && (
-                    <div className="text-center text-muted-foreground py-10">
-                    <p>
-                        Nenhum aluno para o turno da {selectedShift?.toLowerCase()}.
-                    </p>
-                    </div>
+              </CardHeader>
+              <CardContent>
+                  <div className="flex items-center gap-4">
+                    <Progress value={progress} className="flex-1"/>
+                    <span className="text-sm font-medium text-muted-foreground">{completedStudents.length} de {orderedStudents.length}</span>
+                  </div>
+              </CardContent>
+            </Card>
+            
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold tracking-tight">A Fazer ({pendingStudents.length})</h2>
+                {pendingStudents.length > 0 ? (
+                  pendingStudents.map((student) => (
+                    <StudentCard
+                      key={student.id}
+                      student={student}
+                      onStatusChange={handleStatusChange}
+                      onOpenAuthorizedModal={handleOpenAuthorizedModal}
+                    />
+                  ))
+                ) : (
+                  <Card className="flex items-center justify-center h-40 border-dashed">
+                      <div className='text-center text-muted-foreground'>
+                        <Check className="mx-auto h-8 w-8 mb-2 text-green-500"/>
+                        <p>Nenhum aluno aguardando.</p>
+                      </div>
+                  </Card>
                 )}
-            </ol>
+                 {pendingStudents.length === 0 && orderedStudents.length > 0 && (
+                  <Card className="border-dashed">
+                    <CardContent className="p-4 flex items-center gap-4">
+                       <div className="w-8 h-8 flex items-center justify-center rounded-lg bg-secondary">
+                          <School className="h-5 w-5 text-muted-foreground"/>
+                      </div>
+                      <span className="font-medium text-muted-foreground">{school?.name || "Escola"} (Destino Final)</span>
+                    </CardContent>
+                  </Card>
+                )}
+              </div>
+              <div className="space-y-4">
+                <h2 className="text-2xl font-bold tracking-tight">Concluídos ({completedStudents.length})</h2>
+                 {completedStudents.length > 0 ? (
+                  completedStudents.map((student) => (
+                    <StudentCard
+                      key={student.id}
+                      student={student}
+                      onStatusChange={handleStatusChange}
+                      onOpenAuthorizedModal={handleOpenAuthorizedModal}
+                    />
+                  ))
+                ) : (
+                  <Card className="flex items-center justify-center h-40 border-dashed">
+                    <p className="text-muted-foreground">Nenhuma parada concluída ainda.</p>
+                  </Card>
+                )}
+              </div>
+            </div>
+             {orderedStudents.length === 0 && (
+                <div className="text-center text-muted-foreground py-16">
+                <p>
+                    Nenhum aluno para o turno da {selectedShift?.toLowerCase()}.
+                </p>
+                </div>
             )}
-          </CardContent>
-        </Card>
+          </>
+        )}
       </div>
 
       {isModalOpen && selectedStudentForModal && (
