@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect, useRef } from "react";
@@ -105,10 +104,11 @@ function haversineDistance(coords1, coords2) {
 }
 
 
-function ParentRouteMap({ busLocation, student, school, recenterRequest }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, recenterRequest: any }) {
+function ParentRouteMap({ busLocation, student, school, recenterRequest, toast }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, recenterRequest: any, toast: (options: any) => void }) {
   const map = useMap();
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
   const lastDestinationRef = useRef<string | null>(null);
+  const directionsApiCalledRef = useRef(false);
 
   // Effect to manage the DirectionsRenderer instance
   useEffect(() => {
@@ -154,6 +154,8 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest }: { bus
       return;
     }
     
+    directionsApiCalledRef.current = false;
+    
     directionsService.route(
       {
         origin: origin,
@@ -165,12 +167,20 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest }: { bus
           directionsRendererRef.current?.setDirections(result);
           lastDestinationRef.current = destinationKey;
         } else {
+          if (!directionsApiCalledRef.current) {
+              toast({
+                variant: "destructive",
+                title: "Erro ao Traçar Rota no Mapa",
+                description: "Não foi possível obter a rota. Verifique se a 'Directions API' está ativada no seu projeto Google Cloud.",
+              });
+              directionsApiCalledRef.current = true;
+          }
           console.error(`Directions request failed due to ${status}`);
           directionsRendererRef.current?.setDirections({ routes: [] });
         }
       }
     );
-  }, [map, busLocation, student, school, student?.status]);
+  }, [map, busLocation, student, school, student?.status, toast]);
 
 
   useEffect(() => {
@@ -293,7 +303,7 @@ export default function ParentTrackingPage() {
 
     return () => clearInterval(interval);
 
-  }, [realLocation, student, school, student?.status]); // Rerun simulation if destination changes
+  }, [realLocation, student, school, student?.status, simulatedLocation]); // Rerun simulation if destination changes
 
   // The location to display is the simulated location
   const displayLocation = simulatedLocation;
@@ -492,6 +502,7 @@ export default function ParentTrackingPage() {
                                 student={student}
                                 school={school}
                                 recenterRequest={recenterRequest}
+                                toast={toast}
                            />
                            {!displayLocation && !isLocationLoading && (
                                 <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
