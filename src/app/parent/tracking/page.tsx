@@ -123,8 +123,8 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest, toast }
                 strokeWeight: 6,
             },
         });
-        directionsRendererRef.current.setMap(map);
     }
+    directionsRendererRef.current.setMap(map);
     
     // Cleanup on unmount
     return () => {
@@ -214,7 +214,7 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest, toast }
       {student && (
         <AdvancedMarker position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
              <Avatar className="h-10 w-10 border-2 border-blue-500 shadow-lg">
-                <AvatarImage src="https://images.unsplash.com/photo-1503944186934-a1e6704b2a86?q=80&w=200&h=200&auto=format&fit=crop" data-ai-hint="child portrait" />
+                <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&h=200&auto=format&fit=crop" data-ai-hint="child portrait"/>
                 <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
             </Avatar>
         </AdvancedMarker>
@@ -258,55 +258,10 @@ export default function ParentTrackingPage() {
 
   // Real location from DB
   const { data: realLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(route?.driverId ? `locations/${route.driverId}`: null);
+  
+  const displayLocation = realLocation;
 
   const { data: school } = useMockDoc('schools', student?.schoolId);
-
-  // State for simulated location
-  const [simulatedLocation, setSimulatedLocation] = useState<LocationUpdate | null>(null);
-
-  // This effect will run the simulation
-  useEffect(() => {
-    if (!realLocation || !student || !school) {
-        setSimulatedLocation(null);
-        return;
-    }
-    
-    // Set initial position only once
-    if (!simulatedLocation) {
-        setSimulatedLocation(realLocation);
-    }
-    
-    const destination = student.status === 'a_bordo' ? school : student;
-    
-    const interval = setInterval(() => {
-      setSimulatedLocation(prevLocation => {
-        if (!prevLocation) return realLocation;
-
-        const start = { lat: prevLocation.latitude, lng: prevLocation.longitude };
-        const end = { lat: destination.latitude, lng: destination.longitude };
-        
-        // Simple linear interpolation
-        const step = 0.05; // Move 5% of the remaining distance each step
-        const newLat = start.lat + (end.lat - start.lat) * step;
-        const newLng = start.lng + (end.lng - start.lng) * step;
-        
-        // Stop simulation when very close to the destination
-        const distance = haversineDistance({lat: newLat, lng: newLng}, end);
-        if (distance < 0.1) { // less than 100 meters
-          clearInterval(interval);
-          return { latitude: end.lat, longitude: end.lng, timestamp: new Date().toISOString() };
-        }
-
-        return { latitude: newLat, longitude: newLng, timestamp: new Date().toISOString() };
-      });
-    }, 2000); // Update every 2 seconds
-
-    return () => clearInterval(interval);
-
-  }, [realLocation, student, school, student?.status, simulatedLocation]); // Rerun simulation if destination changes
-
-  // The location to display is the simulated location
-  const displayLocation = simulatedLocation;
 
   // Effect for proximity check
   useEffect(() => {
@@ -474,7 +429,7 @@ export default function ParentTrackingPage() {
             <TabsContent value="map" className="mt-4">
                <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Van</span></div>
-                    <div className="flex items-center gap-1.5"><Avatar className="h-4 w-4 border-blue-500"><AvatarImage src="https://images.unsplash.com/photo-1503944186934-a1e6704b2a86?q=80&w=100&h=100&auto=format&fit=crop" data-ai-hint="child portrait"/><AvatarFallback>A</AvatarFallback></Avatar><span>Aluno</span></div>
+                    <div className="flex items-center gap-1.5"><Avatar className="h-4 w-4 border-blue-500"><AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&auto=format&fit=crop" data-ai-hint="child portrait"/><AvatarFallback>A</AvatarFallback></Avatar><span>Aluno</span></div>
                     <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
                 </div>
               <Card className="h-[75vh]">
