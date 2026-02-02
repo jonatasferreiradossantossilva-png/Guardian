@@ -237,9 +237,6 @@ export default function ParentTrackingPage() {
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [recenterRequest, setRecenterRequest] = useState<number | null>(null);
 
-  // Real-time location simulation
-  const [simulatedLocation, setSimulatedLocation] = useState<LocationUpdate | null>(null);
-
   useEffect(() => {
     // For this prototype, we get the logged-in user's ID from session storage.
     const storedUserId = sessionStorage.getItem('mockUserId');
@@ -258,55 +255,8 @@ export default function ParentTrackingPage() {
   
   const { data: route, isLoading: isRouteLoading } = useMockDoc("routes", student?.routeId);
 
-  // Real location from DB
-  const { data: realLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(route?.driverId ? `locations/${route.driverId}`: null);
+  const { data: displayLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(route?.driverId ? `locations/${route.driverId}`: null);
   
-  // Simulation Logic
-  useEffect(() => {
-    if (!realLocation || !student || !school) {
-        setSimulatedLocation(realLocation);
-        return;
-    }
-    
-    // Start with the real location
-    if (!simulatedLocation) {
-        setSimulatedLocation(realLocation);
-    }
-    
-    const interval = setInterval(() => {
-        setSimulatedLocation(prevLocation => {
-            if (!prevLocation) return realLocation;
-
-            const destination = student.status === 'a_bordo' ? school : student;
-            const targetLat = destination.latitude;
-            const targetLng = destination.longitude;
-
-            const latDiff = targetLat - prevLocation.latitude;
-            const lngDiff = targetLng - prevLocation.longitude;
-
-            // Stop if very close to destination
-            if (Math.abs(latDiff) < 0.0001 && Math.abs(lngDiff) < 0.0001) {
-                return prevLocation;
-            }
-
-            // Move a small step towards the destination
-            const newLat = prevLocation.latitude + latDiff * 0.1;
-            const newLng = prevLocation.longitude + lngDiff * 0.1;
-
-            return {
-                latitude: newLat,
-                longitude: newLng,
-                timestamp: new Date().toISOString()
-            };
-        });
-    }, 5000); // Update every 5 seconds
-
-    return () => clearInterval(interval);
-
-  }, [realLocation, student, school, simulatedLocation]);
-
-  const displayLocation = simulatedLocation;
-
   const { data: school } = useMockDoc('schools', student?.schoolId);
   
   const handleCommunicateAbsence = () => {
