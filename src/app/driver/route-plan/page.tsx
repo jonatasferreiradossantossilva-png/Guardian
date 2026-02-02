@@ -660,18 +660,19 @@ export default function DriverRoutePlanPage() {
     
     return (
         <div className="min-h-screen bg-background text-foreground pb-24">
-            <div className="text-center pt-4">
-                <h1 className="text-xl font-bold tracking-tight">{route?.name}</h1>
-                <p className="text-sm text-muted-foreground">{schoolForRoute?.name}</p>
-                <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
-            </div>
-             <Tabs defaultValue="plan" className="w-full mt-4">
-                <div className="flex justify-center">
+            <Tabs defaultValue="plan" className="w-full">
+                <div className="text-center pt-4">
+                    <h1 className="text-xl font-bold tracking-tight">{route?.name}</h1>
+                    <p className="text-sm text-muted-foreground">{schoolForRoute?.name}</p>
+                    <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
+                </div>
+                <div className="flex justify-center mt-4">
                     <TabsList className="grid w-full grid-cols-2 max-w-sm">
                         <TabsTrigger value="plan"><ListTree className="mr-2 h-4 w-4"/>Plano de Rota</TabsTrigger>
                         <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa</TabsTrigger>
                     </TabsList>
                 </div>
+
                 <TabsContent value="plan" className="p-4">
                     <div className="max-w-md mx-auto space-y-4">
                         {isRouteFinished ? (
@@ -785,6 +786,8 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
+    
 
     
 
