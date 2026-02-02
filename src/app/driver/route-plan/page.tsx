@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import {
   Card,
   CardContent,
@@ -32,6 +32,7 @@ import {
   LocateFixed,
   Phone,
   Share2,
+  MapPin,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -47,6 +48,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 type Shift = 'Manhã' | 'Tarde';
@@ -64,6 +67,8 @@ interface Student {
   neighborhood?: string;
 }
 
+const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+
 const statusText: Record<StudentStatus, string> = {
   aguardando: 'Aguardando',
   a_bordo: 'A Bordo',
@@ -75,8 +80,6 @@ const statusText: Record<StudentStatus, string> = {
 
 const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal }) => {
   if (!student) return null;
-
-  const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
 
   return (
     <Card className="w-full shadow-lg border-primary/20">
@@ -133,7 +136,7 @@ const UpcomingStopsList = ({ students }) => {
 
   return (
     <div className="w-full space-y-2">
-       <h3 className="text-sm font-semibold text-muted-foreground px-1">A seguir...</h3>
+       <h3 className="text-sm font-semibold text-muted-foreground px-1">A seguir...</h3 >
         <ul className="space-y-1">
             {students.map((student, index) => (
                 <li key={student.id} className="flex items-center gap-3 p-2 rounded-md bg-secondary/50">
@@ -176,6 +179,115 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, onRecalculate, onShare, stat
 );
 
 
+const useMockNestedDocSnapshot = (path) => {
+    const { getNestedDoc, db } = useMockData();
+    const [data, setData] = useState(() => path ? getNestedDoc(path) : null);
+
+    useEffect(() => {
+        if (path) {
+            setData(getNestedDoc(path));
+        } else {
+            setData(null);
+        }
+    }, [db, path, getNestedDoc]);
+
+    return { data };
+};
+
+
+function RouteMap({ driverLocation, students, school, route, recenterRequest, toast }) {
+    const map = useMap();
+    const directionsRendererRef = useRef(null);
+
+    useEffect(() => {
+        if (map && !directionsRendererRef.current) {
+            directionsRendererRef.current = new google.maps.DirectionsRenderer({
+                suppressMarkers: true,
+                polylineOptions: {
+                    strokeColor: "#2ab0c1",
+                    strokeOpacity: 0.8,
+                    strokeWeight: 6,
+                },
+            });
+        }
+        directionsRendererRef.current?.setMap(map);
+    }, [map]);
+
+    useEffect(() => {
+        if (!map || !directionsRendererRef.current || !driverLocation || !school || students.length === 0) {
+            return;
+        }
+
+        const directionsService = new google.maps.DirectionsService();
+        const origin = { lat: driverLocation.latitude, lng: driverLocation.longitude };
+        const destination = { lat: school.latitude, lng: school.longitude };
+        const waypoints = students
+            .filter(s => s.latitude && s.longitude)
+            .map(s => ({
+                location: { lat: s.latitude, lng: s.longitude },
+                stopover: true,
+            }));
+
+        directionsService.route(
+            {
+                origin,
+                destination,
+                waypoints,
+                travelMode: google.maps.TravelMode.DRIVING,
+                optimizeWaypoints: false, // Route is already pre-optimized
+            },
+            (response, status) => {
+                if (status === "OK") {
+                    directionsRendererRef.current.setDirections(response);
+                } else {
+                    console.error(`Directions request failed due to ${status}`);
+                }
+            }
+        );
+
+    }, [map, driverLocation, students, school, route]);
+    
+    useEffect(() => {
+        if (!map || !recenterRequest) return;
+        
+        const bounds = new google.maps.LatLngBounds();
+        if (driverLocation) bounds.extend({ lat: driverLocation.latitude, lng: driverLocation.longitude });
+        students.forEach(s => s.latitude && bounds.extend({ lat: s.latitude, lng: s.longitude }));
+        if (school) bounds.extend({ lat: school.latitude, lng: school.longitude });
+        
+        if (!bounds.isEmpty()) {
+            map.fitBounds(bounds, 100);
+        }
+
+    }, [map, driverLocation, students, school, recenterRequest]);
+
+    return (
+        <>
+            {driverLocation && (
+                <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição">
+                     <div className="p-1 bg-primary rounded-full shadow-lg">
+                        <Bus className="h-6 w-6 text-primary-foreground" />
+                    </div>
+                </AdvancedMarker>
+            )}
+            {students.map((student) => (
+                <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
+                     <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
+                        <User className="h-4 w-4 text-white" />
+                    </div>
+                </AdvancedMarker>
+            )}
+            {school && (
+                <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
+                    <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+                        <School className="h-5 w-5 text-white" />
+                    </div>
+                </AdvancedMarker>
+            )}
+        </>
+    );
+}
+
 export default function DriverRoutePlanPage() {
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
@@ -184,6 +296,7 @@ export default function DriverRoutePlanPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<'manha-ida' | 'tarde-volta'>('manha-ida');
+  const [recenterRequest, setRecenterRequest] = useState(null);
 
   useEffect(() => {
     setMockUserId('user-admin-1'); 
@@ -204,6 +317,8 @@ export default function DriverRoutePlanPage() {
   const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', driverFilter);
   const driverProfile = useMemo(() => (drivers ? drivers[0] : null), [drivers]);
   const driverId = driverProfile?.id;
+  
+  const { data: driverLocation } = useMockNestedDocSnapshot(driverId ? `locations/${driverId}` : null);
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
     'routes',
@@ -222,6 +337,13 @@ export default function DriverRoutePlanPage() {
         .map(id => studentMap.get(id))
         .filter((s): s is Student => !!s && s.shift === shift);
   }, [route, allStudents, shift]);
+
+  const schoolForRoute = useMemo(() => {
+    if (!studentsOnRoute.length || !schools) return null;
+    const studentWithSchool = studentsOnRoute.find(s => s.schoolId);
+    if (!studentWithSchool) return null;
+    return schools.find(s => s.id === studentWithSchool.schoolId);
+  }, [studentsOnRoute, schools]);
 
 
   const nextStop = useMemo(() => {
@@ -248,18 +370,10 @@ export default function DriverRoutePlanPage() {
     }
   }, [nextStop, studentsOnRoute, direction]);
   
-  const finishedStopsCount = useMemo(() => 
-    studentsOnRoute.filter(s => s.status === 'desembarcado' || s.status === 'ausente').length,
-    [studentsOnRoute]
-  );
-  const totalStopsCount = useMemo(() => studentsOnRoute.length, [studentsOnRoute]);
-
-
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     const student = studentsOnRoute.find(s => s.id === studentId);
     let effectiveStatus = newStatus;
 
-    // Logic for return trip: Embarcar becomes Desembarcar
     if (direction === 'volta' && newStatus === 'a_bordo') {
         effectiveStatus = 'desembarcado';
     }
@@ -340,8 +454,6 @@ export default function DriverRoutePlanPage() {
     );
   }
   
-  // -- RENDER LOGIC --
-
   if (driverProfile.status === 'inativo') {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6">
@@ -389,38 +501,84 @@ export default function DriverRoutePlanPage() {
     
     const isRouteFinished = !nextStop;
     
-    // On-Route View
     return (
         <div className="min-h-screen bg-background text-foreground p-4 pb-24">
-             <div className="max-w-md mx-auto space-y-6">
+             <div className="max-w-md mx-auto space-y-4">
                 <div className="text-center">
                     <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
                     <p className="text-muted-foreground">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
                 </div>
-                
-                {isRouteFinished ? (
-                     <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
-                        <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4"/>
-                        <CardTitle className="text-2xl">Rota Finalizada!</CardTitle>
-                        <CardDescription className="mt-2">Todos os alunos foram embarcados/desembarcados. Clique em "Finalizar" na barra inferior para concluir.</CardDescription>
-                    </Card>
-                ) : (
-                    <>
-                        <NextStopCard 
-                            student={nextStop} 
-                            onStatusChange={handleStatusChange} 
-                            onNavigate={handleNavigateToStudent}
-                            onOpenAuthorizedModal={handleOpenAuthorizedModal}
-                        />
 
-                        {upcomingStops.length > 0 && <UpcomingStopsList students={upcomingStops} />}
-                    </>
-                )}
+                <Tabs defaultValue="plan" className="w-full">
+                    <TabsList className="grid w-full grid-cols-2">
+                        <TabsTrigger value="plan"><List className="mr-2 h-4 w-4"/>Plano de Rota</TabsTrigger>
+                        <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="plan" className="mt-4 space-y-6">
+                         {isRouteFinished ? (
+                            <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
+                                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4"/>
+                                <CardTitle className="text-2xl">Rota Finalizada!</CardTitle>
+                                <CardDescription className="mt-2">Todos os alunos foram embarcados/desembarcados. Clique em "Finalizar" na barra inferior para concluir.</CardDescription>
+                            </Card>
+                        ) : (
+                            <>
+                                <NextStopCard 
+                                    student={nextStop} 
+                                    onStatusChange={handleStatusChange} 
+                                    onNavigate={handleNavigateToStudent}
+                                    onOpenAuthorizedModal={handleOpenAuthorizedModal}
+                                />
+                                {upcomingStops.length > 0 && <UpcomingStopsList students={upcomingStops} />}
+                            </>
+                        )}
+                    </TabsContent>
+                    <TabsContent value="map" className="mt-4">
+                        <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
+                            <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary"/><span>Van</span></div>
+                            <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500"/><span>Aluno</span></div>
+                            <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600"/><span>Escola</span></div>
+                        </div>
+                        <div className="relative h-[60vh] w-full rounded-lg overflow-hidden border">
+                             {!API_KEY ? (
+                                <div className="flex h-full w-full items-center justify-center bg-secondary/30 text-center p-4">
+                                    <div>
+                                        <p className="font-semibold text-lg">Mapa Indisponível</p>
+                                        <p className="text-muted-foreground text-sm">A chave da API do Google Maps não foi configurada.</p>
+                                    </div>
+                                </div>
+                            ) : (
+                                <APIProvider apiKey={API_KEY}>
+                                    <GoogleMap
+                                        defaultCenter={{ lat: -23.55, lng: -46.63 }}
+                                        defaultZoom={12}
+                                        mapId="driver-map"
+                                        gestureHandling={'greedy'}
+                                        disableDefaultUI={true}
+                                    >
+                                        <RouteMap 
+                                            driverLocation={driverLocation} 
+                                            students={studentsOnRoute} 
+                                            school={schoolForRoute} 
+                                            route={route} 
+                                            recenterRequest={recenterRequest}
+                                            toast={toast}
+                                        />
+                                    </GoogleMap>
+                                </APIProvider>
+                            )}
+                            <Button size="icon" variant="secondary" onClick={() => setRecenterRequest(Date.now())} className="absolute bottom-4 right-4 z-10 shadow-lg">
+                                <LocateFixed className="h-5 w-5" />
+                            </Button>
+                        </div>
+                    </TabsContent>
+                </Tabs>
              </div>
 
              <FixedBottomBar 
                 status={driverProfile.status} 
                 onPause={handlePauseRoute} 
+                onResume={handleResumeRoute}
                 onEnd={handleEndRoute}
                 onRecalculate={() => toast({ title: "Ainda não implementado" })}
                 onShare={() => toast({ title: "Ainda não implementado" })}
@@ -437,3 +595,5 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
+    
