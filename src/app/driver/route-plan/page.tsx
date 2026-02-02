@@ -285,7 +285,10 @@ export default function DriverRoutePlanPage() {
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
-  const [selectedTrip, setSelectedTrip] = useState<'manha-ida' | 'tarde-volta'>('manha-ida');
+  
+  const [selectedShift, setSelectedShift] = useState<Shift>('Manhã');
+  const [selectedDirection, setSelectedDirection] = useState<'ida' | 'volta'>('ida');
+  
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
   const [recenterRequest, setRecenterRequest] = useState(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
@@ -302,13 +305,8 @@ export default function DriverRoutePlanPage() {
     setActiveRouteId(storedActiveRouteId);
   }, []);
 
-  const { shift, direction } = useMemo(() => {
-    const [shiftStr, dir] = selectedTrip.split('-');
-    return { 
-        shift: shiftStr === 'manha' ? 'Manhã' : 'Tarde', 
-        direction: dir 
-    };
-  }, [selectedTrip]);
+  const shift = selectedShift;
+  const direction = selectedDirection;
 
   const driverFilter = useMemo(
     () => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined),
@@ -345,7 +343,7 @@ export default function DriverRoutePlanPage() {
   const routeDetailsMap = useMemo(() => {
     if (!routes || !allStudents || !schools) return new Map();
 
-    const studentMap = new Map(allStudents.map(s => [s.id, s]));
+    const studentMap = new Map(allStudents.map(s => [s.id, s,]));
     const schoolMap = new Map(schools.map(s => [s.id, s.name]));
 
     const details = new Map();
@@ -364,7 +362,7 @@ export default function DriverRoutePlanPage() {
 
   const studentsOnRoute = useMemo(() => {
       if (!route?.studentIds || !allStudents) return [];
-      const studentMap = new Map(allStudents.map(s => [s.id, s]));
+      const studentMap = new Map(allStudents.map(s => [s.id, s,]));
       return route.studentIds
         .map(id => studentMap.get(id))
         .filter((s): s is Student => !!s && s.shift === shift);
@@ -600,16 +598,34 @@ export default function DriverRoutePlanPage() {
                 </Select>
             </div>
             
-            <RadioGroup defaultValue={selectedTrip} onValueChange={(v) => setSelectedTrip(v as any)} className="space-y-3 pt-2">
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="manha-ida" id="manha-ida" />
-                <Label htmlFor="manha-ida" className="text-base">Manhã - Ida para Escola</Label>
-              </div>
-              <div className="flex items-center space-x-2">
-                <RadioGroupItem value="tarde-volta" id="tarde-volta" />
-                <Label htmlFor="tarde-volta" className="text-base">Tarde - Volta para Casa</Label>
-              </div>
-            </RadioGroup>
+            <div className="grid grid-cols-2 gap-4 pt-4">
+                <div>
+                    <Label className="text-base">Turno</Label>
+                    <RadioGroup value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)} className="space-y-2 pt-2">
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Manhã" id="manha" />
+                            <Label htmlFor="manha" className="font-normal">Manhã</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="Tarde" id="tarde" />
+                            <Label htmlFor="tarde" className="font-normal">Tarde</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+                <div>
+                    <Label className="text-base">Viagem</Label>
+                    <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as 'ida' | 'volta')} className="space-y-2 pt-2">
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="ida" id="ida" />
+                            <Label htmlFor="ida" className="font-normal">Ida para Escola</Label>
+                        </div>
+                        <div className="flex items-center space-x-2">
+                            <RadioGroupItem value="volta" id="volta" />
+                            <Label htmlFor="volta" className="font-normal">Volta para Casa</Label>
+                        </div>
+                    </RadioGroup>
+                </div>
+            </div>
           </CardContent>
           <CardFooter>
              <Button size="lg" className="w-full" onClick={handleStartRoute} disabled={!selectedRouteIdForStart}>
@@ -772,12 +788,5 @@ export default function DriverRoutePlanPage() {
 }
 
     
-
-
-
-
-
-
-
 
     
