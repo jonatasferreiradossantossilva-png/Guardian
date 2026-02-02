@@ -85,7 +85,6 @@ export default function ParentFinancialPage() {
             <Button asChild variant="outline" size="icon">
                 <Link href="/parent/tracking"><ArrowLeft /></Link>
             </Button>
-            <h1 className="text-3xl font-bold tracking-tight">Meu Financeiro</h1>
         </div>
         <Card>
             <CardHeader>

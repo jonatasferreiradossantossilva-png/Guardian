@@ -72,7 +72,6 @@ export default function ParentMessagesPage() {
             <Button asChild variant="outline" size="icon">
                 <Link href="/parent/tracking"><ArrowLeft /></Link>
             </Button>
-            <h1 className="text-3xl font-bold tracking-tight">Mensagens para o Motorista</h1>
         </div>
         <Card className="flex flex-col h-[calc(100vh-10rem)]">
           <CardHeader className="border-b">

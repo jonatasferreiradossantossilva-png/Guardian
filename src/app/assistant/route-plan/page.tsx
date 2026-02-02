@@ -206,10 +206,7 @@ export default function AssistantRoutePlanPage() {
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-3xl font-bold tracking-tight">
-            Painel do Auxiliar
-          </h1>
+        <div className="flex justify-end items-center mb-6">
           <div className="flex items-center gap-2">
             <Button asChild variant="outline">
               <Link href="/assistant/messages">

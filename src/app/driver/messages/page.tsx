@@ -140,7 +140,6 @@ export default function DriverMessagesPage() {
             <Button asChild variant="outline" size="icon">
                 <Link href="/driver/route-plan"><ArrowLeft /></Link>
             </Button>
-            <h1 className="text-3xl font-bold tracking-tight">Minhas Mensagens</h1>
         </div>
         <Card className="flex-1 grid grid-cols-[300px_1fr] overflow-hidden">
           <div className="flex flex-col border-r">
