@@ -76,31 +76,12 @@ export function RouteForm({
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      name: '',
-      driverId: '',
-      assistantId: '',
-      studentIds: [],
+      name: route?.name || '',
+      driverId: route?.driverId || '',
+      assistantId: route?.assistantId || '',
+      studentIds: route?.studentIds || [],
     },
   });
-  
-  useEffect(() => {
-    if (route) {
-      form.reset({
-        name: route.name || '',
-        driverId: route.driverId || '',
-        assistantId: route.assistantId || '',
-        studentIds: route.studentIds || [],
-      });
-    } else {
-      form.reset({
-        name: '',
-        driverId: '',
-        assistantId: '',
-        studentIds: [],
-      });
-    }
-  }, [route, form]);
-
 
   const studentIdsInForm = form.watch('studentIds');
   const driverId = form.watch('driverId');
