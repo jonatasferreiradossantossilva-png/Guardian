@@ -33,6 +33,7 @@ import {
   Phone,
   Share2,
   MapPin,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -153,7 +154,7 @@ const UpcomingStopsList = ({ students }) => {
   );
 };
 
-const FixedBottomBar = ({ onPause, onResume, onEnd, onRecalculate, onShare, status, canRecalculate }) => (
+const FixedBottomBar = ({ onPause, onResume, onEnd, onShare, status }) => (
     <div className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-sm border-t p-2 flex justify-around items-center shadow-lg z-50">
         {status === 'em_rota' && (
             <>
@@ -172,9 +173,6 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, onRecalculate, onShare, stat
                 <Button variant="ghost" size="icon"><MoreVertical/></Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="mb-2">
-                <DropdownMenuItem onClick={onRecalculate} disabled={!canRecalculate}>
-                    <Siren className="mr-2"/>Recalcular por Ausência
-                </DropdownMenuItem>
                 <DropdownMenuItem onClick={onShare} disabled><Share2 className="mr-2"/>Compartilhar Rota</DropdownMenuItem>
                 <DropdownMenuItem asChild>
                     <Link href="/driver/messages"><MessageSquare className="mr-2"/>Mensagens Internas</Link>
@@ -306,8 +304,9 @@ export default function DriverRoutePlanPage() {
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
   const [selectedTrip, setSelectedTrip] = useState<'manha-ida' | 'tarde-volta'>('manha-ida');
   const [recenterRequest, setRecenterRequest] = useState(null);
-  const [isRecalculateDialogOpen, setIsRecalculateDialogOpen] = useState(false);
   const [isRecalculating, setIsRecalculating] = useState(false);
+  const [showRecalculatePrompt, setShowRecalculatePrompt] = useState(false);
+
 
   useEffect(() => {
     setMockUserId('user-admin-1'); 
@@ -378,7 +377,6 @@ export default function DriverRoutePlanPage() {
     }
   }, [nextStop, studentsOnRoute, direction]);
   
-  const canRecalculate = useMemo(() => studentsOnRoute.some(s => s.status === 'ausente'), [studentsOnRoute]);
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     const student = studentsOnRoute.find(s => s.id === studentId);
@@ -393,7 +391,11 @@ export default function DriverRoutePlanPage() {
         title: 'Status Atualizado',
         description: `${student?.name || 'O aluno'} foi marcado(a) como ${statusText[effectiveStatus]}.`,
     });
-  }, [updateDoc, studentsOnRoute, toast, direction]);
+
+    if (effectiveStatus === 'ausente' && driverProfile?.status === 'em_rota') {
+        setShowRecalculatePrompt(true);
+    }
+  }, [updateDoc, studentsOnRoute, toast, direction, driverProfile?.status]);
 
   const handleStartRoute = useCallback(() => {
     if (!driverId) return;
@@ -443,7 +445,8 @@ export default function DriverRoutePlanPage() {
     }
   }, [toast]);
   
-   const handleConfirmRecalculate = useCallback(async () => {
+   const handleRecalculateFromPrompt = useCallback(async () => {
+        setShowRecalculatePrompt(false);
         if (!route || !studentsOnRoute || !schoolForRoute) return;
 
         setIsRecalculating(true);
@@ -478,7 +481,6 @@ export default function DriverRoutePlanPage() {
             });
         } finally {
             setIsRecalculating(false);
-            setIsRecalculateDialogOpen(false);
         }
     }, [route, studentsOnRoute, schoolForRoute, driverProfile, updateDoc, toast]);
 
@@ -544,7 +546,7 @@ export default function DriverRoutePlanPage() {
                     <Play className="mr-2 h-5 w-5"/>
                     Retomar Rota
                  </Button>
-                  <FixedBottomBar status={driverProfile.status} onEnd={handleEndRoute} onResume={handleResumeRoute} canRecalculate={canRecalculate} onRecalculate={() => setIsRecalculateDialogOpen(true)} />
+                  <FixedBottomBar status={driverProfile.status} onEnd={handleEndRoute} onResume={handleResumeRoute} />
             </div>
         );
     }
@@ -625,13 +627,33 @@ export default function DriverRoutePlanPage() {
                 </Tabs>
              </div>
 
+            {showRecalculatePrompt && (
+                <div className="fixed bottom-24 left-4 right-4 z-50 md:left-1/2 md:-translate-x-1/2 md:max-w-md">
+                    <Card className="w-full bg-background/95 backdrop-blur-sm border-primary/50 shadow-2xl">
+                        <CardHeader className="p-3 flex-row items-center gap-3">
+                            <Siren className="h-5 w-5 text-primary"/>
+                            <CardTitle className="text-base">Otimizar Rota?</CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-3 pt-0">
+                            <p className="text-sm text-muted-foreground">Detectamos um aluno ausente. Deseja recalcular a rota para um trajeto mais curto?</p>
+                        </CardContent>
+                        <CardFooter className="p-3 pt-0 flex gap-2">
+                            <Button className="flex-1" onClick={handleRecalculateFromPrompt} disabled={isRecalculating}>
+                                {isRecalculating ? <Loader2 className="animate-spin mr-2"/> : <Sparkles className="mr-2"/> }
+                                Sim, Otimizar
+                            </Button>
+                            <Button className="flex-1" variant="ghost" onClick={() => setShowRecalculatePrompt(false)}>Ignorar</Button>
+                        </CardFooter>
+                    </Card>
+                </div>
+            )}
+
+
              <FixedBottomBar 
                 status={driverProfile.status} 
                 onPause={handlePauseRoute} 
                 onResume={handleResumeRoute}
                 onEnd={handleEndRoute}
-                onRecalculate={() => setIsRecalculateDialogOpen(true)}
-                canRecalculate={canRecalculate}
             />
 
             {isModalOpen && selectedStudentForModal && (
@@ -642,25 +664,6 @@ export default function DriverRoutePlanPage() {
                 studentName={selectedStudentForModal.name}
                 />
             )}
-            
-            <AlertDialog open={isRecalculateDialogOpen} onOpenChange={setIsRecalculateDialogOpen}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                        <AlertDialogTitle>Recalcular Rota?</AlertDialogTitle>
-                        <AlertDialogDescription>
-                            Isso irá gerar uma nova rota otimizada, pulando os alunos marcados como ausentes. Deseja continuar?
-                        </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                        <AlertDialogAction onClick={handleConfirmRecalculate} disabled={isRecalculating}>
-                            {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-                            Recalcular
-                        </AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
         </div>
     );
 }
