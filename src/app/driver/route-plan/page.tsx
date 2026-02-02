@@ -52,7 +52,6 @@ import {
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
 type Shift = 'Manhã' | 'Tarde';
@@ -306,6 +305,7 @@ export default function DriverRoutePlanPage() {
   const [recenterRequest, setRecenterRequest] = useState(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [showRecalculatePrompt, setShowRecalculatePrompt] = useState(false);
+  const prevStudentsRef = useRef<Student[]>();
 
 
   useEffect(() => {
@@ -377,6 +377,21 @@ export default function DriverRoutePlanPage() {
     }
   }, [nextStop, studentsOnRoute, direction]);
   
+  // Effect to detect absence communicated by a parent while route is active
+  useEffect(() => {
+    if (driverProfile?.status === 'em_rota' && prevStudentsRef.current && studentsOnRoute) {
+        const newlyAbsentStudent = studentsOnRoute.find(currentStudent => {
+            const prevStudent = prevStudentsRef.current.find(p => p.id === currentStudent.id);
+            return prevStudent && prevStudent.status !== 'ausente' && currentStudent.status === 'ausente';
+        });
+
+        if (newlyAbsentStudent) {
+            setShowRecalculatePrompt(true);
+        }
+    }
+    prevStudentsRef.current = studentsOnRoute;
+  }, [studentsOnRoute, driverProfile?.status]);
+
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     const student = studentsOnRoute.find(s => s.id === studentId);
@@ -398,10 +413,20 @@ export default function DriverRoutePlanPage() {
   }, [updateDoc, studentsOnRoute, toast, direction, driverProfile?.status]);
 
   const handleStartRoute = useCallback(() => {
-    if (!driverId) return;
+    if (!driverId || !route) return;
+
+    if (route.optimizationNotice) {
+        toast({
+            title: "Aviso de Rota",
+            description: route.optimizationNotice,
+        });
+        // Clear the notice so it's only shown once
+        updateDoc('routes', route.id, { optimizationNotice: '' });
+    }
+
     updateDoc('drivers', driverId, { status: 'em_rota' });
     toast({ title: "Rota Iniciada!", description: "Boa viagem!" });
-  }, [driverId, updateDoc, toast]);
+  }, [driverId, route, updateDoc, toast]);
 
   const handlePauseRoute = useCallback(() => {
       if (!driverId) return;
@@ -447,24 +472,25 @@ export default function DriverRoutePlanPage() {
   
    const handleRecalculateFromPrompt = useCallback(async () => {
         setShowRecalculatePrompt(false);
-        if (!route || !studentsOnRoute || !schoolForRoute) return;
+        if (!route || !studentsOnRoute || !schoolForRoute || !driverProfile) return;
 
         setIsRecalculating(true);
         try {
             const presentStudents = studentsOnRoute.filter(s => s.status !== 'ausente');
-            const formatAddress = (entity) => `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
+            const formatAddress = (entity) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : '';
             
             const input = {
                 students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
                 schoolAddress: formatAddress(schoolForRoute),
-                startAddress: (driverProfile && driverProfile.latitude) ? `${driverProfile.latitude},${driverProfile.longitude}` : undefined,
+                startAddress: (driverProfile.latitude && driverProfile.longitude) ? `${driverProfile.latitude},${driverProfile.longitude}` : undefined,
             };
 
             const result = await optimizeSchoolVanRoute(input);
             
             updateDoc('routes', route.id, { 
                 studentIds: result.optimizedStudentIds,
-                turnByTurnDirections: result.turnByTurnDirections
+                turnByTurnDirections: result.turnByTurnDirections,
+                lastOptimizedAt: new Date().toISOString(),
             });
 
             toast({
@@ -482,7 +508,7 @@ export default function DriverRoutePlanPage() {
         } finally {
             setIsRecalculating(false);
         }
-    }, [route, studentsOnRoute, schoolForRoute, driverProfile, updateDoc, toast]);
+    }, [route, studentsOnRoute, schoolForRoute, driverProfile, updateDoc, toast, setIsRecalculating]);
 
 
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
@@ -667,3 +693,4 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+

@@ -283,66 +283,65 @@ export default function ParentTrackingPage() {
   
   const { data: school } = useMockDoc('schools', student?.schoolId);
   
-  const handleCommunicateAbsence = async () => {
+  const handleCommunicateAbsence = useCallback(async () => {
     if (!student) return;
 
     // Immediately update the UI for the parent
     updateDoc('students', student.id, { status: 'ausente' });
     toast({
       title: "Ausência comunicada",
-      description: `O motorista foi notificado que ${student?.name || 'o aluno'} não precisará de transporte hoje.`,
+      description: "O motorista foi notificado.",
     });
 
-    // --- Automatic Recalculation Logic ---
-    if (!route || !driver || !school) {
-        console.warn("Missing data for automatic recalculation.");
+    const route = getDoc('routes', student.routeId);
+    if (!route) return;
+
+    const driver = getDoc('drivers', route.driverId);
+    if (!driver || driver.status !== 'inativo') {
         return;
     }
 
-    if (driver.status === 'inativo') {
-        toast({
-            title: "Otimizando rota do motorista...",
-            description: "Como a rota ainda não começou, estamos ajustando o trajeto.",
+    try {
+        const allStudentsOnRoute = getCollection('students', [{ field: 'id', op: 'in', value: route.studentIds }]);
+        const presentStudents = allStudentsOnRoute.filter(s => s.id !== student.id); 
+        
+        if (presentStudents.length === 0) return;
+
+        const school = getDoc('schools', student.schoolId);
+        const vehicle = getDoc('vehicles', driver.vehicleId);
+        const formatAddress = (entity) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : '';
+        
+        const input = {
+            students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+            schoolAddress: formatAddress(school),
+            startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
+            vehicleCapacity: vehicle?.capacity,
+        };
+
+        const result = await optimizeSchoolVanRoute(input);
+        const optimizationNotice = `Rota otimizada. ${student.name} foi removido(a) por ausência.`;
+        
+        updateDoc('routes', route.id, { 
+            studentIds: result.optimizedStudentIds,
+            turnByTurnDirections: result.turnByTurnDirections,
+            lastOptimizedAt: new Date().toISOString(),
+            optimizationNotice: optimizationNotice,
         });
         
-        try {
-            const allStudentsOnRoute = getCollection('students', [{ field: 'id', op: 'in', value: route.studentIds }]);
-            const presentStudents = allStudentsOnRoute.filter(s => s.id !== student.id && s.status !== 'ausente');
-            
-            const formatAddress = (entity) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : '';
-            
-            const driverData = getDoc('drivers', route.driverId);
+        toast({
+            title: "Rota do motorista otimizada!",
+            description: "O motorista receberá o novo plano de rota automaticamente.",
+        });
 
-            const input = {
-                students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-                schoolAddress: formatAddress(school),
-                startAddress: (driverData && driverData.latitude) ? `${driverData.latitude},${driverData.longitude}` : undefined,
-                vehicleCapacity: getDoc('vehicles', driverData?.vehicleId)?.capacity
-            };
-
-            const result = await optimizeSchoolVanRoute(input);
-            
-            updateDoc('routes', route.id, { 
-                studentIds: result.optimizedStudentIds,
-                turnByTurnDirections: result.turnByTurnDirections,
-                lastOptimizedAt: new Date().toISOString()
-            });
-            
-            toast({
-                title: "Rota do motorista otimizada!",
-                description: "O motorista já receberá o novo plano de rota.",
-            });
-
-        } catch (error) {
-            console.error("Failed to automatically recalculate route:", error);
-            toast({
-                title: "Erro na Otimização Automática",
-                description: "Não foi possível otimizar a rota para o motorista.",
-                variant: "destructive"
-            });
-        }
+    } catch (error) {
+        console.error("Failed to automatically recalculate route:", error);
+        toast({
+            title: "Erro na Otimização Automática",
+            description: "Não foi possível otimizar a rota para o motorista.",
+            variant: "destructive"
+        });
     }
-  };
+  }, [student, getCollection, getDoc, updateDoc, toast]);
 
   const handleConfirmPresence = () => {
     if (!student) return;
@@ -528,3 +527,4 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
+
