@@ -33,7 +33,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 
 const operationalLinks = [
-  { href: "/dashboard/optimizer", label: "Otimizador (IA)", icon: Sparkles },
+  { href: "/dashboard/optimizer", label: "Otimizador de Rotas (IA)", icon: Sparkles },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Financeiro", icon: DollarSign },
   { href: "/dashboard/management/trip-requests", label: "Viagens Avulsas", icon: Route },

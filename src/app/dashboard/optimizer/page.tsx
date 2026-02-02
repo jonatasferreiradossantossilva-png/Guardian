@@ -366,66 +366,62 @@ export default function OptimizerPage() {
             </div>
 
             <div className="mt-8">
-                 <Card>
-                    <CardHeader>
-                        <CardTitle>Mapa Comparativo</CardTitle>
-                        <CardDescription>Visualização geográfica da rota original e da sugestão otimizada pela IA.</CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <div className="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-4 text-sm text-muted-foreground">
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-1 bg-blue-400"></div>
-                                <span>Rota Original</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <div className="w-4 h-1 bg-green-500"></div>
-                                <span>Rota Otimizada</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Home className="text-purple-600" size={16} />
-                                <span>Partida Motorista</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <School className="text-red-600" size={16} />
-                                <span>Escola</span>
-                            </div>
-                            <div className="flex items-center gap-2">
-                                <Users className="text-blue-500" size={16} />
-                                <span>Aluno</span>
+                <div className="mb-4">
+                    <h2 className="text-2xl font-semibold tracking-tight">Mapa Comparativo</h2>
+                    <p className="text-sm text-muted-foreground">Visualização geográfica da rota original e da sugestão otimizada pela IA.</p>
+                </div>
+                <div className="flex justify-center flex-wrap gap-x-6 gap-y-2 mb-4 text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-blue-400"></div>
+                        <span>Rota Original</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <div className="w-4 h-1 bg-green-500"></div>
+                        <span>Rota Otimizada</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Home className="text-purple-600" size={16} />
+                        <span>Partida Motorista</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <School className="text-red-600" size={16} />
+                        <span>Escola</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                        <Users className="text-blue-500" size={16} />
+                        <span>Aluno</span>
+                    </div>
+                </div>
+
+                 <div className="aspect-video w-full rounded-lg overflow-hidden border">
+                    {!API_KEY ? (
+                        <div className="flex h-full w-full items-center justify-center bg-secondary/30">
+                            <div className="text-center p-4">
+                                <p className="font-semibold text-lg">Mapa Indisponível</p>
+                                <p className="text-muted-foreground text-sm">
+                                    A chave da API do Google Maps não foi configurada.
+                                </p>
                             </div>
                         </div>
-
-                         <div className="aspect-video w-full rounded-lg overflow-hidden border">
-                            {!API_KEY ? (
-                                <div className="flex h-full w-full items-center justify-center bg-secondary/30">
-                                    <div className="text-center p-4">
-                                        <p className="font-semibold text-lg">Mapa Indisponível</p>
-                                        <p className="text-muted-foreground text-sm">
-                                            A chave da API do Google Maps não foi configurada.
-                                        </p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <APIProvider apiKey={API_KEY}>
-                                    <GoogleMap
-                                        defaultCenter={{ lat: -23.55, lng: -46.63 }}
-                                        defaultZoom={12}
-                                        mapId="optimizer-map"
-                                        gestureHandling={'greedy'}
-                                        disableDefaultUI={true}
-                                    >
-                                        <RouteMap 
-                                            originalRoute={studentsInRoute} 
-                                            optimizedRoute={optimizedStudentsResult} 
-                                            school={schoolForRoute}
-                                            driver={startFromDriverHome ? driverForRoute : null}
-                                        />
-                                    </GoogleMap>
-                                </APIProvider>
-                            )}
-                         </div>
-                    </CardContent>
-                 </Card>
+                    ) : (
+                        <APIProvider apiKey={API_KEY}>
+                            <GoogleMap
+                                defaultCenter={{ lat: -23.55, lng: -46.63 }}
+                                defaultZoom={12}
+                                mapId="optimizer-map"
+                                gestureHandling={'greedy'}
+                                disableDefaultUI={true}
+                            >
+                                <RouteMap 
+                                    originalRoute={studentsInRoute} 
+                                    optimizedRoute={optimizedStudentsResult} 
+                                    school={schoolForRoute}
+                                    driver={startFromDriverHome ? driverForRoute : null}
+                                />
+                            </GoogleMap>
+                        </APIProvider>
+                    )}
+                 </div>
             </div>
         </div>
     );
