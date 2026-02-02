@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import { useRouter } from "next/navigation";
+import { useMemo } from "react";
 
 import { Button } from "@/components/ui/button";
 import {
@@ -18,50 +19,66 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
 import { useAuth, initiateAnonymousSignIn } from "@/firebase";
+import { useToast } from "@/hooks/use-toast";
+import { useMockData } from "@/hooks/use-mock-data";
+
 
 const formSchema = z.object({
   email: z.string().email({
     message: "Por favor, insira um email válido.",
   }),
-  password: z.string().min(6, {
-    message: "A senha deve ter pelo menos 6 caracteres.",
+  password: z.string().min(1, {
+    message: "A senha é obrigatória.",
   }),
 });
 
-type UserRole = "admin" | "driver" | "parent" | "assistant";
-
-// For mock purposes, map roles to specific user IDs from our mock data.
-const mockUserMap: Record<UserRole, string> = {
-    admin: 'user-admin-1',     // Admin User (also driver-1)
-    driver: 'user-motorista-2', // Mariana Costa (driver-2)
-    parent: 'user-pai-1',      // Ana Pereira (parent-1)
-    assistant: 'user-aux-1',   // Fernanda Lima
+// Map specific emails to user profiles for this prototype
+const emailToProfileMap = {
+    'admin@guardian.com': { profile: 'gestor', name: 'Admin User' },
+    'mariana.costa@rotasegura.com': { profile: 'motorista', name: 'Mariana Costa' },
+    'ana.pereira@email.com': { profile: 'pai', name: 'Ana Pereira' },
+    'fernanda.lima@rotasegura.com': { profile: 'auxiliar', name: 'Fernanda Lima' }
 };
-
 
 export function LoginForm() {
   const router = useRouter();
+  const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
-  const [role, setRole] = useState<UserRole>("admin");
   const auth = useAuth();
+  const { db } = useMockData();
+
+  const allUsersMap = useMemo(() => {
+      if (!db?.users) return new Map();
+      return new Map(db.users.map(u => [u.email, u]));
+  }, [db]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      email: "usuario@exemplo.com",
-      password: "senha123",
+      email: "admin@guardian.com",
+      password: "senha",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
+    const userProfile = allUsersMap.get(values.email);
+
+    if (!userProfile) {
+        toast({
+            title: "Usuário não encontrado",
+            description: "O e-mail inserido não corresponde a nenhum usuário de teste.",
+            variant: "destructive"
+        });
+        setIsLoading(false);
+        return;
+    }
+    
     // For this prototype, we store the selected mock user ID in session storage
     // to simulate a real user login for each role.
-    sessionStorage.setItem('mockUserId', mockUserMap[role]);
+    sessionStorage.setItem('mockUserId', userProfile.id);
 
     if (auth) {
       // Non-blocking anonymous sign-in. The onAuthStateChanged listener will handle the rest.
@@ -72,18 +89,23 @@ export function LoginForm() {
         return;
     }
 
+    toast({
+        title: `Bem-vindo(a), ${userProfile.name}!`,
+        description: `Redirecionando para o painel de ${userProfile.profile}.`
+    });
+
     // Redirect immediately. The protected pages will handle the auth state.
-    switch (role) {
-      case "admin":
+    switch (userProfile.profile) {
+      case "gestor":
         router.push("/dashboard");
         break;
-      case "driver":
+      case "motorista":
         router.push("/driver/route-plan");
         break;
-      case "parent":
+      case "pai":
         router.push("/parent/tracking");
         break;
-      case "assistant":
+      case "auxiliar":
         router.push("/assistant/route-plan");
         break;
       default:
@@ -133,32 +155,6 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
-            <div className="space-y-3">
-              <FormLabel>Entrar como</FormLabel>
-              <RadioGroup
-                defaultValue="admin"
-                className="grid grid-cols-2 pt-2 gap-4"
-                onValueChange={(value) => setRole(value as UserRole)}
-                disabled={isLoading}
-              >
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="admin" id="admin" />
-                  <Label htmlFor="admin">Admin</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="driver" id="driver" />
-                  <Label htmlFor="driver">Motorista</Label>
-                </div>
-                <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="parent" id="parent" />
-                  <Label htmlFor="parent">Pais</Label>
-                </div>
-                 <div className="flex items-center space-x-2">
-                  <RadioGroupItem value="assistant" id="assistant" />
-                  <Label htmlFor="assistant">Auxiliar</Label>
-                </div>
-              </RadioGroup>
-            </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="animate-spin" />
