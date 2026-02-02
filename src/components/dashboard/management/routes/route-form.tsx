@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
@@ -73,16 +73,19 @@ export function RouteForm({
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
 
-  const defaultFormValues = useMemo(() => ({
-    name: '',
-    driverId: '',
-    assistantId: '',
-    studentIds: [],
-  }), []);
-
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: defaultFormValues,
+    defaultValues: route ? {
+        name: route.name || '',
+        driverId: route.driverId || '',
+        assistantId: route.assistantId || '',
+        studentIds: route.studentIds || [],
+    } : {
+      name: '',
+      driverId: '',
+      assistantId: '',
+      studentIds: [],
+    },
   });
 
   const studentIdsInForm = form.watch('studentIds');
@@ -116,19 +119,6 @@ export function RouteForm({
 
     return { availableStudents, studentsInCurrentRoute };
   }, [studentIdsInForm, db.students, route, studentSearch]);
-
-  useEffect(() => {
-    if (route) {
-      form.reset({
-        name: route.name || '',
-        driverId: route.driverId || '',
-        assistantId: route.assistantId || '',
-        studentIds: route.studentIds || [],
-      });
-    } else {
-      form.reset(defaultFormValues);
-    }
-  }, [route, form, defaultFormValues]);
 
   const addSelectedStudents = () => {
     const currentStudentIds = form.getValues('studentIds');
@@ -197,7 +187,7 @@ export function RouteForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-2xl">
+    <DialogContent className="sm:max-w-xl">
       <DialogHeader>
         <DialogTitle>{route ? 'Editar Rota' : 'Adicionar Rota'}</DialogTitle>
         <DialogDescription>

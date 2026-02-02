@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import Link from 'next/link';
 import {
   Table,
@@ -100,17 +100,17 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
       return new Map(assistants.map(a => [a.id, a.name]));
   }, [assistants]);
 
-  const handleEdit = (route: Route) => {
+  const handleEdit = useCallback((route: Route) => {
     setSelectedRoute(route);
     setIsFormOpen(true);
-  };
+  }, []);
 
-  const handleDelete = (route: Route) => {
+  const handleDelete = useCallback((route: Route) => {
     setSelectedRoute(route);
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
   
-  const confirmDelete = () => {
+  const confirmDelete = useCallback(() => {
     if (!selectedRoute) return;
     deleteDoc('routes', selectedRoute.id);
     toast({
@@ -120,12 +120,12 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     });
     setIsDeleteDialogOpen(false);
     setSelectedRoute(null);
-  }
+  }, [selectedRoute, deleteDoc, toast]);
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = useCallback(() => {
     setIsFormOpen(false);
     setSelectedRoute(null);
-  };
+  }, []);
 
   return (
     <div>
@@ -144,6 +144,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             </Button>
           </DialogTrigger>
           <RouteForm 
+            key={selectedRoute?.id || 'new-route'}
             route={selectedRoute || undefined} 
             drivers={drivers || []}
             students={students || []}
