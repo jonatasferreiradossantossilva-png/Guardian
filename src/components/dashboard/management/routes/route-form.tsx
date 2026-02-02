@@ -34,7 +34,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowLeft, ArrowRight, ChevronsLeft, ChevronsRight, ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
-import { Card } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 const formSchema = z.object({
@@ -333,21 +333,21 @@ export function RouteForm({
                     </TabsList>
                     <TabsContent value="inRoute">
                         <Card>
-                            <div className="p-2">
+                            <CardContent className="p-2">
                                 <ScrollArea className="h-56">
                                     {studentsInCurrentRoute.length > 0 ? studentsInCurrentRoute.map((s, index) => (
-                                        <div key={s.id} onClick={() => toggleSelection('inRoute', s.id)} data-state={selectedInRoute.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex items-center justify-between">
-                                            <div className="flex items-center gap-2">
+                                        <div key={s.id} onClick={() => toggleSelection('inRoute', s.id)} data-state={selectedInRoute.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex items-center justify-between gap-2">
+                                             <div className="flex items-center gap-2 flex-1 min-w-0">
                                                 <span className="text-muted-foreground w-4">{index + 1}.</span>
-                                                <span>{s.name}</span>
+                                                <span className="truncate font-medium">{s.name}</span>
                                             </div>
-                                             <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={(e) => { e.stopPropagation(); removeStudentFromRoute(s.id); }}>
+                                             <Button type="button" variant="ghost" size="icon" className="h-6 w-6 shrink-0" onClick={(e) => { e.stopPropagation(); removeStudentFromRoute(s.id); }}>
                                                 <X className="h-4 w-4 text-destructive"/>
                                             </Button>
                                         </div>
                                     )) : <p className="text-center text-sm text-muted-foreground p-8">Nenhum aluno na rota.</p>}
                                 </ScrollArea>
-                            </div>
+                            </CardContent>
                         </Card>
                         <div className="flex gap-2 mt-2 justify-center">
                             <Button type="button" size="icon" variant="outline" onClick={() => moveInRoute('up')} disabled={selectedInRoute.size !== 1}><ArrowUp/></Button>
@@ -364,16 +364,16 @@ export function RouteForm({
                                 className="h-8"
                                 />
                             </div>
-                            <div className="p-2">
+                            <CardContent className="p-2">
                                 <ScrollArea className="h-48">
                                     {availableStudents.length > 0 ? availableStudents.map(s => (
-                                        <div key={s.id} onClick={() => toggleSelection('available', s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex justify-between">
-                                        <span>{s.name}</span>
-                                        <span className="text-muted-foreground text-xs">{s.shift}</span>
+                                        <div key={s.id} onClick={() => toggleSelection('available', s.id)} data-state={selectedAvailable.has(s.id) ? 'selected' : 'deselected'} className="p-2 text-sm rounded-md cursor-pointer data-[state=selected]:bg-primary data-[state=selected]:text-primary-foreground hover:bg-accent flex justify-between items-center gap-2">
+                                            <span className="truncate font-medium">{s.name}</span>
+                                            <span className="text-muted-foreground text-xs shrink-0">{s.shift}</span>
                                         </div>
                                     )) : <p className="text-center text-sm text-muted-foreground p-8">Nenhum aluno disponível.</p>}
                                 </ScrollArea>
-                            </div>
+                            </CardContent>
                         </Card>
                         <Button type="button" className="w-full mt-2" onClick={() => moveStudents('toRoute')} disabled={selectedAvailable.size === 0}>Adicionar selecionados</Button>
                     </TabsContent>
@@ -402,3 +402,5 @@ const CardWithListHeader = ({ title, count, children }) => (
         <div className="p-2">{children}</div>
     </Card>
 );
+
+    
