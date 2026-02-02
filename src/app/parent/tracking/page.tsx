@@ -10,12 +10,13 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, LocateFixed, Crosshair } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 // Types matching mock data
@@ -117,7 +118,7 @@ function Directions({ directions }: { directions: google.maps.DirectionsResult |
       directionsRendererRef.current = new google.maps.DirectionsRenderer({
         suppressMarkers: true, // We use our own custom markers
         polylineOptions: {
-          strokeColor: "#1c64f2", // A nice blue color for the route
+          strokeColor: "#2ab0c1", // Teal color from our theme
           strokeOpacity: 0.8,
           strokeWeight: 6,
         },
@@ -137,7 +138,6 @@ function Directions({ directions }: { directions: google.maps.DirectionsResult |
     return () => {
       if (directionsRendererRef.current) {
         directionsRendererRef.current.setMap(null);
-        // We don't nullify the ref here to avoid re-creating it on every render
       }
     };
   }, [map, directions]);
@@ -146,7 +146,7 @@ function Directions({ directions }: { directions: google.maps.DirectionsResult |
 }
 
 
-function ParentRouteMap({ busLocation, student, school, userLocation, recenterRequest }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, userLocation: any, recenterRequest: any }) {
+function ParentRouteMap({ busLocation, student, school, recenterRequest }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, recenterRequest: any }) {
   const map = useMap();
   const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
   const lastDestinationRef = useRef<string | null>(null);
@@ -163,10 +163,9 @@ function ParentRouteMap({ busLocation, student, school, userLocation, recenterRe
     const origin = { lat: busLocation.latitude, lng: busLocation.longitude };
     const destinationPoint = student.status === 'a_bordo' ? school : student;
     const destination = { lat: destinationPoint.latitude, lng: destinationPoint.longitude };
-    const destinationKey = destinationPoint.id; // Use ID to check if destination changed
+    const destinationKey = destinationPoint.id;
 
     // COST-SAVING: Only request new directions if the final destination changes.
-    // The van icon's movement along the polyline doesn't require new API calls.
     if (lastDestinationRef.current === destinationKey) {
       return;
     }
@@ -180,21 +179,34 @@ function ParentRouteMap({ busLocation, student, school, userLocation, recenterRe
       (result, status) => {
         if (status === google.maps.DirectionsStatus.OK) {
           setDirections(result);
-          lastDestinationRef.current = destinationKey; // Store the destination we just routed to
+          lastDestinationRef.current = destinationKey;
         } else {
           console.error(`Directions request failed due to ${status}`);
           setDirections(null);
         }
       }
     );
-  }, [map, busLocation, student, school, student?.status]); // student.status change will trigger this effect
+  }, [map, busLocation, student, school, student?.status]);
 
 
   useEffect(() => {
-    if (!map || !recenterRequest) return;
-    map.panTo(recenterRequest);
-    map.setZoom(16);
-  }, [map, recenterRequest]);
+      if (!map || !recenterRequest) return;
+      
+      const bounds = new google.maps.LatLngBounds();
+      if (busLocation?.latitude && busLocation?.longitude) {
+          bounds.extend({ lat: busLocation.latitude, lng: busLocation.longitude });
+      }
+      if (student?.latitude && student?.longitude) {
+          bounds.extend({ lat: student.latitude, lng: student.longitude });
+      }
+       if (school?.latitude && school?.longitude) {
+          bounds.extend({ lat: school.latitude, lng: school.longitude });
+      }
+
+      if (!bounds.isEmpty()) {
+        map.fitBounds(bounds, 100); // 100px padding
+      }
+  }, [map, recenterRequest, busLocation, student, school]);
 
   return (
     <>
@@ -208,22 +220,16 @@ function ParentRouteMap({ busLocation, student, school, userLocation, recenterRe
       )}
       {student && (
         <AdvancedMarker position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-          <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
-            <User className="h-4 w-4 text-white" />
-          </div>
+             <Avatar className="h-10 w-10 border-2 border-blue-500 shadow-lg">
+                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
+                <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+            </Avatar>
         </AdvancedMarker>
       )}
       {school && (
         <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
           <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
             <School className="h-5 w-5 text-white" />
-          </div>
-        </AdvancedMarker>
-      )}
-       {userLocation && (
-        <AdvancedMarker position={userLocation} title="Sua Posição">
-          <div className="p-1.5 bg-indigo-600 rounded-full border-2 border-white shadow-md">
-            <Crosshair className="h-4 w-4 text-white" />
           </div>
         </AdvancedMarker>
       )}
@@ -237,8 +243,7 @@ export default function ParentTrackingPage() {
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [isNearby, setIsNearby] = useState(false);
-  const [userLocation, setUserLocation] = useState(null);
-  const [recenterRequest, setRecenterRequest] = useState(null);
+  const [recenterRequest, setRecenterRequest] = useState<number | null>(null);
 
   useEffect(() => {
     // For this prototype, we get the logged-in user's ID from session storage.
@@ -305,44 +310,11 @@ export default function ParentTrackingPage() {
     });
   };
   
-  const handleSetUserLocation = () => {
-    setRecenterRequest(null);
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const loc = {
-            lat: position.coords.latitude,
-            lng: position.coords.longitude,
-          };
-          setUserLocation(loc);
-          setRecenterRequest(loc);
-          toast({ title: "Mapa centralizado na sua localização." });
-        },
-        (error) => {
-          // Check the error code to provide a more specific message
-          if (error.code === error.PERMISSION_DENIED) {
-            toast({
-              title: "Permissão de localização negada.",
-              description: "Para usar este recurso, você precisa permitir o acesso à sua localização nas configurações do seu navegador ou dispositivo.",
-              variant: "destructive",
-            });
-          } else {
-             toast({
-              title: "Não foi possível obter a localização.",
-              description: "Ocorreu um erro ao tentar buscar sua localização. Tente novamente.",
-              variant: "destructive",
-            });
-          }
-        }
-      );
-    } else {
-      toast({
-        title: "Geolocalização não suportada",
-        description: "Seu navegador não suporta este recurso.",
-        variant: "destructive"
-      });
-    }
+  const handleRecenterMap = () => {
+    setRecenterRequest(Date.now());
+    toast({ title: "Mapa centralizado na rota." });
   };
+
 
   const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading;
   const studentStatus = student?.status || 'aguardando';
@@ -463,9 +435,8 @@ export default function ParentTrackingPage() {
             <TabsContent value="map" className="mt-4">
                <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Van</span></div>
-                    <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Aluno</span></div>
+                    <div className="flex items-center gap-1.5"><Avatar className="h-4 w-4 border-blue-500"><AvatarImage src={`https://picsum.photos/seed/student-legend/100/100`} /><AvatarFallback>A</AvatarFallback></Avatar><span>Aluno</span></div>
                     <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
-                    <div className="flex items-center gap-1.5"><Crosshair className="h-4 w-4 text-indigo-600" /><span>Sua Posição</span></div>
                 </div>
               <Card className="h-[75vh]">
                 <CardContent className="p-0 h-full relative">
@@ -491,7 +462,6 @@ export default function ParentTrackingPage() {
                                 busLocation={displayLocation}
                                 student={student}
                                 school={school}
-                                userLocation={userLocation}
                                 recenterRequest={recenterRequest}
                            />
                            {!displayLocation && !isLocationLoading && (
@@ -503,7 +473,7 @@ export default function ParentTrackingPage() {
                         </APIProvider>
                     )}
                   </div>
-                  <Button size="icon" variant="secondary" onClick={handleSetUserLocation} className="absolute bottom-4 right-4 z-10 shadow-lg">
+                  <Button size="icon" variant="secondary" onClick={handleRecenterMap} className="absolute bottom-4 right-4 z-10 shadow-lg">
                       <LocateFixed className="h-5 w-5" />
                   </Button>
                 </CardContent>
