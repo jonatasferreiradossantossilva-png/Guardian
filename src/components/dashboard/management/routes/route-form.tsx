@@ -128,7 +128,7 @@ export function RouteForm({
     } else {
       form.reset(defaultFormValues);
     }
-  }, [route, form.reset, defaultFormValues]);
+  }, [route, form, defaultFormValues]);
 
   const addSelectedStudents = () => {
     const currentStudentIds = form.getValues('studentIds');
@@ -197,7 +197,7 @@ export function RouteForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-4xl">
+    <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>{route ? 'Editar Rota' : 'Adicionar Rota'}</DialogTitle>
         <DialogDescription>
