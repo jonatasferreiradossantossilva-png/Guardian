@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 'use client';
 
@@ -18,6 +19,10 @@ export function MockDataProvider({ children }) {
         return filters.every(filter => {
           const { field, op, value } = filter;
           if (op === '==') {
+            // Handle nested objects for locations
+            if (collectionName === 'locations') {
+              return doc.id === value;
+            }
             return doc[field] === value;
           }
           if (op === 'in') {
@@ -27,6 +32,18 @@ export function MockDataProvider({ children }) {
         });
       });
     }
+    // Specific handling for locations to return an array of the object
+    if (collectionName === 'locations') {
+        const locationData = db.locations;
+        const filteredLocations = filters ? filters.reduce((acc, f) => {
+            if (f.op === '==' && locationData[f.value]) {
+                acc.push({ ...locationData[f.value], id: f.value });
+            }
+            return acc;
+        }, []) : Object.entries(locationData).map(([id, data]) => ({...data, id}));
+        return filteredLocations;
+    }
+    
     return results;
   }, [db]);
 
@@ -149,3 +166,5 @@ export const addDocumentNonBlocking = (collectionRef, data) => {
 export const updateDocumentNonBlocking = (docRef, data) => {};
 export const deleteDocumentNonBlocking = (docRef) => {};
 export const setDocumentNonBlocking = (docRef, data) => {};
+
+    

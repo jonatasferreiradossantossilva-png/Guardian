@@ -316,7 +316,7 @@ export default function DriverRoutePlanPage() {
   const driverProfile = useMemo(() => (drivers ? drivers[0] : null), [drivers]);
   const driverId = driverProfile?.id;
   
-  const { data: driverLocation } = useMockCollection(driverId ? `locations/${driverId}` : null);
+  const { data: driverLocation } = useMockCollection('locations', driverId ? [{ field: 'id', op: '==', value: driverId }] : undefined);
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
     'routes',
@@ -730,7 +730,7 @@ export default function DriverRoutePlanPage() {
                                         disableDefaultUI={true}
                                     >
                                         <RouteMap 
-                                            driverLocation={driverLocation}
+                                            driverLocation={driverLocation?.[0]}
                                             students={studentsOnRoute} 
                                             school={schoolForRoute}
                                             route={route}
@@ -788,3 +788,4 @@ export default function DriverRoutePlanPage() {
     );
 }
 
+    
