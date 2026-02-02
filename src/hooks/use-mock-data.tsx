@@ -13,16 +13,36 @@ export function MockDataProvider({ children }) {
 
   const getCollection = useCallback((collectionName, filters) => {
     if (!collectionName) return [];
+    
+    // Special handling for 'locations' which is an object, not an array
+    if (collectionName === 'locations') {
+        const locationData = db.locations || {};
+        if (!filters || filters.length === 0) {
+            return Object.entries(locationData).map(([id, data]) => ({...data, id}));
+        }
+        
+        // This specific filter logic is for useMockCollection('locations', [{ field: 'id', op: '==', value: 'driver-1' }]) which is not a common use case.
+        // The main use case is getting a single location by ID using useMockNestedDoc.
+        // This implementation will handle basic filtering if it's ever needed.
+        return Object.entries(locationData)
+            .map(([id, data]) => ({ ...data, id }))
+            .filter(doc => {
+                return filters.every(filter => {
+                    if (filter.op === '==' && filter.field === 'id') {
+                        return doc.id === filter.value;
+                    }
+                    // Add other filter operations for locations if needed
+                    return true;
+                });
+            });
+    }
+
     let results = db[collectionName] || [];
     if (filters && filters.length > 0) {
       results = results.filter(doc => {
         return filters.every(filter => {
           const { field, op, value } = filter;
           if (op === '==') {
-            // Handle nested objects for locations
-            if (collectionName === 'locations') {
-              return doc.id === value;
-            }
             return doc[field] === value;
           }
           if (op === 'in') {
@@ -31,17 +51,6 @@ export function MockDataProvider({ children }) {
           return true;
         });
       });
-    }
-    // Specific handling for locations to return an array of the object
-    if (collectionName === 'locations') {
-        const locationData = db.locations;
-        const filteredLocations = filters ? filters.reduce((acc, f) => {
-            if (f.op === '==' && locationData[f.value]) {
-                acc.push({ ...locationData[f.value], id: f.value });
-            }
-            return acc;
-        }, []) : Object.entries(locationData).map(([id, data]) => ({...data, id}));
-        return filteredLocations;
     }
     
     return results;

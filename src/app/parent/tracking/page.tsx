@@ -6,6 +6,7 @@ import {
   useMockCollection,
   useMockDoc,
   useMockData,
+  useMockNestedDoc,
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
@@ -89,22 +90,6 @@ const statusBadgeVariant: Record<
 };
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
-
-// A simple hook to simulate onSnapshot for a single nested doc
-const useMockNestedDocSnapshot = (path) => {
-    const { getNestedDoc, db } = useMockData();
-    const [data, setData] = useState(() => path ? getNestedDoc(path) : null);
-
-    useEffect(() => {
-        if (path) {
-            setData(getNestedDoc(path));
-        } else {
-            setData(null);
-        }
-    }, [db, path, getNestedDoc]);
-
-    return { data, isLoading: false, error: null };
-}
 
 // Haversine formula to calculate distance between two lat/lng points in KM
 function haversineDistance(coords1, coords2) {
@@ -278,7 +263,7 @@ export default function ParentTrackingPage() {
   const { data: route, isLoading: isRouteLoading } = useMockDoc("routes", student?.routeId);
   const { data: driver, isLoading: isDriverLoading } = useMockDoc("drivers", route?.driverId);
 
-  const { data: displayLocation, isLoading: isLocationLoading } = useMockNestedDocSnapshot(route?.driverId ? `locations/${route.driverId}`: null);
+  const { data: displayLocation, isLoading: isLocationLoading } = useMockNestedDoc(route?.driverId ? `locations/${route.driverId}`: null);
   
   const { data: school } = useMockDoc('schools', student?.schoolId);
   
