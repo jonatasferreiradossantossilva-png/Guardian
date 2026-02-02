@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import {
   useMockCollection,
@@ -104,45 +104,101 @@ function haversineDistance(coords1, coords2) {
 }
 
 
-function ParentRouteMap({ busLocation, student, school, userLocation, recenterRequest }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, userLocation: any, recenterRequest: any }) {
+// --- New component to render directions on the map ---
+function Directions({ directions }: { directions: google.maps.DirectionsResult | null }) {
   const map = useMap();
+  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
 
   useEffect(() => {
     if (!map) return;
     
-    if (recenterRequest) {
-        map.panTo(recenterRequest);
-        map.setZoom(16);
-        return; // Don't fit bounds if we are recentering
-    }
-
-    const bounds = new google.maps.LatLngBounds();
-    if (busLocation?.latitude && busLocation?.longitude) {
-        bounds.extend({ lat: busLocation.latitude, lng: busLocation.longitude });
-    }
-    if (student?.latitude && student?.longitude) {
-        bounds.extend({ lat: student.latitude, lng: student.longitude });
-    }
-     if (school?.latitude && school?.longitude) {
-        bounds.extend({ lat: school.latitude, lng: school.longitude });
-    }
-     if (userLocation) {
-        bounds.extend(userLocation);
-    }
-
-    if (bounds.isEmpty()) {
-       if (busLocation) {
-         map.setCenter({ lat: busLocation.latitude, lng: busLocation.longitude });
-         map.setZoom(15);
-       }
-    } else {
-        map.fitBounds(bounds, 100);
+    // Initialize renderer if it doesn't exist
+    if (!directionsRendererRef.current) {
+      directionsRendererRef.current = new google.maps.DirectionsRenderer({
+        suppressMarkers: true, // We use our own custom markers
+        polylineOptions: {
+          strokeColor: "#1c64f2", // A nice blue color for the route
+          strokeOpacity: 0.8,
+          strokeWeight: 6,
+        },
+      });
+      directionsRendererRef.current.setMap(map);
     }
     
-  }, [map, busLocation, student, school, userLocation, recenterRequest]);
+    // Update directions when they change
+    if (directions) {
+      directionsRendererRef.current.setDirections(directions);
+    } else {
+      // Clear directions if they are null
+      directionsRendererRef.current.setDirections({ routes: [] });
+    }
+
+    // Cleanup on unmount
+    return () => {
+      if (directionsRendererRef.current) {
+        directionsRendererRef.current.setMap(null);
+        // We don't nullify the ref here to avoid re-creating it on every render
+      }
+    };
+  }, [map, directions]);
+
+  return null; // This component does not render anything directly
+}
+
+
+function ParentRouteMap({ busLocation, student, school, userLocation, recenterRequest }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, userLocation: any, recenterRequest: any }) {
+  const map = useMap();
+  const [directions, setDirections] = useState<google.maps.DirectionsResult | null>(null);
+  const lastDestinationRef = useRef<string | null>(null);
+
+  // Effect to fetch directions from Google Maps API
+  useEffect(() => {
+    if (!map || !busLocation || !student || !school) {
+      setDirections(null); // Clear route if essential data is missing
+      return;
+    }
+
+    const directionsService = new google.maps.DirectionsService();
+
+    const origin = { lat: busLocation.latitude, lng: busLocation.longitude };
+    const destinationPoint = student.status === 'a_bordo' ? school : student;
+    const destination = { lat: destinationPoint.latitude, lng: destinationPoint.longitude };
+    const destinationKey = destinationPoint.id; // Use ID to check if destination changed
+
+    // COST-SAVING: Only request new directions if the final destination changes.
+    // The van icon's movement along the polyline doesn't require new API calls.
+    if (lastDestinationRef.current === destinationKey) {
+      return;
+    }
+    
+    directionsService.route(
+      {
+        origin: origin,
+        destination: destination,
+        travelMode: google.maps.TravelMode.DRIVING,
+      },
+      (result, status) => {
+        if (status === google.maps.DirectionsStatus.OK) {
+          setDirections(result);
+          lastDestinationRef.current = destinationKey; // Store the destination we just routed to
+        } else {
+          console.error(`Directions request failed due to ${status}`);
+          setDirections(null);
+        }
+      }
+    );
+  }, [map, busLocation, student, school, student?.status]); // student.status change will trigger this effect
+
+
+  useEffect(() => {
+    if (!map || !recenterRequest) return;
+    map.panTo(recenterRequest);
+    map.setZoom(16);
+  }, [map, recenterRequest]);
 
   return (
     <>
+      <Directions directions={directions} />
       {busLocation && (
         <AdvancedMarker position={{ lat: busLocation.latitude, lng: busLocation.longitude }} title="Posição da Van">
           <div className="p-1 bg-primary rounded-full shadow-lg">
