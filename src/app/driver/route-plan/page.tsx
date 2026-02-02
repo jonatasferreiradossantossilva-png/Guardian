@@ -11,22 +11,11 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
-import {
   List,
   Bus,
   User,
   Loader2,
   AlertTriangle,
-  ClipboardCheck,
   MessageSquare,
   IdCard,
   School,
@@ -34,34 +23,26 @@ import {
   Play,
   Pause,
   Square,
-  MoreVertical,
   CheckCircle,
   XCircle,
   Siren,
-  Users,
   LocateFixed,
   Phone,
-  Share2,
-  MapPin,
   Sparkles,
+  ArrowLeft,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData, useMockNestedDocSnapshot } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
-import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
 type Shift = 'Manhã' | 'Tarde';
@@ -92,8 +73,10 @@ const statusText: Record<StudentStatus, string> = {
 
 // --- Sub-components for the new UI ---
 
-const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal }) => {
+const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction }) => {
   if (!student) return null;
+
+  const isGoing = direction === 'ida';
 
   return (
     <Card className="w-full shadow-lg border-primary/20">
@@ -111,9 +94,15 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
         </p>
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-2">
-        <Button size="lg" className="bg-green-600 hover:bg-green-700" onClick={() => onStatusChange(student.id, 'a_bordo')}>
-          <CheckCircle className="mr-2 h-5 w-5" /> Embarcou
-        </Button>
+        {isGoing ? (
+            <Button size="lg" className="bg-green-600 hover:bg-green-700" onClick={() => onStatusChange(student.id, 'a_bordo')}>
+                <CheckCircle className="mr-2 h-5 w-5" /> Embarcou
+            </Button>
+        ) : (
+             <Button size="lg" className="bg-blue-600 hover:bg-blue-700" onClick={() => onStatusChange(student.id, 'desembarcado')}>
+                <CheckCircle className="mr-2 h-5 w-5" /> Desembarcou
+            </Button>
+        )}
         <Button size="lg" variant="destructive" onClick={() => onStatusChange(student.id, 'ausente')}>
           <XCircle className="mr-2 h-5 w-5" /> Ausente
         </Button>
@@ -189,23 +178,6 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
         </div>
     </div>
 );
-
-
-const useMockNestedDocSnapshot = (path) => {
-    const { getNestedDoc, db } = useMockData();
-    const [data, setData] = useState(() => path ? getNestedDoc(path) : null);
-
-    useEffect(() => {
-        if (path) {
-            setData(getNestedDoc(path));
-        } else {
-            setData(null);
-        }
-    }, [db, path, getNestedDoc]);
-
-    return { data };
-};
-
 
 function RouteMap({ driverLocation, students, school, route, recenterRequest, toast }) {
     const map = useMap();
@@ -314,11 +286,14 @@ export default function DriverRoutePlanPage() {
   const [recenterRequest, setRecenterRequest] = useState(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [showRecalculatePrompt, setShowRecalculatePrompt] = useState(false);
+  const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const prevStudentsRef = useRef<Student[]>();
 
 
   useEffect(() => {
-    setMockUserId('user-admin-1'); 
+    // In a real app, you'd get this from your auth state.
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMockUserId(storedUserId || 'user-admin-1'); 
   }, []);
 
   const { shift, direction } = useMemo(() => {
@@ -369,22 +344,16 @@ export default function DriverRoutePlanPage() {
 
     if (direction === 'ida') {
         return studentsOnRoute.find(s => s.status === 'aguardando') || null;
-    } else {
-        const onBoardStudents = studentsOnRoute.filter(s => s.status === 'a_bordo');
-        return onBoardStudents[onBoardStudents.length - 1] || null;
+    } else { // 'volta'
+        return studentsOnRoute.find(s => s.status === 'a_bordo') || null;
     }
   }, [studentsOnRoute, driverProfile?.status, direction]);
   
   const upcomingStops = useMemo(() => {
     if (!nextStop || !studentsOnRoute) return [];
-     if (direction === 'ida') {
-        const nextStopIndex = studentsOnRoute.findIndex(s => s.id === nextStop.id);
-        return studentsOnRoute.slice(nextStopIndex + 1);
-    } else {
-        const nextStopIndex = studentsOnRoute.findIndex(s => s.id === nextStop.id);
-        return studentsOnRoute.slice(0, nextStopIndex).reverse();
-    }
-  }, [nextStop, studentsOnRoute, direction]);
+    const nextStopIndex = studentsOnRoute.findIndex(s => s.id === nextStop.id);
+    return studentsOnRoute.slice(nextStopIndex + 1);
+  }, [nextStop, studentsOnRoute]);
   
   useEffect(() => {
     if (driverProfile?.status === 'em_rota' && prevStudentsRef.current && studentsOnRoute) {
@@ -403,25 +372,29 @@ export default function DriverRoutePlanPage() {
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     const student = studentsOnRoute.find(s => s.id === studentId);
-    let effectiveStatus = newStatus;
+    if (student) setLastProcessedStudent(student); // Save for potential undo
 
-    if (direction === 'volta' && newStatus === 'a_bordo') {
-        effectiveStatus = 'desembarcado';
-    }
-
-    updateDoc('students', studentId, { status: effectiveStatus });
+    updateDoc('students', studentId, { status: newStatus });
     toast({
         title: 'Status Atualizado',
-        description: `${student?.name || 'O aluno'} foi marcado(a) como ${statusText[effectiveStatus]}.`,
+        description: `${student?.name || 'O aluno'} foi marcado(a) como ${statusText[newStatus]}.`,
     });
 
-    if (effectiveStatus === 'ausente' && driverProfile?.status === 'em_rota') {
+    if (newStatus === 'ausente' && driverProfile?.status === 'em_rota') {
         setShowRecalculatePrompt(true);
     }
-  }, [updateDoc, studentsOnRoute, toast, direction, driverProfile?.status]);
+  }, [updateDoc, studentsOnRoute, toast, driverProfile?.status]);
 
   const handleStartRoute = useCallback(() => {
     if (!driverId || !route) return;
+
+    if (direction === 'volta') {
+        studentsOnRoute.forEach(student => {
+             if (student.status !== 'ausente') { 
+                updateDoc('students', student.id, { status: 'a_bordo' });
+            }
+        });
+    }
 
     if (route.optimizationNotice) {
         toast({
@@ -432,8 +405,8 @@ export default function DriverRoutePlanPage() {
     }
 
     updateDoc('drivers', driverId, { status: 'em_rota' });
-    toast({ title: "Rota Iniciada!", description: "Boa viagem!" });
-  }, [driverId, route, updateDoc, toast]);
+    toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
+  }, [driverId, route, direction, studentsOnRoute, updateDoc, toast]);
 
   const handlePauseRoute = useCallback(() => {
       if (!driverId) return;
@@ -450,14 +423,17 @@ export default function DriverRoutePlanPage() {
   const handleEndRoute = useCallback(() => {
       if (!driverId || !studentsOnRoute) return;
       updateDoc('drivers', driverId, { status: 'inativo' });
-      studentsOnRoute.forEach(student => {
-          updateDoc('students', student.id, { status: 'aguardando' });
+      // Reset all students, not just those on the current trip, for simplicity.
+      allStudents.forEach(student => {
+          if (student.routeId === route?.id) {
+            updateDoc('students', student.id, { status: 'aguardando' });
+          }
       });
       toast({
           title: "Rota Finalizada!",
           description: "Bom descanso! Os status dos alunos foram reiniciados.",
       });
-  }, [driverId, studentsOnRoute, updateDoc, toast]);
+  }, [driverId, allStudents, route?.id, updateDoc, toast]);
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
     setSelectedStudentForModal(student);
@@ -520,6 +496,17 @@ export default function DriverRoutePlanPage() {
      setShowRecalculatePrompt(false);
      handleRecalculate();
    }
+
+   const handleUndoLastAction = () => {
+       if (!lastProcessedStudent) return;
+       // The 'undo' is simply to revert to the previous status
+       const previousStatus = direction === 'ida' ? 'aguardando' : 'a_bordo';
+       updateDoc('students', lastProcessedStudent.id, { status: previousStatus });
+       toast({
+           title: "Ação desfeita",
+           description: `O status de ${lastProcessedStudent.name} foi revertido.`
+       });
+   }
    
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
@@ -551,20 +538,21 @@ export default function DriverRoutePlanPage() {
             <CardDescription>Selecione a viagem que você irá realizar.</CardDescription>
           </CardHeader>
           <CardContent>
-            <Select value={selectedTrip} onValueChange={(v) => setSelectedTrip(v as any)}>
-              <SelectTrigger>
-                <SelectValue placeholder="Selecione a viagem..." />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="manha-ida">Manhã - Ida para Escola</SelectItem>
-                <SelectItem value="tarde-volta">Tarde - Volta para Casa</SelectItem>
-              </SelectContent>
-            </Select>
+            <RadioGroup defaultValue={selectedTrip} onValueChange={(v) => setSelectedTrip(v as any)} className="space-y-3">
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="manha-ida" id="manha-ida" />
+                <Label htmlFor="manha-ida" className="text-base">Manhã - Ida para Escola</Label>
+              </div>
+              <div className="flex items-center space-x-2">
+                <RadioGroupItem value="tarde-volta" id="tarde-volta" />
+                <Label htmlFor="tarde-volta" className="text-base">Tarde - Volta para Casa</Label>
+              </div>
+            </RadioGroup>
           </CardContent>
           <CardFooter>
              <Button size="lg" className="w-full" onClick={handleStartRoute}>
                 <Play className="mr-2 h-5 w-5"/>
-                Iniciar Rota
+                Iniciar Viagem
             </Button>
           </CardFooter>
         </Card>
@@ -577,10 +565,10 @@ export default function DriverRoutePlanPage() {
         return (
             <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6 bg-secondary">
                  <Pause className="h-16 w-16 text-muted-foreground" />
-                 <h1 className="text-2xl font-bold">Rota Pausada</h1>
+                 <h1 className="text-2xl font-bold">Viagem Pausada</h1>
                  <Button size="lg" onClick={handleResumeRoute}>
                     <Play className="mr-2 h-5 w-5"/>
-                    Retomar Rota
+                    Retomar Viagem
                  </Button>
                   <FixedBottomBar 
                     status={driverProfile.status} 
@@ -597,74 +585,36 @@ export default function DriverRoutePlanPage() {
         <div className="min-h-screen bg-background text-foreground p-4 pb-24">
              <div className="max-w-md mx-auto space-y-4">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
+                    <h1 className="text-xl font-bold tracking-tight">{route?.name}</h1>
                     <p className="text-muted-foreground">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
                 </div>
 
-                <Tabs defaultValue="plan" className="w-full">
-                    <TabsList className="grid w-full grid-cols-2">
-                        <TabsTrigger value="plan"><List className="mr-2 h-4 w-4"/>Plano de Rota</TabsTrigger>
-                        <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa</TabsTrigger>
-                    </TabsList>
-                    <TabsContent value="plan" className="mt-4 space-y-6">
-                         {isRouteFinished ? (
-                            <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
-                                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4"/>
-                                <CardTitle className="text-2xl">Rota Finalizada!</CardTitle>
-                                <CardDescription className="mt-2">Todos os alunos foram embarcados/desembarcados. Clique em "Finalizar" na barra inferior para concluir.</CardDescription>
-                            </Card>
-                        ) : (
-                            <>
-                                <NextStopCard 
-                                    student={nextStop} 
-                                    onStatusChange={handleStatusChange} 
-                                    onNavigate={handleNavigateToStudent}
-                                    onOpenAuthorizedModal={handleOpenAuthorizedModal}
-                                />
-                                {upcomingStops.length > 0 && <UpcomingStopsList students={upcomingStops} />}
-                            </>
-                        )}
-                    </TabsContent>
-                    <TabsContent value="map" className="mt-4">
-                        <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
-                            <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary"/><span>Van</span></div>
-                            <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500"/><span>Aluno</span></div>
-                            <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600"/><span>Escola</span></div>
-                        </div>
-                        <div className="relative h-[60vh] w-full rounded-lg overflow-hidden border">
-                             {!API_KEY ? (
-                                <div className="flex h-full w-full items-center justify-center bg-secondary/30 text-center p-4">
-                                    <div>
-                                        <p className="font-semibold text-lg">Mapa Indisponível</p>
-                                        <p className="text-muted-foreground text-sm">A chave da API do Google Maps não foi configurada.</p>
-                                    </div>
-                                </div>
-                            ) : (
-                                <APIProvider apiKey={API_KEY}>
-                                    <GoogleMap
-                                        defaultCenter={{ lat: -23.55, lng: -46.63 }}
-                                        defaultZoom={12}
-                                        mapId="driver-map"
-                                        gestureHandling={'greedy'}
-                                        disableDefaultUI={true}
-                                    >
-                                        <RouteMap 
-                                            driverLocation={driverLocation} 
-                                            students={studentsOnRoute} 
-                                            school={schoolForRoute} 
-                                            route={route} 
-                                            recenterRequest={recenterRequest}
-                                            toast={toast}
-                                        />
-                                    </GoogleMap>
-                                </APIProvider>
-                            )}
-                            <Button size="icon" variant="secondary" onClick={() => setRecenterRequest(Date.now())} className="absolute bottom-4 right-4 z-10 shadow-lg">
-                                <LocateFixed className="h-5 w-5" />
+                {isRouteFinished ? (
+                    <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
+                        <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4"/>
+                        <CardTitle className="text-2xl">Viagem Finalizada!</CardTitle>
+                        <CardDescription className="mt-2">Todos os alunos foram embarcados/desembarcados. Clique em "Finalizar" na barra inferior para concluir.</CardDescription>
+                        <CardFooter className="flex-col gap-3 mt-6">
+                            <Button variant="destructive" className="w-full" onClick={handleEndRoute}>
+                               <Square className="mr-2 h-4 w-4" /> Finalizar e Arquivar Viagem
                             </Button>
-                        </div>
-                    </TabsContent>
-                </Tabs>
+                            <Button variant="outline" className="w-full" onClick={handleUndoLastAction} disabled={!lastProcessedStudent}>
+                               <ArrowLeft className="mr-2 h-4 w-4" /> Corrigir Última Parada
+                            </Button>
+                        </CardFooter>
+                    </Card>
+                ) : (
+                    <>
+                        <NextStopCard 
+                            student={nextStop} 
+                            onStatusChange={handleStatusChange} 
+                            onNavigate={handleNavigateToStudent}
+                            onOpenAuthorizedModal={handleOpenAuthorizedModal}
+                            direction={direction}
+                        />
+                        {upcomingStops.length > 0 && <UpcomingStopsList students={upcomingStops} />}
+                    </>
+                )}
              </div>
 
             {showRecalculatePrompt && (
@@ -707,3 +657,4 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
