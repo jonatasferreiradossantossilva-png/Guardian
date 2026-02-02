@@ -30,7 +30,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
@@ -75,20 +75,31 @@ export function RouteForm({
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: route
-      ? {
-          name: route.name || '',
-          driverId: route.driverId || '',
-          assistantId: route.assistantId || '',
-          studentIds: route.studentIds || [],
-        }
-      : {
-          name: '',
-          driverId: '',
-          assistantId: '',
-          studentIds: [],
-        },
+    defaultValues: {
+      name: '',
+      driverId: '',
+      assistantId: '',
+      studentIds: [],
+    },
   });
+
+  useEffect(() => {
+    if (route) {
+      form.reset({
+        name: route.name || '',
+        driverId: route.driverId || '',
+        assistantId: route.assistantId || '',
+        studentIds: route.studentIds || [],
+      });
+    } else {
+      form.reset({
+        name: '',
+        driverId: '',
+        assistantId: '',
+        studentIds: [],
+      });
+    }
+  }, [route, form.reset]);
 
   const studentIdsInForm = form.watch('studentIds');
   const driverId = form.watch('driverId');
@@ -198,7 +209,7 @@ export function RouteForm({
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <div className="max-h-[65vh] space-y-4 overflow-y-auto py-1 pr-6">
+          <ScrollArea className="max-h-[65vh] space-y-4 overflow-y-auto py-1 pr-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
               <FormField control={form.control} name="name" render={({ field }) => (
                 <FormItem><FormLabel>Nome da Rota</FormLabel><FormControl><Input placeholder="Ex: Rota Matinal - Zona Sul" {...field} /></FormControl><FormMessage /></FormItem>
@@ -312,7 +323,7 @@ export function RouteForm({
                   </Tabs>
               </div>
             </div>
-          </div>
+          </ScrollArea>
           <DialogFooter className="pt-4">
             <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
             <Button type="submit" disabled={isCapacityExceeded}>Salvar</Button>

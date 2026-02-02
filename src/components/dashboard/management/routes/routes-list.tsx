@@ -129,7 +129,10 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
 
   return (
     <div>
-      <div className="flex items-center justify-end mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <h1 className="text-3xl font-bold tracking-tight">
+          Gerenciamento de Rotas
+        </h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
@@ -141,7 +144,6 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             </Button>
           </DialogTrigger>
           <RouteForm
-            key={selectedRoute ? selectedRoute.id : 'new-route'}
             route={selectedRoute || undefined} 
             drivers={drivers || []}
             students={students || []}
