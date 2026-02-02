@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, useEffect, useRef } from "react";
+import { useMemo, useState, useEffect } from "react";
 import Link from "next/link";
 import {
   useMockCollection,
@@ -84,13 +84,9 @@ const useMockNestedDocSnapshot = (path) => {
     return { data, isLoading: false, error: null };
 }
 
-// Function to interpolate points on a straight line
-const interpolate = (start, end, factor) => {
-    return start + (end - start) * factor;
-};
-
 // Haversine formula to calculate distance between two lat/lng points in KM
 function haversineDistance(coords1, coords2) {
+  if (!coords1 || !coords2) return Infinity;
   const toRad = (x) => (x * Math.PI) / 180;
   const R = 6371; // Earth radius in km
 
@@ -183,8 +179,6 @@ function ParentRouteMap({ busLocation, student, school, userLocation, recenterRe
 export default function ParentTrackingPage() {
   const { toast } = useToast();
   const { updateDoc } = useMockData();
-  const simulationTimer = useRef(null);
-  const [simulatedLocation, setSimulatedLocation] = useState(null);
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [isNearby, setIsNearby] = useState(false);
   const [userLocation, setUserLocation] = useState(null);
@@ -213,73 +207,8 @@ export default function ParentTrackingPage() {
 
   const { data: school } = useMockDoc('schools', student?.schoolId);
 
-  // Simulation Logic Effect
-  useEffect(() => {
-    const startSimulation = () => {
-        if (!student?.latitude || !student?.longitude) return;
-
-        // The destination is always the current student's home.
-        const endPoint = { lat: student.latitude, lng: student.longitude };
-
-        // For simulation, create a starting point ~2-3km away.
-        // 1 degree of latitude is ~111km. 0.02 is ~2.2km.
-        const startPoint = { 
-            lat: student.latitude + 0.02, 
-            lng: student.longitude - 0.015 
-        };
-
-        // Set the initial simulated location right away
-        setSimulatedLocation({ latitude: startPoint.lat, longitude: startPoint.lng });
-
-        let step = 0;
-        const totalSteps = 40; // 5s * 40 = 200s (3.3 mins) to travel ~2-3km
-
-        simulationTimer.current = setInterval(() => {
-            // If a real location suddenly appears, stop the simulation
-            if (realLocation) {
-                clearInterval(simulationTimer.current);
-                setSimulatedLocation(null); // Let the real location take over
-                return;
-            }
-            
-            step++;
-            if (step > totalSteps) {
-                clearInterval(simulationTimer.current);
-                // Snap to final position to ensure it reaches the destination
-                setSimulatedLocation({ latitude: endPoint.lat, longitude: endPoint.lng });
-                return;
-            }
-            const factor = step / totalSteps;
-            const newLat = interpolate(startPoint.lat, endPoint.lat, factor);
-            const newLng = interpolate(startPoint.lng, endPoint.lng, factor);
-            setSimulatedLocation({ latitude: newLat, longitude: newLng });
-        }, 5000);
-    };
-
-    const fallbackTimeout = setTimeout(() => {
-        // If after 3 seconds we have no real location, start simulation
-        if (!realLocation) {
-            startSimulation();
-        }
-    }, 3000);
-
-    // If real location appears, stop simulation
-    if (realLocation && simulationTimer.current) {
-        clearInterval(simulationTimer.current);
-        setSimulatedLocation(null);
-    }
-    
-    // Cleanup
-    return () => {
-        clearTimeout(fallbackTimeout);
-        if (simulationTimer.current) {
-            clearInterval(simulationTimer.current);
-        }
-    };
-
-  }, [realLocation, student]);
-
-  const displayLocation = realLocation || simulatedLocation;
+  // The location to display is ONLY the real location from the database
+  const displayLocation = realLocation;
 
   // Effect for proximity check
   useEffect(() => {
@@ -297,6 +226,8 @@ export default function ParentTrackingPage() {
         } else {
           setIsNearby(false);
         }
+      } else {
+        setIsNearby(false);
       }
     }, [displayLocation, student]);
   
@@ -400,6 +331,12 @@ export default function ParentTrackingPage() {
               <TabsTrigger value="actions"><Activity className="mr-2 h-4 w-4"/>Status & Ações</TabsTrigger>
             </TabsList>
             <TabsContent value="map" className="mt-4">
+               <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
+                    <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Van</span></div>
+                    <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Aluno</span></div>
+                    <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
+                    <div className="flex items-center gap-1.5"><Crosshair className="h-4 w-4 text-indigo-600" /><span>Sua Posição</span></div>
+                </div>
               <Card className="h-[75vh]">
                 <CardContent className="p-0 h-full relative">
                   <div className="absolute inset-0 bg-secondary flex items-center justify-center overflow-hidden rounded-lg">
@@ -522,6 +459,3 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
-
-
-    
