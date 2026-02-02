@@ -660,20 +660,21 @@ export default function DriverRoutePlanPage() {
     
     return (
         <div className="min-h-screen bg-background text-foreground pb-24">
-            <Tabs defaultValue="plan" className="w-full">
-                <div className="text-center pt-4">
-                    <h1 className="text-xl font-bold tracking-tight">{route?.name}</h1>
-                    <p className="text-sm text-muted-foreground">{schoolForRoute?.name}</p>
-                    <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
-                </div>
-                <div className="flex justify-center mt-4">
-                    <TabsList className="grid w-full grid-cols-2 max-w-sm">
+            <div className="text-center pt-4 px-4">
+                <h1 className="text-xl font-bold tracking-tight">{route?.name}</h1>
+                <p className="text-sm text-muted-foreground">{schoolForRoute?.name}</p>
+                <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
+            </div>
+            
+            <Tabs defaultValue="plan" className="w-full mt-4">
+                <div className="px-4">
+                    <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="plan"><ListTree className="mr-2 h-4 w-4"/>Plano de Rota</TabsTrigger>
                         <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa</TabsTrigger>
                     </TabsList>
                 </div>
 
-                <TabsContent value="plan" className="p-4">
+                <TabsContent value="plan" className="mt-4 p-4">
                     <div className="max-w-md mx-auto space-y-4">
                         {isRouteFinished ? (
                             <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
@@ -703,13 +704,13 @@ export default function DriverRoutePlanPage() {
                         )}
                     </div>
                 </TabsContent>
-                <TabsContent value="map" className="p-0">
-                     <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
+                <TabsContent value="map" className="mt-4">
+                     <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground px-4">
                         <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Sua Posição</span></div>
                         <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Aluno</span></div>
                         <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
                     </div>
-                     <div className="relative h-[calc(100vh-210px)] w-full">
+                     <div className="relative h-[70vh] w-full border-y">
                          {!API_KEY ? (
                                 <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                                     <div className="text-center p-4">
