@@ -202,7 +202,7 @@ export default function DriverRoutePlanPage() {
     [mockUserId]
   );
   const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', driverFilter);
-  const driverProfile = useMemo(() => (drivers?.[0] : null), [drivers]);
+  const driverProfile = useMemo(() => (drivers ? drivers[0] : null), [drivers]);
   const driverId = driverProfile?.id;
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
