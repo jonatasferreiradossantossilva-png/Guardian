@@ -29,7 +29,7 @@ const statusColors: Record<string, string> = {
 };
 
 export function InvoicesStatusChart({ filters }: InvoicesStatusChartProps) {
-  const { data: allInvoices, isLoading } = useMockCollection('invoices');
+  const { data: allInvoices, isLoading } = useMockCollection('invoices', undefined);
 
   const chartData = useMemo(() => {
     if (!allInvoices) return [];
@@ -84,70 +84,70 @@ export function InvoicesStatusChart({ filters }: InvoicesStatusChartProps) {
   }
 
   return (
-    <Card>
+    <Card className="flex flex-col">
       <CardHeader>
         <CardTitle>Status das Faturas</CardTitle>
         <CardDescription>Distribuição de faturas no período selecionado.</CardDescription>
       </CardHeader>
-      <CardContent className="pb-0">
-        <ChartContainer
-          config={chartConfig}
-          className="mx-auto aspect-square h-[250px]"
-        >
-          {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height="100%">
-                <PieChart>
-                <ChartTooltip
-                    cursor={false}
-                    content={<ChartTooltipContent hideLabel />}
-                />
-                <Pie
-                    data={chartData}
-                    dataKey="count"
-                    nameKey="status"
-                    innerRadius={60}
-                    strokeWidth={5}
-                    label={({
-                    cx,
-                    cy,
-                    midAngle,
-                    innerRadius,
-                    outerRadius,
-                    percent,
-                    }) => {
-                    const RADIAN = Math.PI / 180
-                    const radius = innerRadius + (outerRadius - innerRadius) * 0.5
-                    const x = cx + radius * Math.cos(-midAngle * RADIAN)
-                    const y = cy + radius * Math.sin(-midAngle * RADIAN)
-                
-                    return (
-                        <text
-                        x={x}
-                        y={y}
-                        fill="hsl(var(--foreground))"
-                        textAnchor={x > cx ? "start" : "end"}
-                        dominantBaseline="central"
-                        className="text-xs font-medium"
-                        >
-                        {`${(percent * 100).toFixed(0)}%`}
-                        </text>
-                    )
-                    }}
-                >
-                    {chartData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                    ))}
-                </Pie>
-                </PieChart>
-            </ResponsiveContainer>
+      <CardContent className="flex-1 flex flex-col items-center justify-center p-0">
+         {chartData.length > 0 ? (
+            <ChartContainer
+                config={chartConfig}
+                className="w-full h-[250px]"
+            >
+                <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                    <ChartTooltip
+                        cursor={false}
+                        content={<ChartTooltipContent hideLabel />}
+                    />
+                    <Pie
+                        data={chartData}
+                        dataKey="count"
+                        nameKey="status"
+                        innerRadius={60}
+                        strokeWidth={5}
+                        label={({
+                        cx,
+                        cy,
+                        midAngle,
+                        innerRadius,
+                        outerRadius,
+                        percent,
+                        }) => {
+                        const RADIAN = Math.PI / 180
+                        const radius = innerRadius + (outerRadius - innerRadius) * 0.5
+                        const x = cx + radius * Math.cos(-midAngle * RADIAN)
+                        const y = cy + radius * Math.sin(-midAngle * RADIAN)
+                    
+                        return (
+                            <text
+                            x={x}
+                            y={y}
+                            fill="hsl(var(--foreground))"
+                            textAnchor={x > cx ? "start" : "end"}
+                            dominantBaseline="central"
+                            className="text-xs font-medium"
+                            >
+                            {`${(percent * 100).toFixed(0)}%`}
+                            </text>
+                        )
+                        }}
+                    >
+                        {chartData.map((entry, index) => (
+                            <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                    </Pie>
+                    </PieChart>
+                </ResponsiveContainer>
+            </ChartContainer>
           ) : (
-             <div className="flex h-full items-center justify-center text-muted-foreground text-sm">
+             <div className="flex h-[250px] items-center justify-center text-muted-foreground text-sm">
                 Nenhuma fatura no período.
             </div>
           )}
-        </ChartContainer>
       </CardContent>
-      <div className="flex items-center justify-center p-4">
+      <div className="flex items-center justify-center p-4 pt-0">
         {chartData.length > 0 && (
           <ChartLegend
             content={<ChartLegendContent nameKey="status" />}
