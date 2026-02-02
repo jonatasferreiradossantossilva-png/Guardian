@@ -35,7 +35,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useMockCollection, useMockData, useMockNestedDoc } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -337,10 +337,29 @@ export default function DriverRoutePlanPage() {
   const { data: schools, isLoading: areSchoolsLoading } = useMockCollection('schools');
   
   useEffect(() => {
-    if (routes && routes.length === 1 && !selectedRouteIdForStart) {
+    if (routes && routes.length > 0 && !selectedRouteIdForStart) {
         setSelectedRouteIdForStart(routes[0].id);
     }
   }, [routes, selectedRouteIdForStart]);
+
+  const routeDetailsMap = useMemo(() => {
+    if (!routes || !allStudents || !schools) return new Map();
+
+    const studentMap = new Map(allStudents.map(s => [s.id, s]));
+    const schoolMap = new Map(schools.map(s => [s.id, s.name]));
+
+    const details = new Map();
+    routes.forEach(route => {
+        const firstStudentId = route.studentIds?.[0];
+        const firstStudent = firstStudentId ? studentMap.get(firstStudentId) : undefined;
+        const schoolName = firstStudent ? schoolMap.get(firstStudent.schoolId) : 'Escola não encontrada';
+        details.set(route.id, {
+            ...route,
+            schoolName: schoolName
+        });
+    });
+    return details;
+  }, [routes, allStudents, schools]);
 
 
   const studentsOnRoute = useMemo(() => {
@@ -562,19 +581,20 @@ export default function DriverRoutePlanPage() {
             <CardDescription>Selecione a viagem que você irá realizar.</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
-             {routes && routes.length > 1 && (
-                <div className="space-y-2 text-left">
-                    <Label>Selecione a Rota</Label>
-                    <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Escolha uma rota..."/>
-                        </SelectTrigger>
-                        <SelectContent>
-                            {routes.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
-                        </SelectContent>
-                    </Select>
-                </div>
-             )}
+            <div className="space-y-2 text-left">
+                <Label>Selecione a Rota</Label>
+                <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Escolha uma rota..."/>
+                    </SelectTrigger>
+                    <SelectContent>
+                        {Array.from(routeDetailsMap.values()).map(r => (
+                            <SelectItem key={r.id} value={r.id}>{r.name} ({r.schoolName})</SelectItem>
+                        ))}
+                    </SelectContent>
+                </Select>
+            </div>
+            
             <RadioGroup defaultValue={selectedTrip} onValueChange={(v) => setSelectedTrip(v as any)} className="space-y-3 pt-2">
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="manha-ida" id="manha-ida" />
@@ -622,7 +642,7 @@ export default function DriverRoutePlanPage() {
         <div className="min-h-screen bg-background text-foreground pb-24">
             <div className="text-center pt-4">
                 <h1 className="text-xl font-bold tracking-tight">{route?.name}</h1>
-                {schoolForRoute && <p className="text-sm text-muted-foreground">{schoolForRoute.name}</p>}
+                <p className="text-sm text-muted-foreground">{schoolForRoute?.name}</p>
                 <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
             </div>
              <Tabs defaultValue="plan" className="w-full mt-4">
@@ -747,6 +767,7 @@ export default function DriverRoutePlanPage() {
 }
 
     
+
 
 
 
