@@ -270,13 +270,16 @@ function RouteMap({ driverLocation, students, school, route, recenterRequest, to
                     </div>
                 </AdvancedMarker>
             )}
-            {students.map((student) => (
-                <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                     <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
-                        <User className="h-4 w-4 text-white" />
-                    </div>
-                </AdvancedMarker>
-            )}
+            {students.map((student) => {
+                if (!student.latitude || !student.longitude) return null;
+                return (
+                    <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
+                        <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
+                            <User className="h-4 w-4 text-white" />
+                        </div>
+                    </AdvancedMarker>
+                );
+            })}
             {school && (
                 <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
                     <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
