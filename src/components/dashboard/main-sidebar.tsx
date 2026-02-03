@@ -36,7 +36,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { DriverRouteInfoCard } from "./driver-route-info-card";
 
 const operationalLinks = [
-  { href: "/dashboard/overview", label: "Visão Geral", icon: BarChart },
+  { href: "/dashboard", label: "Visão Geral", icon: BarChart },
   { href: "/dashboard/optimizer", label: "Otimizador de Rotas (IA)", icon: Sparkles },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Financeiro", icon: DollarSign },
@@ -86,20 +86,6 @@ export function MainSidebar() {
         </div>
       </SidebarHeader>
       <SidebarContent className="p-2">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <Link href="/dashboard" passHref>
-              <SidebarMenuButton
-                isActive={isActive("/dashboard")}
-                tooltip="Menu Principal"
-              >
-                <LayoutGrid />
-                <span className="group-data-[collapsible=icon]:hidden">Menu Principal</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-        </SidebarMenu>
-        
         <p className="px-4 text-xs text-muted-foreground mt-3 mb-2 group-data-[collapsible=icon]:hidden">
           Operacional
         </p>
