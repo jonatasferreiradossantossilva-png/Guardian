@@ -422,14 +422,11 @@ export default function OptimizerPage() {
                                         defaultZoom={12}
                                         mapId="optimizer-map"
                                         gestureHandling={'greedy'}
-                                        disableDefaultUI={false}
+                                        disableDefaultUI={true}
                                         zoomControl={true}
                                         zoomControlOptions={{
                                             position: 5,
                                         }}
-                                        streetViewControl={false}
-                                        mapTypeControl={false}
-                                        fullscreenControl={false}
                                     >
                                         <RouteMap 
                                             originalRoute={studentsInRoute} 
@@ -532,4 +529,5 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
     
 
     
+
 

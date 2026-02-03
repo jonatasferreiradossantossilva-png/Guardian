@@ -529,14 +529,11 @@ export default function ParentTrackingPage() {
                             defaultCenter={{ lat: -23.55052, lng: -46.633308 }}
                             defaultZoom={12}
                             mapId="rota_segura_parent_map"
-                            disableDefaultUI={false}
+                            disableDefaultUI={true}
                             zoomControl={true}
                             zoomControlOptions={{
                                 position: 5,
                             }}
-                            streetViewControl={false}
-                            mapTypeControl={false}
-                            fullscreenControl={false}
                             gestureHandling={'greedy'}
                             className="w-full h-full"
                         >

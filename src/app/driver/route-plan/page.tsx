@@ -723,14 +723,11 @@ export default function DriverRoutePlanPage() {
                                         defaultZoom={12}
                                         mapId="driver-route-map"
                                         gestureHandling={'greedy'}
-                                        disableDefaultUI={false}
+                                        disableDefaultUI={true}
                                         zoomControl={true}
                                         zoomControlOptions={{
                                             position: 5,
                                         }}
-                                        streetViewControl={false}
-                                        mapTypeControl={false}
-                                        fullscreenControl={false}
                                     >
                                         <RouteMap 
                                             driverLocation={driverLocation}
@@ -786,6 +783,7 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
 
 
 
