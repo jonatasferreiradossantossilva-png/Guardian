@@ -1,75 +1,83 @@
 'use client';
 
-import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/ui/card';
-import { LayoutGrid, Sparkles, DollarSign, MessageSquare, Users, Route } from 'lucide-react';
+import { useState, useMemo, useEffect } from 'react';
+import { OverviewCards } from "@/components/dashboard/overview-cards";
+import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
+import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
+import { useMockCollection } from '@/hooks/use-mock-data';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-const menuItems = [
-  {
-    href: '/dashboard/overview',
-    icon: LayoutGrid,
-    title: 'Visão Geral',
-    description: 'Acompanhe os principais indicadores financeiros e operacionais.',
-  },
-  {
-    href: '/dashboard/optimizer',
-    icon: Sparkles,
-    title: 'Otimizador de Rotas (IA)',
-    description: 'Crie e analise rotas otimizadas para economizar tempo e combustível.',
-  },
-  {
-    href: '/dashboard/financial',
-    icon: DollarSign,
-    title: 'Financeiro',
-    description: 'Gerencie receitas, despesas e o fluxo de caixa da sua operação.',
-  },
-  {
-    href: '/dashboard/messages',
-    icon: MessageSquare,
-    title: 'Central de Mensagens',
-    description: 'Comunique-se com pais, motoristas e auxiliares em um só lugar.',
-  },
-  {
-    href: '/dashboard/management/routes',
-    icon: Route,
-    title: 'Gerenciar Rotas',
-    description: 'Cadastre e edite as rotas, motoristas e alunos de cada trajeto.',
-  },
-  {
-    href: '/dashboard/management/students',
-    icon: Users,
-    title: 'Gerenciar Cadastros',
-    description: 'Acesse e edite os dados de alunos, pais, motoristas e veículos.',
-  },
+const monthNames = [
+  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-export default function DashboardMenuPage() {
+export default function DashboardPage() {
+  const { data: allInvoices } = useMockCollection('invoices', undefined);
+  const { data: allExpenses } = useMockCollection('expenses', undefined);
+
+  const [selectedYear, setSelectedYear] = useState<string>('latest');
+  const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
+
+  const availableYears = useMemo(() => {
+    const years = new Set<string>();
+    (allInvoices || []).forEach(inv => years.add(inv.dueDate.substring(0, 4)));
+    (allExpenses || []).forEach(exp => years.add(exp.date.substring(0, 4)));
+    if (years.size === 0) {
+      years.add(new Date().getFullYear().toString());
+    }
+    return Array.from(years).sort((a, b) => b.localeCompare(a));
+  }, [allInvoices, allExpenses]);
+
+  const effectiveYear = selectedYear === 'latest' ? (availableYears[0] || new Date().getFullYear().toString()) : selectedYear;
+
+  const filters = { year: effectiveYear, month: selectedMonth };
+
   return (
     <div className="flex flex-col gap-8">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Menu Principal</h1>
-        <p className="text-muted-foreground">Selecione uma opção para começar a gerenciar sua operação.</p>
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+          <p className="text-muted-foreground">Visão geral da saúde financeira da sua operação.</p>
+        </div>
+        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+            <Select value={selectedYear} onValueChange={setSelectedYear}>
+                <SelectTrigger className="w-full sm:w-[120px]">
+                    <SelectValue placeholder="Ano" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="latest">Mais Recente</SelectItem>
+                    {availableYears.map(year => (
+                        <SelectItem key={year} value={year}>{year}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
+                <SelectTrigger className="w-full sm:w-[160px]">
+                    <SelectValue placeholder="Mês" />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="all">Todos os Meses</SelectItem>
+                    {monthNames.map((month, index) => (
+                        <SelectItem key={month} value={String(index + 1).padStart(2, '0')}>
+                            {month}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+        </div>
       </div>
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-        {menuItems.map((item) => (
-          <Link href={item.href} key={item.href} legacyBehavior passHref>
-            <a className="block h-full">
-              <Card className="flex flex-col h-full transition-all duration-300 hover:shadow-lg hover:border-primary/50 hover:scale-[1.02]">
-                <CardHeader className="flex flex-row items-center gap-4">
-                  <div className="p-3 rounded-lg bg-primary/10">
-                    <item.icon className="h-6 w-6 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle>{item.title}</CardTitle>
-                  </div>
-                </CardHeader>
-                <CardContent className="flex-1">
-                  <CardDescription>{item.description}</CardDescription>
-                </CardContent>
-              </Card>
-            </a>
-          </Link>
-        ))}
+
+      <OverviewCards filters={filters} />
+
+      <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
+        <InvoicesStatusChart filters={filters}/>
+        <ExpensesCategoryChart filters={filters} />
       </div>
     </div>
   );

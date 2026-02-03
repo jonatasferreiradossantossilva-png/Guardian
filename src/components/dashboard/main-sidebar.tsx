@@ -28,7 +28,6 @@ import {
   MessageCircle,
   Rocket,
   LayoutGrid,
-  BarChart,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -36,8 +35,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { DriverRouteInfoCard } from "./driver-route-info-card";
 
 const operationalLinks = [
-  { href: "/dashboard", label: "Menu Principal", icon: LayoutGrid },
-  { href: "/dashboard/overview", label: "Visão Geral", icon: BarChart },
+  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
   { href: "/dashboard/optimizer", label: "Otimizador de Rotas (IA)", icon: Sparkles },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Financeiro", icon: DollarSign },
