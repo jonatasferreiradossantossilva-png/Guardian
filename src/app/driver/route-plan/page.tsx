@@ -668,12 +668,11 @@ export default function DriverRoutePlanPage() {
                     </TabsList>
                 </div>
                 
-                <div className="text-center pt-4 px-4">
-                    <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
-                    <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
-                </div>
-
                 <TabsContent value="plan" className="mt-4 p-4">
+                    <div className="text-center mb-6">
+                        <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
+                        <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
+                    </div>
                     <div className="max-w-md mx-auto space-y-4">
                         {isRouteFinished ? (
                             <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
