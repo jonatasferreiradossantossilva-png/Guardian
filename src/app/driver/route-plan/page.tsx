@@ -250,7 +250,7 @@ function RouteMap({ driverLocation, students, school, route, recenterRequest, to
     return (
         <>
             {driverLocation && (
-                <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição">
+                <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição" zIndex={10}>
                      <div className="p-1 bg-primary rounded-full shadow-lg">
                         <Bus className="h-6 w-6 text-primary-foreground" />
                     </div>
@@ -661,18 +661,18 @@ export default function DriverRoutePlanPage() {
     return (
         <div className="min-h-screen bg-background text-foreground pb-24">
             <Tabs defaultValue="plan" className="w-full">
-                <div className="px-4 pt-4">
+                 <div className="px-4 pt-4">
                     <TabsList className="grid w-full grid-cols-2">
                         <TabsTrigger value="plan"><ListTree className="mr-2 h-4 w-4"/>Plano de Rota</TabsTrigger>
                         <TabsTrigger value="map"><MapPin className="mr-2 h-4 w-4"/>Mapa</TabsTrigger>
                     </TabsList>
                 </div>
-
+                
                 <div className="text-center pt-4 px-4">
                     <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
                     <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
                 </div>
-                
+
                 <TabsContent value="plan" className="mt-4 p-4">
                     <div className="max-w-md mx-auto space-y-4">
                         {isRouteFinished ? (
@@ -786,3 +786,4 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
