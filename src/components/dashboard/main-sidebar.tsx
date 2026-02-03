@@ -13,7 +13,6 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
-  LayoutGrid,
   Home,
   Users,
   Route,
@@ -90,21 +89,10 @@ export function MainSidebar() {
             <Link href="/dashboard" passHref>
               <SidebarMenuButton
                 isActive={isActive("/dashboard")}
-                tooltip="Menu Principal"
-              >
-                <LayoutGrid />
-                <span className="group-data-[collapsible=icon]:hidden">Menu Principal</span>
-              </SidebarMenuButton>
-            </Link>
-          </SidebarMenuItem>
-          <SidebarMenuItem>
-            <Link href="/dashboard/overview" passHref>
-              <SidebarMenuButton
-                isActive={isActive("/dashboard/overview")}
-                tooltip="Visão Geral"
+                tooltip="Dashboard"
               >
                 <Home />
-                <span className="group-data-[collapsible=icon]:hidden">Visão Geral</span>
+                <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>

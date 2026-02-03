@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 // This file contains mock data for the presentation mode.
 
