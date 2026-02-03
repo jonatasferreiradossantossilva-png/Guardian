@@ -26,7 +26,6 @@ import {
   CheckCircle,
   XCircle,
   Siren,
-  LocateFixed,
   Phone,
   Sparkles,
   ArrowLeft,
@@ -181,7 +180,7 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
     </div>
 );
 
-function RouteMap({ driverLocation, students, school, route, recenterRequest, toast }) {
+function RouteMap({ driverLocation, students, school, route, toast }) {
     const map = useMap();
     const directionsRendererRef = useRef(null);
 
@@ -234,7 +233,7 @@ function RouteMap({ driverLocation, students, school, route, recenterRequest, to
     }, [map, driverLocation, students, school, route]);
     
     useEffect(() => {
-        if (!map || !recenterRequest) return;
+        if (!map) return;
         
         const bounds = new google.maps.LatLngBounds();
         if (driverLocation) bounds.extend({ lat: driverLocation.latitude, lng: driverLocation.longitude });
@@ -245,7 +244,7 @@ function RouteMap({ driverLocation, students, school, route, recenterRequest, to
             map.fitBounds(bounds, 100);
         }
 
-    }, [map, driverLocation, students, school, recenterRequest]);
+    }, [map, driverLocation, students, school]);
 
     return (
         <>
@@ -290,7 +289,6 @@ export default function DriverRoutePlanPage() {
   const [selectedDirection, setSelectedDirection] = useState<'ida' | 'volta'>('ida');
   
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
-  const [recenterRequest, setRecenterRequest] = useState(null);
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [showRecalculatePrompt, setShowRecalculatePrompt] = useState(false);
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
@@ -739,15 +737,11 @@ export default function DriverRoutePlanPage() {
                                             students={studentsOnRoute} 
                                             school={schoolForRoute}
                                             route={route}
-                                            recenterRequest={recenterRequest}
                                             toast={toast}
                                         />
                                     </GoogleMap>
                                 </APIProvider>
                             )}
-                             <Button size="icon" variant="secondary" onClick={() => setRecenterRequest(Date.now())} className="absolute bottom-4 right-4 z-10 shadow-lg">
-                                <LocateFixed className="h-5 w-5" />
-                            </Button>
                      </div>
                 </TabsContent>
              </Tabs>
@@ -792,5 +786,6 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
 
 

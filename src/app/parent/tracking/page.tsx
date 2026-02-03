@@ -11,7 +11,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, LocateFixed, Share2 } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -112,7 +112,7 @@ function haversineDistance(coords1, coords2) {
 }
 
 
-function ParentRouteMap({ busLocation, student, school, recenterRequest, toast }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, recenterRequest: any, toast: (options: any) => void }) {
+function ParentRouteMap({ busLocation, student, school, toast }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, toast: (options: any) => void }) {
   const map = useMap();
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
   const lastDestinationRef = useRef<string | null>(null);
@@ -192,7 +192,7 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest, toast }
 
 
   useEffect(() => {
-      if (!map || !recenterRequest) return;
+      if (!map) return;
       
       const bounds = new google.maps.LatLngBounds();
       if (busLocation?.latitude && busLocation?.longitude) {
@@ -208,7 +208,7 @@ function ParentRouteMap({ busLocation, student, school, recenterRequest, toast }
       if (!bounds.isEmpty()) {
         map.fitBounds(bounds, 100); // 100px padding
       }
-  }, [map, recenterRequest, busLocation, student, school]);
+  }, [map, busLocation, student, school]);
 
   return (
     <>
@@ -243,7 +243,6 @@ export default function ParentTrackingPage() {
   const { toast } = useToast();
   const { updateDoc, getCollection, getDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
-  const [recenterRequest, setRecenterRequest] = useState<number | null>(null);
 
   useEffect(() => {
     // For this prototype, we get the logged-in user's ID from session storage.
@@ -389,11 +388,6 @@ export default function ParentTrackingPage() {
       description: "Sua mensagem foi gerada para ser enviada no WhatsApp.",
     });
   }, [student, displayLocation, toast]);
-  
-  const handleRecenterMap = () => {
-    setRecenterRequest(Date.now());
-    toast({ title: "Mapa centralizado na rota." });
-  };
 
 
   const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading || isDriverLoading;
@@ -550,7 +544,6 @@ export default function ParentTrackingPage() {
                                 busLocation={displayLocation}
                                 student={student}
                                 school={school}
-                                recenterRequest={recenterRequest}
                                 toast={toast}
                            />
                            {!displayLocation && !isLocationLoading && (
@@ -562,9 +555,6 @@ export default function ParentTrackingPage() {
                         </APIProvider>
                     )}
                   </div>
-                  <Button size="icon" variant="secondary" onClick={handleRecenterMap} className="absolute bottom-4 right-4 z-10 shadow-lg">
-                      <LocateFixed className="h-5 w-5" />
-                  </Button>
                 </CardContent>
               </Card>
             </TabsContent>
