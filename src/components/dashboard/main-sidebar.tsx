@@ -13,6 +13,7 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
+  LayoutGrid,
   Home,
   Users,
   Route,
@@ -89,10 +90,21 @@ export function MainSidebar() {
             <Link href="/dashboard" passHref>
               <SidebarMenuButton
                 isActive={isActive("/dashboard")}
-                tooltip="Dashboard"
+                tooltip="Menu Principal"
+              >
+                <LayoutGrid />
+                <span className="group-data-[collapsible=icon]:hidden">Menu Principal</span>
+              </SidebarMenuButton>
+            </Link>
+          </SidebarMenuItem>
+          <SidebarMenuItem>
+            <Link href="/dashboard/overview" passHref>
+              <SidebarMenuButton
+                isActive={isActive("/dashboard/overview")}
+                tooltip="Visão Geral"
               >
                 <Home />
-                <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
+                <span className="group-data-[collapsible=icon]:hidden">Visão Geral</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
@@ -174,7 +186,7 @@ export function MainSidebar() {
           </Avatar>
           <div className="group-data-[collapsible=icon]:hidden">
             <p className="font-semibold">Admin</p>
-            <p className="text-xs text-muted-foreground">admin@guardian.com</p>
+            <p className="text-muted-foreground">admin@guardian.com</p>
           </div>
             <Tooltip>
                 <TooltipTrigger asChild>
