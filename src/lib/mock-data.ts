@@ -295,7 +295,7 @@ export const initialMockData = {
         { 
             id: "route-1", 
             name: "Colégio Marjore Paula", 
-            driverId: "driver-1", 
+            driverId: "driver-2", 
             assistantId: "user-aux-1", 
             studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12"], 
             turnByTurnDirections: [
@@ -319,7 +319,7 @@ export const initialMockData = {
         { 
             id: "route-2", 
             name: "Rota Centro", 
-            driverId: "driver-2", 
+            driverId: "driver-1", 
             assistantId: "user-aux-2", 
             studentIds: [], 
             turnByTurnDirections: [
