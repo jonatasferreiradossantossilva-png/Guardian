@@ -727,6 +727,9 @@ export default function DriverRoutePlanPage() {
                                         gestureHandling={'greedy'}
                                         disableDefaultUI={false}
                                         zoomControl={true}
+                                        zoomControlOptions={{
+                                            position: 5,
+                                        }}
                                         streetViewControl={false}
                                         mapTypeControl={false}
                                         fullscreenControl={false}
@@ -789,4 +792,5 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
 

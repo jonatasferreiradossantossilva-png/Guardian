@@ -537,6 +537,9 @@ export default function ParentTrackingPage() {
                             mapId="rota_segura_parent_map"
                             disableDefaultUI={false}
                             zoomControl={true}
+                            zoomControlOptions={{
+                                position: 5,
+                            }}
                             streetViewControl={false}
                             mapTypeControl={false}
                             fullscreenControl={false}
