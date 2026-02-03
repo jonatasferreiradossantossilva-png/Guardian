@@ -661,7 +661,7 @@ export default function DriverRoutePlanPage() {
     return (
         <div className="min-h-screen bg-background text-foreground pb-24">
             <div className="text-center pt-4 px-4">
-                <h1 className="text-xl font-bold tracking-tight">{route?.name}</h1>
+                <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
                 <p className="text-sm text-muted-foreground">{schoolForRoute?.name}</p>
                 <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
             </div>
