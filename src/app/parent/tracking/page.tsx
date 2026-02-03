@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -534,7 +535,11 @@ export default function ParentTrackingPage() {
                             defaultCenter={{ lat: -23.55052, lng: -46.633308 }}
                             defaultZoom={12}
                             mapId="rota_segura_parent_map"
-                            disableDefaultUI={true}
+                            disableDefaultUI={false}
+                            zoomControl={true}
+                            streetViewControl={false}
+                            mapTypeControl={false}
+                            fullscreenControl={false}
                             gestureHandling={'greedy'}
                             className="w-full h-full"
                         >

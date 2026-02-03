@@ -423,7 +423,11 @@ export default function OptimizerPage() {
                                         defaultZoom={12}
                                         mapId="optimizer-map"
                                         gestureHandling={'greedy'}
-                                        disableDefaultUI={true}
+                                        disableDefaultUI={false}
+                                        zoomControl={true}
+                                        streetViewControl={false}
+                                        mapTypeControl={false}
+                                        fullscreenControl={false}
                                     >
                                         <RouteMap 
                                             originalRoute={studentsInRoute} 
