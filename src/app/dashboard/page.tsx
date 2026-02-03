@@ -1,83 +1,86 @@
-'use client';
+import {
+  Users,
+  Route,
+  MessageSquare,
+  DollarSign,
+  Sparkles,
+  BarChart,
+} from "lucide-react";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import Link from "next/link";
 
-import { useState, useMemo, useEffect } from 'react';
-import { OverviewCards } from "@/components/dashboard/overview-cards";
-import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
-import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
-import { useMockCollection } from '@/hooks/use-mock-data';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-const monthNames = [
-  "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-  "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+const menuItems = [
+    {
+        title: "Visão Geral",
+        description: "Painel com métricas e gráficos.",
+        href: "/dashboard/overview",
+        icon: BarChart,
+        color: "text-sky-500"
+    },
+    {
+        title: "Otimizador de Rotas (IA)",
+        description: "Planeje e otimize as rotas existentes.",
+        href: "/dashboard/optimizer",
+        icon: Sparkles,
+        color: "text-amber-500"
+    },
+    {
+        title: "Financeiro",
+        description: "Gerencie receitas e despesas.",
+        href: "/dashboard/financial",
+        icon: DollarSign,
+        color: "text-emerald-500"
+    },
+    {
+        title: "Mensagens",
+        description: "Comunicação com pais e motoristas.",
+        href: "/dashboard/messages",
+        icon: MessageSquare,
+        color: "text-blue-500"
+    },
+    {
+        title: "Gerenciar Cadastros",
+        description: "Administre escolas, alunos e mais.",
+        href: "/dashboard/management/schools",
+        icon: Users,
+        color: "text-violet-500"
+    },
+     {
+        title: "Viagens Avulsas",
+        description: "Aprove ou rejeite viagens extras.",
+        href: "/dashboard/management/trip-requests",
+        icon: Route,
+        color: "text-orange-500"
+    },
 ];
 
-export default function DashboardPage() {
-  const { data: allInvoices } = useMockCollection('invoices', undefined);
-  const { data: allExpenses } = useMockCollection('expenses', undefined);
 
-  const [selectedYear, setSelectedYear] = useState<string>('latest');
-  const [selectedMonth, setSelectedMonth] = useState<string>('all');
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  const availableYears = useMemo(() => {
-    const years = new Set<string>();
-    (allInvoices || []).forEach(inv => years.add(inv.dueDate.substring(0, 4)));
-    (allExpenses || []).forEach(exp => years.add(exp.date.substring(0, 4)));
-    if (years.size === 0) {
-      years.add(new Date().getFullYear().toString());
-    }
-    return Array.from(years).sort((a, b) => b.localeCompare(a));
-  }, [allInvoices, allExpenses]);
-
-  const effectiveYear = selectedYear === 'latest' ? (availableYears[0] || new Date().getFullYear().toString()) : selectedYear;
-
-  const filters = { year: effectiveYear, month: selectedMonth };
-
+export default function DashboardMenuPage() {
   return (
     <div className="flex flex-col gap-8">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Visão geral da saúde financeira da sua operação.</p>
+       <div>
+          <h1 className="text-3xl font-bold tracking-tight">Menu Principal</h1>
+          <p className="text-muted-foreground">Selecione uma área para gerenciar.</p>
         </div>
-        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Select value={selectedYear} onValueChange={setSelectedYear}>
-                <SelectTrigger className="w-full sm:w-[120px]">
-                    <SelectValue placeholder="Ano" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="latest">Mais Recente</SelectItem>
-                    {availableYears.map(year => (
-                        <SelectItem key={year} value={year}>{year}</SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-             <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-                <SelectTrigger className="w-full sm:w-[160px]">
-                    <SelectValue placeholder="Mês" />
-                </SelectTrigger>
-                <SelectContent>
-                    <SelectItem value="all">Todos os Meses</SelectItem>
-                    {monthNames.map((month, index) => (
-                        <SelectItem key={month} value={String(index + 1).padStart(2, '0')}>
-                            {month}
-                        </SelectItem>
-                    ))}
-                </SelectContent>
-            </Select>
-        </div>
-      </div>
-
-      <OverviewCards filters={filters} />
-
-      <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
-        <InvoicesStatusChart filters={filters}/>
-        <ExpensesCategoryChart filters={filters} />
+      
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {menuItems.map((item) => (
+          <Link href={item.href} key={item.href}>
+            <Card className="h-full hover:border-primary/50 hover:bg-secondary/50 transition-all duration-200 hover:shadow-lg">
+              <CardHeader className="flex flex-row items-center gap-4 space-y-0">
+                  <div className={`p-3 rounded-lg bg-primary/10 ${item.color}`}>
+                     <item.icon className="h-6 w-6" />
+                  </div>
+                 <div>
+                    <CardTitle>{item.title}</CardTitle>
+                 </div>
+              </CardHeader>
+               <CardContent>
+                 <p className="text-sm text-muted-foreground">{item.description}</p>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
       </div>
     </div>
   );

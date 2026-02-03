@@ -13,7 +13,6 @@ import {
   SidebarSeparator,
 } from "@/components/ui/sidebar";
 import {
-  Home,
   Users,
   Route,
   Truck,
@@ -28,6 +27,8 @@ import {
   Sparkles,
   MessageCircle,
   Rocket,
+  LayoutGrid,
+  BarChart,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -35,6 +36,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { DriverRouteInfoCard } from "./driver-route-info-card";
 
 const operationalLinks = [
+  { href: "/dashboard/overview", label: "Visão Geral", icon: BarChart },
   { href: "/dashboard/optimizer", label: "Otimizador de Rotas (IA)", icon: Sparkles },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Financeiro", icon: DollarSign },
@@ -89,10 +91,10 @@ export function MainSidebar() {
             <Link href="/dashboard" passHref>
               <SidebarMenuButton
                 isActive={isActive("/dashboard")}
-                tooltip="Dashboard"
+                tooltip="Menu Principal"
               >
-                <Home />
-                <span className="group-data-[collapsible=icon]:hidden">Dashboard</span>
+                <LayoutGrid />
+                <span className="group-data-[collapsible=icon]:hidden">Menu Principal</span>
               </SidebarMenuButton>
             </Link>
           </SidebarMenuItem>
