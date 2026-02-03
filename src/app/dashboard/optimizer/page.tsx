@@ -528,12 +528,3 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
     );
 }
     
-
-    
-
-    
-
-
-
-
-    
