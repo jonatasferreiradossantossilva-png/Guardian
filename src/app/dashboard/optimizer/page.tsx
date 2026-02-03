@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
@@ -425,7 +426,7 @@ export default function OptimizerPage() {
                                         disableDefaultUI={true}
                                         zoomControl={true}
                                         zoomControlOptions={{
-                                            position: 5,
+                                            position: 3,
                                         }}
                                     >
                                         <RouteMap 
@@ -493,7 +494,7 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
     return (
         <>
             {/* Markers */}
-            {driver && (
+            {driver?.latitude && driver?.longitude && (
                  <AdvancedMarker position={{ lat: driver.latitude, lng: driver.longitude }} title={`Partida: ${driver.name}`}>
                      <div className="p-2 rounded-full shadow border-2 border-white bg-purple-600">
                         <Home className="h-5 w-5 text-white" />
@@ -501,17 +502,20 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
                 </AdvancedMarker>
             )}
             {allStudents.map(student => (
+                student.latitude && student.longitude &&
                 <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
                     <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
                         <Users className="h-4 w-4 text-white" />
                     </div>
                 </AdvancedMarker>
             ))}
-            <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-                 <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
-                    <School className="h-5 w-5 text-white" />
-                 </div>
-            </AdvancedMarker>
+            {school.latitude && school.longitude && (
+                <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
+                    <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+                        <School className="h-5 w-5 text-white" />
+                    </div>
+                </AdvancedMarker>
+            )}
 
             {/* Polylines */}
             {originalPath.length > 1 && (
@@ -523,7 +527,6 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
         </>
     );
 }
-
     
 
     

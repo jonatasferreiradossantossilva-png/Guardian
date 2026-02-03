@@ -533,7 +533,7 @@ export default function ParentTrackingPage() {
                             disableDefaultUI={true}
                             zoomControl={true}
                             zoomControlOptions={{
-                                position: 5,
+                                position: 3,
                             }}
                             gestureHandling={'greedy'}
                             className="w-full h-full"
