@@ -36,8 +36,8 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/
 import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
-  studentId: z.string({ required_error: 'Selecione um aluno.' }),
-  templateId: z.string({ required_error: 'Selecione um modelo de contrato.' }),
+  studentId: z.string({ required_error: 'Selecione um aluno.' }).min(1, { message: 'Selecione um aluno.' }),
+  templateId: z.string({ required_error: 'Selecione um modelo de contrato.' }).min(1, { message: 'Selecione um modelo de contrato.' }),
   banco: z.string().optional(),
   agencia: z.string().optional(),
   conta: z.string().optional(),
@@ -60,6 +60,13 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
+    defaultValues: {
+        studentId: '',
+        templateId: '',
+        banco: '',
+        agencia: '',
+        conta: '',
+    }
   });
 
   const studentsWithoutContract = useMemo(() => {
