@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -32,7 +33,7 @@ function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
 
     const navLinks = useMemo(() => {
         const baseLinks = [
-            { href: '/dashboard', label: 'Painel Financeiro', icon: LayoutGrid },
+            { href: '/dashboard/overview', label: 'Painel Financeiro', icon: LayoutGrid },
             { href: '/dashboard/optimizer', label: 'Otimizar Rotas', icon: Sparkles },
             { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
             { href: '/dashboard/financial', label: 'Controle Financeiro', icon: DollarSign },

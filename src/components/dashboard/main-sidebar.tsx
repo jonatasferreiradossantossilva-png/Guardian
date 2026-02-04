@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -37,7 +38,7 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { DriverRouteInfoCard } from "./driver-route-info-card";
 
 const operationalLinks = [
-  { href: "/dashboard", label: "Painel Financeiro", icon: LayoutGrid },
+  { href: "/dashboard/overview", label: "Painel Financeiro", icon: LayoutGrid },
   { href: "/dashboard/optimizer", label: "Otimizar Rotas", icon: Sparkles },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Controle Financeiro", icon: DollarSign },
