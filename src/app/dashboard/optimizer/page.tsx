@@ -8,12 +8,12 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, Bot, School, Navigation, Siren, Home, MapPin, ListTree } from "lucide-react";
+import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, User, Bot, School, Navigation, Siren, Home, MapPin, ListTree } from "lucide-react";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { Switch } from "@/components/ui/switch";
@@ -401,7 +401,7 @@ export default function OptimizerPage() {
                                 <span>Escola</span>
                             </div>
                             <div className="flex items-center gap-2">
-                                <Users className="text-blue-500" size={16} />
+                                <User className="text-blue-500" size={16} />
                                 <span>Aluno</span>
                             </div>
                         </div>
@@ -496,24 +496,24 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
             {/* Markers */}
             {driver?.latitude && driver?.longitude && (
                  <AdvancedMarker position={{ lat: driver.latitude, lng: driver.longitude }} title={`Partida: ${driver.name}`}>
-                     <div className="p-2 rounded-full shadow border-2 border-white bg-purple-600">
+                    <Pin background={'#9333ea'} borderColor={'#fff'}>
                         <Home className="h-5 w-5 text-white" />
-                     </div>
+                    </Pin>
                 </AdvancedMarker>
             )}
             {allStudents.map(student => (
                 student.latitude && student.longitude &&
                 <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                    <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
-                        <Users className="h-4 w-4 text-white" />
-                    </div>
+                    <Pin background={'#3b82f6'} borderColor={'#fff'}>
+                        <User className="h-5 w-5 text-white" />
+                    </Pin>
                 </AdvancedMarker>
             ))}
             {school.latitude && school.longitude && (
                 <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-                    <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+                     <Pin background={'#dc2626'} borderColor={'#fff'}>
                         <School className="h-5 w-5 text-white" />
-                    </div>
+                    </Pin>
                 </AdvancedMarker>
             )}
 

@@ -11,7 +11,7 @@ import {
   useMockNestedDoc,
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
-import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
 import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -215,24 +215,23 @@ function ParentRouteMap({ busLocation, student, school, toast }: { busLocation: 
     <>
       {busLocation && (
         <AdvancedMarker position={{ lat: busLocation.latitude, lng: busLocation.longitude }} title="Posição da Van">
-          <div className="p-1 bg-primary rounded-full shadow-lg">
+          <Pin background={'#2ab0c1'} borderColor={'#fff'}>
             <Bus className="h-6 w-6 text-primary-foreground" />
-          </div>
+          </Pin>
         </AdvancedMarker>
       )}
       {student && (
         <AdvancedMarker position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-             <Avatar className="h-10 w-10 border-2 border-blue-500 shadow-lg">
-                <AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=200&h=200&auto=format&fit=crop" data-ai-hint="child portrait"/>
-                <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-            </Avatar>
+             <Pin background={'#3b82f6'} borderColor={'#fff'}>
+                <User className="h-5 w-5 text-white" />
+            </Pin>
         </AdvancedMarker>
       )}
       {school && (
         <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-          <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+          <Pin background={'#dc2626'} borderColor={'#fff'}>
             <School className="h-5 w-5 text-white" />
-          </div>
+          </Pin>
         </AdvancedMarker>
       )}
     </>
@@ -516,7 +515,7 @@ export default function ParentTrackingPage() {
             <TabsContent value="map" className="mt-4">
                <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Van</span></div>
-                    <div className="flex items-center gap-1.5"><Avatar className="h-4 w-4 border-blue-500"><AvatarImage src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?q=80&w=100&h=100&auto=format&fit=crop" data-ai-hint="child portrait"/><AvatarFallback>A</AvatarFallback></Avatar><span>Aluno</span></div>
+                    <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Aluno</span></div>
                     <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
                 </div>
               <Card className="h-[75vh]">

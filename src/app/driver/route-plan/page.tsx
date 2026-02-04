@@ -40,7 +40,7 @@ import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
+import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { Label } from '@/components/ui/label';
@@ -251,26 +251,26 @@ function RouteMap({ driverLocation, students, school, route, toast }) {
         <>
             {driverLocation && (
                 <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição" zIndex={10}>
-                     <div className="p-1 bg-primary rounded-full shadow-lg">
+                     <Pin background={'#2ab0c1'} borderColor={'#fff'}>
                         <Bus className="h-6 w-6 text-primary-foreground" />
-                    </div>
+                    </Pin>
                 </AdvancedMarker>
             )}
             {students.map((student) => {
                  if (!student?.latitude || !student?.longitude) return null;
                 return (
                     <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                        <div className="p-1 rounded-full shadow border-2 border-white bg-blue-500">
-                            <User className="h-4 w-4 text-white" />
-                        </div>
+                        <Pin background={'#3b82f6'} borderColor={'#fff'}>
+                            <User className="h-5 w-5 text-white" />
+                        </Pin>
                     </AdvancedMarker>
                 );
             })}
             {school && school.latitude && school.longitude && (
                 <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-                     <div className="p-2 rounded-full shadow border-2 border-white bg-red-600">
+                     <Pin background={'#dc2626'} borderColor={'#fff'}>
                         <School className="h-5 w-5 text-white" />
-                     </div>
+                    </Pin>
                 </AdvancedMarker>
             )}
         </>
