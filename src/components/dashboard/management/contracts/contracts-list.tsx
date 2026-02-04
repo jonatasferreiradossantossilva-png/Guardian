@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, CheckCircle, Clock } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, CheckCircle, Clock, FileText } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
@@ -20,6 +20,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ContractGenerateForm } from './contract-generate-form';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { ContractViewerModal } from './contract-viewer-modal';
 
 
 type Contract = {
@@ -30,6 +31,7 @@ type Contract = {
   status: 'pending_acceptance' | 'accepted';
   createdAt: string;
   acceptedAt?: string;
+  generatedContent: string;
 };
 type Student = { id: string; name: string };
 type Parent = { id: string; name: string; userId: string };
@@ -54,6 +56,7 @@ const statusTextMap: Record<Contract['status'], string> = {
 
 export function ContractsList({ initialContracts, initialStudents, initialParents, initialTemplates }: ContractsListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [viewingContract, setViewingContract] = useState<Contract | null>(null);
   
   const { data: liveContracts, isLoading: areContractsLoading } = useMockCollection('contracts');
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
@@ -79,6 +82,10 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
   const formatDate = (dateString?: string) => {
     if (!dateString) return '-';
     return format(new Date(dateString), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+  };
+  
+  const handleViewContract = (contract: Contract) => {
+    setViewingContract(contract);
   };
 
   return (
@@ -118,11 +125,12 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                   <TableHead>Data de Geração</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead>Data do Aceite</TableHead>
+                  <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
-                  <TableRow><TableCell colSpan={5} className="h-24 text-center">Carregando...</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={6} className="h-24 text-center">Carregando...</TableCell></TableRow>
                 )}
                 {!isLoading && sortedContracts && sortedContracts.length > 0 ? (
                   sortedContracts.map((contract) => (
@@ -137,11 +145,17 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                         </Badge>
                       </TableCell>
                       <TableCell>{formatDate(contract.acceptedAt)}</TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="outline" size="sm" onClick={() => handleViewContract(contract)}>
+                          <FileText className="mr-2 h-4 w-4" />
+                          Visualizar
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   !isLoading && (
-                    <TableRow><TableCell colSpan={5} className="h-24 text-center">Nenhum contrato gerado.</TableCell></TableRow>
+                    <TableRow><TableCell colSpan={6} className="h-24 text-center">Nenhum contrato gerado.</TableCell></TableRow>
                   )
                 )}
               </TableBody>
@@ -172,6 +186,10 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                         <p>{formatDate(contract.acceptedAt)}</p>
                       </div>
                     </div>
+                     <Button variant="outline" size="sm" className="w-full mt-4" onClick={() => handleViewContract(contract)}>
+                        <FileText className="mr-2 h-4 w-4" />
+                        Visualizar Contrato
+                    </Button>
                   </Card>
                 ))
             ) : (
@@ -180,6 +198,11 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
           </div>
         </CardContent>
       </Card>
+      <ContractViewerModal 
+        isOpen={!!viewingContract}
+        onClose={() => setViewingContract(null)}
+        contract={viewingContract ? { ...viewingContract, studentName: studentsMap.get(viewingContract.studentId) || 'Aluno desconhecido' } : null}
+      />
     </div>
   );
 }
