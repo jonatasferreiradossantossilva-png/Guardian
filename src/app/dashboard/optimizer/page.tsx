@@ -496,23 +496,23 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
             {/* Markers */}
             {driver?.latitude && driver?.longitude && (
                  <AdvancedMarker position={{ lat: driver.latitude, lng: driver.longitude }} title={`Partida: ${driver.name}`}>
-                    <Pin background={'#9333ea'} borderColor={'#fff'}>
-                        <Home className="h-5 w-5 text-white" />
+                    <Pin background={'#9333ea'} borderColor={'#fff'} glyphColor="#fff">
+                        <Home />
                     </Pin>
                 </AdvancedMarker>
             )}
             {allStudents.map(student => (
                 student.latitude && student.longitude &&
                 <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                    <Pin background={'#3b82f6'} borderColor={'#fff'}>
-                        <User className="h-5 w-5 text-white" />
+                    <Pin background={'#3b82f6'} borderColor={'#fff'} glyphColor="#fff">
+                        <User />
                     </Pin>
                 </AdvancedMarker>
             ))}
             {school.latitude && school.longitude && (
                 <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-                     <Pin background={'#dc2626'} borderColor={'#fff'}>
-                        <School className="h-5 w-5 text-white" />
+                     <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff">
+                        <School />
                     </Pin>
                 </AdvancedMarker>
             )}

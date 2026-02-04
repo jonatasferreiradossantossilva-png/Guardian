@@ -251,8 +251,8 @@ function RouteMap({ driverLocation, students, school, route, toast }) {
         <>
             {driverLocation && (
                 <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição" zIndex={10}>
-                     <Pin background={'#2ab0c1'} borderColor={'#fff'}>
-                        <Bus className="h-6 w-6 text-primary-foreground" />
+                     <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff">
+                        <Bus />
                     </Pin>
                 </AdvancedMarker>
             )}
@@ -260,16 +260,16 @@ function RouteMap({ driverLocation, students, school, route, toast }) {
                  if (!student?.latitude || !student?.longitude) return null;
                 return (
                     <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                        <Pin background={'#3b82f6'} borderColor={'#fff'}>
-                            <User className="h-5 w-5 text-white" />
+                        <Pin background={'#3b82f6'} borderColor={'#fff'} glyphColor="#fff">
+                            <User />
                         </Pin>
                     </AdvancedMarker>
                 );
             })}
             {school && school.latitude && school.longitude && (
                 <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-                     <Pin background={'#dc2626'} borderColor={'#fff'}>
-                        <School className="h-5 w-5 text-white" />
+                     <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff">
+                        <School />
                     </Pin>
                 </AdvancedMarker>
             )}

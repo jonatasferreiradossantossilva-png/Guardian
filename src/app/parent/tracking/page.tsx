@@ -215,22 +215,22 @@ function ParentRouteMap({ busLocation, student, school, toast }: { busLocation: 
     <>
       {busLocation && (
         <AdvancedMarker position={{ lat: busLocation.latitude, lng: busLocation.longitude }} title="Posição da Van">
-          <Pin background={'#2ab0c1'} borderColor={'#fff'}>
-            <Bus className="h-6 w-6 text-primary-foreground" />
+          <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff">
+            <Bus />
           </Pin>
         </AdvancedMarker>
       )}
       {student && (
         <AdvancedMarker position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-             <Pin background={'#3b82f6'} borderColor={'#fff'}>
-                <User className="h-5 w-5 text-white" />
+             <Pin background={'#3b82f6'} borderColor={'#fff'} glyphColor="#fff">
+                <User />
             </Pin>
         </AdvancedMarker>
       )}
       {school && (
         <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-          <Pin background={'#dc2626'} borderColor={'#fff'}>
-            <School className="h-5 w-5 text-white" />
+          <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff">
+            <School />
           </Pin>
         </AdvancedMarker>
       )}
