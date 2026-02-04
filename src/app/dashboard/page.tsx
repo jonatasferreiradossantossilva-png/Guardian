@@ -1,10 +1,11 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutGrid, Sparkles, MessageSquare, DollarSign, Users, Route } from 'lucide-react';
+import { LayoutGrid, Sparkles, MessageSquare, DollarSign, Route, ClipboardCheck } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -17,8 +18,8 @@ const navLinks = [
   { href: '/dashboard/optimizer', label: 'Otimizador IA', icon: Sparkles },
   { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
   { href: '/dashboard/financial', label: 'Financeiro', icon: DollarSign },
-  { href: '/dashboard/management/students', label: 'Alunos', icon: Users },
-  { href: '/dashboard/management/routes', label: 'Rotas', icon: Route },
+  { href: '/dashboard/management/trip-requests', label: 'Viagens Avulsas', icon: Route },
+  { href: '/dashboard/management/contracts', label: 'Contratos', icon: ClipboardCheck },
 ];
 
 // --- Mobile Home Screen Component ---
