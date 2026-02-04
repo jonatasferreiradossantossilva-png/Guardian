@@ -1,4 +1,5 @@
 
+
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
@@ -18,6 +19,7 @@ import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -514,8 +516,11 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver, recenterTrigg
             {allStudents.map(student => (
                 student.latitude && student.longitude &&
                 <AdvancedMarker key={`marker-${student.id}`} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                    <Pin background={'#3b82f6'} borderColor={'#fff'} glyphColor="#fff">
-                        <User />
+                    <Pin background={'#3b82f6'} borderColor={'#fff'}>
+                        <Avatar className="h-6 w-6">
+                            <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/40/40`} alt={student.name} />
+                            <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                        </Avatar>
                     </Pin>
                 </AdvancedMarker>
             ))}

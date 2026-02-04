@@ -1,5 +1,6 @@
 
 
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -222,8 +223,11 @@ function ParentRouteMap({ busLocation, student, school, toast, recenterTrigger }
       )}
       {student && (
         <AdvancedMarker position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-             <Pin background={'#3b82f6'} borderColor={'#fff'} glyphColor="#fff">
-                <User />
+             <Pin background={'#3b82f6'} borderColor={'#fff'}>
+                <Avatar className="h-6 w-6">
+                    <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/40/40`} alt={student.name} />
+                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                </Avatar>
             </Pin>
         </AdvancedMarker>
       )}
@@ -437,13 +441,17 @@ export default function ParentTrackingPage() {
                  <Card>
                     <CardHeader>
                         <div className="flex justify-between items-start">
-                            <div>
-                                <CardTitle className="flex items-center gap-2">
-                                    <User />
-                                    Status de {student.name}
-                                </CardTitle>
+                            <div className="flex items-center gap-4">
+                                <Avatar className="h-16 w-16">
+                                    <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
+                                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                    <CardTitle>Status de {student.name}</CardTitle>
+                                    <CardDescription className="mt-1">Acompanhe a viagem em tempo real.</CardDescription>
+                                </div>
                             </div>
-                            <Badge variant={statusBadgeVariant[studentStatus]}>{statusText[studentStatus]}</Badge>
+                            <Badge variant={statusBadgeVariant[studentStatus]} className="mt-1 h-fit">{statusText[studentStatus]}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent>

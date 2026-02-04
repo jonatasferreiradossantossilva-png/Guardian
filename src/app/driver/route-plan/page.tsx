@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -143,6 +144,10 @@ const UpcomingStopsList = ({ students }) => {
             {students.map((student, index) => (
                 <li key={student.id} className="flex items-center gap-3 p-2 rounded-md bg-secondary/50">
                     <div className="flex-shrink-0 w-5 text-center text-xs font-mono text-muted-foreground">{index + 2}.</div>
+                    <Avatar className="h-7 w-7">
+                        <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/40/40`} alt={student.name} />
+                        <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                    </Avatar>
                     <p className="text-sm font-medium truncate flex-1">{student.name}</p>
                     <Badge variant="outline" className="font-normal text-xs">{student.shift}</Badge>
                 </li>
@@ -264,8 +269,11 @@ function RouteMap({ driverLocation, students, school, route, toast, recenterTrig
                  if (!student?.latitude || !student?.longitude) return null;
                 return (
                     <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                        <Pin background={'#3b82f6'} borderColor={'#fff'} glyphColor="#fff">
-                            <User />
+                        <Pin background={'#3b82f6'} borderColor={'#fff'}>
+                            <Avatar className="h-6 w-6">
+                                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/40/40`} alt={student.name} />
+                                <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
                         </Pin>
                     </AdvancedMarker>
                 );
