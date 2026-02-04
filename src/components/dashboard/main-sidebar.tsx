@@ -41,6 +41,8 @@ const operationalLinks = [
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Financeiro", icon: DollarSign },
   { href: "/dashboard/management/trip-requests", label: "Viagens Avulsas", icon: Route },
+  { href: "/dashboard/management/contract-templates", label: "Modelos de Contrato", icon: FileText },
+  { href: "/dashboard/management/contracts", label: "Contratos", icon: ClipboardCheck },
 ];
 
 const registrationLinks = [
@@ -55,8 +57,6 @@ const registrationLinks = [
     icon: GraduationCap,
   },
   { href: "/dashboard/management/predefined-messages", label: "Mensagens Predefinidas", icon: MessageCircle },
-  { href: "/dashboard/management/contract-templates", label: "Modelos de Contrato", icon: FileText },
-  { href: "/dashboard/management/contracts", label: "Contratos", icon: ClipboardCheck },
 ];
 
 
