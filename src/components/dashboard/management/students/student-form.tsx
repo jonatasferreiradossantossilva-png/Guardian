@@ -31,7 +31,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Copy, Loader2 } from 'lucide-react';
+import { Copy, Info, Loader2 } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -104,6 +105,7 @@ export function StudentForm({
 
   const zipCode = form.watch('zipCode');
   const parentId = form.watch('parentId');
+  const shift = form.watch('shift');
 
   useEffect(() => {
     if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
@@ -445,6 +447,14 @@ export function StudentForm({
                 )}
                />
           </div>
+            {shift === 'Integral' && (
+             <Alert>
+                <Info className="h-4 w-4" />
+                <AlertDescription>
+                  Alunos de turno integral são considerados na rota de **ida pela manhã** e na rota de **volta à tarde**.
+                </AlertDescription>
+            </Alert>
+          )}
 
           <DialogFooter className="pt-4">
             <DialogClose asChild>
