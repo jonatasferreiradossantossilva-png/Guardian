@@ -59,7 +59,10 @@ export default function AuthorizedPage() {
     setMockUserId(storedUserId);
   }, []);
 
-  const { data: students } = useMockCollection('students', mockUserId ? [{ field: 'parentId', op: '==', value: 'parent-1' }] : undefined); // Simplified for mock
+  const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
+  const parent = useMemo(() => parents?.[0], [parents]);
+
+  const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
   const student = useMemo(() => students?.[0], [students]);
 
   const { data: authorizedPersons, isLoading } = useMockCollection('authorized_pickups', mockUserId ? [
