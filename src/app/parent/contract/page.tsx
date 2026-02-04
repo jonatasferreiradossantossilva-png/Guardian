@@ -18,6 +18,7 @@ type Contract = {
   status: 'pending_acceptance' | 'accepted';
   acceptedAt?: string;
   createdAt: string;
+  parentUserId: string;
 };
 
 export default function ParentContractPage() {
@@ -77,7 +78,7 @@ export default function ParentContractPage() {
                                         Gerado em: {format(new Date(contract.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                                     </CardDescription>
                                 </div>
-                                {contract.status === 'accepted' && (
+                                {contract.status === 'accepted' && contract.acceptedAt && (
                                      <div className="text-sm p-3 rounded-md bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800">
                                         <p className="font-semibold flex items-center gap-2"><CheckCircle className="h-4 w-4"/>Contrato Aceito</p>
                                         <p>Em: {format(new Date(contract.acceptedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
