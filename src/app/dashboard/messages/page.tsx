@@ -4,10 +4,11 @@ import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
-import { Send, User, Loader2, Car, ClipboardCheck } from 'lucide-react';
+import { Send, User, Loader2, Car, ClipboardCheck, ArrowLeft } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from '@/lib/utils';
 
 type ConversationParticipant = {
   id: string; // The database ID (e.g., parent-1, driver-2)
@@ -76,9 +77,12 @@ export default function MessagesPage() {
   return (
     <div className="flex flex-col h-full">
       <h1 className="text-3xl font-bold tracking-tight mb-6 shrink-0">Central de Mensagens</h1>
-        <Card className="flex-1 grid grid-cols-[300px_1fr] overflow-hidden">
+        <Card className="flex-1 flex overflow-hidden">
           {/* Conversation List Panel */}
-          <div className="flex flex-col border-r">
+          <div className={cn(
+              "w-full flex-col border-r md:w-[300px] md:flex-shrink-0",
+              selectedConversation ? "hidden md:flex" : "flex"
+            )}>
             <CardHeader>
               <CardTitle>Conversas</CardTitle>
             </CardHeader>
@@ -134,11 +138,17 @@ export default function MessagesPage() {
           </div>
 
           {/* Chat Window */}
-          <div className="flex flex-col">
+          <div className={cn(
+              "flex-1 flex-col",
+              selectedConversation ? "flex" : "hidden md:flex"
+            )}>
             {selectedConversation ? (
               <>
                 <CardHeader className="border-b">
-                  <CardTitle className="flex items-center gap-3">
+                  <CardTitle className="flex items-center gap-2">
+                     <Button variant="ghost" size="icon" className="md:hidden -ml-2" onClick={() => setSelectedConversation(null)}>
+                        <ArrowLeft />
+                    </Button>
                     <User />
                     {selectedConversation.name}
                   </CardTitle>
