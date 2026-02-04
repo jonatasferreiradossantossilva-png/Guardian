@@ -1,5 +1,6 @@
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, memo, useCallback } from 'react';
@@ -25,6 +26,7 @@ import {
   Circle,
   Check,
   WifiOff,
+  QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -35,6 +37,8 @@ import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { useOnlineStatus } from '@/hooks/use-online-status';
+import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
+import { useToast } from '@/hooks/use-toast';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -140,9 +144,11 @@ StudentCard.displayName = 'StudentCard';
 
 export default function AssistantRoutePlanPage() {
   const { updateDoc } = useMockData();
+  const { toast } = useToast();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
   const [selectedShift, setSelectedShift] = useState<Shift>('Manhã');
   const isOnline = useOnlineStatus();
@@ -210,6 +216,29 @@ export default function AssistantRoutePlanPage() {
     setIsModalOpen(true);
   }, []);
 
+  const handleScanSuccess = useCallback((studentId: string) => {
+    const student = orderedStudents.find(s => s.id === studentId);
+    if (!student) {
+        toast({ title: "Aluno não encontrado", description: "O QR code não corresponde a um aluno nesta rota.", variant: "destructive"});
+        return;
+    }
+
+    let newStatus: StudentStatus;
+    if (student.status === 'aguardando') {
+        newStatus = 'a_bordo';
+    } else if (student.status === 'a_bordo') {
+        newStatus = 'desembarcado';
+    } else {
+        toast({ title: "Ação não permitida", description: `O status de ${student.name} não pode ser alterado via QR Code neste momento.`, variant: "destructive"});
+        return;
+    }
+
+    handleStatusChange(student.id, newStatus);
+    toast({ title: "Status Atualizado!", description: `${student.name} foi marcado(a) como ${statusText[newStatus]}.` });
+    setIsScannerOpen(false);
+
+  }, [orderedStudents, handleStatusChange, toast]);
+
   const isLoading = isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
   return (
@@ -268,16 +297,22 @@ export default function AssistantRoutePlanPage() {
                     {route.name}
                   </CardDescription>
                 </div>
-                 <div className="w-full md:w-[180px] mt-4 md:mt-0">
-                    <Select value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)}>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Selecione o turno" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="Manhã">Manhã</SelectItem>
-                            <SelectItem value="Tarde">Tarde</SelectItem>
-                        </SelectContent>
-                    </Select>
+                <div className="flex gap-2 items-center w-full md:w-auto mt-4 md:mt-0">
+                    <Button variant="outline" className="w-full md:w-auto" onClick={() => setIsScannerOpen(true)}>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        Escanear QR Code
+                    </Button>
+                    <div className="w-full md:w-[180px]">
+                        <Select value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Selecione o turno" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Manhã">Manhã</SelectItem>
+                                <SelectItem value="Tarde">Tarde</SelectItem>
+                            </SelectContent>
+                        </Select>
+                    </div>
                 </div>
               </CardHeader>
               <CardContent>
@@ -356,6 +391,11 @@ export default function AssistantRoutePlanPage() {
           studentName={selectedStudentForModal.name}
         />
       )}
+      <QrScannerModal
+        isOpen={isScannerOpen}
+        onClose={() => setIsScannerOpen(false)}
+        onScanSuccess={handleScanSuccess}
+      />
     </div>
   );
 }

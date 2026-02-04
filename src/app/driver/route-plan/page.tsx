@@ -2,6 +2,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -36,6 +37,7 @@ import {
   ListTree,
   LocateFixed,
   WifiOff,
+  QrCode,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -51,6 +53,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { useOnlineStatus } from '@/hooks/use-online-status';
+import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -81,7 +84,7 @@ const statusText: Record<StudentStatus, string> = {
 
 // --- Sub-components for the new UI ---
 
-const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute }) => {
+const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute, onScanQrCode }) => {
   if (!student) return null;
 
   const isGoing = direction === 'ida';
@@ -116,7 +119,11 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
           <XCircle className="mr-2 h-5 w-5" /> Ausente
         </Button>
       </CardContent>
-       <CardFooter className="grid grid-cols-3 gap-2">
+       <CardFooter className="grid grid-cols-4 gap-2">
+           <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={onScanQrCode}>
+              <QrCode className="h-5 w-5" />
+              <span>Escanear</span>
+            </Button>
            <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={() => onNavigate(student)}>
               <Navigation className="h-5 w-5" />
               <span>Navegar</span>
@@ -299,6 +306,7 @@ export default function DriverRoutePlanPage() {
   const { toast } = useToast();
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
   
   const [selectedShift, setSelectedShift] = useState<Shift>('Manhã');
@@ -596,6 +604,23 @@ export default function DriverRoutePlanPage() {
             description: "Sua mensagem foi gerada para ser enviada no WhatsApp.",
         });
     }, [driverLocation, toast]);
+
+    const handleScanSuccess = useCallback((scannedId: string) => {
+        if (!nextStop) {
+            toast({ title: "Nenhuma parada ativa", description: "Não há uma próxima parada definida para escanear.", variant: "destructive"});
+            return;
+        }
+
+        if (scannedId !== nextStop.id) {
+            toast({ title: "Aluno Incorreto", description: "Este não é o aluno da próxima parada. Siga a ordem da rota.", variant: "destructive"});
+            return;
+        }
+        
+        const newStatus = direction === 'ida' ? 'a_bordo' : 'desembarcado';
+        handleStatusChange(scannedId, newStatus);
+        
+        setIsScannerOpen(false);
+    }, [nextStop, direction, handleStatusChange, toast]);
    
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
@@ -759,6 +784,7 @@ export default function DriverRoutePlanPage() {
                                     onOpenAuthorizedModal={handleOpenAuthorizedModal}
                                     direction={direction}
                                     onShareRoute={handleShareRoute}
+                                    onScanQrCode={() => setIsScannerOpen(true)}
                                 />
                                 {upcomingStops.length > 0 && <UpcomingStopsList students={upcomingStops} />}
                             </>
@@ -855,6 +881,11 @@ export default function DriverRoutePlanPage() {
                 studentName={selectedStudentForModal.name}
                 />
             )}
+             <QrScannerModal
+                isOpen={isScannerOpen}
+                onClose={() => setIsScannerOpen(false)}
+                onScanSuccess={handleScanSuccess}
+            />
         </div>
     );
 }

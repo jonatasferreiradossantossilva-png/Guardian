@@ -1,6 +1,7 @@
 
 
 
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -13,7 +14,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText, LocateFixed } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText, LocateFixed, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -489,6 +490,11 @@ export default function ParentTrackingPage() {
                         <CardTitle>Ações Rápidas</CardTitle>
                     </CardHeader>
                      <CardContent className="flex flex-col gap-2">
+                        <Button asChild variant="outline" className="w-full">
+                            <Link href="/parent/qrcode">
+                                <QrCode className="mr-2 h-4 w-4" /> Meu QR Code
+                            </Link>
+                        </Button>
                         <Button variant="outline" className="w-full" onClick={handleShareTrip}>
                             <Share2 className="mr-2 h-4 w-4" /> Compartilhar Viagem
                         </Button>
