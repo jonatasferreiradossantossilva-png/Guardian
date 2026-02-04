@@ -10,7 +10,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Html5QrcodeScanner } from 'html5-qrcode';
+import { Html5QrcodeScanner, Html5Qrcode } from 'html5-qrcode';
 import { AlertTriangle, VideoOff } from 'lucide-react';
 
 interface QrScannerModalProps {
@@ -41,32 +41,38 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
                 return;
             }
 
-            scanner = new Html5QrcodeScanner(
-                scannerContainerId,
-                { 
-                    fps: 10, 
-                    qrbox: { width: 250, height: 250 },
-                    supportedScanTypes: [0], // 0 is Camera
-                },
-                /* verbose= */ false
-            );
+            // Check for camera permissions before rendering the scanner
+            Html5Qrcode.getCameras().then(cameras => {
+                if (cameras && cameras.length) {
+                    scanner = new Html5QrcodeScanner(
+                        scannerContainerId,
+                        { 
+                            fps: 10, 
+                            qrbox: { width: 250, height: 250 },
+                            supportedScanTypes: [0], // 0 is Camera
+                        },
+                        /* verbose= */ false
+                    );
 
-            const handleSuccess = (decodedText: string, decodedResult: any) => {
-                onScanSuccess(decodedText, decodedResult);
-            };
+                    const handleSuccess = (decodedText: string, decodedResult: any) => {
+                        onScanSuccess(decodedText, decodedResult);
+                    };
 
-            const handleError = (errorMessage: string) => {
-                if (!errorMessage.toLowerCase().includes('qr code not found')) {
-                     console.error(`QR Scanner Error: ${errorMessage}`);
+                    const handleError = (errorMessage: string) => {
+                        if (!errorMessage.toLowerCase().includes('qr code not found')) {
+                             console.error(`QR Scanner Error: ${errorMessage}`);
+                        }
+                    };
+                    
+                    scanner.render(handleSuccess, handleError);
+                } else {
+                    setScanError("Nenhuma câmera foi encontrada. Verifique se o dispositivo possui uma câmera e se o navegador tem permissão para acessá-la.");
                 }
-            };
-            
-            scanner.render(handleSuccess, handleError);
-            
-            Html5QrcodeScanner.getCameras().catch(err => {
+            }).catch(err => {
+                console.error("Camera permission error:", err);
                 setScanError("Não foi possível acessar a câmera. Verifique as permissões do navegador e tente novamente.");
             });
-        }, 150); // A small delay is enough for the DOM to catch up.
+        }, 250); // A small delay is enough for the DOM to catch up.
 
         return () => {
             clearTimeout(timer);
