@@ -107,6 +107,7 @@ export function LoginForm() {
                   <FormLabel>Selecione seu perfil para entrar:</FormLabel>
                   <FormControl>
                     <RadioGroup
+                      ref={field.ref}
                       onValueChange={field.onChange}
                       value={field.value}
                       className="grid grid-cols-2 gap-4"
@@ -159,5 +160,3 @@ export function LoginForm() {
     </Card>
   );
 }
-
-    
