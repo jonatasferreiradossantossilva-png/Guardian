@@ -212,7 +212,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                 name="cpf"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>CPF</FormLabel>
+                    <FormLabel>CPF (Opcional)</FormLabel>
                     <FormControl>
                         <Input placeholder="000.000.000-00" {...field} />
                     </FormControl>
@@ -225,7 +225,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                 name="rg"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel>RG</FormLabel>
+                    <FormLabel>RG (Opcional)</FormLabel>
                     <FormControl>
                         <Input placeholder="00.000.000-0" {...field} />
                     </FormControl>
@@ -236,7 +236,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
           </div>
           
            <div className="border-t pt-4 mt-4">
-             <p className="text-sm font-medium mb-2">Endereço</p>
+             <p className="text-sm font-medium mb-2">Endereço (Opcional)</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <FormField
                     control={form.control} name="zipCode"

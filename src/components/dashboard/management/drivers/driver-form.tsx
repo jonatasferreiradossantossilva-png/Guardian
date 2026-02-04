@@ -229,7 +229,7 @@ export function DriverForm({
               name="cpf"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CPF</FormLabel>
+                  <FormLabel>CPF (Opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="000.000.000-00" {...field} />
                   </FormControl>
@@ -242,7 +242,7 @@ export function DriverForm({
               name="rg"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>RG</FormLabel>
+                  <FormLabel>RG (Opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="00.000.000-0" {...field} />
                   </FormControl>
@@ -257,7 +257,7 @@ export function DriverForm({
               name="cnh"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>CNH</FormLabel>
+                  <FormLabel>CNH (Opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="01234567890" {...field} />
                   </FormControl>
@@ -270,7 +270,7 @@ export function DriverForm({
               name="cnhCategory"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Categoria CNH</FormLabel>
+                  <FormLabel>Categoria CNH (Opcional)</FormLabel>
                   <FormControl>
                     <Input placeholder="Ex: D" {...field} />
                   </FormControl>
@@ -281,7 +281,7 @@ export function DriverForm({
           </div>
 
           <div className="border-t pt-4 mt-4">
-             <p className="text-sm font-medium mb-2">Endereço</p>
+             <p className="text-sm font-medium mb-2">Endereço (Opcional)</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <FormField
                     control={form.control} name="zipCode"
@@ -373,7 +373,7 @@ export function DriverForm({
               name="latitude"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Latitude</FormLabel>
+                  <FormLabel>Latitude (Opcional)</FormLabel>
                   <FormControl>
                     <Input type="number" step="any" placeholder="-23.55052" {...field} value={field.value ?? ''} />
                   </FormControl>
@@ -386,7 +386,7 @@ export function DriverForm({
               name="longitude"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Longitude</FormLabel>
+                  <FormLabel>Longitude (Opcional)</FormLabel>
                   <FormControl>
                     <Input type="number" step="any" placeholder="-46.633308" {...field} value={field.value ?? ''}/>
                   </FormControl>
@@ -424,7 +424,7 @@ export function DriverForm({
               name="vehicleId"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Veículo Associado</FormLabel>
+                  <FormLabel>Veículo Associado (Opcional)</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value || ''}>
                     <FormControl>
                       <SelectTrigger>
@@ -459,5 +459,3 @@ export function DriverForm({
     </DialogContent>
   );
 }
-
-    

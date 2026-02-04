@@ -277,7 +277,7 @@ export function StudentForm({
                     control={form.control} name="zipCode"
                     render={({ field }) => (
                         <FormItem className="md:col-span-1">
-                        <FormLabel>CEP</FormLabel>
+                        <FormLabel>CEP (Opcional)</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input placeholder="00000-000" {...field} />
@@ -306,7 +306,7 @@ export function StudentForm({
                     control={form.control} name="number"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Número</FormLabel>
+                        <FormLabel>Número (Opcional)</FormLabel>
                         <FormControl><Input placeholder="123" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -316,7 +316,7 @@ export function StudentForm({
                     control={form.control} name="complement"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Complemento</FormLabel>
+                        <FormLabel>Complemento (Opcional)</FormLabel>
                         <FormControl><Input placeholder="Apto 4B" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -326,7 +326,7 @@ export function StudentForm({
                     control={form.control} name="neighborhood"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Bairro</FormLabel>
+                        <FormLabel>Bairro (Opcional)</FormLabel>
                         <FormControl><Input placeholder="Centro" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -338,7 +338,7 @@ export function StudentForm({
                     control={form.control} name="city"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Cidade</FormLabel>
+                        <FormLabel>Cidade (Opcional)</FormLabel>
                         <FormControl><Input placeholder="São Paulo" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -348,7 +348,7 @@ export function StudentForm({
                     control={form.control} name="state"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Estado (UF)</FormLabel>
+                        <FormLabel>Estado (UF) (Opcional)</FormLabel>
                         <FormControl><Input placeholder="SP" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -363,7 +363,7 @@ export function StudentForm({
               name="latitude"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Latitude</FormLabel>
+                  <FormLabel>Latitude (Opcional)</FormLabel>
                   <FormControl>
                     <Input type="number" step="any" placeholder="-23.55052" {...field} />
                   </FormControl>
@@ -376,7 +376,7 @@ export function StudentForm({
               name="longitude"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Longitude</FormLabel>
+                  <FormLabel>Longitude (Opcional)</FormLabel>
                   <FormControl>
                     <Input type="number" step="any" placeholder="-46.633308" {...field} />
                   </FormControl>
@@ -438,7 +438,7 @@ export function StudentForm({
                 name="monthlyFee"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Mensalidade (R$)</FormLabel>
+                        <FormLabel>Mensalidade (R$) (Opcional)</FormLabel>
                         <FormControl>
                             <Input type="number" step="any" placeholder="Ex: 450.00" {...field} />
                         </FormControl>
