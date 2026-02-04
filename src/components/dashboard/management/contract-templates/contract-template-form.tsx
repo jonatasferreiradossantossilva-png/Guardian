@@ -86,55 +86,56 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
   ];
 
   return (
-    <DialogContent className="sm:max-w-2xl">
+    <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
       <DialogHeader>
         <DialogTitle>{template ? 'Editar Modelo' : 'Criar Novo Modelo de Contrato'}</DialogTitle>
         <DialogDescription>
           Crie o texto padrão do seu contrato. Use as variáveis abaixo para preencher os dados automaticamente.
         </DialogDescription>
       </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome do Modelo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: Contrato Padrão" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-           <FormField
-            control={form.control}
-            name="content"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Conteúdo do Contrato</FormLabel>
-                <FormControl>
-                  <Textarea placeholder="Cole ou digite o texto do seu contrato aqui..." {...field} rows={15} />
-                </FormControl>
-                <FormDescription>
-                    Variáveis disponíveis: {placeholders.map(p => <code key={p} className="mx-1 p-0.5 bg-muted rounded text-xs">{p}</code>)}
-                </FormDescription>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <DialogFooter className="pt-4">
+      <div className="flex-1 overflow-y-auto -mx-6 px-6">
+        <Form {...form}>
+            <form id="contract-template-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+                <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Nome do Modelo</FormLabel>
+                        <FormControl>
+                        <Input placeholder="Ex: Contrato Padrão" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control}
+                    name="content"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel>Conteúdo do Contrato</FormLabel>
+                        <FormControl>
+                        <Textarea placeholder="Cole ou digite o texto do seu contrato aqui..." {...field} rows={20} />
+                        </FormControl>
+                        <FormDescription>
+                            Variáveis disponíveis: {placeholders.map(p => <code key={p} className="mx-1 p-0.5 bg-muted rounded text-xs">{p}</code>)}
+                        </FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+            </form>
+        </Form>
+      </div>
+      <DialogFooter className="pt-4 border-t shrink-0">
             <DialogClose asChild>
-              <Button type="button" variant="outline">
+            <Button type="button" variant="outline">
                 Cancelar
-              </Button>
+            </Button>
             </DialogClose>
-            <Button type="submit">Salvar Modelo</Button>
-          </DialogFooter>
-        </form>
-      </Form>
+            <Button type="submit" form="contract-template-form">Salvar Modelo</Button>
+      </DialogFooter>
     </DialogContent>
   );
 }
