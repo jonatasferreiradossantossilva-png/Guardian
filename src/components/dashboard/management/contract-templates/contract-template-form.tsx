@@ -81,7 +81,8 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
 
   const placeholders = [
     '{{aluno_nome}}', '{{responsavel_nome}}', '{{responsavel_cpf}}',
-    '{{aluno_endereco}}', '{{escola_nome}}', '{{valor_mensalidade}}', '{{data_geracao}}'
+    '{{aluno_endereco}}', '{{escola_nome}}', '{{valor_mensalidade}}', '{{data_geracao}}',
+    '{{ano_letivo}}', '{{banco}}', '{{agencia}}', '{{conta}}'
   ];
 
   return (
@@ -101,7 +102,7 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
               <FormItem>
                 <FormLabel>Nome do Modelo</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Contrato Padrão 2024" {...field} />
+                  <Input placeholder="Ex: Contrato Padrão" {...field} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -124,7 +125,7 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
             )}
           />
 
-          <DialogFooter className="pt-4 sticky bottom-0 bg-background/90 pb-0">
+          <DialogFooter className="pt-4">
             <DialogClose asChild>
               <Button type="button" variant="outline">
                 Cancelar
