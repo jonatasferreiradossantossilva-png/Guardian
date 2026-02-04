@@ -1,18 +1,54 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import Link from 'next/link';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { LayoutGrid, Sparkles, MessageSquare, DollarSign, Users, Route } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
+// Data for the mobile home screen links
+const navLinks = [
+  { href: '/dashboard/overview', label: 'Visão Geral', icon: LayoutGrid },
+  { href: '/dashboard/optimizer', label: 'Otimizador IA', icon: Sparkles },
+  { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
+  { href: '/dashboard/financial', label: 'Financeiro', icon: DollarSign },
+  { href: '/dashboard/management/students', label: 'Alunos', icon: Users },
+  { href: '/dashboard/management/routes', label: 'Rotas', icon: Route },
+];
+
+// --- Mobile Home Screen Component ---
+function MobileHome() {
+    return (
+        <div className="p-4">
+            <h1 className="text-3xl font-bold tracking-tight mb-6">Menu Principal</h1>
+            <div className="grid grid-cols-2 gap-4">
+                {navLinks.map((link) => (
+                    <Link href={link.href} key={link.href} passHref>
+                        <Card className="hover:bg-secondary transition-colors h-full flex flex-col justify-center">
+                            <CardHeader className="flex flex-col items-center justify-center text-center p-4">
+                                <link.icon className="h-8 w-8 text-primary mb-2" />
+                                <CardTitle className="text-base">{link.label}</CardTitle>
+                            </CardHeader>
+                        </Card>
+                    </Link>
+                ))}
+            </div>
+        </div>
+    );
+}
+
+// --- Desktop Dashboard Component (Current content) ---
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-export default function DashboardPage() {
+function DesktopDashboard() {
   const { data: allInvoices } = useMockCollection('invoices', undefined);
   const { data: allExpenses } = useMockCollection('expenses', undefined);
 
@@ -81,4 +117,22 @@ export default function DashboardPage() {
       </div>
     </div>
   );
+}
+
+
+// --- Main Page Component ---
+export default function DashboardPage() {
+    const isMobile = useIsMobile();
+    const [isClient, setIsClient] = useState(false);
+
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
+    if (!isClient) {
+        // Render a placeholder or null on the server to avoid hydration mismatch
+        return null; 
+    }
+
+    return isMobile ? <MobileHome /> : <DesktopDashboard />;
 }
