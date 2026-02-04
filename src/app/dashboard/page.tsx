@@ -33,11 +33,15 @@ function MobileHome() {
             { href: '/dashboard', label: 'Painel Financeiro', icon: LayoutGrid },
             { href: '/dashboard/optimizer', label: 'Otimizar Rotas', icon: Sparkles },
             { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
-            { href: '/dashboard/financial', label: 'Gestão Financeira', icon: DollarSign },
+            { href: '/dashboard/financial', label: 'Controle Financeiro', icon: DollarSign },
             { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Route },
         ];
 
         if (isDriver) {
+            const contractLinkIndex = baseLinks.findIndex(link => link.href === '/dashboard/management/contracts');
+            if (contractLinkIndex !== -1) {
+                baseLinks.splice(contractLinkIndex, 1);
+            }
             return [
                 ...baseLinks,
                 { href: '/driver/route-plan', label: 'Modo Motorista', icon: Car },
