@@ -9,6 +9,7 @@ import { Send, User, Loader2, ArrowLeft, Building, Users } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { cn } from '@/lib/utils';
 
 type ConversationParticipant = {
   id: string; // The database ID (e.g., parent-1, user-admin-1)
@@ -141,8 +142,11 @@ export default function DriverMessagesPage() {
                 <Link href="/driver/route-plan"><ArrowLeft /></Link>
             </Button>
         </div>
-        <Card className="flex-1 grid grid-cols-[300px_1fr] overflow-hidden">
-          <div className="flex flex-col border-r">
+        <Card className="flex-1 flex overflow-hidden">
+          <div className={cn(
+              "w-full flex-col border-r md:w-[300px] md:flex-shrink-0",
+              selectedConversation ? "hidden md:flex" : "flex"
+            )}>
              <Tabs defaultValue="parents" className="flex flex-col flex-1 min-h-0">
                  <CardHeader>
                     <CardTitle>Conversas</CardTitle>
@@ -182,11 +186,17 @@ export default function DriverMessagesPage() {
             </Tabs>
           </div>
 
-          <div className="flex flex-col">
+          <div className={cn(
+              "flex-1 flex-col",
+              selectedConversation ? "flex" : "hidden md:flex"
+            )}>
             {selectedConversation ? (
               <>
                 <CardHeader className="border-b">
                   <CardTitle className="flex items-center gap-3">
+                    <Button variant="ghost" size="icon" className="md:hidden -ml-2" onClick={() => setSelectedConversation(null)}>
+                        <ArrowLeft />
+                    </Button>
                     <User />
                     {selectedConversation.name}
                   </CardTitle>
