@@ -28,6 +28,7 @@ import {
   MessageCircle,
   Rocket,
   LayoutGrid,
+  FileText,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -54,6 +55,8 @@ const registrationLinks = [
     icon: GraduationCap,
   },
   { href: "/dashboard/management/predefined-messages", label: "Mensagens Predefinidas", icon: MessageCircle },
+  { href: "/dashboard/management/contract-templates", label: "Modelos de Contrato", icon: FileText },
+  { href: "/dashboard/management/contracts", label: "Contratos Gerados", icon: ClipboardCheck },
 ];
 
 

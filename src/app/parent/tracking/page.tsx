@@ -12,7 +12,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2 } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -487,6 +487,11 @@ export default function ParentTrackingPage() {
                         <Button asChild variant="outline" className="w-full">
                             <Link href="/parent/messages">
                                 <MessageCircle className="mr-2 h-4 w-4" /> Mensagens
+                            </Link>
+                        </Button>
+                         <Button asChild variant="outline" className="w-full">
+                            <Link href="/parent/contract">
+                                <FileText className="mr-2 h-4 w-4" /> Contrato
                             </Link>
                         </Button>
                         <Button asChild variant="outline" className="w-full">
