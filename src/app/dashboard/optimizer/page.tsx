@@ -1,5 +1,4 @@
 
-
 "use client";
 
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
@@ -8,7 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, User, Bot, School, Navigation, Siren, Home, MapPin, ListTree } from "lucide-react";
+import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, User, Bot, School, Navigation, Siren, Home, MapPin, ListTree, LocateFixed } from "lucide-react";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
@@ -74,6 +73,7 @@ export default function OptimizerPage() {
     const [startFromDriverHome, setStartFromDriverHome] = useState(true);
     const [optimizationResult, setOptimizationResult] = useState<OptimizeSchoolVanRouteOutput | null>(null);
     const [autoOptimizeTriggered, setAutoOptimizeTriggered] = useState(false);
+    const [recenterTrigger, setRecenterTrigger] = useState(0);
     const isInitialMount = useRef(true);
 
 
@@ -407,6 +407,15 @@ export default function OptimizerPage() {
                         </div>
 
                         <div className="relative h-[70vh] w-full rounded-lg overflow-hidden border">
+                            <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={() => setRecenterTrigger(c => c + 1)}
+                                className="absolute top-3 right-3 z-10 bg-background/80 hover:bg-background"
+                                title="Centralizar Rota"
+                            >
+                                <LocateFixed />
+                            </Button>
                             {!API_KEY ? (
                                 <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                                     <div className="text-center p-4">
@@ -434,6 +443,7 @@ export default function OptimizerPage() {
                                             optimizedRoute={optimizedStudentsResult} 
                                             school={schoolForRoute}
                                             driver={startFromDriverHome ? driverForRoute : null}
+                                            recenterTrigger={recenterTrigger}
                                         />
                                     </GoogleMap>
                                 </APIProvider>
@@ -446,7 +456,7 @@ export default function OptimizerPage() {
     );
 }
 
-function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
+function RouteMap({ originalRoute, optimizedRoute, school, driver, recenterTrigger }) {
     const map = useMap();
 
     useEffect(() => {
@@ -470,7 +480,7 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
         if (bounds.isEmpty()) return;
         map.fitBounds(bounds, 100);
 
-    }, [map, originalRoute, optimizedRoute, school, driver]);
+    }, [map, originalRoute, optimizedRoute, school, driver, recenterTrigger]);
     
     if (!school) return null;
 
@@ -527,4 +537,6 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver }) {
         </>
     );
 }
+    
+
     
