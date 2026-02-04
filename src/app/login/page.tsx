@@ -18,6 +18,7 @@ import {
   Sparkles,
   Milestone,
   User,
+  FileText,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -128,16 +129,16 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Sparkles} title="Otimizador de Rotas com IA" description="Crie rotas eficientes em segundos. Reduza custos, tempo e o desgaste da sua frota com nossa IA." />
-                    <FeatureItem icon={DollarSign} title="Gestão Financeira Simplificada" description="Gere faturas recorrentes, controle pagamentos de mensalidades e viagens avulsas de forma automática." />
-                    <FeatureItem icon={Users} title="Comunicação e Gestão Centralizada" description="Tenha uma visão 360° da sua frota, motoristas, auxiliares e alunos, com canais de comunicação diretos." />
+                    <FeatureItem icon={DollarSign} title="Gestão Financeira e Contratos" description="Gere faturas, administre contratos digitais e controle pagamentos de forma centralizada." />
+                    <FeatureItem icon={Users} title="Comunicação e Gestão Centralizada" description="Tenha uma visão 360° da sua frota, motoristas, monitores e alunos, com canais de comunicação diretos." />
                   </div>
                 </CardContent>
               </Card>
 
-              {/* Feature Card: Motorista & Auxiliar */}
+              {/* Feature Card: Motorista & Monitor */}
               <Card className="flex flex-col border-primary/20 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300">
                 <CardHeader>
-                  <CardTitle className="flex items-center gap-3"><Car className="text-primary"/>App do Motorista e Auxiliar</CardTitle>
+                  <CardTitle className="flex items-center gap-3"><Car className="text-primary"/>App do Motorista e Monitor</CardTitle>
                   <CardDescription>O copiloto digital para uma rotina mais segura e tranquila.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
@@ -165,7 +166,8 @@ export default function LandingPage() {
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Map} title="Acompanhamento em Tempo Real" description="Saiba exatamente onde a van está no mapa e receba alertas inteligentes quando ela estiver se aproximando." />
                     <FeatureItem icon={CheckCircle} title="Notificações de Embarque/Desembarque" description="Veja se seu filho(a) embarcou na ida e se desembarcou em segurança na volta. Fim da ansiedade." />
-                    <FeatureItem icon={DollarSign} title="Autonomia e Conveniência" description="Solicite viagens avulsas, gerencie pagamentos e autorize pessoas para a retirada de forma simples e segura." />
+                    <FeatureItem icon={FileText} title="Documentos e Autorizações" description="Visualize e aceite contratos, e gerencie pessoas autorizadas para a retirada do seu filho." />
+                    <FeatureItem icon={DollarSign} title="Financeiro na Palma da Mão" description="Solicite viagens avulsas e gerencie os pagamentos de mensalidades de forma simples e segura." />
                   </div>
                 </CardContent>
               </Card>
@@ -200,7 +202,7 @@ export default function LandingPage() {
                             <Users className="h-8 w-8" />
                         </div>
                         <h3 className="mt-4 text-xl font-semibold">Ecossistema 360° Integrado</h3>
-                        <p className="mt-2 text-muted-foreground">Conectamos gestores, motoristas, auxiliares e pais em uma única plataforma, eliminando a necessidade de apps fragmentados e criando uma fonte única de verdade para toda a operação.</p>
+                        <p className="mt-2 text-muted-foreground">Conectamos gestores, motoristas, monitores e pais em uma única plataforma, eliminando a necessidade de apps fragmentados e criando uma fonte única de verdade para toda a operação.</p>
                     </div>
                 </div>
             </div>

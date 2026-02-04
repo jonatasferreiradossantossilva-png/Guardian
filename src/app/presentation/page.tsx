@@ -1,3 +1,4 @@
+
 'use client';
 
 import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, HandHeart, Bus } from 'lucide-react';
@@ -93,11 +94,11 @@ export default function PresentationPage() {
                         <div className="space-y-6">
                             <div>
                                 <h3 className="text-xl font-semibold flex items-center gap-2"><Rocket className="text-primary"/>Para a Empresa (Eficiência)</h3>
-                                <p className="text-muted-foreground">Otimização de rotas com IA, gestão financeira automatizada e um dashboard com visão 360° da operação.</p>
+                                <p className="text-muted-foreground">Otimização de rotas com IA, gestão financeira e de contratos automatizada, e um dashboard com visão 360° da operação.</p>
                             </div>
                              <div>
                                 <h3 className="text-xl font-semibold flex items-center gap-2"><User className="text-primary"/>Para os Pais (Tranquilidade)</h3>
-                                <p className="text-muted-foreground">Acompanhamento da van em tempo real, comunicação direta e autonomia para gerenciar autorizações e pagamentos.</p>
+                                <p className="text-muted-foreground">Acompanhamento da van em tempo real, comunicação direta e autonomia para gerenciar pagamentos, autorizações e contratos.</p>
                             </div>
                         </div>
                     </div>
