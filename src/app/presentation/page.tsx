@@ -303,24 +303,24 @@ export default function PresentationPage() {
                         <div className="flex-shrink-0 bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center font-bold">3M</div>
                         <div className="h-0.5 w-8 bg-primary"></div>
                         <div className="bg-background/50 border border-border rounded-lg p-4 w-full">
-                            <h4 className="font-semibold">Lançamento do MVP</h4>
-                            <p className="text-muted-foreground text-sm">5 empresas no programa piloto, validar pricing e coletar feedback.</p>
+                            <h4 className="font-semibold">Lançamento do MVP e Primeiros Pilotos</h4>
+                            <p className="text-muted-foreground text-sm">5 empresas no programa piloto. Foco em validar a proposta de valor e coletar feedback para ajustes finais.</p>
                         </div>
                     </div>
                      <div className="flex items-center">
                         <div className="flex-shrink-0 bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center font-bold">6M</div>
                         <div className="h-0.5 w-8 bg-primary"></div>
                         <div className="bg-background/50 border border-border rounded-lg p-4 w-full">
-                            <h4 className="font-semibold">Tração Inicial</h4>
-                            <p className="text-muted-foreground text-sm">Alcançar 20 clientes pagantes e MRR (Receita Recorrente Mensal) de R$ 15.000.</p>
+                            <h4 className="font-semibold">Tração Inicial e Validação</h4>
+                            <p className="text-muted-foreground text-sm">Converter os pilotos em 20 clientes pagantes, atingindo um MRR (Receita Recorrente Mensal) de R$ 8.900 (base: 5 veículos/cliente no plano Pro).</p>
                         </div>
                     </div>
                      <div className="flex items-center">
                         <div className="flex-shrink-0 bg-primary text-primary-foreground rounded-full h-12 w-12 flex items-center justify-center font-bold">12M</div>
                         <div className="h-0.5 w-8 bg-primary"></div>
                         <div className="bg-background/50 border border-border rounded-lg p-4 w-full">
-                            <h4 className="font-semibold">Escala e Expansão</h4>
-                            <p className="text-muted-foreground text-sm">Atingir 100 clientes, iniciar expansão para a segunda capital e alcançar o breakeven operacional.</p>
+                            <h4 className="font-semibold">Ponto de Equilíbrio e Escala</h4>
+                            <p className="text-muted-foreground text-sm">Alcançar 80 clientes e um MRR de R$ 35.600, atingindo o ponto de equilíbrio operacional e preparando a expansão para outras capitais.</p>
                         </div>
                     </div>
                 </div>
