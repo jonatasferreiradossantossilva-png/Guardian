@@ -34,7 +34,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Progress } from '@/components/ui/progress';
 
 
-type Shift = 'Manhã' | 'Tarde';
+type Shift = 'Manhã' | 'Tarde' | 'Integral';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
 interface Student {
   id: string;
@@ -169,7 +169,11 @@ export default function AssistantRoutePlanPage() {
     const studentMap = new Map(students.map((s) => [s.id, s]));
     return route.studentIds
       .map((id) => studentMap.get(id))
-      .filter((s): s is Student => !!s && s.shift === selectedShift);
+      .filter((s): s is Student => {
+        if (!s) return false;
+        if (s.shift === 'Integral') return true;
+        return s.shift === selectedShift;
+      });
   }, [route?.studentIds, students, selectedShift]);
   
   const { pendingStudents, completedStudents } = useMemo(() => {
@@ -344,5 +348,3 @@ export default function AssistantRoutePlanPage() {
     </div>
   );
 }
-
-    

@@ -47,7 +47,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 
-type Shift = 'Manhã' | 'Tarde';
+type Shift = 'Manhã' | 'Tarde' | 'Integral';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
 interface Student {
   id: string;
@@ -364,7 +364,12 @@ export default function DriverRoutePlanPage() {
       const studentMap = new Map(allStudents.map(s => [s.id, s,]));
       return route.studentIds
         .map(id => studentMap.get(id))
-        .filter((s): s is Student => !!s && s.shift === shift);
+        .filter((s): s is Student => {
+          if (!s) return false;
+          // The main `shift` state determines if it's the morning or afternoon trip
+          if (s.shift === 'Integral') return true;
+          return s.shift === shift;
+        });
   }, [route, allStudents, shift]);
 
   const schoolForRoute = useMemo(() => {

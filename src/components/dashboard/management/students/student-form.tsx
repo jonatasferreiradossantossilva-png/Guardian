@@ -39,7 +39,7 @@ const formSchema = z.object({
   longitude: z.coerce.number().optional(),
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
-  shift: z.enum(['Manhã', 'Tarde'], { required_error: 'Selecione um turno.' }),
+  shift: z.enum(['Manhã', 'Tarde', 'Integral'], { required_error: 'Selecione um turno.' }),
   monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
   zipCode: z.string().optional(),
   street: z.string().min(1, { message: 'A rua é obrigatória.' }),
@@ -424,6 +424,7 @@ export function StudentForm({
                     <SelectContent>
                       <SelectItem value="Manhã">Manhã</SelectItem>
                       <SelectItem value="Tarde">Tarde</SelectItem>
+                      <SelectItem value="Integral">Integral</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
