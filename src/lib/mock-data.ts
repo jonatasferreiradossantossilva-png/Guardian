@@ -289,7 +289,8 @@ export const initialMockData = {
         { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", routeId: "route-8", shift: "Tarde", status: "aguardando", latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
         { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", routeId: "route-8", shift: "Tarde", status: "aguardando", latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
         { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", routeId: "route-8", shift: "Tarde", status: "aguardando", latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
-        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", routeId: null, shift: "Tarde", status: "aguardando", latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 }
+        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", routeId: null, shift: "Tarde", status: "aguardando", latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
+        { id: "student-17", name: "Theo Integral", schoolId: "school-1", parentId: "parent-1", routeId: "route-1", shift: "Integral", status: "aguardando", latitude: -23.552, longitude: -46.642, street: "Rua do Teste", number: "123", neighborhood: "Centro", city: "São Paulo", state: "SP", zipCode: "01002-000", monthlyFee: 800.00 }
     ],
     routes: [
         { 
@@ -297,7 +298,7 @@ export const initialMockData = {
             name: "Colégio Marjore Paula", 
             driverId: "driver-2", 
             monitorId: "user-monitor-1", 
-            studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12"], 
+            studentIds: ["student-1", "student-2", "student-3", "student-17", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12"], 
             turnByTurnDirections: [
               "Siga para o sudeste na Rua A em direção à Rua B",
               "Vire à direita na Rua B",
@@ -560,6 +561,7 @@ export const initialMockData = {
 
     
     
+
 
 
 
