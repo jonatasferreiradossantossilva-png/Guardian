@@ -25,7 +25,10 @@ const navLinks = [
 function MobileHome() {
     return (
         <div className="p-4">
-            <h1 className="text-3xl font-bold tracking-tight mb-6">Menu Principal</h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-2">Menu Principal</h1>
+            <p className="text-muted-foreground mb-6 text-sm">
+                Estes são os atalhos para as principais funcionalidades. Para ver todas as opções, acesse o menu no canto superior.
+            </p>
             <div className="grid grid-cols-2 gap-4">
                 {navLinks.map((link) => (
                     <Link href={link.href} key={link.href} passHref>
