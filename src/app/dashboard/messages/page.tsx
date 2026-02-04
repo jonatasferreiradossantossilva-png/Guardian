@@ -34,7 +34,7 @@ export default function MessagesPage() {
     setMockUserId(storedUserId);
   }, []);
 
-  const assistants = useMemo(() => (users || []).filter(u => u.profile === 'auxiliar'), [users]);
+  const monitors = useMemo(() => (users || []).filter(u => u.profile === 'monitor'), [users]);
 
   const chatMessages = useMemo(() => {
     if (!selectedConversation || !messages || !mockUserId) return [];
@@ -91,7 +91,7 @@ export default function MessagesPage() {
                 <TabsList className="grid w-full grid-cols-3">
                     <TabsTrigger value="parents"><User className="mr-2 h-4 w-4"/>Pais</TabsTrigger>
                     <TabsTrigger value="drivers"><Car className="mr-2 h-4 w-4"/>Motoristas</TabsTrigger>
-                    <TabsTrigger value="assistants"><ClipboardCheck className="mr-2 h-4 w-4"/>Auxiliares</TabsTrigger>
+                    <TabsTrigger value="monitors"><ClipboardCheck className="mr-2 h-4 w-4"/>Monitores</TabsTrigger>
                 </TabsList>
              </div>
             <ScrollArea className="flex-1 mt-2">
@@ -121,13 +121,13 @@ export default function MessagesPage() {
                         ))}
                     </div>
                 </TabsContent>
-                <TabsContent value="assistants" className="m-0">
+                <TabsContent value="monitors" className="m-0">
                      <div className="p-2 space-y-1">
-                        {assistants?.map(assistant => (
+                        {monitors?.map(monitor => (
                            <ConversationListItem
-                                key={assistant.id}
-                                participant={{ id: assistant.id, userId: assistant.id, name: assistant.name, avatarSeed: `user${assistant.id}`}}
-                                isSelected={selectedConversation?.id === assistant.id}
+                                key={monitor.id}
+                                participant={{ id: monitor.id, userId: monitor.id, name: monitor.name, avatarSeed: `user${monitor.id}`}}
+                                isSelected={selectedConversation?.id === monitor.id}
                                 onSelect={handleSelectConversation}
                             />
                         ))}
@@ -222,3 +222,5 @@ function ConversationListItem({ participant, isSelected, onSelect }: { participa
         </button>
     );
 }
+
+    

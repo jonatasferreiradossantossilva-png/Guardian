@@ -45,13 +45,13 @@ type Route = {
   id: string;
   name: string;
   driverId: string;
-  assistantId?: string;
+  monitorId?: string;
   studentIds: string[];
   lastOptimizedAt?: string;
 };
 type Driver = { id: string; name: string };
 type Student = { id: string; name: string };
-type Assistant = { id: string; name: string; profile: string };
+type Monitor = { id: string; name: string; profile: string };
 type Vehicle = { id: string; model: string; licensePlate: string; capacity: number };
 
 
@@ -59,11 +59,11 @@ interface RoutesListProps {
   initialRoutes: Route[];
   initialDrivers: Driver[];
   initialStudents: Student[];
-  initialAssistants: Assistant[];
+  initialMonitors: Monitor[];
   initialVehicles: Vehicle[];
 }
 
-export function RoutesList({ initialRoutes, initialDrivers, initialStudents, initialAssistants, initialVehicles }: RoutesListProps) {
+export function RoutesList({ initialRoutes, initialDrivers, initialStudents, initialMonitors, initialVehicles }: RoutesListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
 
@@ -86,7 +86,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
   const routes = liveRoutes ?? initialRoutes;
   const drivers = liveDrivers ?? initialDrivers;
   const students = liveStudents ?? initialStudents;
-  const assistants = useMemo(() => (liveUsers ?? initialAssistants)?.filter(u => u.profile === 'auxiliar'), [liveUsers, initialAssistants]);
+  const monitors = useMemo(() => (liveUsers ?? initialMonitors)?.filter(u => u.profile === 'monitor'), [liveUsers, initialMonitors]);
   const vehicles = liveVehicles ?? initialVehicles;
   const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading || areUsersLoading || areVehiclesLoading;
 
@@ -95,10 +95,10 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     return new Map(drivers.map(d => [d.id, d.name]));
   }, [drivers]);
 
-  const assistantsMap = useMemo(() => {
-      if (!assistants) return new Map();
-      return new Map(assistants.map(a => [a.id, a.name]));
-  }, [assistants]);
+  const monitorsMap = useMemo(() => {
+      if (!monitors) return new Map();
+      return new Map(monitors.map(a => [a.id, a.name]));
+  }, [monitors]);
 
   const handleEdit = useCallback((route: Route) => {
     setSelectedRoute(route);
@@ -147,7 +147,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             route={selectedRoute || undefined} 
             drivers={drivers || []}
             students={students || []}
-            assistants={assistants || []}
+            monitors={monitors || []}
             vehicles={vehicles || []}
             onFormSubmit={handleFormSubmit}
           />
@@ -165,7 +165,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                 <TableRow>
                   <TableHead>Nome da Rota</TableHead>
                   <TableHead>Motorista</TableHead>
-                  <TableHead>Auxiliar</TableHead>
+                  <TableHead>Monitor</TableHead>
                   <TableHead>Alunos</TableHead>
                   <TableHead>Última Otimização</TableHead>
                   <TableHead className="text-right w-[280px]">Ações</TableHead>
@@ -184,7 +184,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                     <TableRow key={route.id}>
                       <TableCell className="font-medium">{route.name}</TableCell>
                       <TableCell>{driversMap.get(route.driverId) || 'N/A'}</TableCell>
-                      <TableCell>{assistantsMap.get(route.assistantId) || 'N/A'}</TableCell>
+                      <TableCell>{monitorsMap.get(route.monitorId) || 'N/A'}</TableCell>
                       <TableCell>{route.studentIds?.length || 0}</TableCell>
                       <TableCell>
                           {route.lastOptimizedAt ? (
@@ -247,7 +247,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
               <div className="space-y-4">
                 {routes.map((route) => {
                   const driverName = driversMap.get(route.driverId) || 'N/A';
-                  const assistantName = assistantsMap.get(route.assistantId);
+                  const monitorName = monitorsMap.get(route.monitorId);
 
                   return (
                   <Card key={route.id} className="overflow-hidden">
@@ -284,7 +284,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
                                 <Badge variant="outline"><Users className="mr-1.5 h-3 w-3" />{route.studentIds?.length || 0} alunos</Badge>
-                                <Badge variant="outline"><Car className="mr-1.5 h-3 w-3" />{assistantName ? `Aux: ${assistantName}` : 'Sem auxiliar'}</Badge>
+                                <Badge variant="outline"><Car className="mr-1.5 h-3 w-3" />{monitorName ? `Monitor: ${monitorName}` : 'Sem monitor'}</Badge>
                                 {route.lastOptimizedAt ? (
                                     <Badge variant="default" className="border-transparent bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700 hover:bg-green-100/80">
                                         <Sparkles className="mr-1.5 h-3 w-3" /> Otimizada
@@ -335,3 +335,5 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     </div>
   );
 }
+
+    

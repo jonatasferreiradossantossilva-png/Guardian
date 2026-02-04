@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { Car, Users, ArrowRight, Loader2, Edit } from 'lucide-react';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
-import { AssistantQuickEditForm } from './assistant-quick-edit-form';
+import { MonitorQuickEditForm } from './assistant-quick-edit-form';
 
 export function DriverRouteInfoCard() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
@@ -38,15 +38,15 @@ export function DriverRouteInfoCard() {
     { field: 'id', op: 'in', value: activeRoute.studentIds }
   ] : []);
   
-  // 4. Get all users to find assistants
+  // 4. Get all users to find monitors
   const { data: users, isLoading: areUsersLoading } = useMockCollection('users');
 
-  const assistants = useMemo(() => (users || []).filter(u => u.profile === 'auxiliar'), [users]);
-  const assistantsMap = useMemo(() => new Map(assistants.map(a => [a.id, a.name])), [assistants]);
-  const currentAssistantName = useMemo(() => {
-    if (!activeRoute?.assistantId) return "Nenhum";
-    return assistantsMap.get(activeRoute.assistantId) || "Desconhecido";
-  }, [activeRoute, assistantsMap]);
+  const monitors = useMemo(() => (users || []).filter(u => u.profile === 'monitor'), [users]);
+  const monitorsMap = useMemo(() => new Map(monitors.map(a => [a.id, a.name])), [monitors]);
+  const currentMonitorName = useMemo(() => {
+    if (!activeRoute?.monitorId) return "Nenhum";
+    return monitorsMap.get(activeRoute.monitorId) || "Desconhecido";
+  }, [activeRoute, monitorsMap]);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
 
@@ -90,11 +90,11 @@ export function DriverRouteInfoCard() {
                   <span className="font-medium">{studentsOnBoard} / {totalStudents} a bordo</span>
                 </div>
                  <div className="flex justify-between items-center">
-                    <span>Auxiliar:</span>
+                    <span>Monitor:</span>
                     <div className="flex items-center gap-1">
-                      <span className="font-medium truncate max-w-[100px]">{currentAssistantName}</span>
+                      <span className="font-medium truncate max-w-[100px]">{currentMonitorName}</span>
                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-5 w-5" title="Trocar auxiliar">
+                          <Button variant="ghost" size="icon" className="h-5 w-5" title="Trocar monitor">
                             <Edit className="h-3 w-3" />
                           </Button>
                        </DialogTrigger>
@@ -108,10 +108,10 @@ export function DriverRouteInfoCard() {
                   </Link>
               </Button>
           </div>
-           {assistants && (
-              <AssistantQuickEditForm 
+           {monitors && (
+              <MonitorQuickEditForm 
                 route={activeRoute} 
-                assistants={assistants} 
+                monitors={monitors} 
                 onFormSubmit={handleFormSubmit}
               />
             )}
@@ -120,3 +120,5 @@ export function DriverRouteInfoCard() {
     </div>
   );
 }
+
+    

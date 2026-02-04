@@ -25,7 +25,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 const formSchema = z.object({
   email: z.string().optional(),
   password: z.string().optional(),
-  profile: z.enum(["gestor", "motorista", "pai", "auxiliar"], {
+  profile: z.enum(["gestor", "motorista", "pai", "monitor"], {
       required_error: "Você precisa selecionar um perfil para entrar."
   }),
 });
@@ -35,7 +35,7 @@ const profileToMockIdMap = {
     'gestor': 'user-admin-1',
     'motorista': 'user-motorista-2', // Default driver for demo
     'pai': 'user-pai-3', // Changed to Carla Dias for contract acceptance simulation
-    'auxiliar': 'user-aux-1' // Default assistant for demo
+    'monitor': 'user-monitor-1' // Default monitor for demo
 };
 
 export function LoginForm() {
@@ -85,7 +85,7 @@ export function LoginForm() {
       case "pai":
         router.push("/parent/tracking");
         break;
-      case "auxiliar":
+      case "monitor":
         router.push("/assistant/route-plan");
         break;
       default:
@@ -131,9 +131,9 @@ export function LoginForm() {
                       </FormItem>
                        <FormItem className="flex items-center space-x-3 space-y-0">
                         <FormControl>
-                          <RadioGroupItem value="auxiliar" />
+                          <RadioGroupItem value="monitor" />
                         </FormControl>
-                        <FormLabel className="font-normal flex items-center gap-2"><ClipboardCheck/> Auxiliar</FormLabel>
+                        <FormLabel className="font-normal flex items-center gap-2"><ClipboardCheck/> Monitor</FormLabel>
                       </FormItem>
                     </RadioGroup>
                   </FormControl>
@@ -159,3 +159,5 @@ export function LoginForm() {
     </Card>
   );
 }
+
+    

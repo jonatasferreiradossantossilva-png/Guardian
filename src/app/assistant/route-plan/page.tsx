@@ -144,14 +144,14 @@ export default function AssistantRoutePlanPage() {
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || 'user-aux-1');
+    setMockUserId(storedUserId || 'user-monitor-1');
   }, []);
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
     'routes',
     mockUserId
       ? [
-          { field: 'assistantId', op: '==', value: mockUserId },
+          { field: 'monitorId', op: '==', value: mockUserId },
         ]
       : []
   );
@@ -344,3 +344,5 @@ export default function AssistantRoutePlanPage() {
     </div>
   );
 }
+
+    

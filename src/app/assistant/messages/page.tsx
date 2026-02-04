@@ -28,11 +28,11 @@ export default function AssistantMessagesPage() {
     setIsClient(true);
   }, []);
 
-  const { data: assistantUser, isLoading: areUsersLoading } = useMockDoc('users', mockUserId);
-  const assistantUserId = assistantUser?.id;
+  const { data: monitorUser, isLoading: areUsersLoading } = useMockDoc('users', mockUserId);
+  const monitorUserId = monitorUser?.id;
 
   const activeRouteFilter = useMemo(() => (mockUserId ? [
-      { field: 'assistantId', op: '==', value: mockUserId },
+      { field: 'monitorId', op: '==', value: mockUserId },
   ] : undefined), [mockUserId]);
   const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes', activeRouteFilter);
   const activeRoute = useMemo(() => routes?.[0], [routes]);
@@ -63,24 +63,24 @@ export default function AssistantMessagesPage() {
   }, [allUsers]);
 
   const chatMessages = useMemo(() => {
-    if (!selectedConversation || !messages || !assistantUserId) return [];
+    if (!selectedConversation || !messages || !monitorUserId) return [];
     return messages
       .filter(m => 
-        (m.senderId === selectedConversation.userId && m.recipientId === assistantUserId) || 
-        (m.senderId === assistantUserId && m.recipientId === selectedConversation.userId)
+        (m.senderId === selectedConversation.userId && m.recipientId === monitorUserId) || 
+        (m.senderId === monitorUserId && m.recipientId === selectedConversation.userId)
       )
       .sort((a, b) => new Date(a.timestamp).valueOf() - new Date(b.timestamp).valueOf());
-  }, [messages, selectedConversation, assistantUserId]);
+  }, [messages, selectedConversation, monitorUserId]);
   
-  const assistantPredefinedMessages = useMemo(() => {
-      return predefinedMessages?.filter(pm => pm.for === 'auxiliar' || pm.for === 'all') || [];
+  const monitorPredefinedMessages = useMemo(() => {
+      return predefinedMessages?.filter(pm => pm.for === 'monitor' || pm.for === 'all') || [];
   }, [predefinedMessages]);
 
   const handleSendMessage = (text: string) => {
-    if (!text.trim() || !selectedConversation || !assistantUserId) return;
+    if (!text.trim() || !selectedConversation || !monitorUserId) return;
     
     addDoc('messages', {
-        senderId: assistantUserId,
+        senderId: monitorUserId,
         recipientId: selectedConversation.userId,
         text: text,
         timestamp: new Date().toISOString()
@@ -109,11 +109,11 @@ export default function AssistantMessagesPage() {
     );
   }
 
-  if (!assistantUser) {
+  if (!monitorUser) {
       return (
           <div className="flex flex-col items-center justify-center h-screen text-center p-4">
               <User className="h-12 w-12 text-muted-foreground mb-4"/>
-              <h2 className="text-xl font-semibold">Perfil de Auxiliar não Encontrado</h2>
+              <h2 className="text-xl font-semibold">Perfil de Monitor não Encontrado</h2>
               <p className="text-muted-foreground max-w-md">Não foi possível carregar os dados do seu usuário.</p>
               <Button asChild variant="outline" className="mt-4">
                 <Link href="/assistant/route-plan">Voltar para o Plano de Rota</Link>
@@ -185,9 +185,9 @@ export default function AssistantMessagesPage() {
                     {chatMessages.map(msg => (
                       <div
                         key={msg.id}
-                        className={`flex items-end gap-2 ${msg.senderId === assistantUserId ? 'justify-end' : ''}`}
+                        className={`flex items-end gap-2 ${msg.senderId === monitorUserId ? 'justify-end' : ''}`}
                       >
-                        <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === assistantUserId ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
+                        <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${msg.senderId === monitorUserId ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                           <p className="text-sm">{msg.text}</p>
                            <p className="text-xs text-right mt-1 opacity-70">
                               {isClient ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
@@ -198,7 +198,7 @@ export default function AssistantMessagesPage() {
                   </div>
                 </ScrollArea>
                  <div className="p-2 border-t flex flex-wrap gap-2 bg-background">
-                    {assistantPredefinedMessages.map(pm => (
+                    {monitorPredefinedMessages.map(pm => (
                         <Button key={pm.id} variant="outline" size="sm" onClick={() => handleSendMessage(pm.text)}>
                             {pm.text}
                         </Button>
@@ -250,3 +250,5 @@ function ConversationListItem({ participant, isSelected, onSelect }: { participa
         </button>
     );
 }
+
+    

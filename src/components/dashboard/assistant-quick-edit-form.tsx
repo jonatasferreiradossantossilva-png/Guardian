@@ -31,43 +31,43 @@ import { useToast } from '@/hooks/use-toast';
 import { useMockData } from '@/hooks/use-mock-data';
 
 const formSchema = z.object({
-  assistantId: z.string().optional(),
+  monitorId: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
 
-type Route = { id: string; name: string; assistantId?: string };
-type Assistant = { id: string; name: string };
+type Route = { id: string; name: string; monitorId?: string };
+type Monitor = { id: string; name: string };
 
-interface AssistantQuickEditFormProps {
+interface MonitorQuickEditFormProps {
   route: Route;
-  assistants: Assistant[];
+  monitors: Monitor[];
   onFormSubmit: () => void;
 }
 
-export function AssistantQuickEditForm({
+export function MonitorQuickEditForm({
   route,
-  assistants,
+  monitors,
   onFormSubmit,
-}: AssistantQuickEditFormProps) {
+}: MonitorQuickEditFormProps) {
   const { toast } = useToast();
   const { updateDoc } = useMockData();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      assistantId: route.assistantId || 'none',
+      monitorId: route.monitorId || 'none',
     },
   });
 
   const onSubmit = (data: FormValues) => {
-    const newAssistantId = data.assistantId === 'none' ? '' : data.assistantId;
+    const newMonitorId = data.monitorId === 'none' ? '' : data.monitorId;
     
-    updateDoc('routes', route.id, { assistantId: newAssistantId });
+    updateDoc('routes', route.id, { monitorId: newMonitorId });
     
     toast({
-      title: 'Auxiliar atualizado!',
-      description: `O auxiliar da rota "${route.name}" foi modificado.`,
+      title: 'Monitor atualizado!',
+      description: `O monitor da rota "${route.name}" foi modificado.`,
     });
     
     onFormSubmit();
@@ -76,28 +76,28 @@ export function AssistantQuickEditForm({
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>Trocar Auxiliar da Rota</DialogTitle>
+        <DialogTitle>Trocar Monitor da Rota</DialogTitle>
         <DialogDescription>
-          Selecione um novo auxiliar para a rota "{route.name}" ou remova o atual.
+          Selecione um novo monitor para a rota "{route.name}" ou remova o atual.
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             <FormField
                 control={form.control}
-                name="assistantId"
+                name="monitorId"
                 render={({ field }) => (
                     <FormItem>
-                        <FormLabel>Auxiliar</FormLabel>
+                        <FormLabel>Monitor</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value || 'none'}>
                             <FormControl>
                                 <SelectTrigger>
-                                    <SelectValue placeholder="Selecione um auxiliar..." />
+                                    <SelectValue placeholder="Selecione um monitor..." />
                                 </SelectTrigger>
                             </FormControl>
                             <SelectContent>
-                                <SelectItem value="none">Nenhum Auxiliar</SelectItem>
-                                {assistants.map(a => (
+                                <SelectItem value="none">Nenhum Monitor</SelectItem>
+                                {monitors.map(a => (
                                     <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                                 ))}
                             </SelectContent>
@@ -119,3 +119,5 @@ export function AssistantQuickEditForm({
     </DialogContent>
   );
 }
+
+    

@@ -67,7 +67,7 @@ const profileLinks = [
     icon: Car,
   },
   { href: "/parent/tracking", label: "Visão dos Pais", icon: UserCheck },
-  { href: "/assistant/route-plan", label: "Visão do Auxiliar", icon: ClipboardCheck },
+  { href: "/assistant/route-plan", label: "Visão do Monitor", icon: ClipboardCheck },
 ];
 
 export function MainSidebar() {
@@ -183,3 +183,5 @@ export function MainSidebar() {
     </Sidebar>
   );
 }
+
+    

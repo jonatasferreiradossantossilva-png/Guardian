@@ -39,7 +39,7 @@ import { Badge } from "@/components/ui/badge";
 type PredefinedMessage = {
   id: string;
   text: string;
-  for: 'parent' | 'driver' | 'auxiliar' | 'gestor' | 'all';
+  for: 'parent' | 'driver' | 'monitor' | 'gestor' | 'all';
 };
 
 interface PredefinedMessagesListProps {
@@ -50,7 +50,7 @@ const profileMap = {
     'all': 'Todos',
     'parent': 'Pais',
     'driver': 'Motorista',
-    'auxiliar': 'Auxiliar',
+    'monitor': 'Monitor',
     'gestor': 'Gestor',
 };
 
@@ -234,3 +234,5 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
     </div>
   );
 }
+
+    

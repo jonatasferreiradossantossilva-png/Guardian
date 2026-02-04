@@ -1,13 +1,13 @@
 /**
  * Core Philosophy: This ruleset enforces a strict Role-Based Access Control (RBAC) model.
- * A user's administrative, driver, or assistant privileges are determined by the existence of a corresponding
- * document in the `/roles_admin`, `/roles_driver`, or `/roles_assistant` collections. Admins have full CRUD access
- * over all core data. Drivers and Assistants have specific, limited write access, such as updating a student's status.
+ * A user's administrative, driver, or monitor privileges are determined by the existence of a corresponding
+ * document in the `/roles_admin`, `/roles_driver`, or `/roles_monitor` collections. Admins have full CRUD access
+ * over all core data. Drivers and Monitors have specific, limited write access, such as updating a student's status.
  *
  * Data Structure:
  * - /roles_admin/{userId}: Grants admin rights.
  * - /roles_driver/{userId}: Grants driver rights.
- * - /roles_assistant/{userId}: Grants assistant rights.
+ * - /roles_monitor/{userId}: Grants monitor rights.
  * - Top-level collections (e.g., /schools, /students): Master data for the operation.
  * - /messages/{messageId}: Communication channel between users.
  *
@@ -16,7 +16,7 @@
  *   the functionality of different roles (parents seeing school info, drivers seeing student lists).
  * - Admin-Only Master Data Management: Write access (create, full update, delete) on top-level collections
  *   is centralized to administrators.
- * - Limited Task-Based Writes: Drivers and Assistants are granted permission only to modify specific fields
+ * - Limited Task-Based Writes: Drivers and Monitors are granted permission only to modify specific fields
  *   necessary for their tasks, like updating a student's boarding status. This is enforced using
  *   `request.resource.data.diff()`.
  * - User Data Ownership: The `/users/{userId}` path is strictly owned by the user, with
@@ -46,10 +46,10 @@ service cloud.firestore {
     }
 
     /**
-     * Checks if the currently authenticated user is an assistant.
+     * Checks if the currently authenticated user is a monitor.
      */
-    function isAssistant() {
-      return isSignedIn() && exists(/databases/$(database)/documents/roles_assistant/$(request.auth.uid));
+    function isMonitor() {
+      return isSignedIn() && exists(/databases/$(database)/documents/roles_monitor/$(request.auth.uid));
     }
 
     /**
@@ -86,7 +86,7 @@ service cloud.firestore {
     /**
      * @description Manages documents for students.
      * @principle Allows reads for signed-in users. Admins have full write access.
-     * Drivers and Assistants are only allowed to update the 'status' field, which is essential
+     * Drivers and Monitors are only allowed to update the 'status' field, which is essential
      * for tracking boarding and disembarking.
      */
     match /students/{studentId} {
@@ -94,7 +94,7 @@ service cloud.firestore {
       allow list: if isSignedIn();
       allow create: if isAdmin();
       allow update: if (isAdmin() && resource != null) || 
-                     ((isDriver() || isAssistant()) && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+                     ((isDriver() || isMonitor()) && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
       allow delete: if isAdmin() && resource != null;
     }
 
@@ -219,10 +219,10 @@ service cloud.firestore {
     }
 
     /**
-     * @description Manages assistant roles.
+     * @description Manages monitor roles.
      * @principle Secures role management by restricting modifications to existing admins and preventing discovery.
      */
-    match /roles_assistant/{userId} {
+    match /roles_monitor/{userId} {
       allow get: if isAdmin() || isOwner(userId);
       allow list: if false;
       allow create: if isAdmin();
@@ -254,3 +254,5 @@ service cloud.firestore {
     }
   }
 }
+
+    

@@ -41,21 +41,21 @@ import { Checkbox } from '@/components/ui/checkbox';
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   driverId: z.string().min(1, { message: 'Selecione um motorista.' }),
-  assistantId: z.string().optional(),
+  monitorId: z.string().optional(),
   studentIds: z.array(z.string()).default([]),
 });
 
 type RouteFormValues = z.infer<typeof formSchema>;
 type Driver = { id: string; name: string; vehicleId?: string; };
 type Student = { id: string; name: string, routeId?: string, shift: string };
-type Assistant = { id: string; name: string };
+type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 
 interface RouteFormProps {
   route?: { id: string } & Partial<RouteFormValues>;
   drivers: Driver[];
   students: Student[];
-  assistants: Assistant[];
+  monitors: Monitor[];
   vehicles: Vehicle[];
   onFormSubmit: () => void;
 }
@@ -64,7 +64,7 @@ export function RouteForm({
   route,
   drivers,
   students,
-  assistants,
+  monitors,
   vehicles,
   onFormSubmit,
 }: RouteFormProps) {
@@ -78,7 +78,7 @@ export function RouteForm({
     defaultValues: {
       name: '',
       driverId: '',
-      assistantId: '',
+      monitorId: '',
       studentIds: [],
     },
   });
@@ -88,14 +88,14 @@ export function RouteForm({
       form.reset({
         name: route.name || '',
         driverId: route.driverId || '',
-        assistantId: route.assistantId || '',
+        monitorId: route.monitorId || '',
         studentIds: route.studentIds || [],
       });
     } else {
       form.reset({
         name: '',
         driverId: '',
-        assistantId: '',
+        monitorId: '',
         studentIds: [],
       });
     }
@@ -185,8 +185,8 @@ export function RouteForm({
 
   const onSubmit = (data: RouteFormValues) => {
     const finalData = { ...data };
-    if (!finalData.assistantId || finalData.assistantId === 'none') {
-        delete (finalData as Partial<typeof finalData>).assistantId;
+    if (!finalData.monitorId || finalData.monitorId === 'none') {
+        delete (finalData as Partial<typeof finalData>).monitorId;
     }
 
     if (route) {
@@ -226,18 +226,18 @@ export function RouteForm({
                   <FormMessage />
                   </FormItem>
               )}/>
-              <FormField control={form.control} name="assistantId" render={({ field }) => (
+              <FormField control={form.control} name="monitorId" render={({ field }) => (
                   <FormItem>
-                      <FormLabel>Auxiliar</FormLabel>
+                      <FormLabel>Monitor</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value || ''}>
                           <FormControl>
                               <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um auxiliar (opcional)" />
+                                  <SelectValue placeholder="Selecione um monitor (opcional)" />
                               </SelectTrigger>
                           </FormControl>
                           <SelectContent>
                               <SelectItem value="none">Nenhum</SelectItem>
-                              {assistants.map(a => (
+                              {monitors.map(a => (
                                   <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
                               ))}
                           </SelectContent>
@@ -333,3 +333,5 @@ export function RouteForm({
     </DialogContent>
   );
 }
+
+    

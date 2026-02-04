@@ -34,7 +34,7 @@ import { useMockData } from '@/hooks/use-mock-data';
 
 const formSchema = z.object({
   text: z.string().min(3, { message: 'A mensagem deve ter pelo menos 3 caracteres.' }),
-  for: z.enum(['parent', 'driver', 'auxiliar', 'gestor', 'all'], { required_error: 'Selecione para quem a mensagem se destina.' }),
+  for: z.enum(['parent', 'driver', 'monitor', 'gestor', 'all'], { required_error: 'Selecione para quem a mensagem se destina.' }),
 });
 
 type PredefinedMessageFormValues = z.infer<typeof formSchema>;
@@ -88,7 +88,7 @@ export function PredefinedMessageForm({ message, onFormSubmit }: PredefinedMessa
     'all': 'Todos',
     'parent': 'Pais',
     'driver': 'Motorista',
-    'auxiliar': 'Auxiliar',
+    'monitor': 'Monitor',
     'gestor': 'Gestor',
   };
 
@@ -152,3 +152,5 @@ export function PredefinedMessageForm({ message, onFormSubmit }: PredefinedMessa
     </DialogContent>
   );
 }
+
+    
