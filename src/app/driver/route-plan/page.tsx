@@ -27,7 +27,7 @@ import {
   CheckCircle,
   XCircle,
   Siren,
-  Phone,
+  Share2,
   Sparkles,
   ArrowLeft,
   MapPin,
@@ -76,7 +76,7 @@ const statusText: Record<StudentStatus, string> = {
 
 // --- Sub-components for the new UI ---
 
-const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction }) => {
+const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute }) => {
   if (!student) return null;
 
   const isGoing = direction === 'ida';
@@ -120,9 +120,9 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
               <IdCard className="h-5 w-5"/>
               <span>Contatos</span>
             </Button>
-            <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs">
-                <Phone className="h-5 w-5"/>
-                <span>Ligar</span>
+            <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={onShareRoute}>
+                <Share2 className="h-5 w-5"/>
+                <span>Compartilhar</span>
             </Button>
        </CardFooter>
     </Card>
@@ -560,6 +560,29 @@ export default function DriverRoutePlanPage() {
        });
    }
    
+    const handleShareRoute = useCallback(() => {
+        if (!driverLocation) {
+            toast({
+                title: "Localização não disponível",
+                description: "Não foi possível obter sua localização atual para compartilhar.",
+                variant: "destructive",
+            });
+            return;
+        }
+
+        const { latitude, longitude } = driverLocation;
+        const mapLink = `https://www.google.com/maps?q=${latitude},${longitude}`;
+        const message = `Estou em rota. Acompanhe minha localização em tempo real aqui: ${mapLink}`;
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
+
+        window.open(whatsappUrl, '_blank');
+
+        toast({
+            title: "Pronto para compartilhar!",
+            description: "Sua mensagem foi gerada para ser enviada no WhatsApp.",
+        });
+    }, [driverLocation, toast]);
+   
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
   if (isLoading) {
@@ -703,6 +726,7 @@ export default function DriverRoutePlanPage() {
                                     onNavigate={handleNavigateToStudent}
                                     onOpenAuthorizedModal={handleOpenAuthorizedModal}
                                     direction={direction}
+                                    onShareRoute={handleShareRoute}
                                 />
                                 {upcomingStops.length > 0 && <UpcomingStopsList students={upcomingStops} />}
                             </>
