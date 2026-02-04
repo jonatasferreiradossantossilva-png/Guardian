@@ -538,10 +538,21 @@ export const initialMockData = {
             status: "pending_acceptance",
             acceptedAt: null,
             createdAt: "2024-08-01T11:00:00Z"
+        },
+        {
+            id: "ctr-3",
+            templateId: "ctpl-1",
+            studentId: "student-5",
+            parentUserId: "user-pai-3",
+            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCLÁUSULA PRIMEIRA - PARTES\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: Carla Dias, portador(a) do CPF nº 222.333.444-55.\n\nCLÁUSULA SEGUNDA - OBJETO\n\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) Gabriel Dias, a ser transportado(a) do endereço residencial (Rua E, 50) para a instituição de ensino (Colégio Vanguarda) e vice-versa, durante o período letivo de 2024.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\n\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ 450,00, com vencimento no 5º (quinto) dia útil de cada mês.\n\nCLÁUSULA QUARTA - OBRIGAÇÕES DA CONTRATADA\n\n- Cumprir os horários estabelecidos.\n- Manter o veículo em perfeitas condições de segurança e higiene.\n- Comunicar aos responsáveis qualquer imprevisto.\n\nCLÁUSULA QUINTA - OBRIGAÇÕES DO(A) CONTRATANTE\n\n- Efetuar o pagamento da mensalidade pontualmente.\n- Aguardar com o(a) aluno(a) no local de embarque no horário combinado.\n- Manter os dados cadastrais atualizados.\n\nE, por estarem justos e contratados, assinam o presente instrumento.\n\nSão Paulo, 03 de agosto de 2024.\n",
+            status: "pending_acceptance",
+            acceptedAt: null,
+            createdAt: "2024-08-03T09:00:00Z"
         }
     ]
 };
 
     
     
+
 
