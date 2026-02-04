@@ -25,15 +25,27 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
     const [scanError, setScanError] = useState<string | null>(null);
 
     useEffect(() => {
-        if (isOpen) {
-            setScanError(null);
-            const scanner = new Html5QrcodeScanner(
+        if (!isOpen) {
+            return;
+        }
+
+        setScanError(null);
+        let scanner: Html5QrcodeScanner | null = null;
+
+        // Use a timeout to ensure the dialog and its DOM elements are fully rendered
+        // before initializing the scanner. This prevents a race condition.
+        const timer = setTimeout(() => {
+            const container = document.getElementById(scannerContainerId);
+            if (!container) {
+                console.error("Scanner container element not found.");
+                return;
+            }
+
+            scanner = new Html5QrcodeScanner(
                 scannerContainerId,
                 { 
                     fps: 10, 
                     qrbox: { width: 250, height: 250 },
-                    // Important: We don't want to scan QR codes from images.
-                    // This improves the UX for mobile users.
                     supportedScanTypes: [0], // 0 is Camera
                 },
                 /* verbose= */ false
@@ -44,7 +56,6 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
             };
 
             const handleError = (errorMessage: string) => {
-                // Ignore the common "QR code not found" error, as it fires constantly.
                 if (!errorMessage.toLowerCase().includes('qr code not found')) {
                      console.error(`QR Scanner Error: ${errorMessage}`);
                 }
@@ -55,13 +66,17 @@ export function QrScannerModal({ isOpen, onClose, onScanSuccess }: QrScannerModa
             Html5QrcodeScanner.getCameras().catch(err => {
                 setScanError("Não foi possível acessar a câmera. Verifique as permissões do navegador e tente novamente.");
             });
+        }, 150); // A small delay is enough for the DOM to catch up.
 
-            return () => {
+        return () => {
+            clearTimeout(timer);
+            if (scanner) {
+                // This can fail if the scanner is already stopped or not rendered, which is fine.
                 scanner.clear().catch(error => {
-                    console.error("Failed to clear html5-qrcode-scanner.", error);
+                    console.warn("Failed to clear html5-qrcode-scanner, it may have already been stopped.", error);
                 });
-            };
-        }
+            }
+        };
     }, [isOpen, onScanSuccess]);
 
   return (
