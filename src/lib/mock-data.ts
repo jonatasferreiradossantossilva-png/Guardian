@@ -547,10 +547,10 @@ export const initialMockData = {
         },
         {
             id: "ctr-3",
-            templateId: "ctpl-1",
+            templateId: "ctpl-2",
             studentId: "student-5",
             parentUserId: "user-pai-3",
-            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCLÁUSULA PRIMEIRA - PARTES\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: Carla Dias, portador(a) do CPF nº 222.333.444-55.\n\nCLÁUSULA SEGUNDA - OBJETO\n\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) Gabriel Dias, a ser transportado(a) do endereço residencial (Rua E, 50) para a instituição de ensino (Colégio Vanguarda) e vice-versa, durante o período letivo de 2024.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\n\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ 450,00, com vencimento no 5º (quinto) dia útil de cada mês.\n\nCLÁUSULA QUARTA - OBRIGAÇÕES DA CONTRATADA\n\n- Cumprir os horários estabelecidos.\n- Manter o veículo em perfeitas condições de segurança e higiene.\n- Comunicar aos responsáveis qualquer imprevisto.\n\nCLÁUSULA QUINTA - OBRIGAÇÕES DO(A) CONTRATANTE\n\n- Efetuar o pagamento da mensalidade pontualmente.\n- Aguardar com o(a) aluno(a) no local de embarque no horário combinado.\n- Manter os dados cadastrais atualizados.\n\nE, por estarem justos e contratados, assinam o presente instrumento.\n\nSão Paulo, 03 de agosto de 2024.\n",
+            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO 2024\n\nPelo presente instrumento particular, de um lado:\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\n\nDe outro lado:\n\nCONTRATANTE: Carla Dias, portador(a) do CPF nº 222.333.444-55, residente e domiciliado(a) em Rua E, 50.\n\nFica justo e contratado o seguinte:\n\nCLÁUSULA PRIMEIRA - DO OBJETO\n1.1. O presente contrato tem por objeto a prestação de serviços de transporte escolar para o(a) aluno(a) Gabriel Dias, do endereço do(a) CONTRATANTE até a instituição de ensino Colégio Vanguarda e seu retorno.\n\nCLÁUSULA SEGUNDA - DO VALOR E DO PAGAMENTO\n2.1. O valor da mensalidade pelos serviços prestados será de R$ 450,00, a ser pago todo dia 10 de cada mês.\n2.2. O pagamento deverá ser realizado através de depósito ou transferência bancária para a conta abaixo:\n   - Banco: Banco Digital Guardian\n   - Agência: 0001\n   - Conta: 12345-6\n2.3. Em caso de atraso no pagamento, incidirá multa de 2% (dois por cento) sobre o valor da mensalidade, acrescida de juros de mora de 1% (um por cento) ao mês.\n\nCLÁUSULA TERCEIRA - DO PERÍODO E DAS FÉRIAS\n3.1. O presente contrato tem a duração do ano letivo de 2024.\n3.2. A prestação de serviços será interrompida durante os períodos de férias escolares e recessos oficiais. No entanto, para garantia da vaga e manutenção do equilíbrio econômico-financeiro do contrato, a cobrança das mensalidades ocorrerá normalmente nos 12 (doze) meses do ano, incluindo os meses de férias.\n\nCLÁUSULA QUARTA - DAS OBRIGAÇÕES\n4.1. Compete à CONTRATADA:\n   a) Prestar os serviços com zelo e segurança.\n   b) Manter os veículos em conformidade com as normas legais.\n   c) Informar sobre eventuais atrasos.\n\n4.2. Compete ao(à) CONTRATANTE:\n   a) Efetuar os pagamentos pontualmente.\n   b) Garantir que o(a) aluno(a) esteja no local de embarque no horário estipulado.\n\nE, por estarem de acordo, assinam o presente.\n\nSão Paulo, 03 de agosto de 2024.\n",
             status: "pending_acceptance",
             acceptedAt: null,
             createdAt: "2024-08-03T09:00:00Z"
@@ -560,6 +560,7 @@ export const initialMockData = {
 
     
     
+
 
 
 
