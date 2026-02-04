@@ -45,6 +45,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -90,6 +91,7 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
             <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
           </Avatar>
           {student.name}
+          <Badge variant="secondary" className="text-sm font-medium self-center">{student.shift}</Badge>
         </CardTitle>
         <p className="text-sm text-muted-foreground pt-1">
           {student.street ? `${student.street}, ${student.number}` : 'Endereço não disponível'}
@@ -140,7 +142,8 @@ const UpcomingStopsList = ({ students }) => {
             {students.map((student, index) => (
                 <li key={student.id} className="flex items-center gap-3 p-2 rounded-md bg-secondary/50">
                     <div className="flex-shrink-0 w-5 text-center text-xs font-mono text-muted-foreground">{index + 2}.</div>
-                    <p className="text-sm font-medium truncate">{student.name}</p>
+                    <p className="text-sm font-medium truncate flex-1">{student.name}</p>
+                    <Badge variant="outline" className="font-normal text-xs">{student.shift}</Badge>
                 </li>
             ))}
         </ul>

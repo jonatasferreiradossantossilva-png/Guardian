@@ -90,6 +90,7 @@ const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: St
                     <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
                     {student.name}
                     </span>
+                    <Badge variant="outline" className="font-normal">{student.shift}</Badge>
                     <Button
                         variant="ghost"
                         size="icon"
