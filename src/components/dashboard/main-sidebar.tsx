@@ -62,16 +62,6 @@ const registrationLinks = [
 ];
 
 
-const profileLinks = [
-  {
-    href: "/driver/route-plan",
-    label: "Modo Motorista",
-    icon: Car,
-  },
-  { href: "/parent/tracking", label: "Visão dos Pais", icon: UserCheck },
-  { href: "/assistant/route-plan", label: "Visão do Monitor", icon: ClipboardCheck },
-];
-
 export function MainSidebar() {
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href;
@@ -135,27 +125,7 @@ export function MainSidebar() {
         <SidebarSeparator className="my-2 group-data-[collapsible=icon]:hidden" />
         
         <DriverRouteInfoCard />
-
-        <SidebarMenu className="mt-4">
-          <p className="px-4 text-xs text-muted-foreground mb-2 group-data-[collapsible=icon]:hidden">
-            Outras Visões
-          </p>
-          {profileLinks.map((link) => (
-            <SidebarMenuItem key={link.href}>
-              <SidebarMenuButton
-                asChild
-                isActive={isActive(link.href)}
-                tooltip={link.label}
-                variant="ghost"
-              >
-                <Link href={link.href}>
-                  <link.icon />
-                  <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
-        </SidebarMenu>
+        
       </SidebarContent>
       <SidebarFooter className="p-4 border-t border-sidebar-border">
         <div className="flex items-center gap-3">
