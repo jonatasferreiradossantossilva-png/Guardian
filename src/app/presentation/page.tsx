@@ -98,7 +98,7 @@ export default function PresentationPage() {
                             </div>
                              <div>
                                 <h3 className="text-xl font-semibold flex items-center gap-2"><User className="text-primary"/>Para os Pais (Tranquilidade)</h3>
-                                <p className="text-muted-foreground">Acompanhamento da van em tempo real, comunicação direta e autonomia para gerenciar pagamentos, autorizações e contratos.</p>
+                                <p className="text-muted-foreground">Acompanhamento da van em tempo real, check-in seguro com QR Code, comunicação direta e autonomia para gerenciar pagamentos, autorizações e contratos.</p>
                             </div>
                         </div>
                     </div>
@@ -171,8 +171,8 @@ export default function PresentationPage() {
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
                             <ShieldCheck className="h-8 w-8" />
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold">Confiabilidade Total (Modo Offline)</h3>
-                        <p className="mt-2 text-muted-foreground">A operação não para. O aplicativo do motorista funciona perfeitamente sem conexão, registrando todas as ações e sincronizando tudo de forma automática e segura quando a conexão é restabelecida.</p>
+                        <h3 className="mt-4 text-xl font-semibold">Confiabilidade e Segurança</h3>
+                        <p className="mt-2 text-muted-foreground">Com funcionalidades como check-in por QR Code e operação offline, garantimos que o sistema funcione de forma confiável e segura em todas as situações, aumentando a tranquilidade de todos.</p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">

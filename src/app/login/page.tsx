@@ -19,6 +19,7 @@ import {
   Milestone,
   User,
   FileText,
+  QrCode,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -147,7 +148,7 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={CheckCircle} title="Plano de Rota Interativo" description="Receba a rota otimizada no app com a sequência de paradas e informações de cada aluno em um toque." />
-                    <FeatureItem icon={Users} title="Controle de Embarque e Desembarque" description="Registre a entrada e saída de cada aluno com um clique, notificando pais e gestores instantaneamente." />
+                    <FeatureItem icon={QrCode} title="Controle de Embarque com 1 Clique ou QR Code" description="Registre a entrada e saída de cada aluno de forma rápida e segura, com um toque ou escaneando o QR Code, notificando pais e gestores instantaneamente." />
                     <FeatureItem icon={ShieldCheck} title="Operação Ininterrupta (Modo Offline)" description="O aplicativo continua funcionando mesmo sem internet. As informações são salvas e sincronizadas automaticamente quando a conexão retorna." />
                     <FeatureItem icon={Shield} title="Comunicação Direta e Focada" description="Converse com pais e gestores dentro do app com mensagens predefinidas para agilizar o dia a dia." />
                   </div>
@@ -167,6 +168,7 @@ export default function LandingPage() {
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Map} title="Acompanhamento em Tempo Real" description="Saiba exatamente onde a van está no mapa e receba alertas inteligentes quando ela estiver se aproximando." />
                     <FeatureItem icon={CheckCircle} title="Notificações de Embarque/Desembarque" description="Veja se seu filho(a) embarcou na ida e se desembarcou em segurança na volta. Fim da ansiedade." />
+                    <FeatureItem icon={QrCode} title="QR Code de Segurança" description="Gere um QR Code único no app para um embarque rápido e seguro, garantindo que seu filho(a) está no lugar certo." />
                     <FeatureItem icon={FileText} title="Documentos e Autorizações" description="Visualize e aceite contratos, e gerencie pessoas autorizadas para a retirada do seu filho." />
                     <FeatureItem icon={DollarSign} title="Financeiro na Palma da Mão" description="Solicite viagens avulsas e gerencie os pagamentos de mensalidades de forma simples e segura." />
                   </div>
@@ -195,8 +197,8 @@ export default function LandingPage() {
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
                             <ShieldCheck className="h-8 w-8" />
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold">Segurança de Ponta a Ponta</h3>
-                        <p className="mt-2 text-muted-foreground">Do controle de embarque digital com notificação em tempo real à gestão de pessoas autorizadas para retirada, cada funcionalidade foi desenhada para criar um ambiente seguro e dar tranquilidade aos pais e gestores.</p>
+                        <h3 className="mt-4 text-xl font-semibold">Confiabilidade e Segurança</h3>
+                        <p className="mt-2 text-muted-foreground">Com funcionalidades como check-in por QR Code e operação offline, garantimos que o sistema funcione de forma confiável e segura em todas as situações, aumentando a tranquilidade de todos.</p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
