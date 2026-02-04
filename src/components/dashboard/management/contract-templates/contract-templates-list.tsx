@@ -10,16 +10,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Copy } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
+import { PlusCircle, Edit, Copy, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   AlertDialog,
@@ -95,10 +87,7 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-3xl font-bold tracking-tight">
-          Modelos de Contrato
-        </h1>
+      <div className="flex items-center justify-end mb-6">
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
@@ -127,7 +116,7 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
                 <TableRow>
                   <TableHead>Nome do Modelo</TableHead>
                   <TableHead>Trecho do Conteúdo</TableHead>
-                  <TableHead className="text-right">Ações</TableHead>
+                  <TableHead className="text-right w-[340px]">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -140,21 +129,17 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
                       <TableCell className="font-medium">{template.name}</TableCell>
                       <TableCell className="text-muted-foreground italic text-xs">"{template.content.substring(0, 80)}..."</TableCell>
                       <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0"><MoreHorizontal className="h-4 w-4" /></Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(template)}>Editar</DropdownMenuItem>
-                          <DropdownMenuItem onClick={() => handleDuplicate(template)}>
-                            <Copy className="mr-2 h-4 w-4" />
-                            Duplicar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(template)}>Deletar</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        <div className="flex items-center justify-end gap-2">
+                           <Button variant="outline" size="sm" onClick={() => handleEdit(template)}>
+                               <Edit className="mr-2 h-4 w-4" /> Editar
+                           </Button>
+                           <Button variant="outline" size="sm" onClick={() => handleDuplicate(template)}>
+                               <Copy className="mr-2 h-4 w-4" /> Duplicar
+                           </Button>
+                           <Button variant="destructive" size="sm" onClick={() => handleDelete(template)}>
+                               <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                           </Button>
+                       </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -170,24 +155,22 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
              {isLoading && <p className="text-center py-10">Carregando...</p>}
              {!isLoading && templates && templates.length > 0 ? (
                 templates.map((template) => (
-                  <Card key={template.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                        <p className="font-medium pr-4">{template.name}</p>
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2"><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                            <DropdownMenuContent align="end">
-                                <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                <DropdownMenuItem onClick={() => handleEdit(template)}>Editar</DropdownMenuItem>
-                                <DropdownMenuItem onClick={() => handleDuplicate(template)}>
-                                  <Copy className="mr-2 h-4 w-4" />
-                                  Duplicar
-                                </DropdownMenuItem>
-                                <DropdownMenuSeparator />
-                                <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(template)}>Deletar</DropdownMenuItem>
-                            </DropdownMenuContent>
-                        </DropdownMenu>
+                  <Card key={template.id} className="overflow-hidden">
+                    <div className="p-4">
+                      <p className="font-medium pr-4">{template.name}</p>
+                      <p className="text-xs text-muted-foreground italic mt-2">"{template.content.substring(0, 100)}..."</p>
                     </div>
-                    <p className="text-xs text-muted-foreground italic mt-2">"{template.content.substring(0, 100)}..."</p>
+                    <CardFooter className="p-2 border-t bg-secondary/50 flex gap-2">
+                       <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(template)}>
+                         <Edit className="mr-2 h-4 w-4" /> Editar
+                       </Button>
+                       <Button variant="outline" size="sm" className="flex-1" onClick={() => handleDuplicate(template)}>
+                         <Copy className="mr-2 h-4 w-4" /> Duplicar
+                       </Button>
+                       <Button variant="destructive" size="sm" className="flex-1" onClick={() => handleDelete(template)}>
+                         <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                       </Button>
+                    </CardFooter>
                   </Card>
                 ))
              ) : (
