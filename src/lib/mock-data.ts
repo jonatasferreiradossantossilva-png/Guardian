@@ -22,9 +22,9 @@ export const initialMockData = {
         { id: "user-pai-10", name: "Sérgio Mendes", email: "sergio.mendes@email.com", profile: 'pai', active: true },
         { id: "user-pai-11", name: "Camila Ferreira", email: "camila.ferreira@email.com", profile: 'pai', active: true },
         { id: "user-pai-12", name: "Rafael Gomes", email: "rafael.gomes@email.com", profile: 'pai', active: true },
-        { id: "user-aux-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", profile: 'auxiliar', active: true },
-        { id: "user-aux-2", name: "Ricardo Souza", email: "ricardo.souza@rotasegura.com", profile: 'auxiliar', active: true },
-        { id: "user-aux-3", name: "Vanessa Alves", email: "vanessa.alves@rotasegura.com", profile: 'auxiliar', active: true },
+        { id: "user-monitor-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", profile: 'monitor', active: true },
+        { id: "user-monitor-2", name: "Ricardo Souza", email: "ricardo.souza@rotasegura.com", profile: 'monitor', active: true },
+        { id: "user-monitor-3", name: "Vanessa Alves", email: "vanessa.alves@rotasegura.com", profile: 'monitor', active: true },
     ],
     schools: [
         {
@@ -296,7 +296,7 @@ export const initialMockData = {
             id: "route-1", 
             name: "Colégio Marjore Paula", 
             driverId: "driver-2", 
-            assistantId: "user-aux-1", 
+            monitorId: "user-monitor-1", 
             studentIds: ["student-1", "student-2", "student-3", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12"], 
             turnByTurnDirections: [
               "Siga para o sudeste na Rua A em direção à Rua B",
@@ -320,7 +320,7 @@ export const initialMockData = {
             id: "route-2", 
             name: "Rota Centro", 
             driverId: "driver-1", 
-            assistantId: "user-aux-2", 
+            monitorId: "user-monitor-2", 
             studentIds: [], 
             turnByTurnDirections: [
                 "Siga para o leste na Rua A em direção à Rua B",
@@ -334,16 +334,16 @@ export const initialMockData = {
                 "O seu destino, Colégio Vanguarda, estará à direita."
             ]
         },
-        { id: "route-3", name: "Rota Zona Oeste", driverId: "driver-3", assistantId: "user-aux-3", studentIds: [] },
-        { id: "route-4", name: "Rota Eixo Jardins", driverId: "driver-4", assistantId: "", studentIds: [] },
-        { id: "route-5", name: "Rota Morumbi", driverId: "driver-5", assistantId: "user-aux-1", studentIds: [] },
-        { id: "route-6", name: "Rota Jardins 2", driverId: "driver-6", assistantId: "user-aux-2", studentIds: [] },
-        { id: "route-7", name: "Rota Itaim", driverId: "driver-7", assistantId: "", studentIds: [] },
+        { id: "route-3", name: "Rota Zona Oeste", driverId: "driver-3", monitorId: "user-monitor-3", studentIds: [] },
+        { id: "route-4", name: "Rota Eixo Jardins", driverId: "driver-4", monitorId: "", studentIds: [] },
+        { id: "route-5", name: "Rota Morumbi", driverId: "driver-5", monitorId: "user-monitor-1", studentIds: [] },
+        { id: "route-6", name: "Rota Jardins 2", driverId: "driver-6", monitorId: "user-monitor-2", studentIds: [] },
+        { id: "route-7", name: "Rota Itaim", driverId: "driver-7", monitorId: "", studentIds: [] },
         { 
             id: "route-8", 
             name: "Rota Jardins", 
             driverId: "driver-1", 
-            assistantId: "user-aux-3", 
+            monitorId: "user-monitor-3", 
             studentIds: ["student-13", "student-14", "student-15"], 
             turnByTurnDirections: []
         },
@@ -454,12 +454,12 @@ export const initialMockData = {
     ],
     expenses: [
         // Mês Atual (Agosto 2024) - Lucrativo
-        { id: "exp-aug-1", description: "Salários de Motoristas e Auxiliares", amount: 2100.00, date: "2024-08-05", category: "Salários" },
+        { id: "exp-aug-1", description: "Salários de Motoristas e Monitores", amount: 2100.00, date: "2024-08-05", category: "Salários" },
         { id: "exp-aug-2", description: "Abastecimento da frota", amount: 650.00, date: "2024-08-02", category: "Combustível" },
         { id: "exp-aug-3", description: "Manutenção corretiva - Sprinter", amount: 320.00, date: "2024-08-06", category: "Manutenção" },
         
         // Mês Anterior (Julho 2024) - Lucrativo
-        { id: "exp-jul-1", description: "Salários de Motoristas e Auxiliares", amount: 2100.00, date: "2024-07-05", category: "Salários" },
+        { id: "exp-jul-1", description: "Salários de Motoristas e Monitores", amount: 2100.00, date: "2024-07-05", category: "Salários" },
         { id: "exp-jul-2", description: "Abastecimento da frota", amount: 850.50, date: "2024-07-15", category: "Combustível" },
         { id: "exp-jul-3", description: "Impostos e Taxas Municipais", amount: 400.00, date: "2024-07-20", category: "Impostos" },
         { id: "exp-jul-4", description: "Compra de material de limpeza para os veículos", amount: 89.90, date: "2024-07-28", category: "Outros" },
@@ -493,8 +493,8 @@ export const initialMockData = {
         { id: "pm-4", text: "O aluno(a) já está pronto(a).", for: "parent" },
         { id: "pm-5", text: "Meu filho(a) não irá hoje.", for: "parent" },
         { id: "pm-6", text: "Obrigado(a)!", for: "all" },
-        { id: "pm-7", text: "Ajudarei no embarque.", for: "auxiliar" },
-        { id: "pm-8", text: "Todos a bordo e seguros.", for: "auxiliar" },
+        { id: "pm-7", text: "Ajudarei no embarque.", for: "monitor" },
+        { id: "pm-8", text: "Todos a bordo e seguros.", for: "monitor" },
         { id: "pm-9", text: "Por favor, confirme o recebimento.", for: "gestor" },
         { id: "pm-10", text: "A rota foi alterada. Verifique o novo plano.", for: "gestor" },
     ],
@@ -560,6 +560,7 @@ export const initialMockData = {
 
     
     
+
 
 
 
