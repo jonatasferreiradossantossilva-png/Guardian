@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -34,7 +33,7 @@ function MobileHome() {
             { href: '/dashboard', label: 'Painel Financeiro', icon: LayoutGrid },
             { href: '/dashboard/optimizer', label: 'Otimizar Rotas', icon: Sparkles },
             { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
-            { href: '/dashboard/financial', label: 'Financeiro', icon: DollarSign },
+            { href: '/dashboard/financial', label: 'Gestão Financeira', icon: DollarSign },
             { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Route },
         ];
 
