@@ -56,7 +56,7 @@ const registrationLinks = [
   },
   { href: "/dashboard/management/predefined-messages", label: "Mensagens Predefinidas", icon: MessageCircle },
   { href: "/dashboard/management/contract-templates", label: "Modelos de Contrato", icon: FileText },
-  { href: "/dashboard/management/contracts", label: "Contratos Gerados", icon: ClipboardCheck },
+  { href: "/dashboard/management/contracts", label: "Contratos", icon: ClipboardCheck },
 ];
 
 

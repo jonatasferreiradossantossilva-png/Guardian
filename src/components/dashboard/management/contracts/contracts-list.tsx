@@ -92,7 +92,7 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
-          Contratos Gerados
+          Gestão de Contratos
         </h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
