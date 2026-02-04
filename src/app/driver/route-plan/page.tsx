@@ -31,7 +31,8 @@ import {
   Sparkles,
   ArrowLeft,
   MapPin,
-  ListTree
+  ListTree,
+  LocateFixed,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -184,7 +185,7 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
     </div>
 );
 
-function RouteMap({ driverLocation, students, school, route, toast }) {
+function RouteMap({ driverLocation, students, school, route, toast, recenterTrigger }) {
     const map = useMap();
     const directionsRendererRef = useRef(null);
 
@@ -248,7 +249,7 @@ function RouteMap({ driverLocation, students, school, route, toast }) {
             map.fitBounds(bounds, 100);
         }
 
-    }, [map, driverLocation, students, school]);
+    }, [map, driverLocation, students, school, recenterTrigger]);
 
     return (
         <>
@@ -296,6 +297,7 @@ export default function DriverRoutePlanPage() {
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [showRecalculatePrompt, setShowRecalculatePrompt] = useState(false);
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
+  const [recenterTrigger, setRecenterTrigger] = useState(0);
   const prevStudentsRef = useRef<Student[]>();
 
 
@@ -740,6 +742,15 @@ export default function DriverRoutePlanPage() {
                         <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
                     </div>
                      <div className="relative h-[70vh] w-full border-y">
+                        <Button
+                             variant="outline"
+                             size="icon"
+                             onClick={() => setRecenterTrigger(c => c + 1)}
+                             className="absolute top-3 left-3 z-10 bg-background/80 hover:bg-background"
+                             title="Centralizar Rota"
+                         >
+                             <LocateFixed />
+                         </Button>
                          {!API_KEY ? (
                                 <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                                     <div className="text-center p-4">
@@ -768,6 +779,7 @@ export default function DriverRoutePlanPage() {
                                             school={schoolForRoute}
                                             route={route}
                                             toast={toast}
+                                            recenterTrigger={recenterTrigger}
                                         />
                                     </GoogleMap>
                                 </APIProvider>
@@ -816,3 +828,5 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
+
+    

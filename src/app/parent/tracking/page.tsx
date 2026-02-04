@@ -12,7 +12,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText, LocateFixed } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -113,7 +113,7 @@ function haversineDistance(coords1, coords2) {
 }
 
 
-function ParentRouteMap({ busLocation, student, school, toast }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, toast: (options: any) => void }) {
+function ParentRouteMap({ busLocation, student, school, toast, recenterTrigger }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, toast: (options: any) => void, recenterTrigger: number }) {
   const map = useMap();
   const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
   const lastDestinationRef = useRef<string | null>(null);
@@ -209,7 +209,7 @@ function ParentRouteMap({ busLocation, student, school, toast }: { busLocation: 
       if (!bounds.isEmpty()) {
         map.fitBounds(bounds, 100); // 100px padding
       }
-  }, [map, busLocation, student, school]);
+  }, [map, busLocation, student, school, recenterTrigger]);
 
   return (
     <>
@@ -243,6 +243,7 @@ export default function ParentTrackingPage() {
   const { toast } = useToast();
   const { updateDoc, getCollection, getDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [recenterTrigger, setRecenterTrigger] = useState(0);
 
   useEffect(() => {
     // For this prototype, we get the logged-in user's ID from session storage.
@@ -521,6 +522,15 @@ export default function ParentTrackingPage() {
               <Card className="h-[75vh]">
                 <CardContent className="p-0 h-full relative">
                   <div className="absolute inset-0 bg-secondary flex items-center justify-center overflow-hidden rounded-lg">
+                    <Button
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setRecenterTrigger(c => c + 1)}
+                        className="absolute top-3 left-3 z-10 bg-background/80 hover:bg-background"
+                        title="Centralizar Rota"
+                    >
+                        <LocateFixed />
+                    </Button>
                     {!API_KEY ? (
                         <div className="text-center p-4">
                             <p className="font-semibold text-lg">Mapa Indisponível</p>
@@ -547,6 +557,7 @@ export default function ParentTrackingPage() {
                                 student={student}
                                 school={school}
                                 toast={toast}
+                                recenterTrigger={recenterTrigger}
                            />
                            {!displayLocation && !isLocationLoading && (
                                 <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">

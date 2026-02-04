@@ -411,7 +411,7 @@ export default function OptimizerPage() {
                                 variant="outline"
                                 size="icon"
                                 onClick={() => setRecenterTrigger(c => c + 1)}
-                                className="absolute top-3 right-3 z-10 bg-background/80 hover:bg-background"
+                                className="absolute top-3 left-3 z-10 bg-background/80 hover:bg-background"
                                 title="Centralizar Rota"
                             >
                                 <LocateFixed />
@@ -537,6 +537,8 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver, recenterTrigg
         </>
     );
 }
+    
+
     
 
     
