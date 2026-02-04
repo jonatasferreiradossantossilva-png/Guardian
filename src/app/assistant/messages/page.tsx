@@ -29,20 +29,39 @@ export default function AssistantMessagesPage() {
     setIsClient(true);
   }, []);
 
-  // Fetch all potential conversation partners, same as manager view
   const { data: allParents, isLoading: areParentsLoading } = useMockCollection('parents');
   const { data: allDrivers, isLoading: areDriversLoading } = useMockCollection('drivers');
   const { data: allUsers, isLoading: areUsersLoading } = useMockCollection('users');
+  const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes');
+  const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection('students');
   const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
   const { data: predefinedMessages } = useMockCollection('predefined_messages');
 
   const [selectedConversation, setSelectedConversation] = useState<ConversationParticipant | null>(null);
   const [currentMessage, setCurrentMessage] = useState('');
   
+  const activeRoute = useMemo(() => {
+    if (!routes || !mockUserId) return null;
+    return routes.find(r => r.monitorId === mockUserId);
+  }, [routes, mockUserId]);
+
+  const parentIdsOnRoute = useMemo(() => {
+    if (!activeRoute || !allStudents) return [];
+    const studentIdsOnRoute = new Set(activeRoute.studentIds);
+    const parentIds = allStudents
+      .filter(s => studentIdsOnRoute.has(s.id))
+      .map(s => s.parentId);
+    return [...new Set(parentIds)];
+  }, [activeRoute, allStudents]);
+
   // Memoize conversation participants
-  const parents = useMemo(() => 
-    (allParents || []).map(p => ({ id: p.id, userId: p.userId, name: p.name, avatarSeed: `parent${p.id}`}))
-  , [allParents]);
+  const parents = useMemo(() => {
+    if (!allParents || !parentIdsOnRoute) return [];
+    const parentIdSet = new Set(parentIdsOnRoute);
+    return allParents
+        .filter(p => parentIdSet.has(p.id))
+        .map(p => ({ id: p.id, userId: p.userId, name: p.name, avatarSeed: `parent${p.id}`}));
+  }, [allParents, parentIdsOnRoute]);
 
   const drivers = useMemo(() => 
     (allDrivers || []).map(d => ({ id: d.id, userId: d.userId, name: d.name, avatarSeed: `driver${d.id}`}))
@@ -84,7 +103,7 @@ export default function AssistantMessagesPage() {
     setSelectedConversation(participant);
   };
   
-  const isLoading = areParentsLoading || areDriversLoading || areUsersLoading || areMessagesLoading;
+  const isLoading = areParentsLoading || areDriversLoading || areUsersLoading || areMessagesLoading || areStudentsLoading || areRoutesLoading;
   
   const isMyMessage = (senderId: string) => senderId === mockUserId;
 
