@@ -145,8 +145,46 @@ export default function PresentationPage() {
                     </div>
                 </div>
             </Slide>
+            
+            {/* Differentiators Section */}
+            <Slide>
+                <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Gem className="inline-block text-primary h-12 w-12 mr-4" />Nossos Diferenciais</h2>
+                <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg mb-12">
+                    Não somos apenas um mapa. Somos uma plataforma de inteligência operacional que gera economia e segurança.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <Sparkles className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Inteligência Artificial a seu Favor</h3>
+                        <p className="mt-2 text-muted-foreground">Nossa IA analisa as paradas, o trânsito e incidentes para criar a rota mais econômica em tempo e dinheiro, um diferencial que nenhum concorrente oferece de forma integrada.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <Users className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Ecossistema 360° Integrado</h3>
+                        <p className="mt-2 text-muted-foreground">Conectamos gestores, motoristas, monitores e pais em uma única plataforma, eliminando a necessidade de apps fragmentados e criando uma fonte única de verdade para toda a operação.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <ShieldCheck className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Confiabilidade Total (Modo Offline)</h3>
+                        <p className="mt-2 text-muted-foreground">A operação não para. O aplicativo do motorista funciona perfeitamente sem conexão, registrando todas as ações e sincronizando tudo de forma automática e segura quando a conexão é restabelecida.</p>
+                    </div>
+                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <DollarSign className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Gestão Financeira e Contratual</h3>
+                        <p className="mt-2 text-muted-foreground">Substituímos planilhas e conversas de cobrança por uma gestão de faturas e contratos digitais, automatizando a administração e dando autonomia aos pais.</p>
+                    </div>
+                </div>
+            </Slide>
 
-            {/* Slide 5: Market Opportunity */}
+            {/* Market Opportunity Section */}
             <Slide>
                  <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Target className="inline-block text-primary h-12 w-12 mr-4" />Oportunidade de Mercado</h2>
                  <div className="grid md:grid-cols-3 gap-6 text-center w-full">
@@ -168,7 +206,7 @@ export default function PresentationPage() {
                  </div>
             </Slide>
 
-            {/* Slide 6: Business Model */}
+            {/* Business Model */}
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><DollarSign className="inline-block text-primary h-12 w-12 mr-4" />Modelo de Negócio (SaaS B2B)</h2>
                 <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
@@ -200,7 +238,7 @@ export default function PresentationPage() {
                  <p className="text-center mt-8 text-muted-foreground text-sm">Modelo de upsell com taxa de 5% sobre viagens avulsas pagas pelo app.</p>
             </Slide>
 
-             {/* Slide 8: Competitive Analysis */}
+             {/* Competitive Analysis */}
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><BarChart className="inline-block text-primary h-12 w-12 mr-4" />Análise Competitiva</h2>
                 <div className="w-full max-w-4xl p-4 bg-background/30 rounded-lg">
@@ -235,7 +273,7 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-             {/* Slide 10: The Ask */}
+             {/* The Ask */}
             <Slide>
                  <h2 className="text-4xl md:text-5xl font-bold text-center mb-6">A Proposta</h2>
                  <p className="text-xl text-muted-foreground mb-12 text-center">Buscamos um parceiro estratégico para acelerar nosso crescimento e capturar este mercado.</p>
@@ -257,7 +295,7 @@ export default function PresentationPage() {
                  </div>
             </Slide>
             
-            {/* Slide 11: Roadmap */}
+            {/* Roadmap */}
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Milestone className="inline-block text-primary h-12 w-12 mr-4" />Roadmap para os Próximos 12 Meses</h2>
                 <div className="w-full max-w-4xl space-y-4">

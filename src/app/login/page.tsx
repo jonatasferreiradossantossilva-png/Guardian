@@ -148,6 +148,7 @@ export default function LandingPage() {
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={CheckCircle} title="Plano de Rota Interativo" description="Receba a rota otimizada no app com a sequência de paradas e informações de cada aluno em um toque." />
                     <FeatureItem icon={Users} title="Controle de Embarque e Desembarque" description="Registre a entrada e saída de cada aluno com um clique, notificando pais e gestores instantaneamente." />
+                    <FeatureItem icon={ShieldCheck} title="Operação Ininterrupta (Modo Offline)" description="O aplicativo continua funcionando mesmo sem internet. As informações são salvas e sincronizadas automaticamente quando a conexão retorna." />
                     <FeatureItem icon={Shield} title="Comunicação Direta e Focada" description="Converse com pais e gestores dentro do app com mensagens predefinidas para agilizar o dia a dia." />
                   </div>
                 </CardContent>
