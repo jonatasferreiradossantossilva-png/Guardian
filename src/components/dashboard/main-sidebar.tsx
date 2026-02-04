@@ -37,11 +37,11 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { DriverRouteInfoCard } from "./driver-route-info-card";
 
 const operationalLinks = [
-  { href: "/dashboard", label: "Dashboard", icon: LayoutGrid },
-  { href: "/dashboard/optimizer", label: "Otimizador de Rotas (IA)", icon: Sparkles },
+  { href: "/dashboard", label: "Painel Financeiro", icon: LayoutGrid },
+  { href: "/dashboard/optimizer", label: "Otimizar Rotas", icon: Sparkles },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Financeiro", icon: DollarSign },
-  { href: "/dashboard/management/trip-requests", label: "Viagens Avulsas", icon: Route },
+  { href: "/dashboard/management/trip-requests", label: "Viagens Extras", icon: Route },
   { href: "/dashboard/management/contracts", label: "Contratos", icon: ClipboardCheck },
 ];
 
@@ -64,7 +64,7 @@ const registrationLinks = [
 const profileLinks = [
   {
     href: "/driver/route-plan",
-    label: "Visão do Motorista",
+    label: "Modo Motorista",
     icon: Car,
   },
   { href: "/parent/tracking", label: "Visão dos Pais", icon: UserCheck },

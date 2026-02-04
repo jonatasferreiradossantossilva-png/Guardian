@@ -31,17 +31,17 @@ function MobileHome() {
 
     const navLinks = useMemo(() => {
         const baseLinks = [
-            { href: '/dashboard/overview', label: 'Visão Geral', icon: LayoutGrid },
-            { href: '/dashboard/optimizer', label: 'Otimizador IA', icon: Sparkles },
+            { href: '/dashboard', label: 'Painel Financeiro', icon: LayoutGrid },
+            { href: '/dashboard/optimizer', label: 'Otimizar Rotas', icon: Sparkles },
             { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
             { href: '/dashboard/financial', label: 'Financeiro', icon: DollarSign },
-            { href: '/dashboard/management/trip-requests', label: 'Viagens Avulsas', icon: Route },
+            { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Route },
         ];
 
         if (isDriver) {
             return [
                 ...baseLinks,
-                { href: '/driver/route-plan', label: 'Visão do Motorista', icon: Car },
+                { href: '/driver/route-plan', label: 'Modo Motorista', icon: Car },
             ];
         }
 
