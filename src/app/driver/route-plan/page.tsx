@@ -1,6 +1,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -34,6 +35,7 @@ import {
   MapPin,
   ListTree,
   LocateFixed,
+  WifiOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -48,6 +50,7 @@ import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
+import { useOnlineStatus } from '@/hooks/use-online-status';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -307,6 +310,7 @@ export default function DriverRoutePlanPage() {
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const prevStudentsRef = useRef<Student[]>();
+  const isOnline = useOnlineStatus();
 
 
   useEffect(() => {
@@ -617,6 +621,12 @@ export default function DriverRoutePlanPage() {
   if (driverProfile.status === 'inativo') {
     return (
       <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6">
+        {!isOnline && (
+            <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2 rounded-md absolute top-4">
+                <WifiOff className="h-4 w-4" />
+                Você está offline. Conecte-se para iniciar uma rota.
+            </div>
+        )}
         <Card className="w-full max-w-sm text-center">
           <CardHeader>
             <CardTitle>Pronto para Começar?</CardTitle>
@@ -667,7 +677,7 @@ export default function DriverRoutePlanPage() {
             </div>
           </CardContent>
           <CardFooter>
-             <Button size="lg" className="w-full" onClick={handleStartRoute} disabled={!selectedRouteIdForStart}>
+             <Button size="lg" className="w-full" onClick={handleStartRoute} disabled={!selectedRouteIdForStart || !isOnline}>
                 <Play className="mr-2 h-5 w-5"/>
                 Iniciar Viagem
             </Button>
@@ -681,6 +691,12 @@ export default function DriverRoutePlanPage() {
    if (driverProfile.status === 'pausa') {
         return (
             <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6 bg-secondary">
+                 {!isOnline && (
+                    <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2 rounded-md absolute top-4">
+                        <WifiOff className="h-4 w-4" />
+                        Você está offline. As alterações serão sincronizadas quando a conexão voltar.
+                    </div>
+                 )}
                  <Pause className="h-16 w-16 text-muted-foreground" />
                  <h1 className="text-2xl font-bold">Viagem Pausada</h1>
                  <Button size="lg" onClick={handleResumeRoute}>
@@ -700,6 +716,12 @@ export default function DriverRoutePlanPage() {
     
     return (
         <div className="min-h-screen bg-background text-foreground pb-24">
+            {!isOnline && (
+                <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2 sticky top-0 z-50">
+                    <WifiOff className="h-4 w-4" />
+                    Você está offline. As alterações serão salvas e sincronizadas quando a conexão voltar.
+                </div>
+            )}
             <Tabs defaultValue="plan" className="w-full">
                  <div className="px-4 pt-4">
                     <TabsList className="grid w-full grid-cols-2">

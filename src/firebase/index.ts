@@ -3,7 +3,7 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore } from 'firebase/firestore'
+import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
 
 // IMPORTANT: DO NOT MODIFY THIS FUNCTION
 export function initializeFirebase() {
@@ -25,7 +25,19 @@ export function initializeFirebase() {
       firebaseApp = initializeApp(firebaseConfig);
     }
 
-    return getSdks(firebaseApp);
+    const sdks = getSdks(firebaseApp);
+    
+    // Enable persistence after getting the firestore instance
+    enableIndexedDbPersistence(sdks.firestore)
+      .catch((err) => {
+        if (err.code == 'failed-precondition') {
+          console.warn("Firestore offline persistence failed: " + err.message);
+        } else if (err.code == 'unimplemented') {
+          console.warn("Firestore offline persistence not supported in this browser.");
+        }
+      });
+    
+    return sdks;
   }
 
   // If already initialized, return the SDKs with the already initialized App

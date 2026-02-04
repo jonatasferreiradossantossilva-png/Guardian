@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, memo, useCallback } from 'react';
@@ -23,6 +24,7 @@ import {
   School,
   Circle,
   Check,
+  WifiOff,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -32,6 +34,7 @@ import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
+import { useOnlineStatus } from '@/hooks/use-online-status';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -142,6 +145,7 @@ export default function AssistantRoutePlanPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
   const [selectedShift, setSelectedShift] = useState<Shift>('Manhã');
+  const isOnline = useOnlineStatus();
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
@@ -209,8 +213,14 @@ export default function AssistantRoutePlanPage() {
   const isLoading = isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4">
-      <div className="max-w-7xl mx-auto">
+    <div className="min-h-screen bg-background text-foreground">
+       {!isOnline && (
+        <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2">
+            <WifiOff className="h-4 w-4" />
+            Você está offline. As alterações serão salvas e sincronizadas quando a conexão voltar.
+        </div>
+      )}
+      <div className="max-w-7xl mx-auto p-4">
         <div className="flex justify-end items-center mb-6">
           <div className="flex items-center gap-2">
             <Button asChild variant="outline">
