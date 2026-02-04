@@ -35,7 +35,7 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 interface ContractTemplateFormProps {
-  template?: { id: string } & Partial<FormValues>;
+  template?: Partial<{ id: string } & FormValues>;
   onFormSubmit: () => void;
 }
 
@@ -63,7 +63,7 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
   }, [template, form]);
 
   const onSubmit = (data: FormValues) => {
-    if (template) {
+    if (template && template.id) {
       updateDoc('contract_templates', template.id, data);
       toast({
         title: 'Modelo de Contrato atualizado!',
@@ -88,7 +88,7 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
   return (
     <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
       <DialogHeader>
-        <DialogTitle>{template ? 'Editar Modelo' : 'Criar Novo Modelo de Contrato'}</DialogTitle>
+        <DialogTitle>{template && template.id ? 'Editar Modelo' : 'Criar Novo Modelo de Contrato'}</DialogTitle>
         <DialogDescription>
           Crie o texto padrão do seu contrato. Use as variáveis abaixo para preencher os dados automaticamente.
         </DialogDescription>
@@ -103,7 +103,7 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
                     <FormItem>
                         <FormLabel>Nome do Modelo</FormLabel>
                         <FormControl>
-                        <Input placeholder="Ex: Contrato Padrão" {...field} />
+                        <Input placeholder="Ex: Contrato Padrão (Cópia)" {...field} />
                         </FormControl>
                         <FormMessage />
                     </FormItem>

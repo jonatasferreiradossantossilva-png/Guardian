@@ -10,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, FileText } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Copy } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -52,7 +52,7 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<Partial<Template> | null>(null);
 
   const { data: liveTemplates, isLoading } = useMockCollection('contract_templates');
   const templates = liveTemplates ?? initialTemplates;
@@ -62,13 +62,22 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
     setIsFormOpen(true);
   };
 
+  const handleDuplicate = (template: Template) => {
+    const { id, createdAt, ...templateData } = template;
+    setSelectedTemplate({
+      ...templateData,
+      name: `${template.name} (Cópia)`,
+    });
+    setIsFormOpen(true);
+  };
+
   const handleDelete = (template: Template) => {
     setSelectedTemplate(template);
     setIsDeleteDialogOpen(true);
   };
   
   const confirmDelete = () => {
-    if (!selectedTemplate) return;
+    if (!selectedTemplate || !selectedTemplate.id) return;
     deleteDoc('contract_templates', selectedTemplate.id);
     toast({
         title: "Modelo de contrato deletado!",
@@ -138,6 +147,10 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
                         <DropdownMenuContent align="end">
                           <DropdownMenuLabel>Ações</DropdownMenuLabel>
                           <DropdownMenuItem onClick={() => handleEdit(template)}>Editar</DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => handleDuplicate(template)}>
+                            <Copy className="mr-2 h-4 w-4" />
+                            Duplicar
+                          </DropdownMenuItem>
                           <DropdownMenuSeparator />
                           <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(template)}>Deletar</DropdownMenuItem>
                         </DropdownMenuContent>
@@ -165,6 +178,10 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => handleEdit(template)}>Editar</DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => handleDuplicate(template)}>
+                                  <Copy className="mr-2 h-4 w-4" />
+                                  Duplicar
+                                </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(template)}>Deletar</DropdownMenuItem>
                             </DropdownMenuContent>
