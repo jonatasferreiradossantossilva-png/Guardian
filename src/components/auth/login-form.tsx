@@ -34,7 +34,7 @@ const formSchema = z.object({
 const profileToMockIdMap = {
     'gestor': 'user-admin-1',
     'motorista': 'user-motorista-2', // Default driver for demo
-    'pai': 'user-pai-1', // Default parent for demo
+    'pai': 'user-pai-3', // Changed to Carla Dias for contract acceptance simulation
     'auxiliar': 'user-aux-1' // Default assistant for demo
 };
 
