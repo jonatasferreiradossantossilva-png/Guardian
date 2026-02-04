@@ -4,7 +4,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutGrid, Sparkles, MessageSquare, DollarSign, Route, ClipboardCheck, Car, HelpCircle } from 'lucide-react';
+import { LayoutGrid, Sparkles, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -36,7 +36,7 @@ function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
             { href: '/dashboard/optimizer', label: 'Otimizar Rotas', icon: Sparkles },
             { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
             { href: '/dashboard/financial', label: 'Controle Financeiro', icon: DollarSign },
-            { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Route },
+            { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Milestone },
         ];
 
         if (isDriver) {

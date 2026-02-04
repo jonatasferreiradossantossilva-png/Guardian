@@ -29,6 +29,7 @@ import {
   Rocket,
   LayoutGrid,
   FileText,
+  Milestone,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -40,7 +41,7 @@ const operationalLinks = [
   { href: "/dashboard/optimizer", label: "Otimizar Rotas", icon: Sparkles },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Controle Financeiro", icon: DollarSign },
-  { href: "/dashboard/management/trip-requests", label: "Viagens Extras", icon: Route },
+  { href: "/dashboard/management/trip-requests", label: "Viagens Extras", icon: Milestone },
   { href: "/dashboard/management/contracts", label: "Contratos", icon: ClipboardCheck },
 ];
 
