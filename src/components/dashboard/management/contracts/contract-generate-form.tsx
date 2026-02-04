@@ -32,10 +32,15 @@ import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
 import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
   studentId: z.string({ required_error: 'Selecione um aluno.' }),
   templateId: z.string({ required_error: 'Selecione um modelo de contrato.' }),
+  banco: z.string().optional(),
+  agencia: z.string().optional(),
+  conta: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -80,6 +85,8 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     const schoolName = schoolsMap.get(student.schoolId) || "Escola não informada";
     const studentAddress = `${student.street || ''}, ${student.number || ''}`;
     const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+    const schoolYear = new Date().getFullYear().toString();
+
 
     let generatedContent = template.content;
     generatedContent = generatedContent.replace(/{{aluno_nome}}/g, student.name || '');
@@ -89,6 +96,10 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     generatedContent = generatedContent.replace(/{{escola_nome}}/g, schoolName);
     generatedContent = generatedContent.replace(/{{valor_mensalidade}}/g, student.monthlyFee?.toFixed(2).replace('.', ',') || '0,00');
     generatedContent = generatedContent.replace(/{{data_geracao}}/g, generationDate);
+    generatedContent = generatedContent.replace(/{{ano_letivo}}/g, schoolYear);
+    generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'Não informado');
+    generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'Não informado');
+    generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'Não informado');
 
     addDoc('contracts', {
         templateId: data.templateId,
@@ -152,6 +163,58 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
               </FormItem>
             )}
           />
+          
+          <Accordion type="single" collapsible className="w-full">
+            <AccordionItem value="item-1">
+              <AccordionTrigger className="text-sm font-medium">Informações Bancárias (Opcional)</AccordionTrigger>
+              <AccordionContent>
+                <div className="space-y-4 pt-2">
+                  <FormField
+                    control={form.control}
+                    name="banco"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Nome do Banco</FormLabel>
+                        <FormControl>
+                          <Input placeholder="Ex: Banco do Brasil" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <div className="grid grid-cols-2 gap-4">
+                    <FormField
+                      control={form.control}
+                      name="agencia"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Agência</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: 1234-5" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="conta"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Conta Corrente</FormLabel>
+                          <FormControl>
+                            <Input placeholder="Ex: 12345-6" {...field} />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
+                </div>
+              </AccordionContent>
+            </AccordionItem>
+          </Accordion>
+
           <DialogFooter className="pt-4">
             <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
             <Button type="submit">Gerar e Enviar para Aceite</Button>

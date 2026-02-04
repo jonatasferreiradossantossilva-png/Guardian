@@ -513,9 +513,15 @@ export const initialMockData = {
     contract_templates: [
         {
             id: "ctpl-1",
-            name: "Contrato Padrão 2024",
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCLÁUSULA PRIMEIRA - PARTES\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: {{responsavel_nome}}, portador(a) do CPF nº {{responsavel_cpf}}.\n\nCLÁUSULA SEGUNDA - OBJETO\n\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) {{aluno_nome}}, a ser transportado(a) do endereço residencial ({{aluno_endereco}}) para a instituição de ensino ({{escola_nome}}) e vice-versa, durante o período letivo de 2024.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\n\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ {{valor_mensalidade}}, com vencimento no 5º (quinto) dia útil de cada mês.\n\nCLÁUSULA QUARTA - OBRIGAÇÕES DA CONTRATADA\n\n- Cumprir os horários estabelecidos.\n- Manter o veículo em perfeitas condições de segurança e higiene.\n- Comunicar aos responsáveis qualquer imprevisto.\n\nCLÁUSULA QUINTA - OBRIGAÇÕES DO(A) CONTRATANTE\n\n- Efetuar o pagamento da mensalidade pontualmente.\n- Aguardar com o(a) aluno(a) no local de embarque no horário combinado.\n- Manter os dados cadastrais atualizados.\n\nE, por estarem justos e contratados, assinam o presente instrumento.\n\nSão Paulo, {{data_geracao}}.\n",
+            name: "Contrato Padrão",
+            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO {{ano_letivo}}\n\nCLÁUSULA PRIMEIRA - PARTES\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: {{responsavel_nome}}, portador(a) do CPF nº {{responsavel_cpf}}.\n\nCLÁUSULA SEGUNDA - OBJETO\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) {{aluno_nome}}, a ser transportado(a) do endereço residencial ({{aluno_endereco}}) para a instituição de ensino ({{escola_nome}}) e vice-versa.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ {{valor_mensalidade}}, com vencimento no 5º (quinto) dia útil de cada mês.\nO pagamento pode ser realizado para:\nBanco: {{banco}}, Agência: {{agencia}}, Conta: {{conta}}\n\nCLÁUSULA QUARTA - OBRIGAÇÕES\nAs partes se comprometem a cumprir com as obrigações de zelo, segurança e pontualidade.\n\nE, por estarem justos e contratados, assinam o presente.\n\nSão Paulo, {{data_geracao}}.\n",
             createdAt: "2024-07-01T10:00:00Z"
+        },
+        {
+            id: "ctpl-2",
+            name: "Contrato Completo",
+            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO {{ano_letivo}}\n\nPelo presente instrumento particular, de um lado:\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\n\nDe outro lado:\n\nCONTRATANTE: {{responsavel_nome}}, portador(a) do CPF nº {{responsavel_cpf}}, residente e domiciliado(a) em {{aluno_endereco}}.\n\nFica justo e contratado o seguinte:\n\nCLÁUSULA PRIMEIRA - DO OBJETO\n1.1. O presente contrato tem por objeto a prestação de serviços de transporte escolar para o(a) aluno(a) {{aluno_nome}}, do endereço do(a) CONTRATANTE até a instituição de ensino {{escola_nome}} e seu retorno.\n\nCLÁUSULA SEGUNDA - DO VALOR E DO PAGAMENTO\n2.1. O valor da mensalidade pelos serviços prestados será de R$ {{valor_mensalidade}}, a ser pago todo dia 10 de cada mês.\n2.2. O pagamento deverá ser realizado através de depósito ou transferência bancária para a conta abaixo:\n   - Banco: {{banco}}\n   - Agência: {{agencia}}\n   - Conta: {{conta}}\n2.3. Em caso de atraso no pagamento, incidirá multa de 2% (dois por cento) sobre o valor da mensalidade, acrescida de juros de mora de 1% (um por cento) ao mês.\n\nCLÁUSULA TERCEIRA - DO PERÍODO E DAS FÉRIAS\n3.1. O presente contrato tem a duração do ano letivo de {{ano_letivo}}.\n3.2. A prestação de serviços será interrompida durante os períodos de férias escolares e recessos oficiais. No entanto, para garantia da vaga e manutenção do equilíbrio econômico-financeiro do contrato, a cobrança das mensalidades ocorrerá normalmente nos 12 (doze) meses do ano, incluindo os meses de férias.\n\nCLÁUSULA QUARTA - DAS OBRIGAÇÕES\n4.1. Compete à CONTRATADA:\n   a) Prestar os serviços com zelo e segurança.\n   b) Manter os veículos em conformidade com as normas legais.\n   c) Informar sobre eventuais atrasos.\n\n4.2. Compete ao(à) CONTRATANTE:\n   a) Efetuar os pagamentos pontualmente.\n   b) Garantir que o(a) aluno(a) esteja no local de embarque no horário estipulado.\n\nE, por estarem de acordo, assinam o presente.\n\nSão Paulo, {{data_geracao}}.\n",
+            createdAt: "2024-07-02T11:00:00Z"
         }
     ],
     contracts: [
@@ -554,5 +560,6 @@ export const initialMockData = {
 
     
     
+
 
 
