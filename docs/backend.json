@@ -783,6 +783,38 @@
         "longitude",
         "timestamp"
       ]
+    },
+    "ContractTemplate": {
+      "title": "Contract Template",
+      "type": "object",
+      "description": "Represents a reusable contract template that can be used to generate individual contracts for students.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the template." },
+        "name": { "type": "string", "description": "The name of the template (e.g., 'Contrato Padrão 2024')." },
+        "content": { "type": "string", "description": "The full text content of the contract, with placeholders like {{aluno_nome}}." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the template was created." }
+      },
+      "required": ["id", "name", "content", "createdAt"]
+    },
+    "Contract": {
+      "title": "Contract",
+      "type": "object",
+      "description": "Represents a specific, generated contract for a student, linked to a parent.",
+      "properties": {
+        "id": { "type": "string", "description": "Unique identifier for the generated contract." },
+        "templateId": { "type": "string", "description": "Reference to the ContractTemplate used." },
+        "studentId": { "type": "string", "description": "The ID of the student this contract is for." },
+        "parentUserId": { "type": "string", "description": "The auth UID of the parent responsible for this contract." },
+        "generatedContent": { "type": "string", "description": "The final contract content with all variables filled in." },
+        "status": {
+          "type": "string",
+          "description": "The current status of the contract.",
+          "enum": ["pending_acceptance", "accepted"]
+        },
+        "acceptedAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the parent accepted the contract." },
+        "createdAt": { "type": "string", "format": "date-time", "description": "Timestamp of when the contract was generated." }
+      },
+      "required": ["id", "templateId", "studentId", "parentUserId", "generatedContent", "status", "createdAt"]
     }
   },
   "auth": {
@@ -1064,10 +1096,26 @@
             }
           ]
         }
+      },
+      {
+        "path": "/contract_templates/{templateId}",
+        "definition": {
+          "entityName": "ContractTemplate",
+          "schema": { "$ref": "#/backend/entities/ContractTemplate" },
+          "description": "Stores contract templates that administrators create. Admins have full CRUD.",
+          "params": [{ "name": "templateId", "description": "The unique ID for the contract template." }]
+        }
+      },
+      {
+        "path": "/contracts/{contractId}",
+        "definition": {
+          "entityName": "Contract",
+          "schema": { "$ref": "#/backend/entities/Contract" },
+          "description": "Stores generated contracts for each student. Rules enforce that only the relevant parent can read/accept, and only admins can create.",
+          "params": [{ "name": "contractId", "description": "The unique ID for the contract." }]
+        }
       }
     ],
     "reasoning": "The Firestore data structure is designed to support the 'Rota Segura Mobile' application, focusing on real-time incident reporting, route optimization, and communication. The design prioritizes Authorization Independence by denormalizing authorization data where necessary. It utilizes structural segregation to maintain a homogeneous security posture within collections. Access Modeling follows consistent patterns for user-owned data and collaborative scenarios.\n\n**Authorization Independence:**\n\n*   For entities where authorization depends on parent data, like messages between parents and the system, the relevant authorization context (e.g., parent ID, system ID) is included directly within each message document. This avoids `get()` calls in security rules and enables atomic operations.\n*   For collaborative entities like routes, the `driverId` is denormalized to allow direct association and simplified security rules.\n\n**Structural Segregation:**\n\n*   Data with different access requirements are stored in separate collections. For example, global roles for admins are stored in `/roles_admin/{uid}` rather than mixing admin and non-admin user data in a single `/users` collection.\n*   User-specific data, like parent-student messages, is stored within a hierarchical path (`/users/{userId}/messages/{messageId}`) to ensure clear ownership and simplified security rules.\n\n**Access Modeling:**\n\n*   Private data is managed using path-based ownership (e.g., `/users/{userId}/invoices/{invoiceId}`).\n*   User-owned data is organized hierarchically (e.g., `/users/{userId}/routes/{routeId}`).\n*   Collaborative data (if any) would typically use a membership map (`members: {uid1: \"role\", uid2: \"role\"}`), but it's not explicitly needed in the current feature set. If future features require it (e.g., shared routes), this model should be implemented.\n\n**QAPs (Rules are not Filters):**\n\n*   The structure enables secure `list` operations by ensuring all documents within a collection share the same security requirements. For example, listing routes is secure because only authorized users can access the `/routes` collection, and all documents within that collection adhere to the same authorization rules (e.g., admin access). The alternative is to implement filtering in security rules, which is avoided."
   }
 }
-
-    
