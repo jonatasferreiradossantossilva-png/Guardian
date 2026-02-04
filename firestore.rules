@@ -252,7 +252,25 @@ service cloud.firestore {
       // Admins get full CRUD access for management
       allow read, write: if isAdmin();
     }
+
+    /**
+     * @description Stores contract templates that administrators create.
+     * @principle Only administrators can create, read, update, or delete templates.
+     */
+    match /contract_templates/{templateId} {
+      allow read, write: if isAdmin();
+    }
+    
+    /**
+     * @description Stores generated contracts for each student.
+     * @principle Admins can create and read. Parents can only read/accept contracts for their own children.
+     */
+    match /contracts/{contractId} {
+      allow create: if isAdmin();
+      allow read: if isAdmin() || (isSignedIn() && resource.data.parentUserId == request.auth.uid);
+      allow update: if isSignedIn() && resource.data.parentUserId == request.auth.uid 
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedAt']);
+      allow delete: if isAdmin();
+    }
   }
 }
-
-    
