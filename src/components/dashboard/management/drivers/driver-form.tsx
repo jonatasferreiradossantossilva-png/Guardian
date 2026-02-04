@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -43,13 +44,13 @@ const formSchema = z.object({
   rg: z.string().optional(),
   cnh: z.string().optional(),
   cnhCategory: z.string().optional(),
-  zipCode: z.string().optional(),
-  street: z.string().optional(),
-  number: z.string().optional(),
+  zipCode: z.string().min(8, { message: 'O CEP é obrigatório e deve ter pelo menos 8 dígitos.' }),
+  street: z.string().min(1, { message: 'A rua é obrigatória.' }),
+  number: z.string().min(1, { message: 'O número é obrigatório.' }),
   complement: z.string().optional(),
-  neighborhood: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
+  neighborhood: z.string().min(1, { message: 'O bairro é obrigatório.' }),
+  city: z.string().min(1, { message: 'A cidade é obrigatória.' }),
+  state: z.string().min(1, { message: 'O estado é obrigatório.' }),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
 });
@@ -281,7 +282,7 @@ export function DriverForm({
           </div>
 
           <div className="border-t pt-4 mt-4">
-             <p className="text-sm font-medium mb-2">Endereço (Opcional)</p>
+             <p className="text-sm font-medium mb-2">Endereço</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <FormField
                     control={form.control} name="zipCode"
