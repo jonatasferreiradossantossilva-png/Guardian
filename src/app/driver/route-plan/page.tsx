@@ -122,7 +122,7 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
             </Button>
             <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={onShareRoute}>
                 <Share2 className="h-5 w-5"/>
-                <span>Compartilhar</span>
+                <span>Comp. Local</span>
             </Button>
        </CardFooter>
     </Card>
