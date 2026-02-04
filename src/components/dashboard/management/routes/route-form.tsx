@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -99,7 +100,7 @@ export function RouteForm({
         studentIds: [],
       });
     }
-  }, [route, form.reset]);
+  }, [route]);
 
   const studentIdsInForm = form.watch('studentIds');
   const driverId = form.watch('driverId');
@@ -333,5 +334,3 @@ export function RouteForm({
     </DialogContent>
   );
 }
-
-    
