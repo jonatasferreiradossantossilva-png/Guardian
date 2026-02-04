@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -94,16 +95,17 @@ export function MainSidebar() {
         <SidebarMenu>
           {operationalLinks.map((link) => (
             <SidebarMenuItem key={link.href}>
-              <Link href={link.href} passHref>
-                <SidebarMenuButton
-                  variant="ghost"
-                  isActive={isActive(link.href)}
-                  tooltip={link.label}
-                >
+              <SidebarMenuButton
+                asChild
+                variant="ghost"
+                isActive={isActive(link.href)}
+                tooltip={link.label}
+              >
+                <Link href={link.href}>
                   <link.icon />
                   <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -114,16 +116,17 @@ export function MainSidebar() {
         <SidebarMenu>
           {registrationLinks.map((link) => (
             <SidebarMenuItem key={link.href}>
-              <Link href={link.href} passHref>
-                <SidebarMenuButton
-                  variant="ghost"
-                  isActive={isActive(link.href)}
-                  tooltip={link.label}
-                >
+              <SidebarMenuButton
+                asChild
+                variant="ghost"
+                isActive={isActive(link.href)}
+                tooltip={link.label}
+              >
+                <Link href={link.href}>
                   <link.icon />
                   <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -138,16 +141,17 @@ export function MainSidebar() {
           </p>
           {profileLinks.map((link) => (
             <SidebarMenuItem key={link.href}>
-              <Link href={link.href} passHref>
-                <SidebarMenuButton
-                  isActive={isActive(link.href)}
-                  tooltip={link.label}
-                  variant="ghost"
-                >
+              <SidebarMenuButton
+                asChild
+                isActive={isActive(link.href)}
+                tooltip={link.label}
+                variant="ghost"
+              >
+                <Link href={link.href}>
                   <link.icon />
                   <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
-                </SidebarMenuButton>
-              </Link>
+                </Link>
+              </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
         </SidebarMenu>
@@ -183,5 +187,3 @@ export function MainSidebar() {
     </Sidebar>
   );
 }
-
-    
