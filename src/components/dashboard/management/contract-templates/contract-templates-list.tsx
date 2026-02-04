@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -87,7 +88,8 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
 
   return (
     <div>
-      <div className="flex items-center justify-end mb-6">
+      <div className="flex items-center justify-between mb-6">
+        <div>{/* Empty div for spacing */}</div>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button onClick={() => {
@@ -100,6 +102,7 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
           </DialogTrigger>
           <ContractTemplateForm 
             template={selectedTemplate || undefined} 
+            templates={templates || []}
             onFormSubmit={handleFormSubmit}
           />
         </Dialog>
@@ -160,14 +163,14 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
                       <p className="font-medium pr-4">{template.name}</p>
                       <p className="text-xs text-muted-foreground italic mt-2">"{template.content.substring(0, 100)}..."</p>
                     </div>
-                    <CardFooter className="p-2 border-t bg-secondary/50 flex gap-2">
-                       <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(template)}>
+                    <CardFooter className="p-2 border-t bg-secondary/50 flex flex-col sm:flex-row gap-2">
+                       <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(template)}>
                          <Edit className="mr-2 h-4 w-4" /> Editar
                        </Button>
-                       <Button variant="outline" size="sm" className="flex-1" onClick={() => handleDuplicate(template)}>
+                       <Button variant="outline" size="sm" className="w-full" onClick={() => handleDuplicate(template)}>
                          <Copy className="mr-2 h-4 w-4" /> Duplicar
                        </Button>
-                       <Button variant="destructive" size="sm" className="flex-1" onClick={() => handleDelete(template)}>
+                       <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(template)}>
                          <Trash2 className="mr-2 h-4 w-4" /> Deletar
                        </Button>
                     </CardFooter>

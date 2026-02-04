@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -6,7 +7,6 @@ import * as z from 'zod';
 import {
   Form,
   FormControl,
-  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -33,13 +33,15 @@ const formSchema = z.object({
 });
 
 type FormValues = z.infer<typeof formSchema>;
+type Template = { id: string; name: string; content: string; };
 
 interface ContractTemplateFormProps {
-  template?: Partial<{ id: string } & FormValues>;
+  template?: Partial<Template>;
+  templates: Template[];
   onFormSubmit: () => void;
 }
 
-export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplateFormProps) {
+export function ContractTemplateForm({ template, templates, onFormSubmit }: ContractTemplateFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
 
@@ -63,6 +65,20 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
   }, [template, form]);
 
   const onSubmit = (data: FormValues) => {
+    // Check for duplicate name
+    const nameExists = templates.some(
+      (t) => t.name.toLowerCase() === data.name.toLowerCase() && t.id !== template?.id
+    );
+
+    if (nameExists) {
+      toast({
+        title: 'Nome duplicado',
+        description: 'Já existe um modelo de contrato com este nome. Por favor, escolha outro.',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (template && template.id) {
       updateDoc('contract_templates', template.id, data);
       toast({
@@ -118,9 +134,9 @@ export function ContractTemplateForm({ template, onFormSubmit }: ContractTemplat
                         <FormControl>
                         <Textarea placeholder="Cole ou digite o texto do seu contrato aqui..." {...field} rows={20} />
                         </FormControl>
-                        <FormDescription>
+                        <p className="text-xs text-muted-foreground pt-2">
                             Variáveis disponíveis: {placeholders.map(p => <code key={p} className="mx-1 p-0.5 bg-muted rounded text-xs">{p}</code>)}
-                        </FormDescription>
+                        </p>
                         <FormMessage />
                     </FormItem>
                     )}
