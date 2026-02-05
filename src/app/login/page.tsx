@@ -130,7 +130,7 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Sparkles} title="Otimizador de Rotas com IA" description="Crie rotas eficientes em segundos. Reduza custos, tempo e o desgaste da sua frota com nossa IA." />
-                    <FeatureItem icon={DollarSign} title="Gestão Financeira e Contratos" description="Gere faturas, administre contratos digitais e controle pagamentos de forma centralizada." />
+                    <FeatureItem icon={DollarSign} title="Gestão Financeira Inteligente" description="Gere faturas mensais, envie recibos automáticos via WhatsApp e defina dias de vencimento personalizados por cliente." />
                     <FeatureItem icon={Users} title="Comunicação e Gestão Centralizada" description="Tenha uma visão 360° da sua frota, motoristas, monitores e alunos, com canais de comunicação diretos." />
                   </div>
                 </CardContent>
@@ -170,7 +170,7 @@ export default function LandingPage() {
                     <FeatureItem icon={CheckCircle} title="Notificações de Embarque/Desembarque" description="Veja se seu filho(a) embarcou na ida e se desembarcou em segurança na volta. Fim da ansiedade." />
                     <FeatureItem icon={QrCode} title="QR Code de Segurança" description="Gere um QR Code único no app para um embarque rápido e seguro, garantindo que seu filho(a) está no lugar certo." />
                     <FeatureItem icon={FileText} title="Documentos e Autorizações" description="Visualize e aceite contratos, e gerencie pessoas autorizadas para a retirada do seu filho." />
-                    <FeatureItem icon={DollarSign} title="Financeiro na Palma da Mão" description="Solicite viagens avulsas e gerencie os pagamentos de mensalidades de forma simples e segura." />
+                    <FeatureItem icon={DollarSign} title="Financeiro Transparente e Simples" description="Pague mensalidades, receba recibos automáticos no WhatsApp e solicite viagens avulsas, tudo de forma segura no app." />
                   </div>
                 </CardContent>
               </Card>
