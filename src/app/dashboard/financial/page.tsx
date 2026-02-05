@@ -158,6 +158,7 @@ function RevenuesTab() {
 
   const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
   const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
+  const parentDataMap = useMemo(() => new Map(parents?.map(p => [p.id, p])), [parents]);
 
   const availableMonths = useMemo(() => {
     if (!invoices) return [];
@@ -236,16 +237,17 @@ function RevenuesTab() {
     let generatedCount = 0;
 
     const studentParentMap = new Map(students.map(s => [s.id, s.parentId]));
-    const parentUserMap = new Map(parents.map(p => [p.id, p.userId]));
 
     students.forEach(student => {
         const parentId = studentParentMap.get(student.id);
-        const parentUserId = parentId ? parentUserMap.get(parentId) : null;
+        const parent = parentId ? parentDataMap.get(parentId) : null;
 
-        if (!parentUserId) {
-            console.warn(`Responsável não encontrado para o aluno ${student.name}`);
+        if (!parent || !parent.userId) {
+            console.warn(`Responsável ou userId não encontrado para o aluno ${student.name}`);
             return;
         }
+        
+        const parentUserId = parent.userId;
 
         const hasInvoiceThisMonth = (invoices || []).some(inv => {
             const dueDate = new Date(inv.dueDate);
@@ -256,7 +258,9 @@ function RevenuesTab() {
         });
 
         if (!hasInvoiceThisMonth) {
-            const dueDate = set(currentMonthStart, { date: 10 });
+            const paymentDay = parent.preferredPaymentDay || 10;
+            const dueDate = set(currentMonthStart, { date: paymentDay });
+
             const studentFee = student.monthlyFee || 450.00; // Use individual fee or fallback
             addDoc('invoices', {
                 studentId: student.id,
@@ -751,3 +755,5 @@ function ExpensesTab() {
     </div>
   )
 }
+
+    

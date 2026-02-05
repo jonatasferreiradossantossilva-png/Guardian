@@ -10,6 +10,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -25,6 +26,13 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
 import { Loader2 } from 'lucide-react';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -40,6 +48,7 @@ const formSchema = z.object({
   neighborhood: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
+  preferredPaymentDay: z.coerce.number().int().min(1).max(31).optional(),
 });
 
 type ParentFormValues = z.infer<typeof formSchema>;
@@ -70,6 +79,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
       neighborhood: '',
       city: '',
       state: '',
+      preferredPaymentDay: undefined,
     },
   });
 
@@ -119,19 +129,8 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
   useEffect(() => {
     if (parent) {
       form.reset({
-        name: parent.name || '',
-        email: parent.email || '',
-        phone: parent.phone || '',
-        userId: parent.userId || '',
-        cpf: parent.cpf || '',
-        rg: parent.rg || '',
-        zipCode: parent.zipCode || '',
-        street: parent.street || '',
-        number: parent.number || '',
-        complement: parent.complement || '',
-        neighborhood: parent.neighborhood || '',
-        city: parent.city || '',
-        state: parent.state || '',
+        ...parent,
+        preferredPaymentDay: parent.preferredPaymentDay,
       });
     } else {
       form.reset(form.defaultValues);
@@ -139,14 +138,19 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
   }, [parent, form]);
 
   const onSubmit = (data: ParentFormValues) => {
+    const finalData = { ...data };
+    if (!finalData.preferredPaymentDay) {
+        delete (finalData as Partial<typeof finalData>).preferredPaymentDay;
+    }
+
     if (parent) {
-      updateDoc('parents', parent.id, data);
+      updateDoc('parents', parent.id, finalData);
       toast({
         title: 'Responsável atualizado!',
         description: `Os dados de ${data.name} foram atualizados com sucesso.`,
       });
     } else {
-      addDoc('parents', data);
+      addDoc('parents', finalData);
       toast({
         title: 'Responsável adicionado!',
         description: `${data.name} foi adicionado com sucesso.`,
@@ -154,6 +158,8 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
     }
     onFormSubmit();
   };
+
+  const paymentDays = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
     <DialogContent className="sm:max-w-2xl">
@@ -234,6 +240,33 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                 )}
                 />
           </div>
+
+          <FormField
+            control={form.control}
+            name="preferredPaymentDay"
+            render={({ field }) => (
+                <FormItem>
+                <FormLabel>Dia de Pagamento Preferencial</FormLabel>
+                <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} value={field.value?.toString() || ""}>
+                    <FormControl>
+                    <SelectTrigger>
+                        <SelectValue placeholder="Selecione um dia" />
+                    </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                    <SelectItem value="">Nenhum (usará o padrão)</SelectItem>
+                    {paymentDays.map(day => (
+                        <SelectItem key={day} value={day.toString()}>{day}</SelectItem>
+                    ))}
+                    </SelectContent>
+                </Select>
+                <FormDescription>
+                    O dia do mês em que as faturas deste responsável irão vencer.
+                </FormDescription>
+                <FormMessage />
+                </FormItem>
+            )}
+            />
           
            <div className="border-t pt-4 mt-4">
              <p className="text-sm font-medium mb-2">Endereço (Opcional)</p>
@@ -348,3 +381,5 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
     </DialogContent>
   );
 }
+
+    
