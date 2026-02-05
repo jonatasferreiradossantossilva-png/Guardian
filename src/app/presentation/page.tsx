@@ -1,7 +1,7 @@
 
 'use client';
 
-import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, HandHeart, Bus, Sparkles } from 'lucide-react';
+import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, HandHeart, Bus, Sparkles, Newspaper, Mail, Building } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -274,6 +274,37 @@ export default function PresentationPage() {
                     </div>
                 </div>
                  <p className="text-center mt-8 text-muted-foreground text-sm">Modelo de upsell com taxa de 5% sobre viagens avulsas pagas pelo app.</p>
+            </Slide>
+
+             {/* Go-to-Market Strategy */}
+            <Slide>
+                <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Rocket className="inline-block text-primary h-12 w-12 mr-4" />Estratégia Go-to-Market</h2>
+                <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg mb-12">
+                    Uma abordagem multifacetada para conquistar os primeiros clientes e validar o modelo de negócio com baixo custo.
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 text-center">
+                    <div className="flex flex-col items-center p-6 border-transparent rounded-lg">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <Newspaper className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Marketing de Conteúdo</h3>
+                        <p className="mt-2 text-muted-foreground text-sm">Criar artigos e guias focados nas dores dos gestores (custos, segurança, gestão) para atrair leads qualificados e construir autoridade.</p>
+                    </div>
+                    <div className="flex flex-col items-center p-6 border-transparent rounded-lg">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <Mail className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Prospecção Direta</h3>
+                        <p className="mt-2 text-muted-foreground text-sm">Mapear e contatar diretamente donos de frotas em mercados-alvo (SP, RJ), com uma mensagem focada em ROI e eficiência operacional.</p>
+                    </div>
+                    <div className="flex flex-col items-center p-6 border-transparent rounded-lg">
+                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                            <Building className="h-8 w-8" />
+                        </div>
+                        <h3 className="mt-4 text-xl font-semibold">Parcerias com Associações</h3>
+                        <p className="mt-2 text-muted-foreground text-sm">Firmar parcerias com sindicatos e associações do setor, oferecendo descontos para membros e ganhando um canal de divulgação qualificado.</p>
+                    </div>
+                </div>
             </Slide>
 
              {/* The Ask */}
