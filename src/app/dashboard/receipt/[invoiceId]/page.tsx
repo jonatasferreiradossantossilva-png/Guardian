@@ -65,7 +65,14 @@ export default function ReceiptPage() {
         
         const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(message)}`;
 
-        window.open(whatsappUrl, '_blank');
+        // Create a temporary link element to trigger the navigation, which is more robust against popup blockers.
+        const link = document.createElement('a');
+        link.href = whatsappUrl;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
 
     if (isLoading) {
