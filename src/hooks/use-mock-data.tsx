@@ -8,6 +8,8 @@ import { initialMockData } from '@/lib/mock-data';
 
 const MockDataContext = createContext(null);
 
+let docIdCounter = 0; // Use a simple counter to ensure unique IDs within a session
+
 // This provider will wrap the application and hold the state of the mock data.
 export function MockDataProvider({ children }) {
   const [db, setDb] = useState(initialMockData);
@@ -66,7 +68,8 @@ export function MockDataProvider({ children }) {
   }, [db]);
 
   const addDoc = useCallback((collectionName, data) => {
-    const newId = `${collectionName.slice(0, 3)}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+    // Using a counter appended to a timestamp ensures uniqueness even in fast loops.
+    const newId = `${collectionName.slice(0, 3)}-${Date.now()}-${docIdCounter++}`;
     const newDoc = { ...data, id: newId };
     setDb(prevDb => ({
       ...prevDb,
@@ -187,3 +190,4 @@ export const deleteDocumentNonBlocking = (docRef) => {
 export const setDocumentNonBlocking = (docRef, data) => {
     // This is a placeholder for API compatibility.
 };
+
