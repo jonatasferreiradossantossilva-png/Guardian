@@ -28,7 +28,7 @@ const InvoiceSchema = z.object({
     dueDate: z.string(),
 }).passthrough();
 
-export const GenerateMonthlyInvoicesInputSchema = z.object({
+const GenerateMonthlyInvoicesInputSchema = z.object({
     students: z.array(StudentSchema),
     parents: z.array(ParentSchema),
     invoices: z.array(InvoiceSchema),
@@ -36,7 +36,7 @@ export const GenerateMonthlyInvoicesInputSchema = z.object({
 export type GenerateMonthlyInvoicesInput = z.infer<typeof GenerateMonthlyInvoicesInputSchema>;
 
 // Define the shape of a new invoice to be created. It won't have an ID yet.
-export const NewInvoiceSchema = z.object({
+const NewInvoiceSchema = z.object({
     studentId: z.string(),
     parentUserId: z.string(),
     description: z.string(),
@@ -46,7 +46,7 @@ export const NewInvoiceSchema = z.object({
 });
 export type NewInvoice = z.infer<typeof NewInvoiceSchema>;
 
-export const GenerateMonthlyInvoicesOutputSchema = z.object({
+const GenerateMonthlyInvoicesOutputSchema = z.object({
     invoicesToCreate: z.array(NewInvoiceSchema),
 });
 export type GenerateMonthlyInvoicesOutput = z.infer<typeof GenerateMonthlyInvoicesOutputSchema>;
