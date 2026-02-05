@@ -7,8 +7,8 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 
 // Helper component for consistent slide styling
-const Slide = ({ children, className = '' }: { children: React.ReactNode, className?: string }) => (
-  <section className={`min-h-screen w-full max-w-6xl mx-auto flex flex-col justify-center items-center p-8 md:p-16 ${className}`}>
+const Slide = ({ children, className = '', id = '' }: { children: React.ReactNode, className?: string, id?: string }) => (
+  <section id={id} className={`min-h-screen w-full max-w-6xl mx-auto flex flex-col justify-center items-center p-8 md:p-16 ${className}`}>
     {children}
   </section>
 );
@@ -184,8 +184,46 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
+            {/* Competitive Analysis */}
+            <Slide id="analise">
+                <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">
+                  <BarChart className="inline-block text-primary h-12 w-12 mr-4" />
+                  Análise Competitiva: Onde Estamos
+                </h2>
+                 <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg mb-12">
+                    Não entramos para competir. Entramos para criar uma nova categoria, focada na inteligência e eficiência do negócio.
+                </p>
+                <div className="w-full max-w-4xl p-4 bg-background/30 rounded-lg">
+                    <div className="grid grid-cols-[1fr_2fr_2fr] grid-rows-[1fr_2fr_2fr] gap-2">
+                        <div className="col-start-2 col-span-2 text-center text-sm font-semibold text-muted-foreground">Foco do Produto</div>
+                        <div className="row-start-2 row-span-2 flex items-center justify-center text-sm font-semibold text-muted-foreground" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Foco no Cliente</div>
+                        
+                        <div className="row-start-2 col-start-2 p-4 border-b border-r border-dashed border-border flex flex-col justify-end items-start">
+                             <CompetitorCard title="Apps de Rastreamento (B2C)" description="Focam nos pais, resolvendo apenas a ansiedade da localização. Pouco ou nenhum valor para a gestão da empresa."/>
+                        </div>
+                        <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-end items-end text-right">
+                             <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary">
+                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
+                                <p className="text-sm text-foreground">Plataforma B2B completa com IA, Financeiro e Comunicação. Valor para a empresa e para os pais.</p>
+                            </div>
+                        </div>
+                        <div className="row-start-3 col-start-2 p-4 border-r border-dashed border-border flex flex-col justify-start items-start">
+                             <CompetitorCard title="WhatsApp e Planilhas" description="Status quo. Gratuito, mas ineficiente, inseguro e caótico. Nosso principal alvo a ser substituído."/>
+                        </div>
+                        <div className="row-start-3 col-start-3 p-4 flex flex-col justify-start items-end text-right">
+                            <CompetitorCard title="Sistemas de Frota Genéricos" description="Complexos, caros e não especializados no fluxo escolar (pais, alunos, check-in)."/>
+                        </div>
+
+                        <div className="row-start-1 col-start-2 text-center text-xs text-muted-foreground">Ferramenta Simples</div>
+                        <div className="row-start-1 col-start-3 text-center text-xs text-muted-foreground">Plataforma Integrada</div>
+                        <div className="row-start-2 col-start-1 text-right text-xs text-muted-foreground">Foco na Gestão (B2B)</div>
+                        <div className="row-start-3 col-start-1 text-right text-xs text-muted-foreground">Foco nos Pais (B2C)</div>
+                    </div>
+                </div>
+            </Slide>
+
             {/* Market Opportunity Section */}
-            <Slide>
+            <Slide id="mercado">
                  <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Target className="inline-block text-primary h-12 w-12 mr-4" />Oportunidade de Mercado</h2>
                  <div className="grid md:grid-cols-3 gap-6 text-center w-full">
                     <div className="bg-background/50 border border-border p-6 rounded-lg">
@@ -236,41 +274,6 @@ export default function PresentationPage() {
                     </div>
                 </div>
                  <p className="text-center mt-8 text-muted-foreground text-sm">Modelo de upsell com taxa de 5% sobre viagens avulsas pagas pelo app.</p>
-            </Slide>
-
-             {/* Competitive Analysis */}
-            <Slide>
-                <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><BarChart className="inline-block text-primary h-12 w-12 mr-4" />Análise Competitiva</h2>
-                <div className="w-full max-w-4xl p-4 bg-background/30 rounded-lg">
-                    <div className="grid grid-cols-[1fr_2fr_2fr] grid-rows-[1fr_2fr_2fr] gap-2">
-                        {/* Eixos */}
-                        <div className="col-start-2 col-span-2 text-center text-sm font-semibold text-muted-foreground">Foco do Produto</div>
-                        <div className="row-start-2 row-span-2 text-center text-sm font-semibold text-muted-foreground" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Foco no Cliente</div>
-                        
-                        {/* Quadrantes */}
-                        <div className="row-start-2 col-start-2 p-4 border-b border-r border-dashed border-border flex flex-col justify-start items-start">
-                            <CompetitorCard title="Apps de Rastreamento" description="Focam apenas em localização. Sem inteligência de negócio."/>
-                        </div>
-                        <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-start items-end">
-                             <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary text-right">
-                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
-                                <p className="text-sm text-foreground">Plataforma B2B completa com IA, Financeiro e Comunicação.</p>
-                            </div>
-                        </div>
-                        <div className="row-start-3 col-start-2 p-4 border-r border-dashed border-border flex flex-col justify-end items-start">
-                             <CompetitorCard title="WhatsApp e Planilhas" description="Status quo. Gratuito, mas ineficiente, inseguro e caótico."/>
-                        </div>
-                        <div className="row-start-3 col-start-3 p-4 flex flex-col justify-end items-end">
-                            <CompetitorCard title="Sistemas ERP Escolares" description="Módulos de transporte básicos, sem especialização ou foco na operação da van."/>
-                        </div>
-
-                        {/* Labels dos eixos */}
-                        <div className="row-start-1 col-start-2 text-center text-xs text-muted-foreground">Ferramenta Simples</div>
-                        <div className="row-start-1 col-start-3 text-center text-xs text-muted-foreground">Plataforma Integrada</div>
-                         <div className="row-start-2 col-start-1 text-right text-xs text-muted-foreground">Foco na Gestão B2B</div>
-                        <div className="row-start-3 col-start-1 text-right text-xs text-muted-foreground">Foco nos Pais</div>
-                    </div>
-                </div>
             </Slide>
 
              {/* The Ask */}

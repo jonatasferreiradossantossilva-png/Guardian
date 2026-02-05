@@ -21,6 +21,7 @@ import {
   FileText,
   QrCode,
   BellRing,
+  BarChart,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -44,6 +45,9 @@ export default function LandingPage() {
             </Button>
             <Button variant="ghost" asChild>
               <Link href="#diferenciais">Diferenciais</Link>
+            </Button>
+             <Button variant="ghost" asChild>
+              <Link href="#analise">Análise</Link>
             </Button>
              <Button variant="ghost" asChild>
               <Link href="#mercado">Mercado</Link>
@@ -168,8 +172,7 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Map} title="Acompanhamento em Tempo Real" description="Saiba exatamente onde a van está no mapa e receba alertas inteligentes quando ela estiver se aproximando." />
-                    <FeatureItem icon={CheckCircle} title="Notificações de Embarque/Desembarque" description="Veja se seu filho(a) embarcou na ida e se desembarcou em segurança na volta. Fim da ansiedade." />
-                    <FeatureItem icon={QrCode} title="QR Code de Segurança" description="Gere um QR Code único no app para um embarque rápido e seguro, garantindo que seu filho(a) está no lugar certo." />
+                    <FeatureItem icon={BellRing} title="Notificações e Lembretes de Pagamento" description="Receba lembretes automáticos de faturas para não perder o vencimento." />
                     <FeatureItem icon={FileText} title="Documentos e Autorizações" description="Visualize e aceite contratos, e gerencie pessoas autorizadas para a retirada do seu filho." />
                     <FeatureItem icon={DollarSign} title="Financeiro Transparente e Simples" description="Pague mensalidades, receba recibos automáticos no WhatsApp e solicite viagens avulsas, tudo de forma segura no app." />
                   </div>
@@ -210,6 +213,43 @@ export default function LandingPage() {
                     </div>
                 </div>
             </div>
+        </section>
+
+        {/* Competitive Analysis Section */}
+        <section id="analise" className="w-full py-20 md:py-28">
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl mb-12">
+              <BarChart className="inline-block text-primary h-12 w-12 mr-4" />
+              Análise Competitiva
+            </h2>
+            <div className="w-full max-w-4xl mx-auto p-4 bg-background/30 rounded-lg">
+              <div className="grid grid-cols-[1fr_2fr_2fr] grid-rows-[1fr_2fr_2fr] gap-2">
+                <div className="col-start-2 col-span-2 text-center text-sm font-semibold text-muted-foreground">Foco do Produto</div>
+                <div className="row-start-2 row-span-2 flex items-center justify-center text-sm font-semibold text-muted-foreground" style={{ writingMode: 'vertical-rl', transform: 'rotate(180deg)' }}>Foco no Cliente</div>
+                
+                <div className="row-start-2 col-start-2 p-4 border-b border-r border-dashed border-border flex flex-col justify-end items-start">
+                  <CompetitorCard title="Apps de Rastreamento (B2C)" description="Focam nos pais, resolvendo apenas a ansiedade da localização. Pouco ou nenhum valor para a gestão da empresa."/>
+                </div>
+                <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-end items-end text-right">
+                  <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary">
+                      <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
+                      <p className="text-sm text-foreground">Plataforma B2B completa com IA, Financeiro e Comunicação. Valor para a empresa e para os pais.</p>
+                  </div>
+                </div>
+                <div className="row-start-3 col-start-2 p-4 border-r border-dashed border-border flex flex-col justify-start items-start">
+                  <CompetitorCard title="WhatsApp e Planilhas" description="Status quo. Gratuito, mas ineficiente, inseguro e caótico. Nosso principal alvo a ser substituído."/>
+                </div>
+                <div className="row-start-3 col-start-3 p-4 flex flex-col justify-start items-end text-right">
+                  <CompetitorCard title="Sistemas de Frota Genéricos" description="Complexos, caros e não especializados no fluxo escolar (pais, alunos, check-in)."/>
+                </div>
+
+                <div className="row-start-1 col-start-2 text-center text-xs text-muted-foreground">Ferramenta Simples</div>
+                <div className="row-start-1 col-start-3 text-center text-xs text-muted-foreground">Plataforma Integrada</div>
+                <div className="row-start-2 col-start-1 text-right text-xs text-muted-foreground">Foco na Gestão (B2B)</div>
+                <div className="row-start-3 col-start-1 text-right text-xs text-muted-foreground">Foco nos Pais (B2C)</div>
+              </div>
+            </div>
+          </div>
         </section>
         
         {/* Market Opportunity Section */}
@@ -307,6 +347,13 @@ const StatCard = ({ icon, title, value, description }: { icon: React.ReactNode, 
         </div>
         <h3 className="text-lg font-semibold text-foreground">{title}</h3>
         <p className="text-4xl font-bold text-primary my-2">{value}</p>
+        <p className="text-sm text-muted-foreground">{description}</p>
+    </div>
+);
+
+const CompetitorCard = ({ title, description }: { title: string, description: string }) => (
+    <div className="bg-background/50 p-4 rounded-lg border border-border">
+        <h4 className="font-semibold text-primary">{title}</h4>
         <p className="text-sm text-muted-foreground">{description}</p>
     </div>
 );
