@@ -50,6 +50,7 @@ export default function ReceiptPage() {
 
         const receiptLink = window.location.href;
         const message = `Olá, ${parent.name}! Segue o recibo de pagamento da mensalidade de ${student?.name}:\n\n${receiptLink}`;
+        
         // Basic phone number cleaning - this might need to be more robust in a real app
         const phoneNumber = parent.phone.replace(/\D/g, '');
         
