@@ -534,11 +534,19 @@ function RevenuesTab() {
                     <AlertDialogTitle>Simular Envio de Lembretes?</AlertDialogTitle>
                     <AlertDialogDescription>
                         A ação a seguir enviaria uma notificação de lembrete para os {reminders.length} responsáveis a seguir:
-                        <ul className="mt-2 list-disc list-inside text-xs max-h-40 overflow-y-auto">
-                            {reminders.map((r, i) => <li key={i}><b>{r.parentName}</b> (responsável por {r.studentName})</li>)}
-                        </ul>
                     </AlertDialogDescription>
                 </AlertDialogHeader>
+                {reminders.length > 0 && (
+                <div className="relative max-h-40 overflow-y-auto pr-6 text-sm">
+                    <ul className="list-disc list-inside space-y-1 text-muted-foreground">
+                        {reminders.map((r, i) => (
+                            <li key={i}>
+                                <b>{r.parentName}</b> (responsável por {r.studentName})
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+                )}
                 <AlertDialogFooter>
                     <AlertDialogCancel>Cancelar</AlertDialogCancel>
                     <AlertDialogAction onClick={confirmSendReminders}>Sim, Enviar Lembretes</AlertDialogAction>
