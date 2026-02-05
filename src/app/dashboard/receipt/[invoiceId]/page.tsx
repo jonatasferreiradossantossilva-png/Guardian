@@ -48,13 +48,15 @@ export default function ReceiptPage() {
             return;
         }
 
-        const receiptLink = window.location.href;
+        // Use a placeholder public URL for the receipt link to avoid workstation permission errors.
+        // In a real production environment, this would be your actual public domain.
+        const receiptLink = `https://guardian-app.com/dashboard/receipt/${invoiceId}`;
         const message = `Olá, ${parent.name}! Segue o recibo de pagamento da mensalidade de ${student?.name}:\n\n${receiptLink}`;
         
-        // Basic phone number cleaning - this might need to be more robust in a real app
+        // Basic phone number cleaning for Brazilian numbers.
         const phoneNumber = parent.phone.replace(/\D/g, '');
         
-        // Basic validation for Brazilian numbers (DDD + 9 digits)
+        // Basic validation for Brazilian numbers (DDD + 8 or 9 digits for mobile)
         if (phoneNumber.length < 10 || phoneNumber.length > 11) {
              toast({
                 title: "Número de telefone inválido",
@@ -64,9 +66,10 @@ export default function ReceiptPage() {
             return;
         }
         
+        // Add the country code for Brazil
         const whatsappUrl = `https://wa.me/55${phoneNumber}?text=${encodeURIComponent(message)}`;
 
-        // Create a temporary link element to trigger the navigation, which is more robust against popup blockers.
+        // This method is more robust against popup blockers.
         const link = document.createElement('a');
         link.href = whatsappUrl;
         link.target = '_blank';
