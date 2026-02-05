@@ -36,6 +36,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { ExpenseForm } from '@/components/dashboard/financial/expense-form';
+import { generateMonthlyInvoices } from '@/ai/flows/generate-monthly-invoices';
 
 type Invoice = {
   id: string;
@@ -158,7 +159,6 @@ function RevenuesTab() {
 
   const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
   const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
-  const parentDataMap = useMemo(() => new Map(parents?.map(p => [p.id, p])), [parents]);
 
   const availableMonths = useMemo(() => {
     if (!invoices) return [];
@@ -224,68 +224,41 @@ function RevenuesTab() {
   }, [filteredInvoicesForSummary, selectedStatus]);
 
 
-  const handleGenerateInvoices = () => {
-    if (!students || !parents) {
-      toast({ title: 'Dados não carregados', description: 'Aguarde os dados de alunos e pais carregarem.', variant: 'destructive'});
+  const handleGenerateInvoices = async () => {
+    if (!students || !parents || !invoices) {
+      toast({ title: 'Dados não carregados', description: 'Aguarde todos os dados financeiros carregarem.', variant: 'destructive' });
       return;
     }
 
     setIsGenerating(true);
-    const today = new Date();
-    const currentMonthStart = startOfMonth(today);
-    
-    let generatedCount = 0;
 
-    const studentParentMap = new Map(students.map(s => [s.id, s.parentId]));
+    try {
+      const result = await generateMonthlyInvoices({ students, parents, invoices });
+      const { invoicesToCreate } = result;
 
-    students.forEach(student => {
-        const parentId = studentParentMap.get(student.id);
-        const parent = parentId ? parentDataMap.get(parentId) : null;
-
-        if (!parent || !parent.userId) {
-            console.warn(`Responsável ou userId não encontrado para o aluno ${student.name}`);
-            return;
-        }
-        
-        const parentUserId = parent.userId;
-
-        const hasInvoiceThisMonth = (invoices || []).some(inv => {
-            const dueDate = new Date(inv.dueDate);
-            return inv.studentId === student.id && 
-                   inv.description === "Mensalidade Transporte" &&
-                   dueDate >= currentMonthStart && 
-                   dueDate <= endOfMonth(currentMonthStart);
+      if (invoicesToCreate.length > 0) {
+        invoicesToCreate.forEach(invoiceData => {
+          addDoc('invoices', invoiceData);
         });
-
-        if (!hasInvoiceThisMonth) {
-            const paymentDay = parent.preferredPaymentDay || 10;
-            const dueDate = set(currentMonthStart, { date: paymentDay });
-
-            const studentFee = student.monthlyFee || 450.00; // Use individual fee or fallback
-            addDoc('invoices', {
-                studentId: student.id,
-                parentUserId: parentUserId,
-                description: "Mensalidade Transporte",
-                amount: studentFee,
-                dueDate: format(dueDate, 'yyyy-MM-dd'),
-                status: 'pending'
-            });
-            generatedCount++;
-        }
-    });
-
-    setIsGenerating(false);
-
-    if (generatedCount > 0) {
         toast({
-            title: 'Faturas Geradas!',
-            description: `${generatedCount} nova(s) fatura(s) foram geradas para este mês.`
+          title: 'Faturas Geradas!',
+          description: `${invoicesToCreate.length} nova(s) fatura(s) foram geradas para este mês.`
         });
-    } else {
+      } else {
         toast({
-            title: 'Nenhuma fatura nova',
-            description: 'Todos os alunos já possuem faturas para o mês corrente.'
+          title: 'Nenhuma fatura nova',
+          description: 'Todos os alunos já possuem faturas para o mês corrente.'
         });
+      }
+    } catch (error) {
+      console.error("Failed to generate invoices:", error);
+      toast({
+        title: 'Erro ao gerar faturas',
+        description: 'Ocorreu um erro ao comunicar com o serviço de geração de faturas.',
+        variant: 'destructive',
+      });
+    } finally {
+      setIsGenerating(false);
     }
   };
   
@@ -755,5 +728,3 @@ function ExpensesTab() {
     </div>
   )
 }
-
-    

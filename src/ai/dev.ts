@@ -5,3 +5,4 @@ config();
 import '@/ai/flows/summarize-incident-reports.ts';
 import '@/ai/flows/optimize-route-ai-assistant.ts';
 import '@/ai/flows/optimizeSchoolVanRoute.ts';
+import '@/ai/flows/generate-monthly-invoices.ts';
