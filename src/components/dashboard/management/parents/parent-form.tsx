@@ -247,14 +247,14 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
             render={({ field }) => (
                 <FormItem>
                 <FormLabel>Dia de Pagamento Preferencial</FormLabel>
-                <Select onValueChange={(value) => field.onChange(value ? parseInt(value) : undefined)} value={field.value?.toString() || ""}>
+                <Select onValueChange={(value) => field.onChange(value === 'none' ? undefined : parseInt(value))} value={field.value?.toString() || ""}>
                     <FormControl>
                     <SelectTrigger>
                         <SelectValue placeholder="Selecione um dia" />
                     </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                    <SelectItem value="">Nenhum (usará o padrão)</SelectItem>
+                    <SelectItem value="none">Nenhum (usará o padrão)</SelectItem>
                     {paymentDays.map(day => (
                         <SelectItem key={day} value={day.toString()}>{day}</SelectItem>
                     ))}
@@ -381,5 +381,3 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
     </DialogContent>
   );
 }
-
-    
