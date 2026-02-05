@@ -4,7 +4,7 @@ import { useState, useMemo } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, Loader2, MoreHorizontal, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt, BellRing } from 'lucide-react';
+import { FilePlus, Loader2, Pencil, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt, BellRing } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -439,7 +439,7 @@ function RevenuesTab() {
                                                     <DropdownMenuTrigger asChild>
                                                         <Button variant="ghost" className="h-8 w-8 p-0">
                                                             <span className="sr-only">Abrir menu</span>
-                                                            <MoreHorizontal className="h-4 w-4" />
+                                                            <Pencil className="h-4 w-4" />
                                                         </Button>
                                                     </DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
@@ -471,7 +471,7 @@ function RevenuesTab() {
                                                 <DropdownMenuTrigger asChild>
                                                     <Button variant="ghost" className="h-8 w-8 p-0 -mt-1 -mr-2">
                                                         <span className="sr-only">Abrir menu</span>
-                                                        <MoreHorizontal className="h-4 w-4" />
+                                                        <Pencil className="h-4 w-4" />
                                                     </Button>
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
@@ -684,7 +684,7 @@ function ExpensesTab() {
                                             <TableCell>R$ {expense.amount.toFixed(2)}</TableCell>
                                             <TableCell className="text-right">
                                                 <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><span className="sr-only">Abrir menu</span><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                    <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><span className="sr-only">Abrir menu</span><Pencil className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                     <DropdownMenuContent align="end">
                                                         <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                                         <DropdownMenuItem onClick={() => handleEdit(expense)}>Editar</DropdownMenuItem>
@@ -703,7 +703,7 @@ function ExpensesTab() {
                                         <div className="flex justify-between items-start">
                                             <p className="font-medium pr-4">{expense.description}</p>
                                             <DropdownMenu>
-                                                <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 -mt-1 -mr-2 flex-shrink-0"><span className="sr-only">Abrir menu</span><MoreHorizontal className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                                                <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0 -mt-1 -mr-2 flex-shrink-0"><span className="sr-only">Abrir menu</span><Pencil className="h-4 w-4" /></Button></DropdownMenuTrigger>
                                                 <DropdownMenuContent align="end">
                                                     <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                                     <DropdownMenuItem onClick={() => handleEdit(expense)}>Editar</DropdownMenuItem>
@@ -740,3 +740,5 @@ function ExpensesTab() {
     </div>
   )
 }
+
+    
