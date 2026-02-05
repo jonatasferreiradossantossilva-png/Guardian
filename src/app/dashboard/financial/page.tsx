@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, Loader2, MoreHorizontal, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt } from 'lucide-react';
+import { FilePlus, Loader2, MoreHorizontal, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt, BellRing } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -293,6 +293,25 @@ function RevenuesTab() {
   const handleSelectStatus = (status: Invoice['status']) => {
       setSelectedStatus(prev => prev === status ? 'all' : status);
   }
+  
+  const handleSendReminders = () => {
+    if (!invoices || !studentsMap.size || !parentUserToNameMap.size) {
+      toast({ title: 'Dados não carregados', description: 'Aguarde os dados de alunos e responsáveis carregarem.', variant: 'destructive'});
+      return;
+    }
+
+    const invoicesToRemind = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
+
+    if (invoicesToRemind.length === 0) {
+      toast({ title: 'Nenhuma pendência encontrada', description: 'Não há faturas pendentes ou vencidas para notificar.' });
+      return;
+    }
+
+    toast({
+      title: 'Simulação Concluída!',
+      description: `${invoicesToRemind.length} lembrete(s) de pagamento seriam enviados para os responsáveis.`,
+    });
+  };
 
   const isLoading = areInvoicesLoading || areStudentsLoading || areParentsLoading;
   
@@ -305,9 +324,13 @@ function RevenuesTab() {
 
   return (
     <div className="space-y-6">
-        <div className="flex justify-end">
+        <div className="flex flex-col sm:flex-row justify-end gap-2">
+            <Button onClick={handleSendReminders} variant="outline" className="w-full sm:w-auto">
+                <BellRing className="mr-2 h-4 w-4" />
+                Simular Lembretes
+            </Button>
             <Button onClick={handleGenerateInvoices} disabled={isGenerating} className="w-full sm:w-auto">
-                {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <FilePlus className="mr-2" />}
+                {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <FilePlus className="mr-2 h-4 w-4" />}
                 Gerar Faturas do Mês
             </Button>
         </div>
