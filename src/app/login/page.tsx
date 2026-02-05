@@ -20,6 +20,7 @@ import {
   User,
   FileText,
   QrCode,
+  BellRing,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -130,7 +131,7 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Sparkles} title="Otimizador de Rotas com IA" description="Crie rotas eficientes em segundos. Reduza custos, tempo e o desgaste da sua frota com nossa IA." />
-                    <FeatureItem icon={DollarSign} title="Gestão Financeira Inteligente" description="Gere faturas mensais, envie recibos automáticos via WhatsApp e defina dias de vencimento personalizados por cliente." />
+                    <FeatureItem icon={DollarSign} title="Gestão Financeira Inteligente" description="Gere faturas mensais, envie lembretes de pagamento e recibos automáticos via WhatsApp, e defina dias de vencimento personalizados por cliente." />
                     <FeatureItem icon={Users} title="Comunicação e Gestão Centralizada" description="Tenha uma visão 360° da sua frota, motoristas, monitores e alunos, com canais de comunicação diretos." />
                   </div>
                 </CardContent>
