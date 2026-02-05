@@ -99,18 +99,18 @@ export default function ReceiptPage() {
     return (
         <div className="bg-secondary min-h-screen p-4 sm:p-8 print:bg-white print:p-0">
              <div className="max-w-2xl mx-auto">
-                <div className="flex justify-between items-center mb-6 print:hidden">
-                    <Button asChild variant="outline" size="icon">
+                <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6 print:hidden">
+                    <Button asChild variant="outline" size="icon" className="self-start sm:self-center">
                         <Link href="/dashboard/financial"><ArrowLeft /></Link>
                     </Button>
-                    <div className="flex gap-2">
-                        <Button variant="outline" onClick={handleShare}><MessageCircle className="mr-2" />Compartilhar</Button>
-                        <Button onClick={handlePrint}><Printer className="mr-2" />Imprimir / Salvar PDF</Button>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                        <Button variant="outline" onClick={handleShare} className="w-full sm:w-auto justify-center"><MessageCircle className="mr-2" />Compartilhar</Button>
+                        <Button onClick={handlePrint} className="w-full sm:w-auto justify-center"><Printer className="mr-2" />Imprimir / Salvar PDF</Button>
                     </div>
                 </div>
 
                 <Card className="shadow-lg print:shadow-none print:border-none">
-                    <CardHeader className="bg-muted/30 p-8 rounded-t-lg">
+                    <CardHeader className="bg-muted/30 p-4 md:p-6 lg:p-8 rounded-t-lg">
                         <div className="flex flex-col sm:flex-row justify-between gap-4">
                             <div className="flex items-center gap-4">
                                 <Rocket className="h-10 w-10 text-primary" />
@@ -125,7 +125,7 @@ export default function ReceiptPage() {
                             </div>
                         </div>
                     </CardHeader>
-                    <CardContent className="p-8 space-y-6">
+                    <CardContent className="p-4 md:p-6 lg:p-8 space-y-6">
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                             <div>
                                 <h3 className="text-sm font-semibold text-muted-foreground mb-2">PAGO POR</h3>
