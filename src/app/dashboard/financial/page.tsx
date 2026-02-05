@@ -143,6 +143,9 @@ function RevenuesTab() {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isReminderAlertOpen, setIsReminderAlertOpen] = useState(false);
+  const [reminders, setReminders] = useState<{ parentName: string; studentName: string }[]>([]);
+
 
   // State for filters
   const [selectedStudentId, setSelectedStudentId] = useState<string>('all');
@@ -299,19 +302,31 @@ function RevenuesTab() {
       toast({ title: 'Dados não carregados', description: 'Aguarde os dados de alunos e responsáveis carregarem.', variant: 'destructive'});
       return;
     }
-
+  
     const invoicesToRemind = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
-
+  
     if (invoicesToRemind.length === 0) {
       toast({ title: 'Nenhuma pendência encontrada', description: 'Não há faturas pendentes ou vencidas para notificar.' });
       return;
     }
+  
+    const reminderDetails = invoicesToRemind.map(inv => ({
+      parentName: parentUserToNameMap.get(inv.parentUserId) || 'Responsável desconhecido',
+      studentName: studentsMap.get(inv.studentId) || 'Aluno desconhecido'
+    }));
 
-    toast({
-      title: 'Simulação Concluída!',
-      description: `${invoicesToRemind.length} lembrete(s) de pagamento seriam enviados para os responsáveis.`,
-    });
+    setReminders(reminderDetails);
+    setIsReminderAlertOpen(true);
   };
+  
+  const confirmSendReminders = () => {
+    setIsReminderAlertOpen(false);
+    toast({
+        title: 'Simulação Concluída!',
+        description: `${reminders.length} lembrete(s) de pagamento seriam enviados para os responsáveis.`,
+    });
+    setReminders([]);
+  }
 
   const isLoading = areInvoicesLoading || areStudentsLoading || areParentsLoading;
   
@@ -327,7 +342,7 @@ function RevenuesTab() {
         <div className="flex flex-col sm:flex-row justify-end gap-2">
             <Button onClick={handleSendReminders} variant="outline" className="w-full sm:w-auto">
                 <BellRing className="mr-2 h-4 w-4" />
-                Simular Lembretes
+                Enviar Lembretes de Pagamento
             </Button>
             <Button onClick={handleGenerateInvoices} disabled={isGenerating} className="w-full sm:w-auto">
                 {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <FilePlus className="mr-2 h-4 w-4" />}
@@ -513,6 +528,23 @@ function RevenuesTab() {
                 )}
             </CardContent>
         </Card>
+         <AlertDialog open={isReminderAlertOpen} onOpenChange={setIsReminderAlertOpen}>
+            <AlertDialogContent>
+                <AlertDialogHeader>
+                    <AlertDialogTitle>Simular Envio de Lembretes?</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        A ação a seguir enviaria uma notificação de lembrete para os {reminders.length} responsáveis a seguir:
+                        <ul className="mt-2 list-disc list-inside text-xs max-h-40 overflow-y-auto">
+                            {reminders.map((r, i) => <li key={i}><b>{r.parentName}</b> (responsável por {r.studentName})</li>)}
+                        </ul>
+                    </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                    <AlertDialogAction onClick={confirmSendReminders}>Sim, Enviar Lembretes</AlertDialogAction>
+                </AlertDialogFooter>
+            </AlertDialogContent>
+        </AlertDialog>
     </div>
   )
 }
