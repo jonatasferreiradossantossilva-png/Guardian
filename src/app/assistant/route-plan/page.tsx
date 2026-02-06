@@ -1,6 +1,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, memo, useCallback } from 'react';
@@ -52,6 +53,7 @@ interface Student {
   street?: string;
   number?: string;
   neighborhood?: string;
+  active?: boolean;
 }
 
 const statusText: Record<StudentStatus, string> = {
@@ -181,7 +183,7 @@ export default function AssistantRoutePlanPage() {
     return route.studentIds
       .map((id) => studentMap.get(id))
       .filter((s): s is Student => {
-        if (!s) return false;
+        if (!s || s.active === false) return false;
         if (s.shift === 'Integral') return true;
         return s.shift === selectedShift;
       });

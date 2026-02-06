@@ -2,6 +2,7 @@
 
 
 
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -38,6 +39,7 @@ interface Student {
   neighborhood?: string;
   city?: string;
   state?: string;
+  active?: boolean;
 }
 interface Parent {
     id: string;
@@ -463,6 +465,7 @@ export default function ParentTrackingPage() {
                                     variant="secondary"
                                     className="w-full"
                                     onClick={handleConfirmPresence}
+                                    disabled={student.active === false}
                                 >
                                     <CheckCircle className="mr-2 h-4 w-4" /> Desfazer Ausência
                                 </Button>
@@ -476,7 +479,7 @@ export default function ParentTrackingPage() {
                                     variant="destructive"
                                     className="w-full"
                                     onClick={handleCommunicateAbsence}
-                                    disabled={student.status !== 'aguardando'}
+                                    disabled={student.status !== 'aguardando' || student.active === false}
                                 >
                                     <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje
                                 </Button>

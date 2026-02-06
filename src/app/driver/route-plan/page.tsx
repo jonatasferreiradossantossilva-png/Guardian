@@ -3,6 +3,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -71,6 +72,7 @@ interface Student {
   neighborhood?: string;
   city?: string;
   state?: string;
+  active?: boolean;
 }
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -390,7 +392,7 @@ export default function DriverRoutePlanPage() {
       return route.studentIds
         .map(id => studentMap.get(id))
         .filter((s): s is Student => {
-          if (!s) return false;
+          if (!s || s.active === false) return false;
           // The main `shift` state determines if it's the morning or afternoon trip
           if (s.shift === 'Integral') return true;
           return s.shift === shift;
