@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMemo, useState, useEffect } from 'react';
+import { useMemo, useState } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
@@ -71,12 +71,15 @@ export function RouteForm({
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
 
+  // Initialize state directly from props.
+  // The parent component is responsible for remounting this component with a `key` prop.
   const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
+    // Initialize form directly from props.
     defaultValues: {
       name: route?.name || '',
       driverId: route?.driverId || '',
@@ -163,6 +166,7 @@ export function RouteForm({
   }
 
   const onSubmit = (data: RouteFormValues) => {
+    // Combine form data with the managed student list state
     const finalData = { ...data, studentIds: currentStudentIds };
     if (!finalData.monitorId || finalData.monitorId === 'none') {
         delete (finalData as Partial<typeof finalData>).monitorId;
