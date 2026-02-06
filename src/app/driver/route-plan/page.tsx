@@ -4,6 +4,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -73,6 +74,8 @@ interface Student {
   city?: string;
   state?: string;
   active?: boolean;
+  serie?: string;
+  turma?: string;
 }
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -95,13 +98,18 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
     <Card className="w-full shadow-lg border-primary/20">
       <CardHeader>
         <CardDescription>Próxima Parada</CardDescription>
-        <CardTitle className="flex items-center gap-3 text-2xl">
-          <Avatar className="h-12 w-12">
-            <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
-            <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-          </Avatar>
-          {student.name}
-          <Badge variant="secondary" className="text-sm font-medium self-center">{student.shift}</Badge>
+        <CardTitle className="flex items-start gap-3 text-2xl">
+            <Avatar className="h-12 w-12 flex-shrink-0">
+                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
+                <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-grow">
+                <span>{student.name}</span>
+                {[student.serie, student.turma].filter(Boolean).length > 0 && (
+                  <p className="text-base font-medium text-muted-foreground">{[student.serie, student.turma].filter(Boolean).join(' - ')}</p>
+                )}
+            </div>
+            <Badge variant="secondary" className="text-sm font-medium self-center">{student.shift}</Badge>
         </CardTitle>
         <p className="text-sm text-muted-foreground pt-1">
           {student.street ? `${student.street}, ${student.number}` : 'Endereço não disponível'}
@@ -156,11 +164,16 @@ const UpcomingStopsList = ({ students }) => {
             {students.map((student, index) => (
                 <li key={student.id} className="flex items-center gap-3 p-2 rounded-md bg-secondary/50">
                     <div className="flex-shrink-0 w-5 text-center text-xs font-mono text-muted-foreground">{index + 2}.</div>
-                    <Avatar className="h-7 w-7">
+                    <Avatar className="h-8 w-8">
                         <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/40/40`} alt={student.name} />
                         <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    <p className="text-sm font-medium truncate flex-1">{student.name}</p>
+                    <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{student.name}</p>
+                        {[student.serie, student.turma].filter(Boolean).length > 0 && (
+                            <p className="text-xs text-muted-foreground truncate">{[student.serie, student.turma].filter(Boolean).join(' - ')}</p>
+                        )}
+                    </div>
                     <Badge variant="outline" className="font-normal text-xs">{student.shift}</Badge>
                 </li>
             ))}

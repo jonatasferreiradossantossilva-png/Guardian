@@ -52,6 +52,8 @@ const formSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   active: z.boolean().default(true),
+  serie: z.string().optional(),
+  turma: z.string().optional(),
 });
 
 type StudentFormValues = z.infer<typeof formSchema>;
@@ -104,6 +106,8 @@ export function StudentForm({
       city: '',
       state: '',
       active: true,
+      serie: '',
+      turma: '',
     },
   });
 
@@ -414,6 +418,35 @@ export function StudentForm({
               </FormItem>
             )}
           />
+
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="serie"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Série (Opcional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: 5º Ano" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="turma"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Turma/Sala (Opcional)</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ex: B" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField

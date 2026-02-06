@@ -44,7 +44,7 @@ type Student = {
   name: string;
   schoolId: string;
   parentId: string;
-  shift: 'Manhã' | 'Tarde';
+  shift: 'Manhã' | 'Tarde' | 'Integral';
   status: string;
   street?: string;
   number?: string;
@@ -52,6 +52,8 @@ type Student = {
   state?: string;
   monthlyFee?: number;
   active?: boolean;
+  serie?: string;
+  turma?: string;
 };
 type School = { id: string; name: string };
 type Parent = { id: string; name: string };
@@ -123,6 +125,10 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
     if (!student.street) return 'N/A';
     return `${student.street}, ${student.number} - ${student.city}, ${student.state}`;
   }
+  
+  const formatSerieTurma = (student: Student) => {
+      return [student.serie, student.turma].filter(Boolean).join(' / ') || 'N/A';
+  }
 
   return (
     <div>
@@ -162,6 +168,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                   <TableHead>Escola</TableHead>
                   <TableHead>Responsável</TableHead>
                   <TableHead>Turno</TableHead>
+                  <TableHead>Série/Turma</TableHead>
                   <TableHead>Status (Embarque)</TableHead>
                   <TableHead>Situação</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
@@ -170,7 +177,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center h-24">
+                    <TableCell colSpan={8} className="text-center h-24">
                       Carregando...
                     </TableCell>
                   </TableRow>
@@ -190,6 +197,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                       <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
                       <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
                       <TableCell><Badge variant="outline">{student.shift}</Badge></TableCell>
+                      <TableCell>{formatSerieTurma(student)}</TableCell>
                       <TableCell><Badge variant="secondary" className="capitalize">{student.status}</Badge></TableCell>
                        <TableCell>
                         <Badge variant={student.active !== false ? 'default' : 'secondary'} className={student.active !== false ? 'bg-green-600' : ''}>
@@ -197,32 +205,16 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                          <div className="flex items-center justify-end gap-2">
-                            <Button variant="outline" size="sm" onClick={() => handleEdit(student)}>
+                          <Button variant="outline" size="sm" onClick={() => handleEdit(student)}>
                                 <Edit className="mr-2 h-4 w-4" /> Editar
                             </Button>
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" className="h-8 w-8 p-0">
-                                        <span className="sr-only">Mais Ações</span>
-                                        <MoreHorizontal className="h-4 w-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                    <DropdownMenuLabel>Mais Ações</DropdownMenuLabel>
-                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(student)}>
-                                        <Trash2 className="mr-2 h-4 w-4" /> Deletar
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
-                        </div>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   !isLoading && (
                     <TableRow>
-                      <TableCell colSpan={7} className="text-center h-24">
+                      <TableCell colSpan={8} className="text-center h-24">
                         Nenhum aluno cadastrado.
                       </TableCell>
                     </TableRow>
@@ -260,6 +252,10 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                         <div>
                             <p className="text-muted-foreground text-xs">Turno</p>
                             <Badge variant="outline" className="mt-1">{student.shift}</Badge>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Série/Turma</p>
+                            <p className="font-medium mt-1">{formatSerieTurma(student)}</p>
                         </div>
                         <div>
                             <p className="text-muted-foreground text-xs">Situação</p>
