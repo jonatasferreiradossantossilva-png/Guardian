@@ -3,6 +3,7 @@
 
 
 
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -479,7 +480,7 @@ export default function ParentTrackingPage() {
                                     variant="destructive"
                                     className="w-full"
                                     onClick={handleCommunicateAbsence}
-                                    disabled={student.status !== 'aguardando' || student.active === false}
+                                    disabled={student.active === false}
                                 >
                                     <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje
                                 </Button>
