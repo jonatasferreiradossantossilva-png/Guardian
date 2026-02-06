@@ -5,6 +5,7 @@
 
 
 
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -17,7 +18,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText, LocateFixed, QrCode, RefreshCcw } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText, LocateFixed, QrCode } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -108,7 +109,7 @@ function haversineDistance(coords1, coords2) {
   const dLat = toRad(coords2.lat - coords1.lat);
   const dLon = toRad(coords2.lng - coords1.lng);
   const lat1 = toRad(coords1.lat);
-  const lat2 = toRad(coords2.lat);
+  const lat2 = toRad(coords1.lat);
 
   const a =
     Math.sin(dLat / 2) * Math.sin(dLat / 2) +
@@ -398,16 +399,6 @@ export default function ParentTrackingPage() {
       description: "Sua mensagem foi gerada para ser enviada no WhatsApp.",
     });
   }, [student, displayLocation, toast]);
-  
-  const handleResetStatus = useCallback(() => {
-    if (!student) return;
-    updateDoc('students', student.id, { status: 'aguardando' });
-    toast({
-        title: "Status Resetado!",
-        description: `O status de ${student.name} foi resetado para 'Aguardando' para fins de simulação.`,
-    });
-  }, [student, updateDoc, toast]);
-
 
   const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading || isDriverLoading;
   const studentStatus = student?.status || 'aguardando';
@@ -476,7 +467,6 @@ export default function ParentTrackingPage() {
                                     variant="secondary"
                                     className="w-full"
                                     onClick={handleConfirmPresence}
-                                    disabled={student.active === false}
                                 >
                                     <CheckCircle className="mr-2 h-4 w-4" /> Desfazer Ausência
                                 </Button>
@@ -504,9 +494,6 @@ export default function ParentTrackingPage() {
                         <CardTitle>Ações Rápidas</CardTitle>
                     </CardHeader>
                      <CardContent className="flex flex-col gap-2">
-                         <Button onClick={handleResetStatus} variant="outline" className="w-full justify-start">
-                            <RefreshCcw className="mr-2 h-4 w-4" /> Resetar Status (Simulação)
-                        </Button>
                         <Button asChild variant="outline" className="w-full justify-start">
                             <Link href="/parent/qrcode">
                                 <QrCode className="mr-2 h-4 w-4" /> Meu QR Code
@@ -610,4 +597,5 @@ export default function ParentTrackingPage() {
 }
 
     
+
 
