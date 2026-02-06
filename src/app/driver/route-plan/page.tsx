@@ -5,6 +5,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -144,7 +145,7 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
             </Button>
             <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={onShareRoute}>
                 <Share2 className="h-5 w-5"/>
-                <span>Comp. Local</span>
+                <span>Partilhar</span>
             </Button>
        </CardFooter>
     </Card>
@@ -339,7 +340,7 @@ export default function DriverRoutePlanPage() {
   useEffect(() => {
     // In a real app, you'd get this from your auth state.
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || "user-admin-1"); 
+    setMockUserId(storedUserId || "user-motorista-2"); 
     const storedActiveRouteId = sessionStorage.getItem('activeRouteId');
     setActiveRouteId(storedActiveRouteId);
   }, []);
