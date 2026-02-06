@@ -83,21 +83,13 @@ export function RouteForm({
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: defaultFormValues,
-  });
-
-  useEffect(() => {
-    if (route) {
-      form.reset({
+    defaultValues: route ? {
         name: route.name || '',
         driverId: route.driverId || '',
         monitorId: route.monitorId || '',
         studentIds: route.studentIds || [],
-      });
-    } else {
-      form.reset(defaultFormValues);
-    }
-  }, [route, form]);
+    } : defaultFormValues,
+  });
 
   const studentIdsInForm = form.watch('studentIds');
   const driverId = form.watch('driverId');

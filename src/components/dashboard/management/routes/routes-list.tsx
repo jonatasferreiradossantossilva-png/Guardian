@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -144,6 +145,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             </Button>
           </DialogTrigger>
           <RouteForm
+            key={selectedRoute?.id || 'new-route'}
             route={selectedRoute || undefined} 
             drivers={drivers || []}
             students={students || []}
