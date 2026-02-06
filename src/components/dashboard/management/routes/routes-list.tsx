@@ -337,5 +337,3 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     </div>
   );
 }
-
-    

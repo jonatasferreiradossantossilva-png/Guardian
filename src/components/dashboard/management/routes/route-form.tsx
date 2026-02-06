@@ -81,14 +81,18 @@ export function RouteForm({
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
 
-  const form = useForm<RouteFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: route ? {
+  const memoizedDefaultValues = useMemo(() => {
+    return route ? {
         name: route.name || '',
         driverId: route.driverId || '',
         monitorId: route.monitorId || '',
         studentIds: route.studentIds || [],
-    } : defaultFormValues,
+    } : defaultFormValues;
+  }, [route]);
+
+  const form = useForm<RouteFormValues>({
+    resolver: zodResolver(formSchema),
+    defaultValues: memoizedDefaultValues,
   });
 
   const studentIdsInForm = form.watch('studentIds');
