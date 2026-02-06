@@ -71,15 +71,12 @@ export function RouteForm({
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
 
-  // Initialize state directly from props.
-  // The parent component is responsible for remounting this component with a `key` prop.
-  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
+  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(() => route?.studentIds || []);
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
-    // Initialize form directly from props.
     defaultValues: {
       name: route?.name || '',
       driverId: route?.driverId || '',
@@ -107,7 +104,7 @@ export function RouteForm({
     const studentMap = new Map(students.map(s => [s.id, s]));
     const studentsInCurrentRoute = currentStudentIds
         .map(id => studentMap.get(id))
-        .filter(Boolean);
+        .filter(Boolean) as Student[];
 
     const availableStudents = students.filter(s => {
         const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
@@ -140,8 +137,9 @@ export function RouteForm({
 
   const moveInRoute = (studentId: string, direction: 'up' | 'down') => {
     const index = currentStudentIds.indexOf(studentId);
-    const newList = [...currentStudentIds];
+    if (index === -1) return;
 
+    const newList = [...currentStudentIds];
     if (direction === 'up' && index > 0) {
         [newList[index - 1], newList[index]] = [newList[index], newList[index-1]];
         setCurrentStudentIds(newList);
@@ -152,13 +150,15 @@ export function RouteForm({
   };
   
   const toggleSelection = (id: string) => {
-    const newSet = new Set(selectedAvailable);
-    if (newSet.has(id)) {
-        newSet.delete(id);
-    } else {
-        newSet.add(id);
-    }
-    setSelectedAvailable(newSet);
+    setSelectedAvailable(prev => {
+        const newSet = new Set(prev);
+        if (newSet.has(id)) {
+            newSet.delete(id);
+        } else {
+            newSet.add(id);
+        }
+        return newSet;
+    });
   };
 
   const removeStudentFromRoute = (studentId: string) => {
@@ -212,7 +212,7 @@ export function RouteForm({
               <FormField control={form.control} name="monitorId" render={({ field }) => (
                   <FormItem>
                       <FormLabel>Monitor</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || ''}>
+                      <Select onValueChange={field.onChange} value={field.value || 'none'}>
                           <FormControl>
                               <SelectTrigger>
                                   <SelectValue placeholder="Selecione um monitor (opcional)" />
