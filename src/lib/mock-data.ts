@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 // This file contains mock data for the presentation mode.
 
@@ -288,8 +289,8 @@ export const initialMockData = {
         { id: "driver-7", userId: "user-motorista-7", name: "Cristina Borges", status: "inativo", active: true, vehicleId: "vehicle-7", cpf: "777.888.999-00" },
     ],
     students: [
-        { id: "student-1", name: "Lucas Pereira", schoolId: "school-2", parentId: "parent-1", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.545, longitude: -46.638, street: "Rua A", number: "10", neighborhood: "Bela Vista", city: "São Paulo", state: "SP", zipCode: "01311-000", monthlyFee: 450.00 },
-        { id: "student-2", name: "Beatriz Costa", schoolId: "school-2", parentId: "parent-2", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.555, longitude: -46.640, street: "Rua B", number: "20", neighborhood: "Consolação", city: "São Paulo", state: "SP", zipCode: "01220-010", monthlyFee: 480.50 },
+        { id: "student-1", name: "Lucas Pereira", schoolId: "school-2", parentId: "parent-1", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.545, longitude: -46.638, street: "Rua A", number: "10", neighborhood: "Bela Vista", city: "São Paulo", state: "SP", zipCode: "01311-000", monthlyFee: 450.00, serie: "3º Ano A", turma: "Sala 5" },
+        { id: "student-2", name: "Beatriz Costa", schoolId: "school-2", parentId: "parent-2", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.555, longitude: -46.640, street: "Rua B", number: "20", neighborhood: "Consolação", city: "São Paulo", state: "SP", zipCode: "01220-010", monthlyFee: 480.50, serie: "4º Ano C", turma: "Sala 8" },
         { id: "student-3", name: "Fernando Lima", schoolId: "school-2", parentId: "parent-1", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.560, longitude: -46.630, street: "Rua C", number: "30", neighborhood: "Liberdade", city: "São Paulo", state: "SP", zipCode: "01504-001", monthlyFee: 420.00 },
         { id: "student-4", name: "Sofia Martins", schoolId: "school-2", parentId: "parent-2", routeId: "route-1", shift: "Tarde", status: "aguardando", active: true, latitude: -23.565, longitude: -46.650, street: "Rua D", number: "40", neighborhood: "Aclimação", city: "São Paulo", state: "SP", zipCode: "01529-000", monthlyFee: 500.00 },
         { id: "student-5", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.570, longitude: -46.660, street: "Rua E", number: "50", neighborhood: "Paraíso", city: "São Paulo", state: "SP", zipCode: "04004-040", monthlyFee: 450.00 },
@@ -575,6 +576,7 @@ export const initialMockData = {
 
     
     
+
 
 
 
