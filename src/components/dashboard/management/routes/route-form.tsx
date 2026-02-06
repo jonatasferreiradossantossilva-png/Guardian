@@ -71,9 +71,9 @@ export function RouteForm({
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
 
+  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
-  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>([]);
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
@@ -83,16 +83,6 @@ export function RouteForm({
       monitorId: route?.monitorId || '',
     },
   });
-
-  useEffect(() => {
-    setCurrentStudentIds(route?.studentIds || []);
-    form.reset({
-      name: route?.name || '',
-      driverId: route?.driverId || '',
-      monitorId: route?.monitorId || '',
-    });
-  }, [route, form]);
-
 
   const driverId = form.watch('driverId');
 
