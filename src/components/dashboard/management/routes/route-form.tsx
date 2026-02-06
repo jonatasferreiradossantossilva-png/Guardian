@@ -31,7 +31,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
@@ -71,10 +71,10 @@ export function RouteForm({
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
 
-  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(() => route?.studentIds || []);
+  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
-
+  
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -84,7 +84,17 @@ export function RouteForm({
     },
   });
 
-  const driverId = form.watch('driverId');
+  const [driverId, setDriverId] = useState(form.getValues('driverId'));
+
+  useEffect(() => {
+    const subscription = form.watch((value, { name }) => {
+      if (name === 'driverId') {
+        setDriverId(value.driverId);
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form.watch]);
+
 
   const { vehicle, vehicleCapacity } = useMemo(() => {
     if (!driverId || !drivers || !vehicles) return { vehicle: null, vehicleCapacity: Infinity };
