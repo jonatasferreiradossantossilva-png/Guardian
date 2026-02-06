@@ -61,6 +61,13 @@ interface RouteFormProps {
   onFormSubmit: () => void;
 }
 
+const defaultFormValues: RouteFormValues = {
+    name: '',
+    driverId: '',
+    monitorId: '',
+    studentIds: [],
+};
+
 export function RouteForm({
   route,
   drivers,
@@ -76,12 +83,7 @@ export function RouteForm({
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      driverId: '',
-      monitorId: '',
-      studentIds: [],
-    },
+    defaultValues: defaultFormValues,
   });
 
   useEffect(() => {
@@ -93,14 +95,9 @@ export function RouteForm({
         studentIds: route.studentIds || [],
       });
     } else {
-      form.reset({
-        name: '',
-        driverId: '',
-        monitorId: '',
-        studentIds: [],
-      });
+      form.reset(defaultFormValues);
     }
-  }, [route]);
+  }, [route, form]);
 
   const studentIdsInForm = form.watch('studentIds');
   const driverId = form.watch('driverId');
