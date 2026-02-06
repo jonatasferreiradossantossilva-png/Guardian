@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -10,8 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   Dialog,
   DialogTrigger,
@@ -141,32 +142,30 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                       <TableCell>{vehicle.licensePlate}</TableCell>
                       <TableCell>{vehicle.capacity}</TableCell>
                       <TableCell>
-                        <Badge variant={vehicle.active ? 'default' : 'destructive'}>
+                        <Badge variant={vehicle.active ? 'default' : 'secondary'} className={vehicle.active ? 'bg-green-600' : ''}>
                           {vehicle.active ? 'Ativo' : 'Inativo'}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(vehicle)}>
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(vehicle)}
-                            >
-                              Deletar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex items-center justify-end gap-2">
+                           <Button variant="outline" size="sm" onClick={() => handleEdit(vehicle)}>
+                               <Edit className="mr-2 h-4 w-4" /> Editar
+                           </Button>
+                           <DropdownMenu>
+                               <DropdownMenuTrigger asChild>
+                                   <Button variant="ghost" className="h-8 w-8 p-0">
+                                       <span className="sr-only">Mais Ações</span>
+                                       <MoreHorizontal className="h-4 w-4" />
+                                   </Button>
+                               </DropdownMenuTrigger>
+                               <DropdownMenuContent align="end">
+                                   <DropdownMenuLabel>Mais Ações</DropdownMenuLabel>
+                                   <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(vehicle)}>
+                                       <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                                   </DropdownMenuItem>
+                               </DropdownMenuContent>
+                           </DropdownMenu>
+                       </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -188,39 +187,35 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
             {!isLoading && vehicles && vehicles.length > 0 ? (
               <div className="space-y-4">
                 {vehicles.map((vehicle) => (
-                  <Card key={vehicle.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                      <div>
-                        <p className="font-medium">{vehicle.model}</p>
-                        <p className="text-xs text-muted-foreground">Placa: {vehicle.licensePlate}</p>
-                      </div>
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(vehicle)}>Editar</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(vehicle)}>Deletar</DropdownMenuItem>
-                          </DropdownMenuContent>
-                      </DropdownMenu>
+                  <Card key={vehicle.id} className="overflow-hidden">
+                    <div className="p-4">
+                        <div className="flex items-start justify-between">
+                        <div>
+                            <p className="font-medium">{vehicle.model}</p>
+                            <p className="text-xs text-muted-foreground">Placa: {vehicle.licensePlate}</p>
+                        </div>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-muted-foreground text-xs">Capacidade</p>
+                            <p className="font-medium">{vehicle.capacity} passageiros</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Status</p>
+                            <Badge variant={vehicle.active ? 'default' : 'secondary'} className={vehicle.active ? 'mt-1 bg-green-600' : 'mt-1'}>
+                            {vehicle.active ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                        </div>
+                        </div>
                     </div>
-                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                       <div>
-                        <p className="text-muted-foreground text-xs">Capacidade</p>
-                        <p className="font-medium">{vehicle.capacity} passageiros</p>
-                      </div>
-                       <div>
-                        <p className="text-muted-foreground text-xs">Status</p>
-                         <Badge variant={vehicle.active ? 'default' : 'destructive'} className="mt-1">
-                          {vehicle.active ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </div>
-                    </div>
+                     <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(vehicle)}>
+                            <Edit className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(vehicle)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                        </Button>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>

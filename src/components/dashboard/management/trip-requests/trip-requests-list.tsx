@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -10,8 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, MoreHorizontal, X, Clock, Info, DollarSign } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Check, MoreHorizontal, X, Clock, Info, DollarSign, Edit } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -272,62 +273,58 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                   const parentName = parentInfo?.name || 'Responsável não encontrado';
                   const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
                    return (
-                      <Card key={request.id} className="p-4">
-                        <div className="flex items-start justify-between">
-                          <div className="flex items-center gap-3">
-                             <Avatar>
-                                <AvatarImage src={`https://picsum.photos/seed/student-${request.studentId}/100/100`} />
-                                <AvatarFallback>{(studentName || '?')[0]}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                              <p className="font-medium">{studentName}</p>
-                              <p className="text-xs text-muted-foreground">{parentName}</p>
+                      <Card key={request.id} className="overflow-hidden">
+                        <div className="p-4">
+                            <div className="flex items-start justify-between">
+                            <div className="flex items-center gap-3">
+                                <Avatar>
+                                    <AvatarImage src={`https://picsum.photos/seed/student-${request.studentId}/100/100`} />
+                                    <AvatarFallback>{(studentName || '?')[0]}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                <p className="font-medium">{studentName}</p>
+                                <p className="text-xs text-muted-foreground">{parentName}</p>
+                                </div>
                             </div>
-                          </div>
-                          <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                              <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2" disabled={request.status === 'aprovada' || request.status === 'rejeitada'}>
-                                <span className="sr-only">Abrir menu</span>
-                                <MoreHorizontal className="h-4 w-4" />
-                              </Button>
-                            </DropdownMenuTrigger>
-                             <DropdownMenuContent align="end">
-                               <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                               <DropdownMenuItem onClick={() => handleStatusChange(request.id, 'aprovada')} disabled={request.status !== 'pendente'}>
-                                  <Check className="mr-2" /> Aprovar Direto
-                               </DropdownMenuItem>
-                               <DropdownMenuItem onClick={() => setPriceDialogRequest(request)} disabled={request.status !== 'pendente'}>
-                                   <DollarSign className="mr-2" /> Atribuir Valor
-                               </DropdownMenuItem>
-                               <DropdownMenuSeparator />
-                               <DropdownMenuItem className="text-red-600" onClick={() => handleStatusChange(request.id, 'rejeitada')}>
-                                  <X className="mr-2"/> Rejeitar
-                               </DropdownMenuItem>
-                          </DropdownMenuContent>
-                          </DropdownMenu>
+                            </div>
+                            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                            <div className="col-span-2">
+                                <p className="text-muted-foreground text-xs">Tipo</p>
+                                <p className="font-medium">{typeMap[request.type]}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground text-xs">Data</p>
+                                <p className="font-medium">{request.date.split('-').reverse().join('/')}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground text-xs">Status</p>
+                                <Badge variant={statusVariantMap[request.status]} className="capitalize mt-1">{statusTextMap[request.status]}</Badge>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground text-xs">Escola</p>
+                                <p className="font-medium">{schoolName}</p>
+                            </div>
+                            <div>
+                                <p className="text-muted-foreground text-xs">Valor</p>
+                                <p className="font-medium">{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</p>
+                            </div>
+                            </div>
                         </div>
-                         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                           <div className="col-span-2">
-                            <p className="text-muted-foreground text-xs">Tipo</p>
-                            <p className="font-medium">{typeMap[request.type]}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground text-xs">Data</p>
-                            <p className="font-medium">{request.date.split('-').reverse().join('/')}</p>
-                          </div>
-                           <div>
-                            <p className="text-muted-foreground text-xs">Status</p>
-                            <Badge variant={statusVariantMap[request.status]} className="capitalize mt-1">{statusTextMap[request.status]}</Badge>
-                          </div>
-                           <div>
-                            <p className="text-muted-foreground text-xs">Escola</p>
-                            <p className="font-medium">{schoolName}</p>
-                          </div>
-                          <div>
-                            <p className="text-muted-foreground text-xs">Valor</p>
-                            <p className="font-medium">{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</p>
-                          </div>
-                        </div>
+                        {request.status === 'pendente' && (
+                             <CardFooter className="p-2 bg-secondary/50 border-t flex flex-col gap-2">
+                                <Button size="sm" className="w-full" onClick={() => setPriceDialogRequest(request)}>
+                                    <DollarSign className="mr-2 h-4 w-4" /> Atribuir Valor
+                                </Button>
+                                <div className="flex gap-2 w-full">
+                                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleStatusChange(request.id, 'aprovada')}>
+                                        <Check className="mr-2 h-4 w-4" /> Aprovar
+                                    </Button>
+                                    <Button size="sm" variant="destructive" className="w-full" onClick={() => handleStatusChange(request.id, 'rejeitada')}>
+                                        <X className="mr-2 h-4 w-4" /> Rejeitar
+                                    </Button>
+                                </div>
+                            </CardFooter>
+                        )}
                       </Card>
                    )
                 })}

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -10,14 +11,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -145,27 +145,25 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
                           <Badge variant="secondary">{profileMap[message.for] || message.for}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(message)}>
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(message)}
-                            >
-                              Deletar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                        <div className="flex items-center justify-end gap-2">
+                           <Button variant="outline" size="sm" onClick={() => handleEdit(message)}>
+                               <Edit className="mr-2 h-4 w-4" /> Editar
+                           </Button>
+                           <DropdownMenu>
+                               <DropdownMenuTrigger asChild>
+                                   <Button variant="ghost" className="h-8 w-8 p-0">
+                                       <span className="sr-only">Mais Ações</span>
+                                       <MoreHorizontal className="h-4 w-4" />
+                                   </Button>
+                               </DropdownMenuTrigger>
+                               <DropdownMenuContent align="end">
+                                   <DropdownMenuLabel>Mais Ações</DropdownMenuLabel>
+                                   <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(message)}>
+                                       <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                                   </DropdownMenuItem>
+                               </DropdownMenuContent>
+                           </DropdownMenu>
+                       </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -187,27 +185,23 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
             {!isLoading && messages && messages.length > 0 ? (
               <div className="space-y-4">
                 {messages.map((message) => (
-                  <Card key={message.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                       <p className="font-medium pr-4">{message.text}</p>
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(message)}>Editar</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(message)}>Deletar</DropdownMenuItem>
-                          </DropdownMenuContent>
-                      </DropdownMenu>
+                  <Card key={message.id} className="overflow-hidden">
+                    <div className="p-4">
+                        <div className="flex items-start justify-between">
+                            <p className="font-medium pr-4">{message.text}</p>
+                        </div>
+                        <div className="mt-2 text-sm">
+                            <Badge variant="secondary">{profileMap[message.for] || message.for}</Badge>
+                        </div>
                     </div>
-                     <div className="mt-2 text-sm">
-                        <Badge variant="secondary">{profileMap[message.for] || message.for}</Badge>
-                    </div>
+                    <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(message)}>
+                            <Edit className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(message)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                        </Button>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>
@@ -234,5 +228,3 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
     </div>
   );
 }
-
-    

@@ -11,8 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
   DropdownMenu,
@@ -197,27 +197,25 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                          <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
+                          <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleEdit(student)}>
+                                <Edit className="mr-2 h-4 w-4" /> Editar
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(student)}>
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(student)}
-                            >
-                              Deletar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Mais Ações</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Mais Ações</DropdownMenuLabel>
+                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(student)}>
+                                        <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -239,50 +237,46 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
             {!isLoading && students && students.length > 0 ? (
               <div className="space-y-4">
                 {students.map((student) => (
-                  <Card key={student.id} className="p-4">
-                    <div className="flex items-start justify-between">
-                       <div className="flex items-center gap-3">
-                          <Avatar>
-                            <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
-                            <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                          </Avatar>
-                          <p className="font-medium">{student.name}</p>
+                  <Card key={student.id} className="overflow-hidden">
+                    <div className="p-4">
+                        <div className="flex items-start justify-between">
+                        <div className="flex items-center gap-3">
+                            <Avatar>
+                                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
+                                <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            </Avatar>
+                            <p className="font-medium">{student.name}</p>
+                            </div>
                         </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0 flex-shrink-0 -mt-1 -mr-2">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(student)}>Editar</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(student)}>Deletar</DropdownMenuItem>
-                          </DropdownMenuContent>
-                      </DropdownMenu>
+                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-muted-foreground text-xs">Escola</p>
+                            <p className="font-medium">{schoolsMap.get(student.schoolId) || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Responsável</p>
+                            <p className="font-medium">{parentsMap.get(student.parentId) || 'N/A'}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Turno</p>
+                            <Badge variant="outline" className="mt-1">{student.shift}</Badge>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Situação</p>
+                            <Badge variant={student.active !== false ? 'default' : 'secondary'} className={student.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                            {student.active !== false ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                        </div>
+                        </div>
                     </div>
-                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                       <div>
-                        <p className="text-muted-foreground text-xs">Escola</p>
-                        <p className="font-medium">{schoolsMap.get(student.schoolId) || 'N/A'}</p>
-                      </div>
-                       <div>
-                        <p className="text-muted-foreground text-xs">Responsável</p>
-                        <p className="font-medium">{parentsMap.get(student.parentId) || 'N/A'}</p>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Turno</p>
-                        <Badge variant="outline" className="mt-1">{student.shift}</Badge>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Situação</p>
-                         <Badge variant={student.active !== false ? 'default' : 'secondary'} className={student.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
-                          {student.active !== false ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </div>
-                    </div>
+                    <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(student)}>
+                            <Edit className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(student)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                        </Button>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>

@@ -11,8 +11,8 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -170,27 +170,25 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
+                        <div className="flex items-center justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleEdit(parent)}>
+                                <Edit className="mr-2 h-4 w-4" /> Editar
                             </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(parent)}>
-                              Editar
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              className="text-red-600"
-                              onClick={() => handleDelete(parent)}
-                            >
-                              Deletar
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" className="h-8 w-8 p-0">
+                                        <span className="sr-only">Mais Ações</span>
+                                        <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                    <DropdownMenuLabel>Mais Ações</DropdownMenuLabel>
+                                    <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(parent)}>
+                                        <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                                    </DropdownMenuItem>
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -212,49 +210,45 @@ export function ParentsList({ initialParents }: ParentsListProps) {
             {!isLoading && parents && parents.length > 0 ? (
               <div className="space-y-4">
                 {parents.map((parent) => (
-                  <Card key={parent.id} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={`https://picsum.photos/seed/parent-${parent.id}/100/100`} alt={parent.name} />
-                          <AvatarFallback>{parent.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{parent.name}</p>
-                          <p className="text-xs text-muted-foreground">{parent.email}</p>
+                  <Card key={parent.id} className="overflow-hidden">
+                    <div className="p-4">
+                        <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                            <Avatar>
+                            <AvatarImage src={`https://picsum.photos/seed/parent-${parent.id}/100/100`} alt={parent.name} />
+                            <AvatarFallback>{parent.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            </Avatar>
+                            <div>
+                            <p className="font-medium">{parent.name}</p>
+                            <p className="text-xs text-muted-foreground">{parent.email}</p>
+                            </div>
                         </div>
-                      </div>
-                      <DropdownMenu>
-                         <DropdownMenuTrigger asChild>
-                            <Button variant="ghost" className="h-8 w-8 p-0">
-                              <span className="sr-only">Abrir menu</span>
-                              <MoreHorizontal className="h-4 w-4" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end">
-                            <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                            <DropdownMenuItem onClick={() => handleEdit(parent)}>Editar</DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(parent)}>Deletar</DropdownMenuItem>
-                          </DropdownMenuContent>
-                      </DropdownMenu>
+                        </div>
+                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-muted-foreground text-xs">Telefone</p>
+                            <p className="font-medium">{parent.phone}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Status</p>
+                            <Badge variant={parent.active !== false ? 'default' : 'secondary'} className={parent.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                            {parent.active !== false ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                        </div>
+                        <div className="col-span-2">
+                            <p className="text-muted-foreground text-xs">Endereço</p>
+                            <p className="font-medium">{formatAddress(parent)}</p>
+                        </div>
+                        </div>
                     </div>
-                     <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                       <div>
-                        <p className="text-muted-foreground text-xs">Telefone</p>
-                        <p className="font-medium">{parent.phone}</p>
-                      </div>
-                       <div>
-                         <p className="text-muted-foreground text-xs">Status</p>
-                         <Badge variant={parent.active !== false ? 'default' : 'secondary'} className={parent.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
-                          {parent.active !== false ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </div>
-                       <div className="col-span-2">
-                         <p className="text-muted-foreground text-xs">Endereço</p>
-                         <p className="font-medium">{formatAddress(parent)}</p>
-                      </div>
-                    </div>
+                     <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(parent)}>
+                            <Edit className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(parent)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                        </Button>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>

@@ -11,15 +11,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle } from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
@@ -202,27 +201,25 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
-                       <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(driver)}>
-                            Editar
-                          </DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem
-                            className="text-red-600"
-                            onClick={() => handleDelete(driver)}
-                          >
-                            Deletar
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                       <div className="flex items-center justify-end gap-2">
+                           <Button variant="outline" size="sm" onClick={() => handleEdit(driver)}>
+                               <Edit className="mr-2 h-4 w-4" /> Editar
+                           </Button>
+                           <DropdownMenu>
+                               <DropdownMenuTrigger asChild>
+                                   <Button variant="ghost" className="h-8 w-8 p-0">
+                                       <span className="sr-only">Mais Ações</span>
+                                       <MoreHorizontal className="h-4 w-4" />
+                                   </Button>
+                               </DropdownMenuTrigger>
+                               <DropdownMenuContent align="end">
+                                   <DropdownMenuLabel>Mais Ações</DropdownMenuLabel>
+                                   <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(driver)}>
+                                       <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                                   </DropdownMenuItem>
+                               </DropdownMenuContent>
+                           </DropdownMenu>
+                       </div>
                     </TableCell>
                   </TableRow>
                 ))
@@ -244,49 +241,45 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
             {!isLoading && drivers && drivers.length > 0 ? (
               <div className="space-y-4">
                 {drivers.map((driver) => (
-                  <Card key={driver.id} className="p-4">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <Avatar>
-                          <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
-                          <AvatarFallback>{driver.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                        </Avatar>
-                        <div>
-                          <p className="font-medium">{driver.name}</p>
-                          <p className="text-xs text-muted-foreground font-mono">{driver.userId}</p>
+                  <Card key={driver.id} className="overflow-hidden">
+                    <div className="p-4">
+                        <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-3">
+                                <Avatar>
+                                <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
+                                <AvatarFallback>{driver.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                </Avatar>
+                                <div>
+                                <p className="font-medium">{driver.name}</p>
+                                <p className="text-xs text-muted-foreground font-mono">{driver.userId}</p>
+                                </div>
+                            </div>
                         </div>
-                      </div>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" className="h-8 w-8 p-0">
-                            <span className="sr-only">Abrir menu</span>
-                            <MoreHorizontal className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                          <DropdownMenuItem onClick={() => handleEdit(driver)}>Editar</DropdownMenuItem>
-                          <DropdownMenuSeparator />
-                          <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(driver)}>Deletar</DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
+                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-muted-foreground text-xs">Veículo</p>
+                            <p className="font-medium">{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Status (Rota)</p>
+                            <Badge variant={statusVariantMap[driver.status]} className="mt-1">{statusLabelMap[driver.status]}</Badge>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Situação</p>
+                            <Badge variant={driver.active !== false ? 'default' : 'secondary'} className={driver.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                            {driver.active !== false ? 'Ativo' : 'Inativo'}
+                            </Badge>
+                        </div>
+                        </div>
                     </div>
-                    <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                       <div>
-                        <p className="text-muted-foreground text-xs">Veículo</p>
-                        <p className="font-medium">{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</p>
-                      </div>
-                       <div>
-                        <p className="text-muted-foreground text-xs">Status (Rota)</p>
-                        <Badge variant={statusVariantMap[driver.status]} className="mt-1">{statusLabelMap[driver.status]}</Badge>
-                      </div>
-                      <div>
-                        <p className="text-muted-foreground text-xs">Situação</p>
-                         <Badge variant={driver.active !== false ? 'default' : 'secondary'} className={driver.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
-                          {driver.active !== false ? 'Ativo' : 'Inativo'}
-                        </Badge>
-                      </div>
-                    </div>
+                    <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
+                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(driver)}>
+                            <Edit className="mr-2 h-4 w-4" /> Editar
+                        </Button>
+                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(driver)}>
+                            <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                        </Button>
+                    </CardFooter>
                   </Card>
                 ))}
               </div>
