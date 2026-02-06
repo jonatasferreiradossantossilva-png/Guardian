@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo } from 'react';
@@ -234,7 +235,8 @@ function RevenuesTab() {
     setIsGenerating(true);
 
     try {
-      const result = await generateMonthlyInvoices({ students, parents, invoices });
+      const activeStudents = students.filter(s => s.active !== false);
+      const result = await generateMonthlyInvoices({ students: activeStudents, parents, invoices });
       const { invoicesToCreate } = result;
 
       if (invoicesToCreate.length > 0) {
@@ -248,7 +250,7 @@ function RevenuesTab() {
       } else {
         toast({
           title: 'Nenhuma fatura nova',
-          description: 'Todos os alunos já possuem faturas para o mês corrente.'
+          description: 'Todos os alunos ativos já possuem faturas para o mês corrente.'
         });
       }
     } catch (error) {
@@ -740,5 +742,3 @@ function ExpensesTab() {
     </div>
   )
 }
-
-    

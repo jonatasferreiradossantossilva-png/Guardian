@@ -33,6 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
 import { Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 
 const formSchema = z.object({
@@ -53,6 +54,7 @@ const formSchema = z.object({
   state: z.string().min(1, { message: 'O estado é obrigatório.' }),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
+  active: z.boolean().default(true),
 });
 
 type DriverFormValues = z.infer<typeof formSchema>;
@@ -94,6 +96,7 @@ export function DriverForm({
       state: '',
       latitude: undefined,
       longitude: undefined,
+      active: true,
     },
   });
 
@@ -160,6 +163,7 @@ export function DriverForm({
         state: driver.state || '',
         latitude: driver.latitude,
         longitude: driver.longitude,
+        active: driver.active ?? true,
       });
     } else {
       form.reset(form.defaultValues);
@@ -403,7 +407,7 @@ export function DriverForm({
               name="status"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Status</FormLabel>
+                  <FormLabel>Status (Rota)</FormLabel>
                   <Select onValueChange={field.onChange} value={field.value}>
                     <FormControl>
                       <SelectTrigger>
@@ -446,6 +450,23 @@ export function DriverForm({
               )}
             />
           </div>
+            <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                <div className="space-y-0.5">
+                  <FormLabel>Motorista Ativo</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
           <DialogFooter className="pt-4">
             <DialogClose asChild>

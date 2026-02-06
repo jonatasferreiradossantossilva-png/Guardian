@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +34,7 @@ import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
 import { Copy, Info, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -49,6 +51,7 @@ const formSchema = z.object({
   neighborhood: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
+  active: z.boolean().default(true),
 });
 
 type StudentFormValues = z.infer<typeof formSchema>;
@@ -100,6 +103,7 @@ export function StudentForm({
       neighborhood: '',
       city: '',
       state: '',
+      active: true,
     },
   });
 
@@ -153,6 +157,7 @@ export function StudentForm({
       form.reset({
         ...student,
         shift: student.shift || 'Manhã',
+        active: student.active ?? true,
       });
     } else {
       form.reset(form.defaultValues);
@@ -455,6 +460,24 @@ export function StudentForm({
                 </AlertDescription>
             </Alert>
           )}
+
+           <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                <div className="space-y-0.5">
+                  <FormLabel>Aluno Ativo</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
 
           <DialogFooter className="pt-4">
             <DialogClose asChild>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -50,6 +51,7 @@ type Student = {
   city?: string;
   state?: string;
   monthlyFee?: number;
+  active?: boolean;
 };
 type School = { id: string; name: string };
 type Parent = { id: string; name: string };
@@ -156,20 +158,19 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>Endereço</TableHead>
+                  <TableHead>Aluno</TableHead>
                   <TableHead>Escola</TableHead>
                   <TableHead>Responsável</TableHead>
                   <TableHead>Turno</TableHead>
-                  <TableHead>Mensalidade</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Status (Embarque)</TableHead>
+                  <TableHead>Situação</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center h-24">
+                    <TableCell colSpan={7} className="text-center h-24">
                       Carregando...
                     </TableCell>
                   </TableRow>
@@ -186,12 +187,15 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                           <span className="font-medium">{student.name}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{formatAddress(student)}</TableCell>
                       <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
                       <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
                       <TableCell><Badge variant="outline">{student.shift}</Badge></TableCell>
-                      <TableCell>R$ {student.monthlyFee ? student.monthlyFee.toFixed(2) : 'N/A'}</TableCell>
-                      <TableCell><Badge variant="secondary">{student.status}</Badge></TableCell>
+                      <TableCell><Badge variant="secondary" className="capitalize">{student.status}</Badge></TableCell>
+                       <TableCell>
+                        <Badge variant={student.active !== false ? 'default' : 'secondary'} className={student.active !== false ? 'bg-green-600' : ''}>
+                          {student.active !== false ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
                           <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -220,7 +224,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                 ) : (
                   !isLoading && (
                     <TableRow>
-                      <TableCell colSpan={8} className="text-center h-24">
+                      <TableCell colSpan={7} className="text-center h-24">
                         Nenhum aluno cadastrado.
                       </TableCell>
                     </TableRow>
@@ -273,12 +277,10 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                         <Badge variant="outline" className="mt-1">{student.shift}</Badge>
                       </div>
                       <div>
-                        <p className="text-muted-foreground text-xs">Mensalidade</p>
-                        <p className="font-medium">R$ {student.monthlyFee ? student.monthlyFee.toFixed(2) : 'N/A'}</p>
-                      </div>
-                       <div className="col-span-2">
-                         <p className="text-muted-foreground text-xs">Endereço</p>
-                         <p className="font-medium">{formatAddress(student)}</p>
+                        <p className="text-muted-foreground text-xs">Situação</p>
+                         <Badge variant={student.active !== false ? 'default' : 'secondary'} className={student.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                          {student.active !== false ? 'Ativo' : 'Inativo'}
+                        </Badge>
                       </div>
                     </div>
                   </Card>

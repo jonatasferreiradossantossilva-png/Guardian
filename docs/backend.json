@@ -104,6 +104,10 @@
           "type": "string",
           "description": "CNPJ da escola."
         },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates if the school is currently active."
+        },
         "latitude": {
           "type": "number",
           "description": "Latitude of the school."
@@ -168,6 +172,10 @@
           "type": "string",
           "description": "Email address of the parent.",
           "format": "email"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates if the parent account is active."
         },
         "phone": {
           "type": "string",
@@ -239,6 +247,10 @@
         "schoolId": {
           "type": "string",
           "description": "Reference to School. (Relationship: School 1:N Student)"
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates if the student is currently active for transport services."
         },
         "parentId": {
           "type": "string",
@@ -338,6 +350,10 @@
         "cpf": {
           "type": "string",
           "description": "CPF do motorista."
+        },
+        "active": {
+          "type": "boolean",
+          "description": "Indicates if the driver is currently active."
         },
         "rg": {
           "type": "string",

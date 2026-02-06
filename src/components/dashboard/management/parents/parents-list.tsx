@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -35,6 +36,7 @@ import { ParentForm } from "@/components/dashboard/management/parents/parent-for
 import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 
 
 type Parent = {
@@ -50,6 +52,7 @@ type Parent = {
   neighborhood?: string;
   city?: string;
   state?: string;
+  active?: boolean;
 };
 
 interface ParentsListProps {
@@ -131,8 +134,8 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                 <TableRow>
                   <TableHead>Responsável</TableHead>
                   <TableHead>Telefone</TableHead>
-                  <TableHead>CPF</TableHead>
                   <TableHead>Endereço</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -160,8 +163,12 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                         </div>
                       </TableCell>
                       <TableCell>{parent.phone}</TableCell>
-                      <TableCell>{parent.cpf || 'N/A'}</TableCell>
                       <TableCell>{formatAddress(parent)}</TableCell>
+                      <TableCell>
+                        <Badge variant={parent.active !== false ? 'default' : 'secondary'} className={parent.active !== false ? 'bg-green-600' : ''}>
+                          {parent.active !== false ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
                         <DropdownMenu>
                           <DropdownMenuTrigger asChild>
@@ -238,8 +245,10 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                         <p className="font-medium">{parent.phone}</p>
                       </div>
                        <div>
-                        <p className="text-muted-foreground text-xs">CPF</p>
-                        <p className="font-medium">{parent.cpf || 'N/A'}</p>
+                         <p className="text-muted-foreground text-xs">Status</p>
+                         <Badge variant={parent.active !== false ? 'default' : 'secondary'} className={parent.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                          {parent.active !== false ? 'Ativo' : 'Inativo'}
+                        </Badge>
                       </div>
                        <div className="col-span-2">
                          <p className="text-muted-foreground text-xs">Endereço</p>

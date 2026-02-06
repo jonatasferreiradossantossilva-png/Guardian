@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo } from "react";
@@ -53,6 +54,7 @@ type Driver = {
   neighborhood?: string;
   city?: string;
   state?: string;
+  active?: boolean;
 };
 type Vehicle = { id: string; model: string; licensePlate: string };
 
@@ -158,19 +160,17 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>CPF</TableHead>
-                  <TableHead>CNH</TableHead>
-                  <TableHead>Endereço</TableHead>
-                  <TableHead>Status</TableHead>
+                  <TableHead>Motorista</TableHead>
                   <TableHead>Veículo</TableHead>
+                  <TableHead>Status (Rota)</TableHead>
+                  <TableHead>Situação</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center h-24">
+                    <TableCell colSpan={5} className="text-center h-24">
                       Carregando...
                     </TableCell>
                   </TableRow>
@@ -190,15 +190,17 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                           </div>
                         </div>
                       </TableCell>
-                      <TableCell>{driver.cpf || 'N/A'}</TableCell>
-                      <TableCell>{driver.cnh || 'N/A'}</TableCell>
-                      <TableCell>{formatAddress(driver)}</TableCell>
+                      <TableCell>{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</TableCell>
                       <TableCell>
                         <Badge variant={statusVariantMap[driver.status]}>
                          {statusLabelMap[driver.status]}
                         </Badge>
                       </TableCell>
-                      <TableCell>{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</TableCell>
+                      <TableCell>
+                        <Badge variant={driver.active !== false ? 'default' : 'secondary'} className={driver.active !== false ? 'bg-green-600' : ''}>
+                          {driver.active !== false ? 'Ativo' : 'Inativo'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -227,7 +229,7 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={7} className="text-center h-24">
+                    <TableCell colSpan={5} className="text-center h-24">
                       Nenhum motorista cadastrado.
                     </TableCell>
                   </TableRow>
@@ -275,20 +277,14 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                         <p className="font-medium">{vehiclesMap.get(driver.vehicleId || '') || "N/A"}</p>
                       </div>
                        <div>
-                        <p className="text-muted-foreground text-xs">CPF</p>
-                        <p className="font-medium">{driver.cpf || 'N/A'}</p>
-                      </div>
-                       <div>
-                        <p className="text-muted-foreground text-xs">CNH</p>
-                        <p className="font-medium">{driver.cnh || 'N/A'}</p>
-                      </div>
-                       <div>
-                        <p className="text-muted-foreground text-xs">Status</p>
+                        <p className="text-muted-foreground text-xs">Status (Rota)</p>
                         <Badge variant={statusVariantMap[driver.status]} className="mt-1">{statusLabelMap[driver.status]}</Badge>
                       </div>
-                      <div className="col-span-2">
-                         <p className="text-muted-foreground text-xs">Endereço</p>
-                         <p className="font-medium">{formatAddress(driver)}</p>
+                      <div>
+                        <p className="text-muted-foreground text-xs">Situação</p>
+                         <Badge variant={driver.active !== false ? 'default' : 'secondary'} className={driver.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                          {driver.active !== false ? 'Ativo' : 'Inativo'}
+                        </Badge>
                       </div>
                     </div>
                   </Card>

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -34,6 +35,7 @@ import {
 import { SchoolForm } from "@/components/dashboard/management/schools/school-form";
 import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { Badge } from "@/components/ui/badge";
 
 
 type School = {
@@ -47,6 +49,7 @@ type School = {
   neighborhood?: string;
   city?: string;
   state?: string;
+  active?: boolean;
 };
 
 interface SchoolsListProps {
@@ -128,13 +131,14 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
                   <TableHead>Nome</TableHead>
                   <TableHead>Endereço</TableHead>
                   <TableHead>CNPJ</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center h-24">
+                    <TableCell colSpan={5} className="text-center h-24">
                       Carregando...
                     </TableCell>
                   </TableRow>
@@ -145,6 +149,11 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
                       <TableCell className="font-medium">{school.name}</TableCell>
                       <TableCell>{formatAddress(school)}</TableCell>
                       <TableCell>{school.cnpj || 'N/A'}</TableCell>
+                      <TableCell>
+                        <Badge variant={school.active !== false ? 'default' : 'secondary'} className={school.active !== false ? 'bg-green-600' : ''}>
+                          {school.active !== false ? 'Ativa' : 'Inativa'}
+                        </Badge>
+                      </TableCell>
                       <TableCell className="text-right">
                        <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -173,7 +182,7 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
               ) : (
                 !isLoading && (
                   <TableRow>
-                    <TableCell colSpan={4} className="text-center h-24">
+                    <TableCell colSpan={5} className="text-center h-24">
                       Nenhuma escola cadastrada.
                     </TableCell>
                   </TableRow>
@@ -209,9 +218,17 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </div>
-                    <div className="mt-4 text-sm">
-                      <p className="text-muted-foreground text-xs">Endereço</p>
-                      <p className="font-medium">{formatAddress(school)}</p>
+                    <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                        <div>
+                            <p className="text-muted-foreground text-xs">Endereço</p>
+                            <p className="font-medium">{formatAddress(school)}</p>
+                        </div>
+                        <div>
+                            <p className="text-muted-foreground text-xs">Status</p>
+                            <Badge variant={school.active !== false ? 'default' : 'secondary'} className={school.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                                {school.active !== false ? 'Ativa' : 'Inativa'}
+                            </Badge>
+                        </div>
                     </div>
                   </Card>
                 ))}

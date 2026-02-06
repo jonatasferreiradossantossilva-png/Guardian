@@ -48,7 +48,7 @@ const formSchema = z.object({
 
 type RouteFormValues = z.infer<typeof formSchema>;
 type Driver = { id: string; name: string; vehicleId?: string; };
-type Student = { id: string; name: string, routeId?: string, shift: string };
+type Student = { id: string; name: string, routeId?: string, shift: string, active?: boolean };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 
@@ -128,7 +128,7 @@ export function RouteForm({
         const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
         const isAlreadyInThisRoute = studentIdsInForm.includes(s.id);
         const matchesSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase());
-        return !isInAnotherRoute && !isAlreadyInThisRoute && matchesSearch;
+        return s.active !== false && !isInAnotherRoute && !isAlreadyInThisRoute && matchesSearch;
     });
 
     return { availableStudents, studentsInCurrentRoute };

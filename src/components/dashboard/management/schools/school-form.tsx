@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,6 +26,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
 import { Loader2 } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -38,6 +40,7 @@ const formSchema = z.object({
   neighborhood: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
+  active: z.boolean().default(true),
 });
 
 type SchoolFormValues = z.infer<typeof formSchema>;
@@ -66,6 +69,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       neighborhood: '',
       city: '',
       state: '',
+      active: true,
     },
   });
 
@@ -125,6 +129,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         neighborhood: school.neighborhood || '',
         city: school.city || '',
         state: school.state || '',
+        active: school.active ?? true,
       });
     } else {
       form.reset(form.defaultValues);
@@ -300,6 +305,23 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
               )}
             />
           </div>
+           <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                <div className="space-y-0.5">
+                  <FormLabel>Escola Ativa</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
           <DialogFooter className="pt-4">
             <DialogClose asChild>
               <Button type="button" variant="outline">

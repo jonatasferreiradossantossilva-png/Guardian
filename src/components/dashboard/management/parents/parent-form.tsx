@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,6 +34,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Switch } from '@/components/ui/switch';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -49,6 +51,7 @@ const formSchema = z.object({
   city: z.string().optional(),
   state: z.string().optional(),
   preferredPaymentDay: z.coerce.number().int().min(1).max(31).optional(),
+  active: z.boolean().default(true),
 });
 
 type ParentFormValues = z.infer<typeof formSchema>;
@@ -80,6 +83,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
       city: '',
       state: '',
       preferredPaymentDay: undefined,
+      active: true,
     },
   });
 
@@ -131,6 +135,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
       form.reset({
         ...parent,
         preferredPaymentDay: parent.preferredPaymentDay,
+        active: parent.active ?? true,
       });
     } else {
       form.reset(form.defaultValues);
@@ -354,7 +359,23 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                 />
              </div>
           </div>
-
+            <FormField
+            control={form.control}
+            name="active"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                <div className="space-y-0.5">
+                  <FormLabel>Responsável Ativo</FormLabel>
+                </div>
+                <FormControl>
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+              </FormItem>
+            )}
+          />
            <FormField
             control={form.control}
             name="userId"
