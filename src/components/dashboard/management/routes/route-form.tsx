@@ -43,7 +43,6 @@ const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   driverId: z.string().min(1, { message: 'Selecione um motorista.' }),
   monitorId: z.string().optional(),
-  studentIds: z.array(z.string()).default([]),
 });
 
 type RouteFormValues = z.infer<typeof formSchema>;
@@ -53,20 +52,13 @@ type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 
 interface RouteFormProps {
-  route?: { id: string } & Partial<RouteFormValues>;
+  route?: { id: string; studentIds?: string[] } & Partial<RouteFormValues>;
   drivers: Driver[];
   students: Student[];
   monitors: Monitor[];
   vehicles: Vehicle[];
   onFormSubmit: () => void;
 }
-
-const defaultFormValues: RouteFormValues = {
-    name: '',
-    driverId: '',
-    monitorId: '',
-    studentIds: [],
-};
 
 export function RouteForm({
   route,
@@ -78,24 +70,30 @@ export function RouteForm({
 }: RouteFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
+
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
-
-  const memoizedDefaultValues = useMemo(() => {
-    return route ? {
-        name: route.name || '',
-        driverId: route.driverId || '',
-        monitorId: route.monitorId || '',
-        studentIds: route.studentIds || [],
-    } : defaultFormValues;
-  }, [route]);
+  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>([]);
 
   const form = useForm<RouteFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: memoizedDefaultValues,
+    defaultValues: {
+      name: route?.name || '',
+      driverId: route?.driverId || '',
+      monitorId: route?.monitorId || '',
+    },
   });
 
-  const studentIdsInForm = form.watch('studentIds');
+  useEffect(() => {
+    setCurrentStudentIds(route?.studentIds || []);
+    form.reset({
+      name: route?.name || '',
+      driverId: route?.driverId || '',
+      monitorId: route?.monitorId || '',
+    });
+  }, [route, form]);
+
+
   const driverId = form.watch('driverId');
 
   const { vehicle, vehicleCapacity } = useMemo(() => {
@@ -108,27 +106,27 @@ export function RouteForm({
   }, [driverId, drivers, vehicles]);
 
   const isCapacityExceeded = useMemo(() => {
-    return studentIdsInForm.length > vehicleCapacity;
-  }, [studentIdsInForm, vehicleCapacity]);
+    return currentStudentIds.length > vehicleCapacity;
+  }, [currentStudentIds, vehicleCapacity]);
 
   
   const { availableStudents, studentsInCurrentRoute } = useMemo(() => {
-    const studentsInCurrentRoute = (studentIdsInForm || [])
-        .map(id => students.find(s => s.id === id))
+    const studentMap = new Map(students.map(s => [s.id, s]));
+    const studentsInCurrentRoute = currentStudentIds
+        .map(id => studentMap.get(id))
         .filter(Boolean);
 
     const availableStudents = students.filter(s => {
         const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
-        const isAlreadyInThisRoute = studentIdsInForm.includes(s.id);
+        const isAlreadyInThisRoute = currentStudentIds.includes(s.id);
         const matchesSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase());
         return s.active !== false && !isInAnotherRoute && !isAlreadyInThisRoute && matchesSearch;
     });
 
     return { availableStudents, studentsInCurrentRoute };
-  }, [studentIdsInForm, students, route, studentSearch]);
+  }, [currentStudentIds, students, route, studentSearch]);
 
   const addSelectedStudents = () => {
-    const currentStudentIds = form.getValues('studentIds');
     const studentsToAdd = [...Array.from(selectedAvailable)];
     
     if (currentStudentIds.length + studentsToAdd.length > vehicleCapacity) {
@@ -139,7 +137,7 @@ export function RouteForm({
       });
       return;
     }
-    form.setValue('studentIds', [...currentStudentIds, ...studentsToAdd]);
+    setCurrentStudentIds(prev => [...prev, ...studentsToAdd]);
     setSelectedAvailable(new Set());
     toast({
         title: `${studentsToAdd.length} aluno(s) adicionado(s)!`,
@@ -148,17 +146,15 @@ export function RouteForm({
   };
 
   const moveInRoute = (studentId: string, direction: 'up' | 'down') => {
-    const currentList = form.getValues('studentIds');
-    const index = currentList.indexOf(studentId);
+    const index = currentStudentIds.indexOf(studentId);
+    const newList = [...currentStudentIds];
 
     if (direction === 'up' && index > 0) {
-        const newList = [...currentList];
         [newList[index - 1], newList[index]] = [newList[index], newList[index-1]];
-        form.setValue('studentIds', newList, { shouldDirty: true });
-    } else if (direction === 'down' && index < currentList.length - 1) {
-        const newList = [...currentList];
+        setCurrentStudentIds(newList);
+    } else if (direction === 'down' && index < newList.length - 1) {
         [newList[index + 1], newList[index]] = [newList[index], newList[index+1]];
-        form.setValue('studentIds', newList, { shouldDirty: true });
+        setCurrentStudentIds(newList);
     }
   };
   
@@ -173,12 +169,11 @@ export function RouteForm({
   };
 
   const removeStudentFromRoute = (studentId: string) => {
-    const currentStudentIds = form.getValues('studentIds');
-    form.setValue('studentIds', currentStudentIds.filter(id => id !== studentId), { shouldDirty: true });
+    setCurrentStudentIds(prev => prev.filter(id => id !== studentId));
   }
 
   const onSubmit = (data: RouteFormValues) => {
-    const finalData = { ...data };
+    const finalData = { ...data, studentIds: currentStudentIds };
     if (!finalData.monitorId || finalData.monitorId === 'none') {
         delete (finalData as Partial<typeof finalData>).monitorId;
     }
