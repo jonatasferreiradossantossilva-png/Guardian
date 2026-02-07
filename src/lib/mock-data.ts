@@ -362,7 +362,7 @@ export const initialMockData = {
             shift: "Tarde", 
             driverId: "driver-7", 
             monitorId: "", 
-            studentIds: ["student-13"] 
+            studentIds: ["student-13", "student-17"]
         },
         { 
             id: "route-8", 
@@ -373,6 +373,15 @@ export const initialMockData = {
             studentIds: ["student-4", "student-6", "student-8", "student-12", "student-14"], 
             turnByTurnDirections: []
         },
+        {
+            id: "route-9",
+            name: "Rota Combinada - Manhã",
+            shift: "Manhã",
+            driverId: "driver-4",
+            monitorId: "user-monitor-1",
+            studentIds: ["student-1", "student-11", "student-17", "school-2", "school-1"],
+            turnByTurnDirections: []
+        }
     ],
     locations: {
       "driver-1": { latitude: -23.55052, longitude: -46.633308, timestamp: new Date().toISOString() },
@@ -598,3 +607,4 @@ export const initialMockData = {
 
 
   
+
