@@ -419,56 +419,60 @@ export function RouteForm({
                  {errors.schoolIds && <p className="text-sm font-medium text-destructive">{errors.schoolIds}</p>}
             </div>
 
-            <div className="border rounded-md overflow-hidden">
-                <div className="p-2 border-b">
-                    <Input placeholder="Buscar aluno por nome..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none"/>
-                </div>
-                <div>
-                    {!selectedSchoolIds.length || !shift ? (
-                        <div className="h-56 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
-                            <School className="h-8 w-8 mb-2"/>
-                            <p className="font-semibold">Selecione escolas e um turno</p>
-                            <p className="text-sm">Escolha as escolas no formulário para ver os alunos disponíveis.</p>
-                        </div>
-                    ) : (
-                        <ScrollArea className="h-56">
-                            {availableStudents.length > 0 ? (
-                                Object.entries(
-                                    availableStudents.reduce((acc, student) => {
-                                        const schoolName = schoolsMap.get(student.schoolId)?.name || 'Outra';
-                                        if (!acc[schoolName]) acc[schoolName] = [];
-                                        acc[schoolName].push(student);
-                                        return acc;
-                                    }, {} as Record<string, Student[]>)
-                                ).map(([schoolName, students]) => (
-                                    <div key={schoolName}>
-                                        <h4 className="font-semibold text-sm text-muted-foreground px-2 py-1.5">{schoolName}</h4>
-                                        {students.map(s => {
-                                            const studentWithClass = getAbbreviatedClass(s);
-                                            return (
-                                                <div key={s.id} className="flex items-center gap-2 rounded-md p-2 hover:bg-accent/50">
-                                                    <div className="flex-grow flex items-center gap-2 min-w-0">
-                                                        <p className="font-medium text-sm truncate">{s.name}</p>
-                                                        {studentWithClass && (
-                                                            <span className="text-xs text-muted-foreground">({studentWithClass})</span>
-                                                        )}
+            <div className="space-y-2">
+                <Label>Alunos a Selecionar</Label>
+                <div className="border rounded-md overflow-hidden">
+                    <div className="p-2 border-b">
+                        <Input placeholder="Buscar aluno por nome..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none"/>
+                    </div>
+                    <div>
+                        {!selectedSchoolIds.length || !shift ? (
+                            <div className="h-56 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
+                                <School className="h-8 w-8 mb-2"/>
+                                <p className="font-semibold">Selecione escolas e um turno</p>
+                                <p className="text-sm">Escolha as escolas no formulário para ver os alunos disponíveis.</p>
+                            </div>
+                        ) : (
+                            <ScrollArea className="h-56">
+                                {availableStudents.length > 0 ? (
+                                    Object.entries(
+                                        availableStudents.reduce((acc, student) => {
+                                            const schoolName = schoolsMap.get(student.schoolId)?.name || 'Outra';
+                                            if (!acc[schoolName]) acc[schoolName] = [];
+                                            acc[schoolName].push(student);
+                                            return acc;
+                                        }, {} as Record<string, Student[]>)
+                                    ).map(([schoolName, students]) => (
+                                        <div key={schoolName}>
+                                            <h4 className="font-semibold text-sm text-muted-foreground px-2 py-1.5">{schoolName}</h4>
+                                            {students.map(s => {
+                                                const studentWithClass = getAbbreviatedClass(s);
+                                                return (
+                                                    <div key={s.id} className="flex items-center gap-2 rounded-md p-2 hover:bg-accent/50">
+                                                        <div className="flex-grow flex items-center gap-2 min-w-0">
+                                                            <p className="font-medium text-sm truncate">{s.name}</p>
+                                                            {studentWithClass && (
+                                                                <span className="text-xs text-muted-foreground">({studentWithClass})</span>
+                                                            )}
+                                                        </div>
+                                                        <div className="flex-shrink-0 flex items-center gap-2">
+                                                            <span className="text-xs text-muted-foreground">{s.shift}</span>
+                                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
+                                                                <PlusCircle className="h-4 w-4 text-green-500" />
+                                                            </Button>
+                                                        </div>
                                                     </div>
-                                                    <div className="flex-shrink-0 flex items-center gap-2">
-                                                        <span className="text-xs text-muted-foreground">{s.shift}</span>
-                                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
-                                                            <PlusCircle className="h-4 w-4 text-green-500" />
-                                                        </Button>
-                                                    </div>
-                                                </div>
-                                            )
-                                        })}
-                                    </div>
-                                ))
-                            ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para as escolas/turno selecionados ou para a busca.</p>}
-                        </ScrollArea>
-                    )}
+                                                )
+                                            })}
+                                        </div>
+                                    ))
+                                ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para as escolas/turno selecionados ou para a busca.</p>}
+                            </ScrollArea>
+                        )}
+                    </div>
                 </div>
             </div>
+
         </div>
 
         {/* Coluna da Direita: Itinerário */}
