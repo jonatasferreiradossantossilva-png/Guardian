@@ -418,11 +418,9 @@ export function RouteForm({
                                             <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                 <div className="flex-1 min-w-0">
                                                     <p className="truncate font-medium text-sm">{s.name}</p>
-                                                    {(s.serie || s.turma) && (
-                                                        <p className="truncate text-xs text-muted-foreground">
-                                                            {s.serie} / {s.turma}
-                                                        </p>
-                                                    )}
+                                                    <p className="truncate text-xs text-muted-foreground">
+                                                        {[s.serie, s.turma].filter(Boolean).join(' / ')}
+                                                    </p>
                                                 </div>
                                                 <div className="flex items-center">
                                                     <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
@@ -466,11 +464,11 @@ export function RouteForm({
                             const serieTurma = student ? [student.serie, student.turma].filter(Boolean).join(' / ') : null;
 
                             return (
-                                <div key={`${stop.id}-${index}`} className="flex items-center gap-2 rounded-md p-1 hover:bg-accent/50">
-                                    <div className="flex flex-1 items-center gap-2 min-w-0">
+                                <div key={`${stop.id}-${index}`} className="flex items-center justify-between gap-2 rounded-md p-1 hover:bg-accent/50">
+                                    <div className="flex items-center gap-2 min-w-0">
                                         <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
                                         {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
-                                        <div className="flex-1 min-w-0">
+                                        <div className="min-w-0">
                                             <p className="truncate font-medium text-sm">{stop.name}</p>
                                             {(serieTurma || stop.details) && (
                                                 <p className="truncate text-xs text-muted-foreground">
@@ -479,7 +477,7 @@ export function RouteForm({
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex flex-shrink-0 items-center">
+                                    <div className="flex items-center flex-shrink-0">
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
                                             <ArrowUp className="h-4 w-4" />
                                         </Button>
@@ -545,6 +543,7 @@ export function RouteForm({
     
 
     
+
 
 
 
