@@ -438,19 +438,18 @@ export function RouteForm({
                                     <div key={schoolName}>
                                         <h4 className="font-semibold text-sm text-muted-foreground px-2 py-1.5">{schoolName}</h4>
                                         {students.map(s => {
+                                            const studentWithClass = getAbbreviatedClass(s);
                                             return (
                                                 <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
-                                                    <div className="flex-1 min-w-0">
-                                                        <p className="font-medium text-sm whitespace-normal">
-                                                            {s.name} 
-                                                            {getAbbreviatedClass(s) && (
-                                                                <span className="text-xs text-muted-foreground ml-2 font-normal">({getAbbreviatedClass(s)})</span>
-                                                            )}
-                                                        </p>
-                                                    </div>
-                                                    <div className="flex items-center flex-shrink-0">
+                                                    <p className="font-medium text-sm whitespace-normal">
+                                                        {s.name} 
+                                                        {studentWithClass && (
+                                                            <span className="text-xs text-muted-foreground ml-2 font-normal">({studentWithClass})</span>
+                                                        )}
+                                                    </p>
+                                                    <div className="flex items-center">
                                                         <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
-                                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name})}>
+                                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name})}>
                                                             <PlusCircle className="h-4 w-4 text-green-500" />
                                                         </Button>
                                                     </div>
@@ -490,8 +489,8 @@ export function RouteForm({
                             {stops.map((stop, index) => {
                                 return (
                                     <div key={index} className="flex items-center justify-between w-full bg-background rounded-md p-2 hover:bg-accent/50">
-                                        <div className="flex items-start gap-3 flex-1 min-w-0">
-                                            <span className="w-6 flex-shrink-0 pt-2 text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                            <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground">{index + 1}</span>
                                             {stop.type === 'student' ? (
                                                 <Avatar className="h-8 w-8 flex-shrink-0">
                                                     <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
@@ -502,7 +501,7 @@ export function RouteForm({
                                                     <School className="h-4 w-4 text-muted-foreground" />
                                                 </div>
                                             )}
-                                            <div className="flex-1 min-w-0 pt-1">
+                                            <div className="flex-1 min-w-0">
                                                 <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
                                                 {stop.type === 'student' && <p className="text-xs text-muted-foreground truncate">{schoolsMap.get(studentsMap.get(stop.id)?.schoolId || '')?.name}</p>}
                                             </div>
@@ -590,3 +589,4 @@ export function RouteForm({
     
 
     
+
