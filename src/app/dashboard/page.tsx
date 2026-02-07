@@ -34,7 +34,6 @@ function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
     const navLinks = useMemo(() => {
         const baseLinks = [
             { href: '/dashboard/overview', label: 'Painel Financeiro', icon: LayoutGrid },
-            { href: '/dashboard/optimizer', label: 'Otimizar Rotas', icon: Sparkles },
             { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
             { href: '/dashboard/financial', label: 'Controle Financeiro', icon: DollarSign },
             { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Milestone },
