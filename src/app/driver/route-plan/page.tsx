@@ -7,6 +7,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -62,6 +63,7 @@ import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
+
 interface Student {
   id: string;
   name: string;
@@ -80,6 +82,22 @@ interface Student {
   turma?: string;
 }
 
+interface SchoolData {
+  id: string;
+  name: string;
+  latitude: number;
+  longitude: number;
+  street?: string;
+  number?: string;
+}
+
+type Stop = {
+  id: string;
+  type: 'student' | 'school';
+  data: Student | SchoolData;
+}
+
+
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 const statusText: Record<StudentStatus, string> = {
@@ -91,7 +109,7 @@ const statusText: Record<StudentStatus, string> = {
 
 // --- Sub-components for the new UI ---
 
-const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute, onScanQrCode }) => {
+const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute, onScanQrCode }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, onNavigate: (data: any) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onShareRoute: () => void, onScanQrCode: () => void }) => {
   if (!student) return null;
 
   const isGoing = direction === 'ida';
@@ -153,32 +171,81 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
   );
 };
 
+const NextStopSchoolCard = ({ school, onDropOff, onNavigate, onShareRoute }: { school: SchoolData, onDropOff: (id: string) => void, onNavigate: (data: any) => void, onShareRoute: () => void }) => {
+  return (
+    <Card className="w-full shadow-lg border-primary/20">
+      <CardHeader>
+        <CardDescription>Próxima Parada (Destino)</CardDescription>
+        <CardTitle className="flex items-start gap-3 text-2xl">
+          <div className="flex items-center justify-center h-12 w-12 flex-shrink-0 bg-secondary rounded-lg">
+            <School className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <div className="flex-grow">
+            <span>{school.name}</span>
+          </div>
+        </CardTitle>
+        <p className="text-sm text-muted-foreground pt-1">
+          {school.street ? `${school.street}, ${school.number}` : 'Endereço não disponível'}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => onDropOff(school.id)}>
+          <Bus className="mr-2 h-5 w-5" /> Desembarcar Alunos
+        </Button>
+      </CardContent>
+      <CardFooter className="grid grid-cols-2 gap-2">
+        <Button variant="outline" className="h-auto py-3" onClick={() => onNavigate(school)}>
+          <Navigation className="mr-2 h-5 w-5" />
+          <span>Navegar</span>
+        </Button>
+        <Button variant="outline" className="h-auto py-3" onClick={onShareRoute}>
+          <Share2 className="mr-2 h-5 w-5"/>
+          <span>Localização</span>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
 
-const UpcomingStopsList = ({ students }) => {
-  if (!students || students.length === 0) {
+
+const UpcomingStopsList = ({ stops }: { stops: Stop[] }) => {
+  if (!stops || stops.length === 0) {
     return <p className="text-center text-muted-foreground text-sm py-4">Nenhuma parada futura.</p>;
   }
 
   return (
     <div className="w-full space-y-2">
-       <h3 className="text-sm font-semibold text-muted-foreground px-1">A seguir...</h3 >
+       <h3 className="text-sm font-semibold text-muted-foreground px-1">A seguir...</h3>
         <ul className="space-y-1">
-            {students.map((student, index) => (
-                <li key={student.id} className="flex items-center gap-3 p-2 rounded-md bg-secondary/50">
+            {stops.map((stop, index) => {
+              const isStudent = stop.type === 'student';
+              const item = stop.data as Student | SchoolData;
+
+              return (
+                <li key={`${stop.id}-${index}`} className="flex items-center gap-3 p-2 rounded-md bg-secondary/50">
                     <div className="flex-shrink-0 w-5 text-center text-xs font-mono text-muted-foreground">{index + 2}.</div>
-                    <Avatar className="h-8 w-8">
-                        <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/40/40`} alt={student.name} />
-                        <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                     <Avatar className="h-8 w-8">
+                        {isStudent ? (
+                            <>
+                                <AvatarImage src={`https://picsum.photos/seed/student-${item.id}/40/40`} alt={item.name} />
+                                <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
+                            </>
+                        ) : (
+                            <div className="flex items-center justify-center h-full w-full bg-background rounded-full">
+                              <School className="h-4 w-4 text-muted-foreground" />
+                            </div>
+                        )}
                     </Avatar>
                     <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium truncate">{student.name}</p>
-                        {[student.serie, student.turma].filter(Boolean).length > 0 && (
-                            <p className="text-xs text-muted-foreground truncate">{[student.serie, student.turma].filter(Boolean).join(' - ')}</p>
+                        <p className="text-sm font-medium truncate">{item.name}</p>
+                        {isStudent && [(item as Student).serie, (item as Student).turma].filter(Boolean).length > 0 && (
+                            <p className="text-xs text-muted-foreground truncate">{[(item as Student).serie, (item as Student).turma].filter(Boolean).join(' - ')}</p>
                         )}
                     </div>
-                    <Badge variant="outline" className="font-normal text-xs">{student.shift}</Badge>
+                    {isStudent && <Badge variant="outline" className="font-normal text-xs">{(item as Student).shift}</Badge>}
                 </li>
-            ))}
+              )
+            })}
         </ul>
     </div>
   );
@@ -217,7 +284,7 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
     </div>
 );
 
-function RouteMap({ driverLocation, students, school, route, toast, recenterTrigger }) {
+function RouteMap({ driverLocation, stops, toast, recenterTrigger }: { driverLocation: any, stops: Stop[], toast: any, recenterTrigger: number }) {
     const map = useMap();
     const directionsRendererRef = useRef(null);
 
@@ -232,21 +299,23 @@ function RouteMap({ driverLocation, students, school, route, toast, recenterTrig
                 },
             });
         }
-        directionsRendererRef.current?.setMap(map);
+        if (directionsRendererRef.current) {
+          directionsRendererRef.current.setMap(map);
+        }
     }, [map]);
 
     useEffect(() => {
-        if (!map || !directionsRendererRef.current || !driverLocation || !school || students.length === 0) {
+        if (!map || !directionsRendererRef.current || !driverLocation || stops.length === 0) {
             return;
         }
 
         const directionsService = new google.maps.DirectionsService();
         const origin = { lat: driverLocation.latitude, lng: driverLocation.longitude };
-        const destination = { lat: school.latitude, lng: school.longitude };
-        const waypoints = students
-            .filter(s => s.latitude && s.longitude)
-            .map(s => ({
-                location: { lat: s.latitude, lng: s.longitude },
+        const destination = { lat: stops[stops.length - 1].data.latitude, lng: stops[stops.length - 1].data.longitude };
+        const waypoints = stops
+            .slice(0, -1) // All stops except the last one
+            .map(stop => ({
+                location: { lat: stop.data.latitude, lng: stop.data.longitude },
                 stopover: true,
             }));
 
@@ -256,7 +325,7 @@ function RouteMap({ driverLocation, students, school, route, toast, recenterTrig
                 destination,
                 waypoints,
                 travelMode: google.maps.TravelMode.DRIVING,
-                optimizeWaypoints: false, // Route is already pre-optimized
+                optimizeWaypoints: false, 
             },
             (response, status) => {
                 if (status === "OK") {
@@ -267,21 +336,20 @@ function RouteMap({ driverLocation, students, school, route, toast, recenterTrig
             }
         );
 
-    }, [map, driverLocation, students, school, route]);
+    }, [map, driverLocation, stops]);
     
     useEffect(() => {
-        if (!map) return;
+        if (!map || stops.length === 0) return;
         
         const bounds = new google.maps.LatLngBounds();
         if (driverLocation) bounds.extend({ lat: driverLocation.latitude, lng: driverLocation.longitude });
-        students.forEach(s => s.latitude && bounds.extend({ lat: s.latitude, lng: s.longitude }));
-        if (school) bounds.extend({ lat: school.latitude, lng: school.longitude });
+        stops.forEach(s => s.data.latitude && bounds.extend({ lat: s.data.latitude, lng: s.data.longitude }));
         
         if (!bounds.isEmpty()) {
             map.fitBounds(bounds, 100);
         }
 
-    }, [map, driverLocation, students, school, recenterTrigger]);
+    }, [map, driverLocation, stops, recenterTrigger]);
 
     return (
         <>
@@ -292,26 +360,28 @@ function RouteMap({ driverLocation, students, school, route, toast, recenterTrig
                     </Pin>
                 </AdvancedMarker>
             )}
-            {students.map((student) => {
-                 if (!student?.latitude || !student?.longitude) return null;
-                return (
-                    <AdvancedMarker key={student.id} position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-                        <Pin background={'#3b82f6'} borderColor={'#fff'}>
-                            <Avatar className="h-6 w-6">
-                                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/40/40`} alt={student.name} />
-                                <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                            </Avatar>
-                        </Pin>
+            {stops.map((stop) => {
+                 const isStudent = stop.type === 'student';
+                 const item = stop.data;
+                 if (!item?.latitude || !item?.longitude) return null;
+
+                 return (
+                    <AdvancedMarker key={stop.id} position={{ lat: item.latitude, lng: item.longitude }} title={item.name}>
+                        {isStudent ? (
+                            <Pin background={'#3b82f6'} borderColor={'#fff'}>
+                                <Avatar className="h-6 w-6">
+                                    <AvatarImage src={`https://picsum.photos/seed/student-${item.id}/40/40`} alt={item.name} />
+                                    <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
+                                </Avatar>
+                            </Pin>
+                        ) : (
+                            <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff">
+                                <School />
+                            </Pin>
+                        )}
                     </AdvancedMarker>
                 );
             })}
-            {school && school.latitude && school.longitude && (
-                <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-                     <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff">
-                        <School />
-                    </Pin>
-                </AdvancedMarker>
-            )}
         </>
     );
 }
@@ -389,7 +459,7 @@ export default function DriverRoutePlanPage() {
 
     const details = new Map();
     routes.forEach(route => {
-        const firstStudentId = route.studentIds?.[0];
+        const firstStudentId = route.studentIds?.find(id => id.startsWith('student-'));
         const firstStudent = firstStudentId ? studentMap.get(firstStudentId) : undefined;
         const schoolName = firstStudent ? schoolMap.get(firstStudent.schoolId) : 'Escola não encontrada';
         details.set(route.id, {
@@ -401,45 +471,67 @@ export default function DriverRoutePlanPage() {
   }, [routes, allStudents, schools]);
 
 
-  const studentsOnRoute = useMemo(() => {
-      if (!route?.studentIds || !allStudents) return [];
-      const studentMap = new Map(allStudents.map(s => [s.id, s,]));
-      return route.studentIds
-        .map(id => studentMap.get(id))
-        .filter((s): s is Student => {
-          if (!s || s.active === false) return false;
-          // The main `shift` state determines if it's the morning or afternoon trip
-          if (s.shift === 'Integral') return true;
-          return s.shift === shift;
-        });
-  }, [route, allStudents, shift]);
+  const orderedStops = useMemo<Stop[]>(() => {
+    if (!route?.studentIds || !allStudents || !schools) return [];
+    const studentMap = new Map(allStudents.map(s => [s.id, s]));
+    const schoolMap = new Map(schools.map(s => [s.id, s]));
 
-  const schoolForRoute = useMemo(() => {
-    if (!studentsOnRoute.length || !schools) return null;
-    const studentWithSchool = studentsOnRoute.find(s => s.schoolId);
-    if (!studentWithSchool) return null;
-    return schools.find(s => s.id === studentWithSchool.schoolId);
-  }, [studentsOnRoute, schools]);
+    return route.studentIds.map(id => {
+        if (id.startsWith('student-')) {
+            const student = studentMap.get(id);
+            if (student && student.active !== false) {
+                 const isCompatibleShift = student.shift === 'Integral' || student.shift === shift;
+                 if (isCompatibleShift) {
+                    return { id, type: 'student', data: student as Student };
+                 }
+            }
+        } else if (id.startsWith('school-')) {
+            const school = schoolMap.get(id);
+            if (school) {
+                return { id, type: 'school', data: school as SchoolData };
+            }
+        }
+        return null;
+    }).filter((s): s is Stop => s !== null);
+  }, [route?.studentIds, allStudents, schools, shift]);
 
-  const nextStop = useMemo(() => {
-    if (driverProfile?.status !== 'em_rota' || !studentsOnRoute) return null;
+  const { activeStop, upcomingStops } = useMemo(() => {
+    if (driverProfile?.status !== 'em_rota' || !orderedStops) {
+      return { activeStop: null, upcomingStops: [] };
+    }
+    
+    let nextStopIndex = -1;
 
     if (direction === 'ida') {
-        return studentsOnRoute.find(s => s.status === 'aguardando') || null;
+        nextStopIndex = orderedStops.findIndex(stop => {
+            if (stop.type === 'student') {
+                return stop.data.status === 'aguardando';
+            }
+            // A school is a valid next stop if there are no 'aguardando' students before it.
+            // This is implicitly handled by findIndex.
+            return true;
+        });
     } else { // 'volta'
-        return studentsOnRoute.find(s => s.status === 'a_bordo') || null;
+        nextStopIndex = orderedStops.findIndex(stop => 
+            stop.type === 'student' && (stop.data as Student).status === 'a_bordo'
+        );
     }
-  }, [studentsOnRoute, driverProfile?.status, direction]);
-  
-  const upcomingStops = useMemo(() => {
-    if (!nextStop || !studentsOnRoute) return [];
-    const nextStopIndex = studentsOnRoute.findIndex(s => s.id === nextStop.id);
-    return studentsOnRoute.slice(nextStopIndex + 1);
-  }, [nextStop, studentsOnRoute]);
+    
+    if (nextStopIndex === -1) {
+      return { activeStop: null, upcomingStops: [] };
+    }
+
+    const activeStop = orderedStops[nextStopIndex];
+    const upcoming = orderedStops.slice(nextStopIndex + 1);
+
+    return { activeStop, upcomingStops: upcoming };
+  }, [orderedStops, driverProfile?.status, direction]);
+
   
   useEffect(() => {
-    if (driverProfile?.status === 'em_rota' && prevStudentsRef.current && studentsOnRoute) {
-        const newlyAbsentStudent = studentsOnRoute.find(currentStudent => {
+    if (driverProfile?.status === 'em_rota' && prevStudentsRef.current && orderedStops) {
+        const currentStudents = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
+        const newlyAbsentStudent = currentStudents.find(currentStudent => {
             const prevStudent = prevStudentsRef.current.find(p => p.id === currentStudent.id);
             return prevStudent && prevStudent.status !== 'ausente' && currentStudent.status === 'ausente';
         });
@@ -448,13 +540,13 @@ export default function DriverRoutePlanPage() {
             setShowRecalculatePrompt(true);
         }
     }
-    prevStudentsRef.current = studentsOnRoute;
-  }, [studentsOnRoute, driverProfile?.status]);
+    prevStudentsRef.current = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
+  }, [orderedStops, driverProfile?.status]);
 
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
-    const student = studentsOnRoute.find(s => s.id === studentId);
-    if (student) setLastProcessedStudent(student); // Save for potential undo
+    const student = (orderedStops.find(s => s.id === studentId)?.data as Student);
+    if (student) setLastProcessedStudent(student); 
 
     updateDoc('students', studentId, { status: newStatus });
     toast({
@@ -465,7 +557,25 @@ export default function DriverRoutePlanPage() {
     if (newStatus === 'ausente' && driverProfile?.status === 'em_rota') {
         setShowRecalculatePrompt(true);
     }
-  }, [updateDoc, studentsOnRoute, toast, driverProfile?.status]);
+  }, [updateDoc, orderedStops, toast, driverProfile?.status]);
+  
+  const handleDropOff = useCallback((schoolId: string) => {
+    const studentsToDropOff = orderedStops
+        .filter(stop => stop.type === 'student' && (stop.data as Student).status === 'a_bordo' && (stop.data as Student).schoolId === schoolId)
+        .map(stop => stop.id);
+
+    if (studentsToDropOff.length === 0) {
+        toast({ title: "Nenhum aluno para desembarcar", description: "Não há alunos a bordo para esta escola.", variant: "destructive" });
+        return;
+    }
+
+    studentsToDropOff.forEach(studentId => {
+        updateDoc('students', studentId, { status: 'desembarcado' });
+    });
+
+    toast({ title: "Alunos desembarcados!", description: `${studentsToDropOff.length} alunos foram marcados como desembarcados.` });
+}, [orderedStops, updateDoc, toast]);
+
 
   const handleStartRoute = useCallback(() => {
     if (!driverId || !route) return;
@@ -473,12 +583,14 @@ export default function DriverRoutePlanPage() {
     sessionStorage.setItem('activeRouteId', route.id);
     setActiveRouteId(route.id);
 
+    const studentsOnThisRoute = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
+
     if (direction === 'ida') {
-        studentsOnRoute.forEach(student => {
+        studentsOnThisRoute.forEach(student => {
             updateDoc('students', student.id, { status: 'aguardando' });
         });
     } else if (direction === 'volta') {
-        studentsOnRoute.forEach(student => {
+        studentsOnThisRoute.forEach(student => {
              if (student.status !== 'ausente') { 
                 updateDoc('students', student.id, { status: 'a_bordo' });
             }
@@ -495,7 +607,7 @@ export default function DriverRoutePlanPage() {
 
     updateDoc('drivers', driverId, { status: 'em_rota' });
     toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
-  }, [driverId, route, direction, studentsOnRoute, updateDoc, toast]);
+  }, [driverId, route, direction, orderedStops, updateDoc, toast]);
 
   const handlePauseRoute = useCallback(() => {
       if (!driverId) return;
@@ -514,9 +626,9 @@ export default function DriverRoutePlanPage() {
       updateDoc('drivers', driverId, { status: 'inativo' });
       sessionStorage.removeItem('activeRouteId');
       setActiveRouteId(null);
-      // Reset all students, not just those on the current trip, for simplicity.
+      
       allStudents.forEach(student => {
-          if (student.routeId === route?.id) {
+          if (route?.studentIds.includes(student.id)) {
             updateDoc('students', student.id, { status: 'aguardando' });
           }
       });
@@ -524,28 +636,32 @@ export default function DriverRoutePlanPage() {
           title: "Rota Finalizada!",
           description: "Bom descanso! Os status dos alunos foram reiniciados.",
       });
-  }, [driverId, allStudents, route?.id, updateDoc, toast]);
+  }, [driverId, allStudents, route?.studentIds, updateDoc, toast]);
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
     setSelectedStudentForModal(student);
     setIsModalOpen(true);
   }, []);
   
-  const handleNavigateToStudent = useCallback((student: Student) => {
-    if (student.latitude && student.longitude) {
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`;
+  const handleNavigateToStudent = useCallback((data: Student | SchoolData) => {
+    if (data.latitude && data.longitude) {
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${data.latitude},${data.longitude}`;
         window.open(url, '_blank');
     } else {
         toast({
             title: 'Endereço não encontrado',
-            description: 'As coordenadas de GPS para este aluno não estão disponíveis.',
+            description: 'As coordenadas de GPS para esta parada não estão disponíveis.',
             variant: 'destructive'
         });
     }
   }, [toast]);
   
    const handleRecalculate = useCallback(async () => {
-        if (!route || !studentsOnRoute || !schoolForRoute || !driverProfile) return;
+        const studentsOnRoute = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
+        const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
+            .map(id => schools.find(s => s.id === id)).filter(Boolean) as SchoolData[];
+        
+        if (!route || !studentsOnRoute.length || !schoolsOnRoute.length || !driverProfile) return;
 
         setIsRecalculating(true);
         try {
@@ -553,15 +669,15 @@ export default function DriverRoutePlanPage() {
             const formatAddress = (entity) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : '';
             
             const input = {
-                students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-                schoolAddress: formatAddress(schoolForRoute),
+                students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
+                schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
                 startAddress: (driverProfile.latitude && driverProfile.longitude) ? `${driverProfile.latitude},${driverProfile.longitude}` : undefined,
             };
 
             const result = await optimizeSchoolVanRoute(input);
             
             updateDoc('routes', route.id, { 
-                studentIds: result.optimizedStudentIds,
+                studentIds: result.optimizedStops.map(s => s.id),
                 turnByTurnDirections: result.turnByTurnDirections,
                 lastOptimizedAt: new Date().toISOString(),
             });
@@ -581,7 +697,7 @@ export default function DriverRoutePlanPage() {
         } finally {
             setIsRecalculating(false);
         }
-    }, [route, studentsOnRoute, schoolForRoute, driverProfile, updateDoc, toast, setIsRecalculating]);
+    }, [route, orderedStops, schools, driverProfile, updateDoc, toast, setIsRecalculating]);
 
    const handleRecalculateFromPrompt = () => {
      setShowRecalculatePrompt(false);
@@ -623,12 +739,12 @@ export default function DriverRoutePlanPage() {
     }, [driverLocation, toast]);
 
     const handleScanSuccess = useCallback((scannedId: string) => {
-        if (!nextStop) {
-            toast({ title: "Nenhuma parada ativa", description: "Não há uma próxima parada definida para escanear.", variant: "destructive"});
+        if (!activeStop || activeStop.type !== 'student') {
+            toast({ title: "Nenhuma parada de aluno ativa", description: "Não há uma próxima parada de aluno definida para escanear.", variant: "destructive"});
             return;
         }
 
-        if (scannedId !== nextStop.id) {
+        if (scannedId !== activeStop.id) {
             toast({ title: "Aluno Incorreto", description: "Este não é o aluno da próxima parada. Siga a ordem da rota.", variant: "destructive"});
             return;
         }
@@ -637,7 +753,7 @@ export default function DriverRoutePlanPage() {
         handleStatusChange(scannedId, newStatus);
         
         setIsScannerOpen(false);
-    }, [nextStop, direction, handleStatusChange, toast]);
+    }, [activeStop, direction, handleStatusChange, toast]);
    
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
@@ -754,7 +870,7 @@ export default function DriverRoutePlanPage() {
         );
     }
     
-    const isRouteFinished = !nextStop;
+    const isRouteFinished = !activeStop;
     
     return (
         <div className="min-h-screen bg-background text-foreground pb-24">
@@ -794,16 +910,26 @@ export default function DriverRoutePlanPage() {
                             </Card>
                         ) : (
                             <>
-                                <NextStopCard 
-                                    student={nextStop} 
-                                    onStatusChange={handleStatusChange} 
-                                    onNavigate={handleNavigateToStudent}
-                                    onOpenAuthorizedModal={handleOpenAuthorizedModal}
-                                    direction={direction}
-                                    onShareRoute={handleShareRoute}
-                                    onScanQrCode={() => setIsScannerOpen(true)}
-                                />
-                                {upcomingStops.length > 0 && <UpcomingStopsList students={upcomingStops} />}
+                                {activeStop?.type === 'student' && (
+                                  <NextStopCard 
+                                      student={activeStop.data as Student} 
+                                      onStatusChange={handleStatusChange} 
+                                      onNavigate={handleNavigateToStudent}
+                                      onOpenAuthorizedModal={() => handleOpenAuthorizedModal(activeStop.data as Student)}
+                                      direction={direction}
+                                      onShareRoute={handleShareRoute}
+                                      onScanQrCode={() => setIsScannerOpen(true)}
+                                  />
+                                )}
+                                {activeStop?.type === 'school' && direction === 'ida' && (
+                                    <NextStopSchoolCard 
+                                        school={activeStop.data as SchoolData}
+                                        onDropOff={handleDropOff}
+                                        onNavigate={handleNavigateToStudent}
+                                        onShareRoute={handleShareRoute}
+                                    />
+                                )}
+                                {upcomingStops.length > 0 && <UpcomingStopsList stops={upcomingStops} />}
                             </>
                         )}
                     </div>
@@ -848,9 +974,7 @@ export default function DriverRoutePlanPage() {
                                     >
                                         <RouteMap 
                                             driverLocation={driverLocation}
-                                            students={studentsOnRoute} 
-                                            school={schoolForRoute}
-                                            route={route}
+                                            stops={orderedStops}
                                             toast={toast}
                                             recenterTrigger={recenterTrigger}
                                         />
@@ -908,4 +1032,5 @@ export default function DriverRoutePlanPage() {
 }
 
     
+
 
