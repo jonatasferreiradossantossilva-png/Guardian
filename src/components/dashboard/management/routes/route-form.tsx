@@ -94,13 +94,16 @@ export function RouteForm({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isOptimized, setIsOptimized] = useState(false);
   
+  const [isInitializing, setIsInitializing] = useState(true);
   const prevSchoolIdsRef = useRef<string[]>();
+
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
   const driversMap = useMemo(() => new Map(drivers.map(d => [d.id, d])), [drivers]);
 
  useEffect(() => {
+    setIsInitializing(true);
     const initialStops: Stop[] = [];
     const initialSchoolIds = new Set<string>();
 
@@ -117,8 +120,11 @@ export function RouteForm({
         }
     });
     setStops(initialStops);
-    setSelectedSchoolIds(Array.from(initialSchoolIds));
+    const schoolIdArray = Array.from(initialSchoolIds);
+    setSelectedSchoolIds(schoolIdArray);
+    prevSchoolIdsRef.current = schoolIdArray;
     setIsOptimized(!!route?.lastOptimizedAt);
+    setIsInitializing(false);
 }, [route, studentsMap, schoolsMap]);
 
 
@@ -276,48 +282,39 @@ export function RouteForm({
   };
 
   useEffect(() => {
-    // On the first render, just store the initial IDs and do nothing.
-    if (prevSchoolIdsRef.current === undefined) {
-      prevSchoolIdsRef.current = selectedSchoolIds;
-      return;
+    if (isInitializing) {
+        return;
     }
     
-    const prevIds = prevSchoolIdsRef.current;
+    const prevIds = prevSchoolIdsRef.current || [];
     const currentIdsSet = new Set(selectedSchoolIds);
 
-    // Check if the list of selected schools has actually changed.
     const hasChanged = selectedSchoolIds.length !== prevIds.length || prevIds.some(id => !currentIdsSet.has(id));
 
     if (hasChanged) {
-      // If there's any change, the route is no longer considered optimized.
-      setIsOptimized(false);
+        setIsOptimized(false);
+        
+        const removedSchoolIds = prevIds.filter(id => !currentIdsSet.has(id));
       
-      // Specifically check if any schools were REMOVED.
-      const removedSchoolIds = prevIds.filter(id => !currentIdsSet.has(id));
-      
-      if (removedSchoolIds.length > 0) {
-        // If schools were removed, we use the functional form of setStops 
-        // to update the `stops` list without needing `stops` in the dependency array.
-        setStops(currentStops => {
-            return currentStops.filter(stop => {
-                if (stop.type === 'student') {
-                    const student = studentsMap.get(stop.id);
-                    // Keep the student if their school was NOT in the removed list.
-                    return !(student && removedSchoolIds.includes(student.schoolId));
-                }
-                if (stop.type === 'school') {
-                    // Keep the school stop if its ID was NOT in the removed list.
-                    return !removedSchoolIds.includes(stop.id);
-                }
-                return true; // Should not happen, but keep other stop types.
+        if (removedSchoolIds.length > 0) {
+            setStops(currentStops => {
+                return currentStops.filter(stop => {
+                    if (stop.type === 'student') {
+                        const student = studentsMap.get(stop.id);
+                        return !(student && removedSchoolIds.includes(student.schoolId));
+                    }
+                    if (stop.type === 'school') {
+                        return !removedSchoolIds.includes(stop.id);
+                    }
+                    return true;
+                });
             });
-        });
-      }
+        }
     }
     
-    // After processing, update the ref to the current state for the next render.
     prevSchoolIdsRef.current = selectedSchoolIds;
-  }, [selectedSchoolIds, studentsMap]);
+  }, [selectedSchoolIds, isInitializing, studentsMap]);
+
 
   const handleOptimizeOrder = async () => {
     if (studentsOnRoute.length < 2) {
