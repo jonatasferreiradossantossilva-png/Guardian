@@ -57,11 +57,11 @@ const prompt = ai.definePrompt({
 
 Você receberá uma lista de alunos e uma lista de escolas. Cada aluno possui um 'schoolId' que corresponde ao 'id' da sua escola de destino.
 
-**REGRA MAIS IMPORTANTE:** Um aluno SÓ PODE ser desembarcado na sua escola correspondente. A parada de uma escola na rota representa o momento de desembarque de TODOS os alunos que pertencem àquela escola e que já estão no veículo. É um erro grave sugerir que um aluno seja deixado em uma escola diferente da sua.
+**REGRA DE OURO DA OPERAÇÃO (Plano do Gestor):** A rota deve ser estruturada em duas fases:
+1.  **Fase 1: Embarque.** A rota deve primeiro embarcar TODOS os alunos. A sequência de embarque dos alunos deve ser otimizada para o menor tempo/distância.
+2.  **Fase 2: Desembarque.** Somente após o último aluno ter sido embarcado, a rota deve prosseguir para o desembarque nas escolas. A ordem de visita às escolas também deve ser otimizada.
 
-Seu objetivo é determinar a sequência ótima de todas as paradas (embarques de alunos e desembarques nas escolas) para minimizar o tempo de viagem e a distância, respeitando a regra acima.
-
-As escolas podem ser visitadas em qualquer ordem que maximize a eficiência. A rota não precisa pegar todos os alunos antes de ir para a primeira escola. Você pode, por exemplo, pegar alunos para a Escola A, desembarcá-los na Escola A, e depois pegar alunos para a Escola B e desembarcá-los na Escola B.
+**REGRA ADICIONAL IMPORTANTE:** Um aluno SÓ PODE ser desembarcado na sua escola correspondente. É um erro grave sugerir que um aluno seja deixado em uma escola diferente da sua. A parada de uma escola na rota representa o momento de desembarque de TODOS os alunos que pertencem àquela escola e que já estão no veículo.
 
 Considere as seguintes informações:
 {{#if startAddress}}
@@ -81,7 +81,7 @@ Por favor, forneça a seguinte saída em formato JSON:
 2.  **estimatedTimeMinutes**: Uma estimativa realista do tempo total da rota em minutos.
 3.  **estimatedDistanceKm**: Uma estimativa realista da distância total da rota em quilômetros.
 4.  **summary**: Uma breve explicação da lógica da rota. Se a rota atender a mais de uma escola, explique a lógica da ordem das escolas. Exemplo: "A rota foi otimizada para primeiro atender a Escola A, que estava mais próxima do ponto de partida, e depois seguir para a Escola B."
-5.  **turnByTurnDirections**: Uma lista de instruções de direção passo a passo, como um GPS, partindo do início e seguindo por TODAS as paradas na ordem otimizada.
+5.  **turnByTurnDirections**: Uma lista de instruções de direção passo a passo para a rota, como um GPS, partindo do início e seguindo por TODAS as paradas na ordem otimizada.
 
 Calcule a melhor sequência possível e forneça TODAS as informações solicitadas no formato JSON especificado.`,
 });
