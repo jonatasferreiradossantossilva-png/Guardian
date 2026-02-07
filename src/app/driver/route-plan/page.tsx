@@ -316,58 +316,7 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
 
 function RouteMap({ driverLocation, stops, toast, recenterTrigger }: { driverLocation: any, stops: Stop[], toast: any, recenterTrigger: number }) {
     const map = useMap();
-    const directionsRendererRef = useRef(null);
 
-    useEffect(() => {
-        if (map && !directionsRendererRef.current) {
-            directionsRendererRef.current = new google.maps.DirectionsRenderer({
-                suppressMarkers: true,
-                polylineOptions: {
-                    strokeColor: "#2ab0c1",
-                    strokeOpacity: 0.8,
-                    strokeWeight: 6,
-                },
-            });
-        }
-        if (directionsRendererRef.current) {
-          directionsRendererRef.current.setMap(map);
-        }
-    }, [map]);
-
-    useEffect(() => {
-        if (!map || !directionsRendererRef.current || !driverLocation || stops.length === 0) {
-            return;
-        }
-
-        const directionsService = new google.maps.DirectionsService();
-        const origin = { lat: driverLocation.latitude, lng: driverLocation.longitude };
-        const destination = { lat: stops[stops.length - 1].data.latitude, lng: stops[stops.length - 1].data.longitude };
-        const waypoints = stops
-            .slice(0, -1) // All stops except the last one
-            .map(stop => ({
-                location: { lat: stop.data.latitude, lng: stop.data.longitude },
-                stopover: true,
-            }));
-
-        directionsService.route(
-            {
-                origin,
-                destination,
-                waypoints,
-                travelMode: google.maps.TravelMode.DRIVING,
-                optimizeWaypoints: false, 
-            },
-            (response, status) => {
-                if (status === "OK") {
-                    directionsRendererRef.current.setDirections(response);
-                } else {
-                    console.error(`Directions request failed due to ${status}`);
-                }
-            }
-        );
-
-    }, [map, driverLocation, stops]);
-    
     useEffect(() => {
         if (!map || stops.length === 0) return;
         
@@ -1239,6 +1188,8 @@ export default function DriverRoutePlanPage() {
 
 
 
+
+    
 
     
 

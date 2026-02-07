@@ -9,6 +9,7 @@
 
 
 
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -125,82 +126,6 @@ function haversineDistance(coords1, coords2) {
 
 function ParentRouteMap({ busLocation, student, school, toast, recenterTrigger }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, toast: (options: any) => void, recenterTrigger: number }) {
   const map = useMap();
-  const directionsRendererRef = useRef<google.maps.DirectionsRenderer | null>(null);
-  const lastDestinationRef = useRef<string | null>(null);
-  const directionsApiCalledRef = useRef(false);
-
-  // Effect to manage the DirectionsRenderer instance
-  useEffect(() => {
-    if (!map) return;
-
-    if (!directionsRendererRef.current) {
-        directionsRendererRef.current = new google.maps.DirectionsRenderer({
-            suppressMarkers: true, // We use our own custom markers
-            polylineOptions: {
-                strokeColor: "#2ab0c1", // Theme's primary color
-                strokeOpacity: 0.8,
-                strokeWeight: 6,
-            },
-        });
-    }
-    directionsRendererRef.current.setMap(map);
-    
-    // Cleanup on unmount
-    return () => {
-      if (directionsRendererRef.current) {
-        directionsRendererRef.current.setMap(null);
-      }
-    };
-  }, [map]);
-
-
-  // Effect to fetch and render directions
-  useEffect(() => {
-    if (!map || !busLocation || !student || !school || !directionsRendererRef.current) {
-      directionsRendererRef.current?.setDirections({ routes: [] }); // Clear route if data is missing
-      return;
-    }
-
-    const directionsService = new google.maps.DirectionsService();
-
-    const origin = { lat: busLocation.latitude, lng: busLocation.longitude };
-    const destinationPoint = student.status === 'a_bordo' ? school : student;
-    const destination = { lat: destinationPoint.latitude, lng: destinationPoint.longitude };
-    const destinationKey = destinationPoint.id;
-
-    // COST-SAVING: Only request new directions if the final destination changes.
-    if (lastDestinationRef.current === destinationKey) {
-      return;
-    }
-    
-    directionsApiCalledRef.current = false;
-    
-    directionsService.route(
-      {
-        origin: origin,
-        destination: destination,
-        travelMode: google.maps.TravelMode.DRIVING,
-      },
-      (result, status) => {
-        if (status === google.maps.DirectionsStatus.OK) {
-          directionsRendererRef.current?.setDirections(result);
-          lastDestinationRef.current = destinationKey;
-        } else {
-          if (!directionsApiCalledRef.current) {
-              toast({
-                variant: "destructive",
-                title: "Erro ao Traçar Rota no Mapa",
-                description: "Não foi possível obter a rota. Verifique se a 'Directions API' está ativada no seu projeto Google Cloud.",
-              });
-              directionsApiCalledRef.current = true;
-          }
-          console.error(`Directions request failed due to ${status}`);
-          directionsRendererRef.current?.setDirections({ routes: [] });
-        }
-      }
-    );
-  }, [map, busLocation, student, school, student?.status, toast]);
-
 
   useEffect(() => {
       if (!map) return;
@@ -541,6 +466,8 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
+
+    
 
     
 
