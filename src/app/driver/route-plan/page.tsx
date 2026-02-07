@@ -16,6 +16,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -52,6 +53,7 @@ import {
   WifiOff,
   QrCode,
   Users,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -69,6 +71,7 @@ import { Badge } from '@/components/ui/badge';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
+import { cn } from '@/lib/utils';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -431,6 +434,79 @@ function RouteMap({ driverLocation, stops, toast, recenterTrigger }: { driverLoc
     );
 }
 
+function StudentChecklistRow({ student, onStatusChange }: { student: Student; onStatusChange: (studentId: string, status: StudentStatus) => void; }) {
+    const isProcessed = student.status !== 'aguardando';
+
+    return (
+        <div className={cn("p-3 flex items-center gap-3 rounded-md transition-colors", isProcessed ? "bg-secondary" : "bg-background")}>
+            <Avatar>
+                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
+                <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+            </Avatar>
+            <div className="flex-1">
+                <p className={cn("font-medium", isProcessed && "text-muted-foreground line-through")}>{student.name}</p>
+            </div>
+            {isProcessed ? (
+                <Badge variant={student.status === 'a_bordo' ? 'default' : 'destructive'} className={cn(student.status === 'a_bordo' && "bg-green-600")}>
+                    {student.status === 'a_bordo' ? 'Embarcou' : 'Ausente'}
+                </Badge>
+            ) : (
+                <div className="flex gap-2">
+                    <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => onStatusChange(student.id, 'a_bordo')}><Check className="h-4 w-4"/></Button>
+                    <Button size="sm" variant="destructive" onClick={() => onStatusChange(student.id, 'ausente')}><X className="h-4 w-4"/></Button>
+                </div>
+            )}
+        </div>
+    )
+}
+
+function BoardingChecklist({
+  school,
+  students,
+  onStatusChange,
+  onComplete,
+  onScanQrCode
+}: {
+  school: SchoolData;
+  students: Student[];
+  onStatusChange: (studentId: string, status: StudentStatus) => void;
+  onComplete: () => void;
+  onScanQrCode: () => void;
+}) {
+    const allStudentsProcessed = useMemo(() => {
+        return students.every(s => s.status !== 'aguardando');
+    }, [students]);
+
+    return (
+        <div className="p-4 max-w-md mx-auto">
+            <Card>
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-xl"><Users />Embarque - {school.name}</CardTitle>
+                    <CardDescription>Confirme os alunos que embarcaram ou escaneie os QR Codes.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                    <Button className="w-full" variant="outline" onClick={onScanQrCode}>
+                        <QrCode className="mr-2 h-4 w-4" />
+                        Escanear QR Code
+                    </Button>
+                    <div className="space-y-2 max-h-[50vh] overflow-y-auto p-1">
+                        {students.map(student => (
+                            <StudentChecklistRow key={student.id} student={student} onStatusChange={onStatusChange} />
+                        ))}
+                    </div>
+                </CardContent>
+                <CardFooter>
+                    <Button className="w-full" disabled={!allStudentsProcessed} onClick={onComplete}>
+                        <CheckCircle className="mr-2 h-4 w-4" />
+                        Embarque Concluído na Escola
+                    </Button>
+                </CardFooter>
+            </Card>
+        </div>
+    )
+}
+
+
 export default function DriverRoutePlanPage() {
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
@@ -456,6 +532,10 @@ export default function DriverRoutePlanPage() {
   const [isSchoolSelectorOpen, setIsSchoolSelectorOpen] = useState(false);
   const [schoolsForSelection, setSchoolsForSelection] = useState<SchoolData[]>([]);
   const [selectedStartSchoolId, setSelectedStartSchoolId] = useState<string>('');
+
+  // State for managing checklist view
+  const [currentView, setCurrentView] = useState<'route' | 'checklist'>('route');
+  const [checklistSchool, setChecklistSchool] = useState<SchoolData | null>(null);
 
 
   useEffect(() => {
@@ -794,6 +874,8 @@ export default function DriverRoutePlanPage() {
       updateDoc('drivers', driverId, { status: 'inativo' });
       sessionStorage.removeItem('activeRouteId');
       setActiveRouteId(null);
+      setCurrentView('route'); // Reset view on end
+      setChecklistSchool(null);
       
       allStudents.forEach(student => {
           if (route?.studentIds.includes(student.id)) {
@@ -908,40 +990,58 @@ export default function DriverRoutePlanPage() {
         });
     }, [driverLocation, toast]);
 
+    const handlePickup = (schoolId: string) => {
+        const school = schoolsMap.get(schoolId);
+        if (school) {
+            setChecklistSchool(school);
+            setCurrentView('checklist');
+        }
+    };
+    
+    const handleCompleteBoarding = () => {
+        setCurrentView('route');
+        setChecklistSchool(null);
+        toast({ title: `Embarque concluído em ${checklistSchool?.name}!` });
+        // After finishing the last school pickup, trigger optimization for drop-offs
+        const remainingSchoolStops = orderedStops.filter(stop => stop.type === 'school' && stop.id !== checklistSchool?.id && stop.data.status === 'aguardando');
+        if (remainingSchoolStops.length === 0) {
+            // This was the last school pickup, now optimize drop-offs
+            // You can trigger the AI optimization for the student drop-offs here if desired
+        }
+    };
+    
     const handleScanSuccess = useCallback((scannedId: string) => {
-        if (!activeStop || activeStop.type !== 'student') {
-            toast({ title: "Nenhuma parada de aluno ativa", description: "Não há uma próxima parada de aluno definida para escanear.", variant: "destructive"});
+        const student = (allStudents || []).find(s => s.id === scannedId);
+        if (!student) {
+            toast({ title: "Aluno não encontrado", description: "O QR code não corresponde a um aluno nesta rota.", variant: "destructive"});
             return;
         }
 
-        if (scannedId !== activeStop.id) {
-            toast({ title: "Aluno Incorreto", description: "Este não é o aluno da próxima parada. Siga a ordem da rota.", variant: "destructive"});
+        let newStatus: StudentStatus;
+        if (direction === 'ida' && student.status === 'aguardando') {
+            newStatus = 'a_bordo';
+        } else if (direction === 'volta' && student.status === 'a_bordo') {
+            newStatus = 'desembarcado';
+        } else if (direction === 'volta' && student.status === 'aguardando') {
+            if (checklistSchool && student.schoolId === checklistSchool.id) {
+                newStatus = 'a_bordo';
+            } else {
+                 toast({ title: "Ação não permitida", description: "Este aluno não pertence a este ponto de embarque.", variant: "destructive"});
+                return;
+            }
+        }
+        else {
+             toast({ title: "Ação não permitida", description: `O status de ${student.name} não pode ser alterado via QR Code neste momento.`, variant: "destructive"});
             return;
         }
-        
-        const newStatus = direction === 'ida' ? 'a_bordo' : 'desembarcado';
+
         handleStatusChange(scannedId, newStatus);
         
-        setIsScannerOpen(false);
-    }, [activeStop, direction, handleStatusChange, toast]);
-
-    const handlePickup = useCallback((schoolId: string) => {
-        // This is a temporary simulation. In the real flow, this would open a checklist.
-        const studentsToPickup = orderedStops
-            .filter(stop => stop.type === 'student' && (stop.data as Student).status === 'aguardando' && (stop.data as Student).schoolId === schoolId)
-            .map(stop => stop.id);
-
-        if (studentsToPickup.length === 0) {
-            toast({ title: "Nenhum aluno para embarcar", description: "Não há alunos aguardando nesta escola.", variant: "destructive" });
-            return;
+        if(!checklistSchool) {
+            setIsScannerOpen(false);
         }
+    }, [allStudents, direction, checklistSchool, handleStatusChange, toast]);
 
-        studentsToPickup.forEach(studentId => {
-            updateDoc('students', studentId, { status: 'a_bordo' });
-        });
-
-        toast({ title: "Alunos Embarcados! (Simulação)", description: `${studentsToPickup.length} alunos foram marcados como 'a bordo'.` });
-    }, [orderedStops, updateDoc, toast]);
    
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
@@ -1083,6 +1183,29 @@ export default function DriverRoutePlanPage() {
                     onEnd={handleEndRoute} 
                     onResume={handleResumeRoute} 
                   />
+            </div>
+        );
+    }
+
+    if (currentView === 'checklist' && checklistSchool) {
+        const studentsForChecklist = orderedStops
+            .filter(stop => stop.type === 'student' && (stop.data as Student).schoolId === checklistSchool.id)
+            .map(stop => stop.data as Student);
+
+        return (
+            <div className="min-h-screen bg-background text-foreground pb-24">
+                <BoardingChecklist
+                    school={checklistSchool}
+                    students={studentsForChecklist}
+                    onStatusChange={handleStatusChange}
+                    onComplete={handleCompleteBoarding}
+                    onScanQrCode={() => setIsScannerOpen(true)}
+                />
+                 <QrScannerModal
+                    isOpen={isScannerOpen}
+                    onClose={() => setIsScannerOpen(false)}
+                    onScanSuccess={handleScanSuccess}
+                />
             </div>
         );
     }
@@ -1273,6 +1396,7 @@ export default function DriverRoutePlanPage() {
 }
 
     
+
 
 
 
