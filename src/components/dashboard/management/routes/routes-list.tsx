@@ -51,9 +51,10 @@ type Route = {
   lastOptimizedAt?: string;
 };
 type Driver = { id: string; name: string };
-type Student = { id: string; name: string };
+type Student = { id: string; name: string; schoolId: string; };
 type Monitor = { id: string; name: string; profile: string };
 type Vehicle = { id: string; model: string; licensePlate: string; capacity: number };
+type School = { id: string; name: string };
 
 
 interface RoutesListProps {
@@ -62,9 +63,10 @@ interface RoutesListProps {
   initialStudents: Student[];
   initialMonitors: Monitor[];
   initialVehicles: Vehicle[];
+  initialSchools: School[];
 }
 
-export function RoutesList({ initialRoutes, initialDrivers, initialStudents, initialMonitors, initialVehicles }: RoutesListProps) {
+export function RoutesList({ initialRoutes, initialDrivers, initialStudents, initialMonitors, initialVehicles, initialSchools }: RoutesListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
 
@@ -82,6 +84,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
   const { data: liveUsers, isLoading: areUsersLoading } = useMockCollection('users');
   const { data: liveVehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
+  const { data: liveSchools, isLoading: areSchoolsLoading } = useMockCollection('schools');
 
 
   const routes = liveRoutes ?? initialRoutes;
@@ -89,7 +92,8 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
   const students = liveStudents ?? initialStudents;
   const monitors = useMemo(() => (liveUsers ?? initialMonitors)?.filter(u => u.profile === 'monitor'), [liveUsers, initialMonitors]);
   const vehicles = liveVehicles ?? initialVehicles;
-  const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading || areUsersLoading || areVehiclesLoading;
+  const schools = liveSchools ?? initialSchools;
+  const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading || areUsersLoading || areVehiclesLoading || areSchoolsLoading;
 
   const driversMap = useMemo(() => {
     if (!drivers) return new Map();
@@ -151,6 +155,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             students={students || []}
             monitors={monitors || []}
             vehicles={vehicles || []}
+            schools={schools || []}
             onFormSubmit={handleFormSubmit}
           />
         </Dialog>

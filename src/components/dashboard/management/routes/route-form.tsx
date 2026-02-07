@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -22,15 +22,16 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle } from 'lucide-react';
+import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 
 type Driver = { id: string; name: string; vehicleId?: string; };
-type Student = { id: string; name: string, routeId?: string, shift: string, active?: boolean };
+type Student = { id: string; name: string, routeId?: string, shift: string, active?: boolean, schoolId: string };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
+type School = { id: string; name: string; };
 
 interface RouteFormProps {
   route?: { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; };
@@ -38,6 +39,7 @@ interface RouteFormProps {
   students: Student[];
   monitors: Monitor[];
   vehicles: Vehicle[];
+  schools: School[];
   onFormSubmit: () => void;
 }
 
@@ -47,18 +49,35 @@ export function RouteForm({
   students,
   monitors,
   vehicles,
+  schools,
   onFormSubmit,
 }: RouteFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   
-  const [name, setName] = useState(route?.name || '');
-  const [driverId, setDriverId] = useState(route?.driverId || '');
-  const [monitorId, setMonitorId] = useState(route?.monitorId || '');
-  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
+  const [name, setName] = useState('');
+  const [driverId, setDriverId] = useState('');
+  const [monitorId, setMonitorId] = useState('');
+  const [selectedSchoolId, setSelectedSchoolId] = useState('');
+  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>([]);
   
   const [studentSearch, setStudentSearch] = useState('');
-  const [errors, setErrors] = useState<{name?: string, driverId?: string}>({});
+  const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolId?: string}>({});
+
+  useEffect(() => {
+    if (route) {
+        const studentMap = new Map(students.map(s => [s.id, s]));
+        const firstStudentId = route.studentIds?.[0];
+        const firstStudent = firstStudentId ? studentMap.get(firstStudentId) : null;
+        
+        setName(route.name || '');
+        setDriverId(route.driverId || '');
+        setMonitorId(route.monitorId || '');
+        setCurrentStudentIds(route.studentIds || []);
+        setSelectedSchoolId(firstStudent?.schoolId || '');
+    }
+  }, [route, students]);
+
 
   const { vehicle, vehicleCapacity } = useMemo(() => {
      if (!driverId || !drivers || !vehicles) return { vehicle: null, vehicleCapacity: Infinity };
@@ -77,15 +96,19 @@ export function RouteForm({
 
     const isExceeded = studentsInCurrentRoute.length > vehicleCapacity;
 
-    const availableStudents = students.filter(s => {
-        const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
-        const isAlreadyInThisRoute = currentStudentIds.includes(s.id);
-        const matchesSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase());
-        return s.active !== false && !isInAnotherRoute && !isAlreadyInThisRoute && matchesSearch;
-    });
+    let filteredAvailableStudents = [];
+    if (selectedSchoolId) {
+        filteredAvailableStudents = students.filter(s => {
+            const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
+            const isAlreadyInThisRoute = currentStudentIds.includes(s.id);
+            const matchesSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase());
+            const belongsToSchool = s.schoolId === selectedSchoolId;
+            return s.active !== false && !isInAnotherRoute && !isAlreadyInThisRoute && matchesSearch && belongsToSchool;
+        });
+    }
 
-    return { isCapacityExceeded: isExceeded, availableStudents, studentsInCurrentRoute };
-  }, [currentStudentIds, students, route, studentSearch, vehicleCapacity]);
+    return { isCapacityExceeded: isExceeded, availableStudents: filteredAvailableStudents, studentsInCurrentRoute };
+  }, [currentStudentIds, students, route, studentSearch, vehicleCapacity, selectedSchoolId]);
 
   const addStudentToRoute = (studentId: string) => {
     if (currentStudentIds.length >= vehicleCapacity) {
@@ -118,9 +141,10 @@ export function RouteForm({
   }
 
   const handleSubmit = () => {
-    const newErrors: {name?: string, driverId?: string} = {};
+    const newErrors: {name?: string, driverId?: string, schoolId?: string} = {};
     if (!name.trim()) newErrors.name = 'O nome é obrigatório.';
     if (!driverId) newErrors.driverId = 'Selecione um motorista.';
+    if (!selectedSchoolId) newErrors.schoolId = 'Selecione uma escola.';
     
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -143,7 +167,7 @@ export function RouteForm({
   };
   
   return (
-    <DialogContent className="sm:max-w-xl">
+    <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>{route ? 'Editar Rota' : 'Adicionar Rota'}</DialogTitle>
         <DialogDescription>
@@ -152,13 +176,24 @@ export function RouteForm({
       </DialogHeader>
       <div className="space-y-4">
           <ScrollArea className="max-h-[65vh] space-y-4 overflow-y-auto py-1 pr-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
               <div className="space-y-2">
                 <Label htmlFor="routeName">Nome da Rota</Label>
                 <Input id="routeName" placeholder="Ex: Rota Matinal - Zona Sul" value={name} onChange={(e) => setName(e.target.value)} />
                 {errors.name && <p className="text-sm font-medium text-destructive">{errors.name}</p>}
               </div>
               <div className="space-y-2">
+                <Label htmlFor="schoolId">Escola</Label>
+                <Select onValueChange={setSelectedSchoolId} value={selectedSchoolId} disabled={!!route && currentStudentIds.length > 0}>
+                    <SelectTrigger id="schoolId"><SelectValue placeholder="Selecione uma escola" /></SelectTrigger>
+                    <SelectContent>{schools.map(s => (<SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>))}</SelectContent>
+                </Select>
+                {errors.schoolId && <p className="text-sm font-medium text-destructive">{errors.schoolId}</p>}
+                 {!!route && currentStudentIds.length > 0 && <p className="text-xs text-muted-foreground">A escola não pode ser alterada em uma rota com alunos.</p>}
+              </div>
+            </div>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pt-4">
+               <div className="space-y-2">
                 <Label htmlFor="driverId">Motorista</Label>
                 <Select onValueChange={setDriverId} value={driverId}>
                     <SelectTrigger id="driverId"><SelectValue placeholder="Selecione um motorista" /></SelectTrigger>
@@ -197,7 +232,7 @@ export function RouteForm({
                   <Tabs defaultValue="inRoute">
                       <TabsList className="grid w-full grid-cols-2">
                           <TabsTrigger value="inRoute">Na Rota ({studentsInCurrentRoute.length})</TabsTrigger>
-                          <TabsTrigger value="available">Adicionar Alunos ({availableStudents.length})</TabsTrigger>
+                          <TabsTrigger value="available">Adicionar Alunos</TabsTrigger>
                       </TabsList>
                       <TabsContent value="inRoute">
                           <Card>
@@ -228,31 +263,41 @@ export function RouteForm({
                       </TabsContent>
                       <TabsContent value="available">
                           <Card>
-                              <div className="border-b p-2">
-                                  <Input
-                                  placeholder="Buscar aluno..."
-                                  value={studentSearch}
-                                  onChange={(e) => setStudentSearch(e.target.value)}
-                                  className="h-8"
-                                  />
-                              </div>
-                              <CardContent className="p-2">
-                                  <ScrollArea className="h-56">
-                                      {availableStudents.length > 0 ? availableStudents.map(s => (
-                                          <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
-                                              <div className="flex min-w-0 flex-1 items-center gap-2">
-                                                  <span className="truncate font-medium text-sm">{s.name}</span>
+                              {!selectedSchoolId ? (
+                                <div className="h-64 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
+                                    <School className="h-8 w-8 mb-2"/>
+                                    <p className="font-semibold">Selecione uma escola</p>
+                                    <p className="text-sm">Escolha uma escola no campo acima para ver os alunos disponíveis.</p>
+                                </div>
+                              ) : (
+                                <>
+                                  <div className="border-b p-2">
+                                      <Input
+                                      placeholder="Buscar aluno por nome..."
+                                      value={studentSearch}
+                                      onChange={(e) => setStudentSearch(e.target.value)}
+                                      className="h-8"
+                                      />
+                                  </div>
+                                  <CardContent className="p-2">
+                                      <ScrollArea className="h-56">
+                                          {availableStudents.length > 0 ? availableStudents.map(s => (
+                                              <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
+                                                  <div className="flex min-w-0 flex-1 items-center gap-2">
+                                                      <span className="truncate font-medium text-sm">{s.name}</span>
+                                                  </div>
+                                                  <div className="flex items-center">
+                                                      <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
+                                                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStudentToRoute(s.id)}>
+                                                          <PlusCircle className="h-4 w-4 text-green-500" />
+                                                      </Button>
+                                                  </div>
                                               </div>
-                                              <div className="flex items-center">
-                                                  <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
-                                                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStudentToRoute(s.id)}>
-                                                      <PlusCircle className="h-4 w-4 text-green-500" />
-                                                  </Button>
-                                              </div>
-                                          </div>
-                                      )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível.</p>}
-                                  </ScrollArea>
-                              </CardContent>
+                                          )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para esta escola ou busca.</p>}
+                                      </ScrollArea>
+                                  </CardContent>
+                                </>
+                              )}
                           </Card>
                       </TabsContent>
                   </Tabs>

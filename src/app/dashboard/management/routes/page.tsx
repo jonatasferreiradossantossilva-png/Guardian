@@ -9,6 +9,7 @@ export default async function RoutesPage() {
   const drivers = initialMockData.drivers;
   const students = initialMockData.students;
   const users = initialMockData.users || [];
+  const schools = initialMockData.schools;
   
   // Filter for active drivers and monitors
   const activeDrivers = drivers.filter(d => d.active !== false);
@@ -22,7 +23,8 @@ export default async function RoutesPage() {
             initialDrivers={activeDrivers} 
             initialStudents={students} 
             initialMonitors={activeMonitors} 
-            initialVehicles={vehicles} 
+            initialVehicles={vehicles}
+            initialSchools={schools}
         />;
 }
 
