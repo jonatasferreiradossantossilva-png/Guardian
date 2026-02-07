@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -59,6 +60,12 @@ interface RouteFormProps {
   schools: SchoolData[];
   onFormSubmit: () => void;
 }
+
+const formatSerie = (serie?: string) => {
+  if (!serie) return null;
+  // Abbreviates "Ano" from the series string for a more compact view.
+  return serie.replace(/ ano/i, '').trim();
+};
 
 export function RouteForm({
   route,
@@ -424,24 +431,27 @@ export function RouteForm({
                                 ).map(([schoolName, students]) => (
                                     <div key={schoolName}>
                                         <h4 className="font-semibold text-sm text-muted-foreground px-2 py-1.5">{schoolName}</h4>
-                                        {students.map(s => (
-                                            <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
-                                                <div className="flex-1 min-w-0">
-                                                    <div className="flex items-baseline gap-1.5">
-                                                        <p className="truncate font-medium text-sm">{s.name}</p>
-                                                        {[s.serie, s.turma].filter(Boolean).length > 0 && (
-                                                            <p className="truncate text-xs text-muted-foreground">({[s.serie, s.turma].filter(Boolean).join(' / ')})</p>
-                                                        )}
+                                        {students.map(s => {
+                                            const displaySerie = formatSerie(s.serie);
+                                            return (
+                                                <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-baseline gap-1.5">
+                                                            <p className="truncate font-medium text-sm">{s.name}</p>
+                                                            {displaySerie && (
+                                                                <p className="truncate text-xs text-muted-foreground">({displaySerie})</p>
+                                                            )}
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center">
+                                                        <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
+                                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name})}>
+                                                            <PlusCircle className="h-4 w-4 text-green-500" />
+                                                        </Button>
                                                     </div>
                                                 </div>
-                                                <div className="flex items-center">
-                                                    <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name})}>
-                                                        <PlusCircle className="h-4 w-4 text-green-500" />
-                                                    </Button>
-                                                </div>
-                                            </div>
-                                        ))}
+                                            )
+                                        })}
                                     </div>
                                 ))
                             ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para as escolas/turno selecionados ou para a busca.</p>}
@@ -473,17 +483,17 @@ export function RouteForm({
                     <ScrollArea className="h-[28rem]">
                         {stops.length > 0 ? stops.map((stop, index) => {
                             const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
-                            const serieTurma = student ? [student.serie, student.turma].filter(Boolean).join(' / ') : null;
+                            const displaySerie = student ? formatSerie(student.serie) : null;
 
                             return (
                                 <div key={`${stop.type}-${stop.id}-${index}`} className="flex items-center justify-between gap-2 rounded-md p-1 hover:bg-accent/50">
-                                    <div className="flex items-center gap-2 min-w-0">
+                                    <div className="flex items-center gap-2 flex-1 min-w-0">
                                         <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
                                         {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-baseline gap-1.5">
                                                 <p className="truncate font-medium text-sm">{stop.name}</p>
-                                                {serieTurma && <p className="truncate text-xs text-muted-foreground">({serieTurma})</p>}
+                                                {displaySerie && <p className="truncate text-xs text-muted-foreground">({displaySerie})</p>}
                                             </div>
                                             {stop.details && (
                                                 <p className="truncate text-xs text-muted-foreground">
