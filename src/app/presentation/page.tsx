@@ -2,7 +2,7 @@
 
 'use client';
 
-import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, HandHeart, Bus, Sparkles, Newspaper, Mail, Building } from 'lucide-react';
+import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, HandHeart, Bus, Sparkles, Newspaper, Mail, Building, GitMerge } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -95,7 +95,7 @@ export default function PresentationPage() {
                         <div className="space-y-6">
                             <div>
                                 <h3 className="text-xl font-semibold flex items-center gap-2"><Rocket className="text-primary"/>Para a Empresa (Eficiência)</h3>
-                                <p className="text-muted-foreground">Otimização de rotas com IA, gestão financeira e de contratos automatizada, e um dashboard com visão 360° da operação.</p>
+                                <p className="text-muted-foreground">Planejamento de rotas, gestão financeira e de contratos automatizada, e um dashboard com visão 360° da operação.</p>
                             </div>
                              <div>
                                 <h3 className="text-xl font-semibold flex items-center gap-2"><User className="text-primary"/>Para os Pais (Tranquilidade)</h3>
@@ -156,31 +156,31 @@ export default function PresentationPage() {
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
-                            <Sparkles className="h-8 w-8" />
+                            <GitMerge className="h-8 w-8" />
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold">Planejamento de Rota Eficiente</h3>
-                        <p className="mt-2 text-muted-foreground">Nossa ferramenta de planejamento analisa suas paradas para criar a rota mais econômica em tempo e dinheiro. O gestor define a rota perfeita no painel, e o motorista a executa com precisão.</p>
+                        <h3 className="mt-4 text-xl font-semibold">Eficiência Operacional Integrada</h3>
+                        <p className="mt-2 text-muted-foreground">Substituímos o caos de planilhas e WhatsApp por um sistema único que centraliza cadastros, rotas, comunicação e finanças, reduzindo erros e economizando tempo de gestão.</p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
                             <Users className="h-8 w-8" />
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold">Ecossistema 360° Integrado</h3>
-                        <p className="mt-2 text-muted-foreground">Conectamos gestores, motoristas, monitores e pais em uma única plataforma, eliminando a necessidade de apps fragmentados e criando uma fonte única de verdade para toda a operação.</p>
+                        <h3 className="mt-4 text-xl font-semibold">Ecossistema 360° Especializado</h3>
+                        <p className="mt-2 text-muted-foreground">Conectamos gestores, motoristas, monitores e pais em uma plataforma desenhada para o fluxo do transporte escolar, diferente de sistemas de frota genéricos, caros e complexos.</p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
                             <ShieldCheck className="h-8 w-8" />
                         </div>
                         <h3 className="mt-4 text-xl font-semibold">Confiabilidade e Segurança</h3>
-                        <p className="mt-2 text-muted-foreground">Com funcionalidades como check-in por QR Code e operação offline, garantimos que o sistema funcione de forma confiável e segura em todas as situações, aumentando a tranquilidade de todos.</p>
+                        <p className="mt-2 text-muted-foreground">Com funcionalidades como check-in por QR Code, operação offline e contratos digitais, garantimos que o sistema funcione de forma confiável e segura, aumentando a tranquilidade de todos.</p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
                             <DollarSign className="h-8 w-8" />
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold">Gestão Financeira e Contratual</h3>
-                        <p className="mt-2 text-muted-foreground">Substituímos planilhas e conversas de cobrança por uma gestão de faturas e contratos digitais, automatizando a administração e dando autonomia aos pais.</p>
+                        <h3 className="mt-4 text-xl font-semibold">Gestão Financeira Simplificada</h3>
+                        <p className="mt-2 text-muted-foreground">Substituímos conversas de cobrança por uma gestão de faturas e pagamentos digitais, automatizando a administração e dando autonomia financeira aos pais.</p>
                     </div>
                 </div>
             </Slide>
@@ -205,7 +205,7 @@ export default function PresentationPage() {
                         <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-end items-end text-right">
                              <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary">
                                 <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
-                                <p className="text-sm text-foreground">Plataforma B2B completa, com roteirização, financeiro e comunicação. Valor para a empresa e para os pais.</p>
+                                <p className="text-sm text-foreground">Plataforma B2B que integra operações, finanças e comunicação. Valor para a empresa e para os pais.</p>
                             </div>
                         </div>
                         <div className="row-start-3 col-start-2 p-4 border-r border-dashed border-border flex flex-col justify-start items-start">
@@ -364,5 +364,7 @@ export default function PresentationPage() {
         </main>
     );
 }
+
+    
 
     
