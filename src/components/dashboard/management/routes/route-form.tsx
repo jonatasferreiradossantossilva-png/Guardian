@@ -36,7 +36,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
@@ -460,15 +460,15 @@ export function RouteForm({
                                         {students.map(s => {
                                             const studentWithClass = getAbbreviatedClass(s);
                                             return (
-                                                <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
-                                                    <div className="flex items-center gap-2 min-w-0">
+                                                <div key={s.id} className="flex items-center gap-2 rounded-md p-2 hover:bg-accent/50">
+                                                    <div className="flex-grow flex items-center gap-2 min-w-0">
                                                         <p className="font-medium text-sm truncate">{s.name}</p>
                                                         {studentWithClass && (
                                                             <span className="text-xs text-muted-foreground">({studentWithClass})</span>
                                                         )}
                                                     </div>
-                                                    <div className="flex items-center flex-shrink-0">
-                                                        <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
+                                                    <div className="flex-shrink-0 flex items-center gap-2">
+                                                        <span className="text-xs text-muted-foreground">{s.shift}</span>
                                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name})}>
                                                             <PlusCircle className="h-4 w-4 text-green-500" />
                                                         </Button>
@@ -492,7 +492,7 @@ export function RouteForm({
             {isCapacityExceeded && (
                 <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
                     <AlertCircle className="h-4 w-4" />
-                    Capacidade de {vehicleCapacity} alunos excedida!
+                    Capacidade de ${vehicleCapacity} alunos excedida!
                 </div>
             )}
              {missingRouteWarning && (
