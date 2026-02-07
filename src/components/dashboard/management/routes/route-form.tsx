@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -421,7 +422,7 @@ export function RouteForm({
                                                     {students.map(s => (
                                                          <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                             <div className="flex min-w-0 flex-1 items-center gap-2">
-                                                                <span className="truncate font-medium text-sm">{s.name} ({schoolsMap.get(s.schoolId)?.name})</span>
+                                                                <span className="truncate font-medium text-sm">{s.name}</span>
                                                             </div>
                                                             <div className="flex items-center">
                                                                 <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
