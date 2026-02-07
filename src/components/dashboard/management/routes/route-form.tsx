@@ -271,11 +271,15 @@ export function RouteForm({
             address: formatAddress(s)
         }));
         
-        const schoolAddresses = schoolsOnRoute.map(s => formatAddress(s));
+        const schoolsInput = schoolsOnRoute.map(s => ({
+            id: s.id,
+            name: s.name,
+            address: formatAddress(s)
+        }));
 
         const input = {
             students: studentInput,
-            schoolAddresses: schoolAddresses,
+            schools: schoolsInput,
             startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
             vehicleCapacity: vehicleCapacity,
         };

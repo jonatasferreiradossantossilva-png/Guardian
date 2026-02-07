@@ -18,10 +18,16 @@ const StudentStopSchema = z.object({
   address: z.string(),
 });
 
+const SchoolInputSchema = z.object({
+  id: z.string(),
+  name: z.string(),
+  address: z.string(),
+});
+
 const OptimizeSchoolVanRouteInputSchema = z.object({
   startAddress: z.string().optional().describe("O endereço de partida ou as coordenadas (lat,lng) da rota. Se não for fornecido, a rota começa na primeira parada."),
   students: z.array(StudentStopSchema).describe("Lista de alunos (paradas de embarque) com seus endereços para serem incluídos na rota."),
-  schoolAddresses: z.array(z.string()).describe("Lista de endereços das escolas (paradas de desembarque). A IA deve decidir a ordem ótima para visitá-las."),
+  schools: z.array(SchoolInputSchema).describe("Lista de escolas (paradas de desembarque) com seus endereços, nomes e IDs reais."),
   vehicleCapacity: z.number().optional().describe("A capacidade máxima de passageiros do veículo."),
   context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito, interdições de vias ou incidentes reportados."),
 });
@@ -41,24 +47,10 @@ const OptimizeSchoolVanRouteOutputSchema = z.object({
 });
 export type OptimizeSchoolVanRouteOutput = z.infer<typeof OptimizeSchoolVanRouteOutputSchema>;
 
-export async function optimizeSchoolVanRoute(input: OptimizeSchoolVanRouteInput): Promise<OptimizeSchoolVanRouteOutput> {
-  // We need to map school addresses to IDs for the AI to use in the output.
-  const schoolsWithIds = input.schoolAddresses.map((address, index) => ({
-      id: `school-${index + 1}`, // A temporary but consistent ID for the AI
-      address: address,
-  }));
-  
-  const modifiedInput = {
-      ...input,
-      schools: schoolsWithIds
-  };
-
-  return optimizeSchoolVanRouteFlow(modifiedInput);
-}
 
 const prompt = ai.definePrompt({
   name: 'optimizeSchoolVanRoutePrompt',
-  input: {schema: z.any()}, // Using any because we modify it before calling
+  input: {schema: OptimizeSchoolVanRouteInputSchema},
   output: {schema: OptimizeSchoolVanRouteOutputSchema},
   prompt: `Você é um especialista em logística e um assistente de navegação GPS para transporte escolar. Sua tarefa é criar a rota mais eficiente possível, incluindo múltiplos destinos (escolas), e fornecer as direções detalhadas.
 
@@ -71,7 +63,7 @@ Considere as seguintes informações:
 - **Ponto de Partida (Obrigatório se fornecido):** {{{startAddress}}} (Comece a rota a partir deste ponto, que pode ser um endereço ou coordenadas lat,lng)
 {{/if}}
 - **Lista de Alunos (Paradas de Embarque):** {{{json students}}} (Note que o ID de cada aluno é o que deve ser usado na saída, com o prefixo 'student-')
-- **Lista de Escolas (Paradas de Desembarque):** {{{json schools}}} (Note que o ID de cada escola é o que deve ser usado na saída, com o prefixo 'school-')
+- **Lista de Escolas (Paradas de Desembarque):** {{{json schools}}} (Note que o ID de cada escola no objeto de entrada é o que deve ser usado na saída, com o prefixo 'school-')
 {{#if vehicleCapacity}}
 - **Capacidade do Veículo:** {{{vehicleCapacity}}} passageiros. A rota otimizada não deve, sob nenhuma hipótese, incluir mais alunos do que a capacidade do veículo.
 {{/if}}
@@ -89,22 +81,14 @@ Por favor, forneça a seguinte saída em formato JSON:
 Calcule a melhor sequência possível e forneça TODAS as informações solicitadas no formato JSON especificado.`,
 });
 
-const optimizeSchoolVanRouteFlow = ai.defineFlow(
+export const optimizeSchoolVanRoute = ai.defineFlow(
   {
     name: 'optimizeSchoolVanRouteFlow',
-    inputSchema: z.any(),
+    inputSchema: OptimizeSchoolVanRouteInputSchema,
     outputSchema: OptimizeSchoolVanRouteOutputSchema,
   },
-  async input => {
-    // This now makes a real call to the AI model using the defined prompt.
+  async (input) => {
     const {output} = await prompt(input);
-
-    // AI might return school-1, school-2. We need to map these back to the original school IDs from the database
-    // which are passed in the `schoolAddresses` input, but the AI doesn't see them.
-    // The form component will handle mapping based on the order for now.
-    // This is a simplification. A more robust solution would pass a map of {tempId: realId}.
-    // For this prototype, the client-side will reconstruct based on order.
-
     return output!;
   }
 );
