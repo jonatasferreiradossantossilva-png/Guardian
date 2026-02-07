@@ -22,7 +22,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Users, AlertCircle, X, PlusCircle, School, Info, ArrowUp, ArrowDown } from 'lucide-react';
+import { Users, AlertCircle, X, PlusCircle, School, Info, ArrowUp, ArrowDown, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -39,13 +39,14 @@ import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
+import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 
 
-type Driver = { id: string; name: string; vehicleId?: string; };
-type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string; serie?: string; turma?: string; };
+type Driver = { id: string; name: string; vehicleId?: string; latitude?: number; longitude?: number; };
+type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string; serie?: string; turma?: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; latitude?: number; longitude?: number; };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
-type SchoolData = { id: string; name: string; };
+type SchoolData = { id: string; name: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; };
 type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; };
 type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string, uniqueId: string };
 
@@ -90,9 +91,7 @@ export function RouteForm({
   const [stops, setStops] = useState<Stop[]>([]);
   const [studentSearch, setStudentSearch] = useState('');
   const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolIds?: string, shift?: string}>({});
-
-  const [isMissingStudentAlertOpen, setIsMissingStudentAlertOpen] = useState(false);
-  const [missingIntegralStudents, setMissingIntegralStudents] = useState<Student[]>([]);
+  const [isOptimizing, setIsOptimizing] = useState(false);
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
@@ -178,28 +177,6 @@ export function RouteForm({
 
     return { isCapacityExceeded: isExceeded, availableStudents: filteredAvailableStudents, studentsOnRoute: studentsOnRoute };
   }, [stops, students, studentSearch, vehicleCapacity, selectedSchoolIds, shift, assignedStudentsInOtherRoutes, studentsMap]);
-
-    const { missingRouteWarning } = useMemo(() => {
-        if (!shift || selectedSchoolIds.length === 0 || studentsOnRoute.length === 0) return { missingRouteWarning: null };
-
-        const integralStudentsOnThisRoute = studentsOnRoute.some(s => s.shift === 'Integral');
-        if (!integralStudentsOnThisRoute) {
-            return { missingRouteWarning: null };
-        }
-
-        const oppositeShift = shift === 'Manhã' ? 'Tarde' : 'Manhã';
-        const correspondingRouteExists = allRoutes.some(r => {
-            if (r.id === route?.id || r.shift !== oppositeShift) return false;
-            const firstStudentOnOtherRoute = students.find(s => r.studentIds && s.id === r.studentIds[0]?.substring(r.studentIds[0].indexOf('-') + 1));
-            return firstStudentOnOtherRoute && selectedSchoolIds.includes(firstStudentOnOtherRoute.schoolId);
-        });
-
-        if (correspondingRouteExists) {
-            return { missingRouteWarning: `Atenção: Você adicionou aluno(s) de período integral. Certifique-se de que ele(s) também esteja(m) na rota de '${oppositeShift}' correspondente.` };
-        } else {
-            return { missingRouteWarning: `Atenção: Aluno(s) integral(is) adicionado(s), mas não foi encontrada uma rota de '${oppositeShift}' para esta(s) escola(s). Lembre-se de criá-la.`};
-        }
-    }, [studentsOnRoute, shift, selectedSchoolIds, allRoutes, route?.id, students]);
     
     const moveStop = (index: number, direction: 'up' | 'down') => {
         setStops(currentStops => {
@@ -264,6 +241,71 @@ export function RouteForm({
     }
     setStops(prev => prev.filter((_, i) => i !== index));
   }
+
+  const handleOptimizeOrder = async () => {
+    if (selectedSchoolIds.length !== 1 || studentsOnRoute.length < 2) {
+      toast({
+        title: "Otimização não aplicável",
+        description: "A otimização por IA requer exatamente uma escola selecionada e pelo menos dois alunos na rota.",
+        variant: "destructive",
+      });
+      return;
+    }
+    setIsOptimizing(true);
+    try {
+        const school = schoolsMap.get(selectedSchoolIds[0]);
+        const driver = drivers.find(d => d.id === driverId);
+
+        if (!school || !driver) {
+            throw new Error("Dados da escola ou motorista não encontrados.");
+        }
+
+        const formatAddress = (entity) => {
+            if (!entity?.street) return 'Endereço indisponível';
+            return `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
+        };
+
+        const input = {
+            students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+            schoolAddress: formatAddress(school),
+            startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
+            vehicleCapacity: vehicleCapacity,
+        };
+
+        const result = await optimizeSchoolVanRoute(input);
+        
+        const studentStops = result.optimizedStudentIds.map(studentId => {
+            const student = studentsMap.get(studentId);
+            if (!student) return null;
+            return {
+                id: studentId,
+                type: 'student',
+                name: student.name,
+                details: schoolsMap.get(student.schoolId)?.name,
+                uniqueId: `student-${studentId}`
+            };
+        }).filter(Boolean) as Stop[];
+        
+        const schoolStops = stops.filter(s => s.type === 'school');
+
+        setStops([...studentStops, ...schoolStops]);
+
+        toast({
+            title: "Ordem da rota otimizada!",
+            description: "A IA sugeriu uma nova sequência para os alunos. Você pode fazer ajustes manuais se necessário.",
+        });
+
+    } catch (error) {
+        console.error("Failed to optimize route order:", error);
+        toast({
+            title: "Erro na Otimização",
+            description: "Não foi possível obter uma sugestão da IA. Tente novamente.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsOptimizing(false);
+    }
+  };
   
   const performSave = (stopsToSave: Stop[]) => {
     const finalData = {
@@ -284,23 +326,6 @@ export function RouteForm({
     onFormSubmit();
   }
 
-  const handleConfirmSaveAndAdd = () => {
-    const studentStopsToAdd: Stop[] = missingIntegralStudents.map(s => ({
-        id: s.id,
-        type: 'student',
-        name: s.name,
-        details: schoolsMap.get(s.schoolId)?.name,
-        uniqueId: `student-${s.id}`
-    }));
-    performSave([...stops, ...studentStopsToAdd]); 
-    setIsMissingStudentAlertOpen(false);
-  }
-  
-  const handleConfirmSaveWithMissing = () => {
-    performSave(stops);
-    setIsMissingStudentAlertOpen(false);
-  }
-
   const handleSubmit = () => {
     const newErrors: {name?: string, driverId?: string, schoolIds?: string, shift?: string} = {};
     if (!name.trim()) newErrors.name = 'O nome é obrigatório.';
@@ -311,38 +336,6 @@ export function RouteForm({
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     
-    const oppositeShift = shift === 'Manhã' ? 'Tarde' : 'Manhã';
-    const otherRoutes = allRoutes.filter(r => {
-        if (r.id === route?.id || r.shift !== oppositeShift) return false;
-        const firstStudentOnOtherRoute = students.find(s => r.studentIds && s.id === r.studentIds[0]?.substring(r.studentIds[0].indexOf('-') + 1));
-        return firstStudentOnOtherRoute && selectedSchoolIds.includes(firstStudentOnOtherRoute.schoolId);
-    });
-
-    if (otherRoutes.length > 0) {
-        const otherRouteIntegralStudents = new Set<string>();
-        otherRoutes.forEach(r => {
-            r.studentIds?.forEach(stopId => {
-                const type = stopId.substring(0, stopId.indexOf('-'));
-                const id = stopId.substring(stopId.indexOf('-') + 1);
-                if (type === 'student') {
-                    const student = studentsMap.get(id);
-                    if (student?.shift === 'Integral') {
-                        otherRouteIntegralStudents.add(id);
-                    }
-                }
-            })
-        });
-        
-        const thisRouteStudentIds = new Set(studentsOnRoute.map(s => s.id));
-        const studentsToWarnAbout = Array.from(otherRouteIntegralStudents).filter(id => !thisRouteStudentIds.has(id)).map(id => studentsMap.get(id)).filter(Boolean) as Student[];
-
-        if (studentsToWarnAbout.length > 0) {
-            setMissingIntegralStudents(studentsToWarnAbout);
-            setIsMissingStudentAlertOpen(true);
-            return;
-        }
-    }
-
     performSave(stops);
   };
   
@@ -483,19 +476,27 @@ export function RouteForm({
 
         {/* Coluna da Direita: Itinerário */}
         <div className="space-y-4">
-             <Label>Itinerário da Rota ({stops.length} paradas)</Label>
-            <p className="text-sm text-muted-foreground">Use as setas para reordenar as paradas, incluindo o desembarque nas escolas.</p>
+            <div className="flex justify-between items-center">
+                <Label>Itinerário da Rota ({stops.length} paradas)</Label>
+                <Button type="button" size="sm" variant="outline" onClick={handleOptimizeOrder} disabled={isOptimizing || selectedSchoolIds.length !== 1 || studentsOnRoute.length < 2}>
+                    {isOptimizing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                    Otimizar Ordem
+                </Button>
+             </div>
+            <p className="text-sm text-muted-foreground">Adicione alunos, otimize a ordem e use as setas para ajustes finos.</p>
+            {selectedSchoolIds.length !== 1 && studentsOnRoute.length > 1 &&
+                <Alert variant="default" className="text-xs">
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>
+                       A otimização com IA está disponível apenas para rotas com uma única escola.
+                    </AlertDescription>
+                </Alert>
+            }
             {isCapacityExceeded && (
                 <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
                     <AlertCircle className="h-4 w-4" />
                     Capacidade de ${vehicleCapacity} alunos excedida!
                 </div>
-            )}
-             {missingRouteWarning && (
-                <Alert className="my-2">
-                    <Info className="h-4 w-4" />
-                    <AlertDescription>{missingRouteWarning}</AlertDescription>
-                </Alert>
             )}
 
             <div className="border rounded-md">
@@ -568,26 +569,6 @@ export function RouteForm({
         <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
         <Button type="button" onClick={handleSubmit} disabled={isCapacityExceeded}>Salvar Rota</Button>
       </DialogFooter>
-
-       <AlertDialog open={isMissingStudentAlertOpen} onOpenChange={setIsMissingStudentAlertOpen}>
-            <AlertDialogContent>
-                <AlertDialogHeader>
-                    <AlertDialogTitle>Alunos Integrais Faltando</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        A rota correspondente de '{shift === 'Manhã' ? 'Tarde' : 'Manhã'}' possui o(s) seguinte(s) aluno(s) de período integral que não está(ão) nesta rota:
-                        <ul className="list-disc list-inside my-2 font-semibold text-foreground">
-                            {missingIntegralStudents.map(s => <li key={s.id}>{s.name}</li>)}
-                        </ul>
-                        Deseja adicioná-lo(s) automaticamente a esta rota antes de salvar?
-                    </AlertDialogDescription>
-                </AlertDialogHeader>
-                <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <Button variant="outline" onClick={handleConfirmSaveWithMissing}>Salvar Sem Adicionar</Button>
-                    <AlertDialogAction onClick={handleConfirmSaveAndAdd}>Adicionar e Salvar</AlertDialogAction>
-                </AlertDialogFooter>
-            </AlertDialogContent>
-        </AlertDialog>
     </DialogContent>
   )
 }
@@ -620,3 +601,6 @@ export function RouteForm({
     
 
 
+
+
+    
