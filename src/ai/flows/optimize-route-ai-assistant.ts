@@ -10,6 +10,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const OptimizeRouteInputSchema = z.object({
   currentRoute: z
@@ -40,6 +41,7 @@ export async function optimizeRoute(input: OptimizeRouteInput): Promise<Optimize
 
 const prompt = ai.definePrompt({
   name: 'optimizeRoutePrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: OptimizeRouteInputSchema},
   output: {schema: OptimizeRouteOutputSchema},
   prompt: `You are a route optimization expert, skilled at finding the best routes for drivers based on traffic conditions and reported incidents.

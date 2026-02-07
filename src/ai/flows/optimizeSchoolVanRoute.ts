@@ -11,6 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { googleAI } from '@genkit-ai/google-genai';
 
 const StudentStopSchema = z.object({
   id: z.string(),
@@ -62,6 +63,7 @@ const PromptInputSchema = OptimizeSchoolVanRouteInputSchemaBase.extend({
 
 const prompt = ai.definePrompt({
   name: 'optimizeSchoolVanRoutePrompt',
+  model: googleAI.model('gemini-1.5-flash'),
   input: {schema: PromptInputSchema},
   output: {schema: OptimizeSchoolVanRouteOutputSchema},
   prompt: `Você é um especialista em logística e um assistente de navegação GPS para transporte escolar. Sua tarefa é criar a rota mais eficiente possível, incluindo múltiplos destinos (escolas), e fornecer as direções detalhadas.
