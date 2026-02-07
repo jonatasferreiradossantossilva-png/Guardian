@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -93,6 +93,8 @@ export function RouteForm({
   const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolIds?: string, shift?: string}>({});
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [wasOptimized, setWasOptimized] = useState(false);
+
+  const prevSchoolIdsRef = useRef<string[]>();
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
@@ -231,6 +233,51 @@ export function RouteForm({
     }
     setStops(prev => prev.filter((_, i) => i !== index));
   }
+
+  // Effect to automatically remove students if their school is unchecked
+  useEffect(() => {
+    if (prevSchoolIdsRef.current === undefined) {
+      prevSchoolIdsRef.current = selectedSchoolIds;
+      return;
+    }
+
+    const prevIds = new Set(prevSchoolIdsRef.current);
+    const currentIds = new Set(selectedSchoolIds);
+
+    const removedSchoolIds = [...prevIds].filter(id => !currentIds.has(id));
+
+    if (removedSchoolIds.length > 0) {
+      const studentIdsToRemove = new Set<string>();
+      let studentsRemovedCount = 0;
+
+      const newStops = stops.filter(stop => {
+        if (stop.type === 'student') {
+          const student = studentsMap.get(stop.id);
+          if (student && removedSchoolIds.includes(student.schoolId)) {
+            studentsRemovedCount++;
+            return false; // Remove student
+          }
+        }
+        if (stop.type === 'school') {
+          if (removedSchoolIds.includes(stop.id)) {
+            return false; // Remove school stop
+          }
+        }
+        return true;
+      });
+
+      if (studentsRemovedCount > 0) {
+        setStops(newStops);
+        toast({
+          title: "Alunos Removidos Automaticamente",
+          description: `${studentsRemovedCount} aluno(s) foram removidos do itinerário pois sua escola foi desmarcada.`,
+        });
+      }
+    }
+
+    prevSchoolIdsRef.current = selectedSchoolIds;
+  }, [selectedSchoolIds, stops, studentsMap, toast]);
+
 
   const handleOptimizeOrder = async () => {
     if (studentsOnRoute.length < 2) {
@@ -565,3 +612,5 @@ export function RouteForm({
     </DialogContent>
   )
 }
+
+    
