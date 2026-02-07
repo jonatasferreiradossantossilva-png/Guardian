@@ -209,7 +209,18 @@ export function RouteForm({
   const handleAddSchoolToRoute = (schoolId: string) => {
     const school = schoolsMap.get(schoolId);
     if (school) {
-        addStop({id: schoolId, type: 'school', name: school.name, details: 'Ponto de desembarque'})
+        // Prevent adding duplicate school stops
+        if (stops.some(stop => stop.type === 'school' && stop.id === schoolId)) {
+            toast({
+                title: "Escola já está no itinerário",
+                variant: "destructive"
+            });
+            return;
+        }
+        addStop({id: schoolId, type: 'school', name: school.name, details: 'Ponto de desembarque'});
+        if (!selectedSchoolIds.includes(schoolId)) {
+            setSelectedSchoolIds(prev => [...prev, schoolId]);
+        }
     }
   }
 
@@ -464,11 +475,11 @@ export function RouteForm({
                             const serieTurma = student ? [student.serie, student.turma].filter(Boolean).join(' / ') : null;
 
                             return (
-                                <div key={`${stop.id}-${index}`} className="flex items-center justify-between gap-2 rounded-md p-1 hover:bg-accent/50">
+                                <div key={`${stop.type}-${stop.id}-${index}`} className="flex items-center justify-between gap-2 rounded-md p-1 hover:bg-accent/50">
                                     <div className="flex items-center gap-2 min-w-0">
                                         <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
                                         {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
-                                        <div className="min-w-0">
+                                        <div className="flex-1 min-w-0">
                                             <p className="truncate font-medium text-sm">{stop.name}</p>
                                             {(serieTurma || stop.details) && (
                                                 <p className="truncate text-xs text-muted-foreground">
@@ -543,6 +554,7 @@ export function RouteForm({
     
 
     
+
 
 
 
