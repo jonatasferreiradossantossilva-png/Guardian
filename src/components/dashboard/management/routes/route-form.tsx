@@ -56,11 +56,11 @@ export function RouteForm({
   const [name, setName] = useState(route?.name || '');
   const [driverId, setDriverId] = useState(route?.driverId || '');
   const [monitorId, setMonitorId] = useState(route?.monitorId || '');
-  const [errors, setErrors] = useState<{name?: string, driverId?: string}>({});
-
   const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
+  
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
+  const [errors, setErrors] = useState<{name?: string, driverId?: string}>({});
 
   const { vehicle, vehicleCapacity } = useMemo(() => {
      if (!driverId || !drivers || !vehicles) return { vehicle: null, vehicleCapacity: Infinity };
