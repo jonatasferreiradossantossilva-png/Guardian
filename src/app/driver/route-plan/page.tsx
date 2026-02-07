@@ -48,7 +48,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { optimizeSchoolVanRoute, type OptimizeSchoolVanRouteOutput } from '@/ai/flows/optimizeSchoolVanRoute';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
@@ -508,7 +507,6 @@ export default function DriverRoutePlanPage() {
   const [isRecalculating, setIsRecalculating] = useState(false);
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
-  const [optimizationSuggestion, setOptimizationSuggestion] = useState<OptimizeSchoolVanRouteOutput | null>(null);
   const isOnline = useOnlineStatus();
 
   // State for school selection dialog
@@ -529,16 +527,6 @@ export default function DriverRoutePlanPage() {
     setActiveRouteId(storedActiveRouteId);
   }, []);
   
-  useEffect(() => {
-    if (optimizationSuggestion) {
-      const timer = setTimeout(() => {
-        setOptimizationSuggestion(null);
-        toast({ description: "Sugestão de rota ignorada. Mantendo plano original." });
-      }, 20000); // 20 seconds
-      return () => clearTimeout(timer);
-    }
-  }, [optimizationSuggestion, toast]);
-
 
   const shift = selectedShift;
   const direction = selectedDirection;
@@ -749,44 +737,7 @@ export default function DriverRoutePlanPage() {
         updateDoc('drivers', driverId, { status: 'em_rota' });
         toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
 
-        const triggerBackgroundOptimization = async () => {
-            if (!isOnline || direction !== 'ida' || !route) return;
-
-            toast({ description: "✨ Verificando rota... Buscando um caminho mais rápido para hoje." });
-
-            try {
-                const studentsOnRoute = finalStops.filter(s => s.type === 'student').map(s => s.data as Student);
-                if (studentsOnRoute.length < 2) return;
-
-                const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
-                    .map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
-                const driver = drivers[0];
-
-                if (studentsOnRoute.length > 0 && schoolsOnRoute.length > 0 && driver) {
-                    const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
-                    
-                    const input = {
-                        students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
-                        schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-                        startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
-                        optimizationMode: 'flexible' as 'flexible',
-                        direction: selectedDirection,
-                    };
-                    const result = await optimizeSchoolVanRoute(input);
-                    const currentStopIds = finalStops.map(s => s.id).join(',');
-                    const newStopIds = result.optimizedStops.map(s => s.id).join(',');
-
-                    if (newStopIds && newStopIds !== currentStopIds) {
-                        setOptimizationSuggestion(result);
-                    }
-                }
-            } catch (error) {
-                console.error("Optional real-time optimization failed:", error);
-            }
-        };
-
-        triggerBackgroundOptimization();
-    }, [driverId, route, updateDoc, toast, isOnline, direction, selectedDirection, drivers, schoolsMap, setOptimizationSuggestion]);
+    }, [driverId, route, updateDoc, toast, isOnline, direction, selectedDirection, drivers, schoolsMap]);
 
     const handleInitiateStart = () => {
         if (!route) return;
@@ -829,31 +780,6 @@ export default function DriverRoutePlanPage() {
         handleStartRoute(reorderedStops);
         setIsSchoolSelectorOpen(false);
     };
-
-  
-  const handleAcceptOptimization = () => {
-    if (!optimizationSuggestion || !route) return;
-    
-    let finalStopIds = optimizationSuggestion.optimizedStops.map(s => s.id);
-
-    if (direction === 'volta' && optimizationSuggestion.optimizedStops.every(s => s.type === 'student')) {
-      const schoolStops = route.studentIds.filter(id => id.startsWith('school-'));
-      const optimizedStudentStops = optimizationSuggestion.optimizedStops.map(s => s.id);
-      finalStopIds = [...schoolStops, ...optimizedStudentStops];
-    }
-    
-    updateDoc('routes', route.id, {
-        studentIds: finalStopIds,
-        turnByTurnDirections: optimizationSuggestion.turnByTurnDirections,
-        lastOptimizedAt: new Date().toISOString(),
-    });
-    toast({ title: "Rota atualizada!", description: "O itinerário foi otimizado com a sugestão da IA." });
-    setOptimizationSuggestion(null);
-  };
-
-  const handleDeclineOptimization = () => {
-    setOptimizationSuggestion(null);
-  };
 
   const handlePauseRoute = useCallback(() => {
       if (!driverId) return;
@@ -905,48 +831,13 @@ export default function DriverRoutePlanPage() {
   }, [toast]);
   
    const handleRecalculate = useCallback(async () => {
-        const studentsOnRoute = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
-        const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
-            .map(id => schools.find(s => s.id === id)).filter(Boolean) as SchoolData[];
-        
-        if (!route || !studentsOnRoute.length || !schoolsOnRoute.length || !driverProfile) return;
-
-        setIsRecalculating(true);
-        try {
-            const presentStudents = studentsOnRoute.filter(s => s.status !== 'ausente');
-            const formatAddress = (entity) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : '';
-            
-            const input = {
-                students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
-                schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-                startAddress: (driverProfile.latitude && driverProfile.longitude) ? `${driverProfile.latitude},${driverProfile.longitude}` : undefined,
-                optimizationMode: 'flexible' as 'flexible',
-                direction: selectedDirection,
-            };
-
-            const result = await optimizeSchoolVanRoute(input);
-            
-            updateDoc('routes', route.id, { 
-                studentIds: result.optimizedStops.map(s => s.id),
-                turnByTurnDirections: result.turnByTurnDirections,
-                lastOptimizedAt: new Date().toISOString(),
-            });
-
-            toast({
-                title: 'Rota Recalculada!',
-                description: 'A rota foi otimizada para pular os alunos ausentes.',
-            });
-
-        } catch (error) {
-            console.error("Failed to recalculate route:", error);
-            toast({
-                title: "Erro ao Recalcular",
-                description: "Não foi possível otimizar a rota. Tente novamente.",
-                variant: "destructive"
-            });
-        } finally {
-            setIsRecalculating(false);
-        }
+        // This function is now a placeholder or can be removed.
+        // The AI call logic has been disabled.
+        toast({
+            title: "Otimização Manual",
+            description: "Esta funcionalidade está em desenvolvimento.",
+        });
+        setIsRecalculating(false);
     }, [route, orderedStops, schools, driverProfile, updateDoc, toast, setIsRecalculating, selectedDirection]);
 
    const handleUndoLastAction = () => {
@@ -993,50 +884,6 @@ export default function DriverRoutePlanPage() {
     const handleCompleteBoarding = useCallback(async () => {
         setCurrentView('route');
         toast({ title: `Embarque concluído em ${checklistSchool?.name}!` });
-
-        const otherSchoolStopsToVisit = orderedStops.filter(stop => {
-            if (stop.type !== 'school' || stop.id === checklistSchool?.id) return false;
-            return orderedStops.some(s => s.type === 'student' && (s.data as Student).schoolId === stop.id && (s.data as Student).status === 'aguardando');
-        });
-
-        if (otherSchoolStopsToVisit.length === 0 && isOnline) {
-            toast({ description: "✨ Otimizando a rota de entrega..." });
-            try {
-                const studentsOnBoard = orderedStops
-                    .filter(s => s.type === 'student' && (s.data as Student).status === 'a_bordo')
-                    .map(s => s.data as Student);
-                
-                if (studentsOnBoard.length < 2) return;
-
-                const driver = drivers[0];
-                if (!driver) return;
-
-                const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
-
-                const input = {
-                    students: studentsOnBoard.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
-                    schools: [], 
-                    startAddress: (driverLocation?.latitude && driverLocation?.longitude) ? `${driverLocation.latitude},${driverLocation.longitude}` : undefined,
-                    optimizationMode: 'flexible' as 'flexible',
-                    direction: 'volta' as 'volta',
-                };
-                
-                const result = await optimizeSchoolVanRoute(input);
-
-                const currentDropOffOrder = orderedStops
-                    .filter(s => s.type === 'student' && (s.data as Student).status === 'a_bordo')
-                    .map(s => s.id).join(',');
-                const newDropOffOrder = result.optimizedStops.map(s => s.id).join(',');
-
-                if (newDropOffOrder && newDropOffOrder !== currentDropOffOrder) {
-                    setOptimizationSuggestion(result);
-                }
-
-            } catch (error) {
-                console.error("Optional real-time drop-off optimization failed:", error);
-            }
-        }
-        
         setChecklistSchool(null);
     }, [checklistSchool, isOnline, orderedStops, toast, drivers, driverLocation, updateDoc, route, schoolsMap]);
     
@@ -1266,7 +1113,7 @@ export default function DriverRoutePlanPage() {
 
                     {absentStudentsCount > 0 && driverProfile.status === 'em_rota' && (
                         <div className="max-w-md mx-auto mb-4">
-                            <Button variant="outline" className="w-full border-primary/40 text-primary hover:text-primary animate-pulse" onClick={handleRecalculate} disabled={isRecalculating}>
+                            <Button variant="outline" className="w-full border-primary/40 text-primary hover:text-primary" onClick={handleRecalculate} disabled={isRecalculating}>
                                 {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
                                 Otimizar rota para {absentStudentsCount} aluno(s) ausente(s)
                             </Button>
@@ -1374,21 +1221,7 @@ export default function DriverRoutePlanPage() {
                 </TabsContent>
              </Tabs>
 
-            <AlertDialog open={!!optimizationSuggestion} onOpenChange={(open) => !open && setOptimizationSuggestion(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2"><Sparkles className="text-primary" /> Oportunidade de Otimização!</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Encontramos um trajeto que parece ser mais rápido para a rota de hoje. Deseja usar esta rota otimizada?
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel onClick={handleDeclineOptimization}>Não, Manter Rota Original</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleAcceptOptimization}>Sim, Usar Rota Otimizada</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
-
+            
              <FixedBottomBar 
                 status={driverProfile.status} 
                 onPause={handlePauseRoute} 
@@ -1427,3 +1260,6 @@ export default function DriverRoutePlanPage() {
     
 
 
+
+
+    
