@@ -250,7 +250,7 @@ export const initialMockData = {
             id: "driver-4",
             userId: "user-motorista-4",
             name: "Juliano Castro",
-            status: "pausa",
+            status: "inativo",
             active: true,
             vehicleId: "vehicle-3",
             cpf: "444.555.666-77",
@@ -564,6 +564,7 @@ export const initialMockData = {
 
 
   
+
 
 
 
