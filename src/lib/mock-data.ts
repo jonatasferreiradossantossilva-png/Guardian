@@ -314,7 +314,7 @@ export const initialMockData = {
             shift: "Manhã",
             driverId: "driver-2", 
             monitorId: "user-monitor-1", 
-            studentIds: ["student-1", "student-2", "student-3", "student-17", "student-5", "student-7", "student-11"], 
+            studentIds: ["student-1", "student-2", "student-3", "student-5", "student-7"], 
             turnByTurnDirections: [
               "Siga para o sudeste na Rua A em direção à Rua B",
               "Vire à direita na Rua B",
@@ -335,11 +335,11 @@ export const initialMockData = {
         },
         { 
             id: "route-2", 
-            name: "Rota Centro - Manhã", 
+            name: "Escola Saber - Manhã", 
             shift: "Manhã",
             driverId: "driver-1", 
             monitorId: "user-monitor-2", 
-            studentIds: [], 
+            studentIds: ["student-11"], 
             turnByTurnDirections: [
                 "Siga para o leste na Rua A em direção à Rua B",
                 "Vire à direita na Rua B",
@@ -356,14 +356,21 @@ export const initialMockData = {
         { id: "route-4", name: "Rota Eixo Jardins - Manhã", shift: "Manhã", driverId: "driver-4", monitorId: "", studentIds: [] },
         { id: "route-5", name: "Rota Morumbi - Tarde", shift: "Tarde", driverId: "driver-5", monitorId: "user-monitor-1", studentIds: ["student-9", "student-10", "student-15"] },
         { id: "route-6", name: "Rota Jardins 2 - Manhã", shift: "Manhã", driverId: "driver-6", monitorId: "user-monitor-2", studentIds: [] },
-        { id: "route-7", name: "Rota Itaim - Tarde", shift: "Tarde", driverId: "driver-7", monitorId: "", studentIds: [] },
+        { 
+            id: "route-7", 
+            name: "Escola Saber - Tarde", 
+            shift: "Tarde", 
+            driverId: "driver-7", 
+            monitorId: "", 
+            studentIds: ["student-13"] 
+        },
         { 
             id: "route-8", 
             name: "Colégio Vanguarda - Tarde",
             shift: "Tarde",
             driverId: "driver-1", 
             monitorId: "user-monitor-3", 
-            studentIds: ["student-13", "student-14", "student-4", "student-6", "student-8", "student-12"], 
+            studentIds: ["student-4", "student-6", "student-8", "student-12", "student-14"], 
             turnByTurnDirections: []
         },
     ],
