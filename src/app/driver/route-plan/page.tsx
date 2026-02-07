@@ -8,6 +8,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -109,7 +110,7 @@ const statusText: Record<StudentStatus, string> = {
 
 // --- Sub-components for the new UI ---
 
-const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute, onScanQrCode }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, onNavigate: (data: any) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onShareRoute: () => void, onScanQrCode: () => void }) => {
+const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute, onScanQrCode, details }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, onNavigate: (data: any) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onShareRoute: () => void, onScanQrCode: () => void, details: string }) => {
   if (!student) return null;
 
   const isGoing = direction === 'ida';
@@ -125,8 +126,8 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
             </Avatar>
             <div className="flex-grow">
                 <span>{student.name}</span>
-                {[student.serie, student.turma].filter(Boolean).length > 0 && (
-                  <p className="text-base font-medium text-muted-foreground">{[student.serie, student.turma].filter(Boolean).join(' - ')}</p>
+                {details && (
+                  <p className="text-base font-medium text-muted-foreground">{details}</p>
                 )}
             </div>
             <Badge variant="secondary" className="text-sm font-medium self-center">{student.shift}</Badge>
@@ -208,7 +209,7 @@ const NextStopSchoolCard = ({ school, onDropOff, onNavigate, onShareRoute }: { s
 };
 
 
-const UpcomingStopsList = ({ stops }: { stops: Stop[] }) => {
+const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], formatStudentDetails: (student: Student) => string }) => {
   if (!stops || stops.length === 0) {
     return <p className="text-center text-muted-foreground text-sm py-4">Nenhuma parada futura.</p>;
   }
@@ -238,9 +239,9 @@ const UpcomingStopsList = ({ stops }: { stops: Stop[] }) => {
                     </Avatar>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{item.name}</p>
-                        {isStudent && [(item as Student).serie, (item as Student).turma].filter(Boolean).length > 0 && (
-                            <p className="text-xs text-muted-foreground truncate">{[(item as Student).serie, (item as Student).turma].filter(Boolean).join(' - ')}</p>
-                        )}
+                        <p className="text-xs text-muted-foreground truncate">
+                           {isStudent ? formatStudentDetails(item as Student) : "Ponto de desembarque"}
+                        </p>
                     </div>
                     {isStudent && <Badge variant="outline" className="font-normal text-xs">{(item as Student).shift}</Badge>}
                 </li>
@@ -450,6 +451,29 @@ export default function DriverRoutePlanPage() {
         setSelectedRouteIdForStart(routes[0].id);
     }
   }, [routes, selectedRouteIdForStart]);
+
+  const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s])), [schools]);
+
+  const formatStudentDetails = useCallback((student: Student) => {
+    if (!student) return '';
+    const school = schoolsMap.get(student.schoolId);
+
+    // School abbreviation
+    let schoolAbbr = school?.name?.replace(/^(Escola |Colégio )/i, '') || '';
+
+    // Serie/Turma abbreviation
+    let classInfo = '';
+    if (student.serie) {
+        classInfo = student.serie.replace(/ (Ano|Série)/i, '').trim();
+    }
+    if (student.turma) {
+        const turmaFormatted = student.turma.replace(/Sala /i, 'S:').trim();
+        classInfo += classInfo ? ` ${turmaFormatted}` : turmaFormatted;
+    }
+
+    return [schoolAbbr, classInfo].filter(Boolean).join(' | ');
+  }, [schoolsMap]);
+
 
   const routeDetailsMap = useMemo(() => {
     if (!routes || !allStudents || !schools) return new Map();
@@ -919,6 +943,7 @@ export default function DriverRoutePlanPage() {
                                       direction={direction}
                                       onShareRoute={handleShareRoute}
                                       onScanQrCode={() => setIsScannerOpen(true)}
+                                      details={formatStudentDetails(activeStop.data as Student)}
                                   />
                                 )}
                                 {activeStop?.type === 'school' && direction === 'ida' && (
@@ -929,7 +954,7 @@ export default function DriverRoutePlanPage() {
                                         onShareRoute={handleShareRoute}
                                     />
                                 )}
-                                {upcomingStops.length > 0 && <UpcomingStopsList stops={upcomingStops} />}
+                                {upcomingStops.length > 0 && <UpcomingStopsList stops={upcomingStops} formatStudentDetails={formatStudentDetails} />}
                             </>
                         )}
                     </div>
@@ -1032,5 +1057,6 @@ export default function DriverRoutePlanPage() {
 }
 
     
+
 
 
