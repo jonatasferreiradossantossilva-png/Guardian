@@ -18,6 +18,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -686,12 +687,12 @@ export default function DriverRoutePlanPage() {
       const nextSchoolStopIndex = orderedStops.findIndex(stop => {
         if (stop.type !== 'school') return false;
         
-        const studentsFromThisSchool = orderedStops.filter(s => 
-          s.type === 'student' && (s.data as Student).schoolId === stop.id
+        // This school is the next stop if any of its students are still waiting to be picked up.
+        return orderedStops.some(s => 
+            s.type === 'student' && 
+            (s.data as Student).schoolId === stop.id && 
+            (s.data as Student).status === 'aguardando'
         );
-        
-        // This school is the next stop if any of its students are still waiting.
-        return studentsFromThisSchool.some(s => (s.data as Student).status === 'aguardando');
       });
   
       if (nextSchoolStopIndex !== -1) {
@@ -846,8 +847,18 @@ export default function DriverRoutePlanPage() {
   
   const handleAcceptOptimization = () => {
     if (!optimizationSuggestion || !route) return;
+    
+    let finalStopIds = optimizationSuggestion.optimizedStops.map(s => s.id);
+
+    // This handles the special case for the 'volta' drop-off optimization
+    if (direction === 'volta' && optimizationSuggestion.optimizedStops.every(s => s.type === 'student')) {
+      const schoolStops = route.studentIds.filter(id => id.startsWith('school-'));
+      const optimizedStudentStops = optimizationSuggestion.optimizedStops.map(s => s.id);
+      finalStopIds = [...schoolStops, ...optimizedStudentStops];
+    }
+    
     updateDoc('routes', route.id, {
-        studentIds: optimizationSuggestion.optimizedStops.map(s => s.id),
+        studentIds: finalStopIds,
         turnByTurnDirections: optimizationSuggestion.turnByTurnDirections,
         lastOptimizedAt: new Date().toISOString(),
     });
@@ -1000,17 +1011,58 @@ export default function DriverRoutePlanPage() {
         }
     };
     
-    const handleCompleteBoarding = () => {
+    const handleCompleteBoarding = useCallback(async () => {
         setCurrentView('route');
-        setChecklistSchool(null);
         toast({ title: `Embarque concluído em ${checklistSchool?.name}!` });
-        // After finishing the last school pickup, trigger optimization for drop-offs
-        const remainingSchoolStops = orderedStops.filter(stop => stop.type === 'school' && stop.id !== checklistSchool?.id && stop.data.status === 'aguardando');
-        if (remainingSchoolStops.length === 0) {
-            // This was the last school pickup, now optimize drop-offs
-            // You can trigger the AI optimization for the student drop-offs here if desired
+
+        // Check if this was the last school pickup
+        const otherSchoolStopsToVisit = orderedStops.filter(stop => {
+            if (stop.type !== 'school' || stop.id === checklistSchool?.id) return false;
+            // A school stop still needs to be visited if it has students who are still 'aguardando'
+            return orderedStops.some(s => s.type === 'student' && (s.data as Student).schoolId === stop.id && (s.data as Student).status === 'aguardando');
+        });
+
+        if (otherSchoolStopsToVisit.length === 0 && isOnline) {
+            // This was the last pickup, trigger optimization for drop-offs
+            toast({ description: "✨ Otimizando a rota de entrega..." });
+            try {
+                const studentsOnBoard = orderedStops
+                    .filter(s => s.type === 'student' && (s.data as Student).status === 'a_bordo')
+                    .map(s => s.data as Student);
+                
+                if (studentsOnBoard.length < 2) return;
+
+                const driver = drivers[0];
+                if (!driver) return;
+
+                const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
+
+                const input = {
+                    students: studentsOnBoard.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
+                    schools: [], // No school destinations for drop-off phase
+                    startAddress: (driverLocation?.latitude && driverLocation?.longitude) ? `${driverLocation.latitude},${driverLocation.longitude}` : undefined,
+                    optimizationMode: 'flexible' as 'flexible',
+                    direction: 'volta' as 'volta',
+                };
+                
+                const result = await optimizeSchoolVanRoute(input);
+
+                const currentDropOffOrder = orderedStops
+                    .filter(s => s.type === 'student' && (s.data as Student).status === 'a_bordo')
+                    .map(s => s.id).join(',');
+                const newDropOffOrder = result.optimizedStops.map(s => s.id).join(',');
+
+                if (newDropOffOrder && newDropOffOrder !== currentDropOffOrder) {
+                    setOptimizationSuggestion(result);
+                }
+
+            } catch (error) {
+                console.error("Optional real-time drop-off optimization failed:", error);
+            }
         }
-    };
+        
+        setChecklistSchool(null);
+    }, [checklistSchool, isOnline, orderedStops, toast, drivers, driverLocation, updateDoc]);
     
     const handleScanSuccess = useCallback((scannedId: string) => {
         const student = (allStudents || []).find(s => s.id === scannedId);
@@ -1403,3 +1455,6 @@ export default function DriverRoutePlanPage() {
 
 
 
+
+
+    
