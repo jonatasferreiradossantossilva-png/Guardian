@@ -36,7 +36,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
@@ -240,9 +240,6 @@ export function RouteForm({
             return;
         }
         addStop({id: schoolId, type: 'school', name: school.name, details: 'Ponto de desembarque'});
-        if (!selectedSchoolIds.includes(schoolId)) {
-            setSelectedSchoolIds(prev => [...prev, schoolId]);
-        }
     }
   }
 
@@ -263,7 +260,6 @@ export function RouteForm({
             });
             return;
         }
-        setSelectedSchoolIds(prev => prev.filter(id => id !== stopToRemove.id));
     }
     setStops(prev => prev.filter((_, i) => i !== index));
   }
@@ -389,7 +385,7 @@ export function RouteForm({
                 </div>
             </div>
 
-             <div className="space-y-2">
+            <div className="space-y-2">
                 <Label htmlFor="monitorId">Monitor (Opcional)</Label>
                 <Select onValueChange={setMonitorId} value={monitorId || 'none'}>
                     <SelectTrigger id="monitorId"><SelectValue placeholder="Selecione um monitor" /></SelectTrigger>
@@ -400,18 +396,43 @@ export function RouteForm({
                 </Select>
             </div>
             
-             <div className="space-y-2">
+            <div className="space-y-2">
                 <Label>Escolas Atendidas</Label>
-                 <div className="flex flex-wrap gap-2 pt-1">
-                     {selectedSchoolIds.map(id => (
-                        <Badge key={id} variant="secondary" className="flex items-center gap-1">
-                            {schoolsMap.get(id)?.name}
-                        </Badge>
-                     ))}
-                     {selectedSchoolIds.length === 0 && <p className="text-xs text-muted-foreground">Nenhuma escola selecionada. Adicione escolas no itinerário.</p>}
-                 </div>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button variant="outline" className="w-full justify-start text-left font-normal">
+                            <School className="mr-2 h-4 w-4" />
+                            <span className="truncate">
+                                {selectedSchoolIds.length > 0
+                                ? selectedSchoolIds.map(id => schoolsMap.get(id)?.name).join(', ')
+                                : "Selecione as escolas"}
+                            </span>
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
+                        <DropdownMenuLabel>Selecione as escolas para esta rota</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        {schools.map(school => (
+                            <DropdownMenuCheckboxItem
+                                key={school.id}
+                                checked={selectedSchoolIds.includes(school.id)}
+                                onSelect={(e) => e.preventDefault()}
+                                onCheckedChange={(checked) => {
+                                    setSelectedSchoolIds(prev =>
+                                        checked
+                                            ? [...prev, school.id]
+                                            : prev.filter(id => id !== school.id)
+                                    );
+                                }}
+                            >
+                                {school.name}
+                            </DropdownMenuCheckboxItem>
+                        ))}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+                 {errors.schoolIds && <p className="text-sm font-medium text-destructive">{errors.schoolIds}</p>}
             </div>
-            
+
             <div className="border rounded-md overflow-hidden">
                 <div className="p-2 border-b">
                     <Input placeholder="Buscar aluno por nome..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none"/>
@@ -421,7 +442,7 @@ export function RouteForm({
                         <div className="h-56 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
                             <School className="h-8 w-8 mb-2"/>
                             <p className="font-semibold">Selecione escolas e um turno</p>
-                            <p className="text-sm">Escolha as escolas no itinerário e o turno da rota para ver os alunos disponíveis.</p>
+                            <p className="text-sm">Escolha as escolas no formulário para ver os alunos disponíveis.</p>
                         </div>
                     ) : (
                         <ScrollArea className="h-56">
@@ -440,13 +461,13 @@ export function RouteForm({
                                             const studentWithClass = getAbbreviatedClass(s);
                                             return (
                                                 <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
-                                                    <p className="font-medium text-sm whitespace-normal">
-                                                        {s.name} 
+                                                    <div className="flex items-center gap-2 min-w-0">
+                                                        <p className="font-medium text-sm truncate">{s.name}</p>
                                                         {studentWithClass && (
-                                                            <span className="text-xs text-muted-foreground ml-2 font-normal">({studentWithClass})</span>
+                                                            <span className="text-xs text-muted-foreground">({studentWithClass})</span>
                                                         )}
-                                                    </p>
-                                                    <div className="flex items-center">
+                                                    </div>
+                                                    <div className="flex items-center flex-shrink-0">
                                                         <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
                                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name})}>
                                                             <PlusCircle className="h-4 w-4 text-green-500" />
@@ -486,33 +507,28 @@ export function RouteForm({
                     {stops.length > 0 ? (
                         <div className="space-y-1">
                            {stops.map((stop, index) => (
-                                <div key={index} className="grid grid-cols-[auto_1fr_auto] items-center w-full bg-background rounded-md p-2 hover:bg-accent/50">
+                                <div key={index} className="grid grid-cols-[auto_1fr_auto] items-center w-full bg-background rounded-md p-2 hover:bg-accent/50 gap-2">
                                     {/* Column 1: Number */}
-                                    <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground pt-2">{index + 1}</span>
+                                    <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground pt-2 self-start">{index + 1}</span>
 
                                     {/* Column 2: Content */}
-                                    <div className="flex items-center gap-2 min-w-0">
-                                        {stop.type === 'student' ? (
-                                            <Avatar className="h-8 w-8 flex-shrink-0">
-                                                <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
-                                                <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                            </Avatar>
-                                        ) : (
-                                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
-                                                <School className="h-4 w-4 text-muted-foreground" />
-                                            </div>
-                                        )}
-                                        <div className="flex-1 min-w-0">
-                                            <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
-                                            {stop.type === 'student' && (
-                                                <p className="text-xs text-muted-foreground truncate">
-                                                    {schoolsMap.get(studentsMap.get(stop.id)?.schoolId || '')?.name}
-                                                </p>
-                                            )}
-                                            {stop.type === 'school' && (
-                                                <p className="text-xs text-muted-foreground truncate">{stop.details}</p>
+                                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0">
+                                        <div className="row-span-2 self-center">
+                                            {stop.type === 'student' ? (
+                                                <Avatar className="h-8 w-8 flex-shrink-0">
+                                                    <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
+                                                    <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                </Avatar>
+                                            ) : (
+                                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
+                                                    <School className="h-4 w-4 text-muted-foreground" />
+                                                </div>
                                             )}
                                         </div>
+                                        <p className="font-medium text-sm truncate col-start-2">{stop.name}</p>
+                                        <p className="text-xs text-muted-foreground truncate col-start-2">
+                                            {stop.type === 'student' ? (schoolsMap.get(studentsMap.get(stop.id)?.schoolId || '')?.name) : stop.details}
+                                        </p>
                                     </div>
 
                                     {/* Column 3: Buttons */}
@@ -540,11 +556,12 @@ export function RouteForm({
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent>
-                            {schools.map(school => (
+                             {selectedSchoolIds.map(schoolId => schoolsMap.get(schoolId)).filter(Boolean).map(school => (
                                 <DropdownMenuItem key={school.id} onSelect={() => handleAddSchoolToRoute(school.id)}>
                                     {school.name}
                                 </DropdownMenuItem>
                             ))}
+                            {selectedSchoolIds.length === 0 && <DropdownMenuItem disabled>Selecione uma escola primeiro</DropdownMenuItem>}
                         </DropdownMenuContent>
                     </DropdownMenu>
                 </div>
