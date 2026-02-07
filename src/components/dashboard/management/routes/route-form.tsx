@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -98,6 +99,7 @@ export function RouteForm({
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
+  const driversMap = useMemo(() => new Map(drivers.map(d => [d.id, d])), [drivers]);
 
  useEffect(() => {
     const initialStops: Stop[] = [];
@@ -234,49 +236,98 @@ export function RouteForm({
     setStops(prev => prev.filter((_, i) => i !== index));
   }
 
-  // Effect to automatically remove students if their school is unchecked
+  // Effect to automatically remove students if their school is unchecked and re-optimize
   useEffect(() => {
-    if (prevSchoolIdsRef.current === undefined) {
+    const prevIds = prevSchoolIdsRef.current;
+    // Don't run on initial render
+    if (prevIds === undefined) {
       prevSchoolIdsRef.current = selectedSchoolIds;
       return;
     }
 
-    const prevIds = new Set(prevSchoolIdsRef.current);
     const currentIds = new Set(selectedSchoolIds);
-
-    const removedSchoolIds = [...prevIds].filter(id => !currentIds.has(id));
+    const removedSchoolIds = prevIds.filter(id => !currentIds.has(id));
 
     if (removedSchoolIds.length > 0) {
-      const studentIdsToRemove = new Set<string>();
-      let studentsRemovedCount = 0;
-
-      const newStops = stops.filter(stop => {
-        if (stop.type === 'student') {
-          const student = studentsMap.get(stop.id);
-          if (student && removedSchoolIds.includes(student.schoolId)) {
-            studentsRemovedCount++;
-            return false; // Remove student
-          }
-        }
-        if (stop.type === 'school') {
-          if (removedSchoolIds.includes(stop.id)) {
-            return false; // Remove school stop
-          }
-        }
-        return true;
-      });
-
-      if (studentsRemovedCount > 0) {
-        setStops(newStops);
-        toast({
-          title: "Alunos Removidos Automaticamente",
-          description: `${studentsRemovedCount} aluno(s) foram removidos do itinerário pois sua escola foi desmarcada.`,
+      const runAsyncUpdate = async () => {
+        
+        const stopsAfterRemoval = stops.filter(stop => {
+            if (stop.type === 'student') {
+                const student = studentsMap.get(stop.id);
+                return !(student && removedSchoolIds.includes(student.schoolId));
+            }
+            if (stop.type === 'school') {
+                return !removedSchoolIds.includes(stop.id);
+            }
+            return true;
         });
-      }
-    }
 
+        const studentsRemovedCount = stops.length - stopsAfterRemoval.length;
+        setStops(stopsAfterRemoval); // Update UI immediately
+
+        if (studentsRemovedCount === 0) return; // No relevant students were removed
+
+        const remainingStudents = stopsAfterRemoval.filter(s => s.type === 'student').map(s => studentsMap.get(s.id)).filter(Boolean) as Student[];
+
+        if (remainingStudents.length >= 2) {
+          setIsOptimizing(true);
+          try {
+            const driverForOptimizing = driversMap.get(driverId);
+            if (!driverForOptimizing) throw new Error("Motorista não selecionado para otimização.");
+            
+            const remainingSchoolIds = Array.from(new Set(remainingStudents.map(s => s.schoolId)));
+            const schoolsOnRoute = remainingSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
+            if (schoolsOnRoute.length === 0) throw new Error("Nenhuma escola corresponde aos alunos restantes.");
+
+            const formatAddress = (entity: Student | SchoolData | null) => {
+              if (!entity?.street) return 'Endereço indisponível';
+              return `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
+            };
+  
+            const input = {
+              students: remainingStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
+              schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+              startAddress: (driverForOptimizing.latitude && driverForOptimizing.longitude) ? `${driverForOptimizing.latitude},${driverForOptimizing.longitude}` : undefined,
+              vehicleCapacity,
+            };
+  
+            const result = await optimizeSchoolVanRoute(input);
+            const newOptimizedStops = result.optimizedStops.map(stop => {
+              const student = studentsMap.get(stop.id);
+              const school = schoolsMap.get(stop.id);
+              if (student) return { id: stop.id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name };
+              if (school) return { id: stop.id, type: 'school', name: school.name, details: 'Ponto de desembarque' };
+              return null;
+            }).filter(Boolean) as Stop[];
+            
+            setStops(newOptimizedStops);
+            setWasOptimized(true);
+            toast({
+              title: "Rota Reotimizada Automaticamente!",
+              description: `${studentsRemovedCount} aluno(s) foram removidos e o itinerário foi recalculado. Clique em 'Salvar Rota' para confirmar.`,
+            });
+          } catch (error) {
+            console.error("Failed to auto-optimize route:", error);
+            toast({
+              title: "Alunos removidos, otimização falhou.",
+              description: `O itinerário foi atualizado, mas a otimização automática falhou. Otimize manualmente se desejar.`,
+              variant: "destructive",
+            });
+          } finally {
+            setIsOptimizing(false);
+          }
+        } else {
+            toast({
+                title: "Alunos Removidos",
+                description: `${studentsRemovedCount} aluno(s) foram removidos do itinerário.`,
+            });
+        }
+      };
+      runAsyncUpdate();
+    }
+  
     prevSchoolIdsRef.current = selectedSchoolIds;
-  }, [selectedSchoolIds, stops, studentsMap, toast]);
+  }, [selectedSchoolIds, studentsMap, schoolsMap, driversMap, driverId, vehicleCapacity, toast, stops]);
 
 
   const handleOptimizeOrder = async () => {
@@ -612,5 +663,3 @@ export function RouteForm({
     </DialogContent>
   )
 }
-
-    
