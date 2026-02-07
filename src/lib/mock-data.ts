@@ -47,14 +47,14 @@ export const initialMockData = {
             name: "Colégio Vanguarda",
             cnpj: "98.765.432/0001-11",
             active: true,
-            latitude: -23.5613,
-            longitude: -46.6565,
-            street: "Avenida Principal",
-            number: "789",
-            neighborhood: "Jardins",
+            latitude: -23.5515,
+            longitude: -46.6355,
+            street: "Rua Augusta",
+            number: "500",
+            neighborhood: "Centro",
             city: "São Paulo",
             state: "SP",
-            zipCode: "01411-000"
+            zipCode: "01305-000"
         },
          {
             id: "school-3",
@@ -583,6 +583,7 @@ export const initialMockData = {
 
 
   
+
 
 
 
