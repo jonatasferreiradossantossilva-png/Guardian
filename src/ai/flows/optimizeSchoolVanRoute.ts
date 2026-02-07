@@ -34,7 +34,7 @@ const OptimizeSchoolVanRouteInputSchema = z.object({
 export type OptimizeSchoolVanRouteInput = z.infer<typeof OptimizeSchoolVanRouteInputSchema>;
 
 const OptimizedStopSchema = z.object({
-    id: z.string().describe("O ID único do item da parada. Deve ter o formato 'student-STUDENT_ID' para alunos ou 'school-SCHOOL_ID' para escolas."),
+    id: z.string().describe("O ID único do item da parada. Deve ser o ID EXATO fornecido na entrada (ex: 'student-1' ou 'school-1')."),
     type: z.enum(['student', 'school']).describe("O tipo de parada (aluno ou escola).")
 });
 
@@ -62,8 +62,8 @@ Considere as seguintes informações:
 {{#if startAddress}}
 - **Ponto de Partida (Obrigatório se fornecido):** {{{startAddress}}} (Comece a rota a partir deste ponto, que pode ser um endereço ou coordenadas lat,lng)
 {{/if}}
-- **Lista de Alunos (Paradas de Embarque):** {{{json students}}} (Note que o ID de cada aluno é o que deve ser usado na saída, com o prefixo 'student-')
-- **Lista de Escolas (Paradas de Desembarque):** {{{json schools}}} (Note que o ID de cada escola no objeto de entrada é o que deve ser usado na saída, com o prefixo 'school-')
+- **Lista de Alunos (Paradas de Embarque):** {{{json students}}} (Para a saída, use o 'id' de cada aluno EXATAMENTE como está aqui.)
+- **Lista de Escolas (Paradas de Desembarque):** {{{json schools}}} (Para a saída, use o 'id' de cada escola EXATAMENTE como está aqui.)
 {{#if vehicleCapacity}}
 - **Capacidade do Veículo:** {{{vehicleCapacity}}} passageiros. A rota otimizada não deve, sob nenhuma hipótese, incluir mais alunos do que a capacidade do veículo.
 {{/if}}
@@ -72,7 +72,7 @@ Considere as seguintes informações:
 {{/if}}
 
 Por favor, forneça a seguinte saída em formato JSON:
-1.  **optimizedStops**: Uma lista ordenada de TODAS as paradas (alunos e escolas), representando a rota mais eficiente. O ID de cada parada na saída DEVE ser prefixado com 'student-' ou 'school-'.
+1.  **optimizedStops**: Uma lista ordenada de TODAS as paradas (alunos e escolas), representando a rota mais eficiente. Para cada parada, use o campo 'id' EXATO que foi fornecido nos dados de entrada (ex: 'student-1', 'school-1'). Não altere ou adicione prefixos a estes IDs.
 2.  **estimatedTimeMinutes**: Uma estimativa realista do tempo total da rota em minutos.
 3.  **estimatedDistanceKm**: Uma estimativa realista da distância total da rota em quilômetros.
 4.  **summary**: Uma breve explicação da lógica da rota, especialmente se múltiplas escolas estiverem envolvidas. Exemplo: "A rota foi otimizada para primeiro atender a Escola A, que estava mais próxima do ponto de partida, e depois seguir para a Escola B."

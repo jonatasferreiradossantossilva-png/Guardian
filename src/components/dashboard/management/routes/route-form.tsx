@@ -48,7 +48,7 @@ type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 type SchoolData = { id: string; name: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; };
 type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; };
-type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string, uniqueId: string };
+type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string };
 
 
 interface RouteFormProps {
@@ -101,21 +101,20 @@ export function RouteForm({
     const initialSchoolIds = new Set<string>();
 
     route?.studentIds?.forEach(stopId => {
-        const type = stopId.substring(0, stopId.indexOf('-'));
-        const id = stopId.substring(stopId.indexOf('-') + 1);
-        const uniqueId = stopId; 
+        const isStudent = stopId.startsWith('student-');
+        const isSchool = stopId.startsWith('school-');
 
-        if (type === 'student') {
-            const student = studentsMap.get(id);
+        if (isStudent) {
+            const student = studentsMap.get(stopId);
             if (student) {
-                initialStops.push({ id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name, uniqueId });
+                initialStops.push({ id: stopId, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name });
                 initialSchoolIds.add(student.schoolId);
             }
-        } else if (type === 'school') {
-            const school = schoolsMap.get(id);
+        } else if (isSchool) {
+            const school = schoolsMap.get(stopId);
             if (school) {
-                initialStops.push({ id, type: 'school', name: school.name, details: 'Ponto de desembarque', uniqueId });
-                initialSchoolIds.add(id);
+                initialStops.push({ id: stopId, type: 'school', name: school.name, details: 'Ponto de desembarque' });
+                initialSchoolIds.add(stopId);
             }
         }
     });
@@ -142,8 +141,7 @@ export function RouteForm({
         if (r.shift === shift) {
             r.studentIds?.forEach(id => {
                 if (id.startsWith('student-')) {
-                    const studentId = id.substring(id.indexOf('-') + 1);
-                    studentIdSet.add(studentId);
+                    studentIdSet.add(id);
                 }
             });
         }
@@ -191,7 +189,7 @@ export function RouteForm({
         });
     };
 
-  const addStop = (stop: Omit<Stop, 'uniqueId'>) => {
+  const addStop = (stop: Stop) => {
     if (stop.type === 'student' && studentsOnRoute.length >= vehicleCapacity) {
       toast({
         title: "Capacidade do veículo excedida!",
@@ -200,11 +198,7 @@ export function RouteForm({
       });
       return;
     }
-    const newStop: Stop = {
-      ...stop,
-      uniqueId: `${stop.type}-${stop.id}`
-    };
-    setStops((prev) => [...prev, newStop]);
+    setStops((prev) => [...prev, stop]);
   };
   
   const handleAddSchoolToRoute = (schoolId: string) => {
@@ -287,13 +281,15 @@ export function RouteForm({
         const result = await optimizeSchoolVanRoute(input);
         
         const newOptimizedStops = result.optimizedStops.map(stop => {
-            const [type, id] = stop.id.split(/-(.*)/s) as ['student' | 'school', string];
-            if (type === 'student') {
-                const student = studentsMap.get(id);
-                if (student) return { id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name, uniqueId: stop.id };
-            } else if (type === 'school') {
-                const school = schoolsMap.get(id);
-                if (school) return { id, type: 'school', name: school.name, details: 'Ponto de desembarque/embarque', uniqueId: stop.id };
+            const isStudent = stop.id.startsWith('student-');
+            const isSchool = stop.id.startsWith('school-');
+            
+            if (isStudent) {
+                const student = studentsMap.get(stop.id);
+                if (student) return { id: stop.id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name };
+            } else if (isSchool) {
+                const school = schoolsMap.get(stop.id);
+                if (school) return { id: stop.id, type: 'school', name: school.name, details: 'Ponto de desembarque/embarque' };
             }
             return null;
         }).filter(Boolean) as Stop[];
@@ -322,7 +318,7 @@ export function RouteForm({
         name,
         driverId,
         monitorId: monitorId === 'none' ? '' : monitorId,
-        studentIds: stopsToSave.map(s => s.uniqueId), 
+        studentIds: stopsToSave.map(s => s.id), 
         shift
     };
     
@@ -468,7 +464,7 @@ export function RouteForm({
                                                     </div>
                                                     <div className="flex-shrink-0 flex items-center gap-2">
                                                         <span className="text-xs text-muted-foreground">{s.shift}</span>
-                                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name})}>
+                                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
                                                             <PlusCircle className="h-4 w-4 text-green-500" />
                                                         </Button>
                                                     </div>
@@ -506,7 +502,7 @@ export function RouteForm({
                     {stops.length > 0 ? (
                         <div className="space-y-1">
                            {stops.map((stop, index) => (
-                                <div key={index} className="grid grid-cols-[auto_1fr_auto] items-center w-full bg-background rounded-md p-2 hover:bg-accent/50 gap-2">
+                                <div key={`${stop.id}-${index}`} className="grid grid-cols-[auto_1fr_auto] items-center w-full bg-background rounded-md p-2 hover:bg-accent/50 gap-2">
                                     {/* Column 1: Number */}
                                     <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground pt-2 self-start">{index + 1}</span>
 
@@ -526,7 +522,7 @@ export function RouteForm({
                                         </div>
                                         <p className="font-medium text-sm truncate col-start-2">{stop.name}</p>
                                         <p className="text-xs text-muted-foreground truncate col-start-2">
-                                            {stop.type === 'student' ? (schoolsMap.get(studentsMap.get(stop.id)?.schoolId || '')?.name) : stop.details}
+                                            {stop.details}
                                         </p>
                                     </div>
 
