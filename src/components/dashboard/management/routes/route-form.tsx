@@ -28,13 +28,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
 
 type Driver = { id: string; name: string; vehicleId?: string; };
-type Student = { id: string; name: string, routeId?: string, shift: string, active?: boolean, schoolId: string };
+type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 type School = { id: string; name: string; };
+type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; };
 
 interface RouteFormProps {
-  route?: { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; };
+  route?: Route;
+  allRoutes: Route[];
   drivers: Driver[];
   students: Student[];
   monitors: Monitor[];
@@ -45,6 +47,7 @@ interface RouteFormProps {
 
 export function RouteForm({
   route,
+  allRoutes,
   drivers,
   students,
   monitors,
@@ -55,25 +58,21 @@ export function RouteForm({
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   
-  const [name, setName] = useState('');
-  const [driverId, setDriverId] = useState('');
-  const [monitorId, setMonitorId] = useState('');
+  const [name, setName] = useState(route?.name || '');
+  const [driverId, setDriverId] = useState(route?.driverId || '');
+  const [monitorId, setMonitorId] = useState(route?.monitorId || '');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
-  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>([]);
+  const [shift, setShift] = useState<'Manhã' | 'Tarde' | ''>(route?.shift || '');
+  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
   
   const [studentSearch, setStudentSearch] = useState('');
-  const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolId?: string}>({});
+  const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolId?: string, shift?: string}>({});
 
   useEffect(() => {
     if (route) {
         const studentMap = new Map(students.map(s => [s.id, s]));
         const firstStudentId = route.studentIds?.[0];
         const firstStudent = firstStudentId ? studentMap.get(firstStudentId) : null;
-        
-        setName(route.name || '');
-        setDriverId(route.driverId || '');
-        setMonitorId(route.monitorId || '');
-        setCurrentStudentIds(route.studentIds || []);
         setSelectedSchoolId(firstStudent?.schoolId || '');
     }
   }, [route, students]);
@@ -88,6 +87,20 @@ export function RouteForm({
      return { vehicle, vehicleCapacity: vehicle.capacity };
   }, [driverId, drivers, vehicles]);
 
+  const assignedStudentsInOtherRoutes = useMemo(() => {
+    const studentIdSet = new Set<string>();
+    if (!shift || !allRoutes) return studentIdSet;
+
+    for (const r of allRoutes) {
+        if (r.id === route?.id) continue;
+        if (r.shift === shift) {
+            r.studentIds?.forEach(id => studentIdSet.add(id));
+        }
+    }
+    return studentIdSet;
+  }, [allRoutes, shift, route]);
+
+
   const { isCapacityExceeded, availableStudents, studentsInCurrentRoute } = useMemo(() => {
     const studentMap = new Map(students.map(s => [s.id, s]));
     const studentsInCurrentRoute = currentStudentIds
@@ -97,18 +110,21 @@ export function RouteForm({
     const isExceeded = studentsInCurrentRoute.length > vehicleCapacity;
 
     let filteredAvailableStudents = [];
-    if (selectedSchoolId) {
+    if (selectedSchoolId && shift) {
         filteredAvailableStudents = students.filter(s => {
-            const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
-            const isAlreadyInThisRoute = currentStudentIds.includes(s.id);
+            if (assignedStudentsInOtherRoutes.has(s.id)) return false;
+            if (currentStudentIds.includes(s.id)) return false;
+            
             const matchesSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase());
             const belongsToSchool = s.schoolId === selectedSchoolId;
-            return s.active !== false && !isInAnotherRoute && !isAlreadyInThisRoute && matchesSearch && belongsToSchool;
+            const isCompatibleShift = s.shift === 'Integral' || s.shift === shift;
+
+            return s.active !== false && belongsToSchool && matchesSearch && isCompatibleShift;
         });
     }
 
     return { isCapacityExceeded: isExceeded, availableStudents: filteredAvailableStudents, studentsInCurrentRoute };
-  }, [currentStudentIds, students, route, studentSearch, vehicleCapacity, selectedSchoolId]);
+  }, [currentStudentIds, students, studentSearch, vehicleCapacity, selectedSchoolId, shift, assignedStudentsInOtherRoutes]);
 
   const addStudentToRoute = (studentId: string) => {
     if (currentStudentIds.length >= vehicleCapacity) {
@@ -141,10 +157,11 @@ export function RouteForm({
   }
 
   const handleSubmit = () => {
-    const newErrors: {name?: string, driverId?: string, schoolId?: string} = {};
+    const newErrors: {name?: string, driverId?: string, schoolId?: string, shift?: string} = {};
     if (!name.trim()) newErrors.name = 'O nome é obrigatório.';
     if (!driverId) newErrors.driverId = 'Selecione um motorista.';
     if (!selectedSchoolId) newErrors.schoolId = 'Selecione uma escola.';
+    if (!shift) newErrors.shift = 'Selecione um turno para a rota.';
     
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
@@ -153,7 +170,8 @@ export function RouteForm({
         name,
         driverId,
         monitorId: monitorId === 'none' ? '' : monitorId,
-        studentIds: currentStudentIds
+        studentIds: currentStudentIds,
+        shift
     };
     
     if (route) {
@@ -192,8 +210,19 @@ export function RouteForm({
                  {!!route && currentStudentIds.length > 0 && <p className="text-xs text-muted-foreground">A escola não pode ser alterada em uma rota com alunos.</p>}
               </div>
             </div>
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pt-4">
+             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pt-4">
                <div className="space-y-2">
+                <Label htmlFor="shiftId">Turno da Rota</Label>
+                <Select onValueChange={(v) => setShift(v as 'Manhã' | 'Tarde')} value={shift}>
+                    <SelectTrigger id="shiftId"><SelectValue placeholder="Selecione um turno" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="Manhã">Manhã (Ida)</SelectItem>
+                        <SelectItem value="Tarde">Tarde (Volta)</SelectItem>
+                    </SelectContent>
+                </Select>
+                 {errors.shift && <p className="text-sm font-medium text-destructive">{errors.shift}</p>}
+              </div>
+              <div className="space-y-2">
                 <Label htmlFor="driverId">Motorista</Label>
                 <Select onValueChange={setDriverId} value={driverId}>
                     <SelectTrigger id="driverId"><SelectValue placeholder="Selecione um motorista" /></SelectTrigger>
@@ -263,11 +292,11 @@ export function RouteForm({
                       </TabsContent>
                       <TabsContent value="available">
                           <Card>
-                              {!selectedSchoolId ? (
+                              {!selectedSchoolId || !shift ? (
                                 <div className="h-64 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
                                     <School className="h-8 w-8 mb-2"/>
-                                    <p className="font-semibold">Selecione uma escola</p>
-                                    <p className="text-sm">Escolha uma escola no campo acima para ver os alunos disponíveis.</p>
+                                    <p className="font-semibold">Selecione uma escola e um turno</p>
+                                    <p className="text-sm">Escolha uma escola e um turno nos campos acima para ver os alunos disponíveis.</p>
                                 </div>
                               ) : (
                                 <>
@@ -293,7 +322,7 @@ export function RouteForm({
                                                       </Button>
                                                   </div>
                                               </div>
-                                          )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para esta escola ou busca.</p>}
+                                          )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para esta escola, turno ou busca.</p>}
                                       </ScrollArea>
                                   </CardContent>
                                 </>
@@ -312,3 +341,5 @@ export function RouteForm({
     </DialogContent>
   )
 }
+
+  

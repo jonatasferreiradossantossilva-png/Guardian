@@ -289,31 +289,32 @@ export const initialMockData = {
         { id: "driver-7", userId: "user-motorista-7", name: "Cristina Borges", status: "inativo", active: true, vehicleId: "vehicle-7", cpf: "777.888.999-00" },
     ],
     students: [
-        { id: "student-1", name: "Lucas Pereira", schoolId: "school-2", parentId: "parent-1", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.545, longitude: -46.638, street: "Rua A", number: "10", neighborhood: "Bela Vista", city: "São Paulo", state: "SP", zipCode: "01311-000", monthlyFee: 450.00, serie: "3º Ano A", turma: "Sala 5" },
-        { id: "student-2", name: "Beatriz Costa", schoolId: "school-2", parentId: "parent-2", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.555, longitude: -46.640, street: "Rua B", number: "20", neighborhood: "Consolação", city: "São Paulo", state: "SP", zipCode: "01220-010", monthlyFee: 480.50, serie: "4º Ano C", turma: "Sala 8" },
-        { id: "student-3", name: "Fernando Lima", schoolId: "school-2", parentId: "parent-1", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.560, longitude: -46.630, street: "Rua C", number: "30", neighborhood: "Liberdade", city: "São Paulo", state: "SP", zipCode: "01504-001", monthlyFee: 420.00 },
-        { id: "student-4", name: "Sofia Martins", schoolId: "school-2", parentId: "parent-2", routeId: "route-1", shift: "Tarde", status: "aguardando", active: true, latitude: -23.565, longitude: -46.650, street: "Rua D", number: "40", neighborhood: "Aclimação", city: "São Paulo", state: "SP", zipCode: "01529-000", monthlyFee: 500.00 },
-        { id: "student-5", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.570, longitude: -46.660, street: "Rua E", number: "50", neighborhood: "Paraíso", city: "São Paulo", state: "SP", zipCode: "04004-040", monthlyFee: 450.00 },
-        { id: "student-6", name: "Isabela Dias", schoolId: "school-2", parentId: "parent-3", routeId: "route-1", shift: "Tarde", status: "aguardando", active: true, latitude: -23.575, longitude: -46.665, street: "Rua F", number: "60", neighborhood: "Vila Mariana", city: "São Paulo", state: "SP", zipCode: "04011-060", monthlyFee: 450.00 },
-        { id: "student-7", name: "Davi Ribeiro", schoolId: "school-2", parentId: "parent-4", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.580, longitude: -46.670, street: "Rua G", number: "70", neighborhood: "Ibirapuera", city: "São Paulo", state: "SP", zipCode: "04094-050", monthlyFee: 510.00 },
-        { id: "student-8", name: "Laura Ribeiro", schoolId: "school-2", parentId: "parent-4", routeId: "route-1", shift: "Tarde", status: "aguardando", active: true, latitude: -23.585, longitude: -46.675, street: "Rua H", number: "80", neighborhood: "Campo Belo", city: "São Paulo", state: "SP", zipCode: "04609-001", monthlyFee: 510.00 },
-        { id: "student-9", name: "Mateus Oliveira", schoolId: "school-3", parentId: "parent-5", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.61, longitude: -46.72, street: "Rua I", number: "90", neighborhood: "Vila Andrade", city: "São Paulo", state: "SP", zipCode: "05726-140", monthlyFee: 550.00 },
-        { id: "student-10", name: "Alice Martins", schoolId: "school-3", parentId: "parent-6", routeId: "route-1", shift: "Tarde", status: "aguardando", active: true, latitude: -23.62, longitude: -46.73, street: "Rua J", number: "100", neighborhood: "Panamby", city: "São Paulo", state: "SP", zipCode: "05707-430", monthlyFee: 550.00 },
-        { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", routeId: "route-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.558, longitude: -46.662, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP", monthlyFee: 430.00 },
-        { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", routeId: "route-1", shift: "Tarde", status: "aguardando", active: true, latitude: -23.559, longitude: -46.663, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP", monthlyFee: 490.00 },
-        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", routeId: "route-8", shift: "Tarde", status: "aguardando", active: true, latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
-        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", routeId: "route-8", shift: "Tarde", status: "aguardando", active: true, latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
-        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", routeId: "route-8", shift: "Tarde", status: "aguardando", active: true, latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
-        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", routeId: null, shift: "Tarde", status: "aguardando", active: true, latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
-        { id: "student-17", name: "Theo Integral", schoolId: "school-1", parentId: "parent-1", routeId: "route-1", shift: "Integral", status: "aguardando", active: true, latitude: -23.552, longitude: -46.642, street: "Rua do Teste", number: "123", neighborhood: "Centro", city: "São Paulo", state: "SP", zipCode: "01002-000", monthlyFee: 800.00 }
+        { id: "student-1", name: "Lucas Pereira", schoolId: "school-2", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.545, longitude: -46.638, street: "Rua A", number: "10", neighborhood: "Bela Vista", city: "São Paulo", state: "SP", zipCode: "01311-000", monthlyFee: 450.00, serie: "3º Ano A", turma: "Sala 5" },
+        { id: "student-2", name: "Beatriz Costa", schoolId: "school-2", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.555, longitude: -46.640, street: "Rua B", number: "20", neighborhood: "Consolação", city: "São Paulo", state: "SP", zipCode: "01220-010", monthlyFee: 480.50, serie: "4º Ano C", turma: "Sala 8" },
+        { id: "student-3", name: "Fernando Lima", schoolId: "school-2", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.560, longitude: -46.630, street: "Rua C", number: "30", neighborhood: "Liberdade", city: "São Paulo", state: "SP", zipCode: "01504-001", monthlyFee: 420.00 },
+        { id: "student-4", name: "Sofia Martins", schoolId: "school-2", parentId: "parent-2", shift: "Tarde", status: "aguardando", active: true, latitude: -23.565, longitude: -46.650, street: "Rua D", number: "40", neighborhood: "Aclimação", city: "São Paulo", state: "SP", zipCode: "01529-000", monthlyFee: 500.00 },
+        { id: "student-5", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.570, longitude: -46.660, street: "Rua E", number: "50", neighborhood: "Paraíso", city: "São Paulo", state: "SP", zipCode: "04004-040", monthlyFee: 450.00 },
+        { id: "student-6", name: "Isabela Dias", schoolId: "school-2", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.575, longitude: -46.665, street: "Rua F", number: "60", neighborhood: "Vila Mariana", city: "São Paulo", state: "SP", zipCode: "04011-060", monthlyFee: 450.00 },
+        { id: "student-7", name: "Davi Ribeiro", schoolId: "school-2", parentId: "parent-4", shift: "Manhã", status: "aguardando", active: true, latitude: -23.580, longitude: -46.670, street: "Rua G", number: "70", neighborhood: "Ibirapuera", city: "São Paulo", state: "SP", zipCode: "04094-050", monthlyFee: 510.00 },
+        { id: "student-8", name: "Laura Ribeiro", schoolId: "school-2", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.585, longitude: -46.675, street: "Rua H", number: "80", neighborhood: "Campo Belo", city: "São Paulo", state: "SP", zipCode: "04609-001", monthlyFee: 510.00 },
+        { id: "student-9", name: "Mateus Oliveira", schoolId: "school-3", parentId: "parent-5", shift: "Manhã", status: "aguardando", active: true, latitude: -23.61, longitude: -46.72, street: "Rua I", number: "90", neighborhood: "Vila Andrade", city: "São Paulo", state: "SP", zipCode: "05726-140", monthlyFee: 550.00 },
+        { id: "student-10", name: "Alice Martins", schoolId: "school-3", parentId: "parent-6", shift: "Tarde", status: "aguardando", active: true, latitude: -23.62, longitude: -46.73, street: "Rua J", number: "100", neighborhood: "Panamby", city: "São Paulo", state: "SP", zipCode: "05707-430", monthlyFee: 550.00 },
+        { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", shift: "Manhã", status: "aguardando", active: true, latitude: -23.558, longitude: -46.662, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP", monthlyFee: 430.00 },
+        { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", shift: "Tarde", status: "aguardando", active: true, latitude: -23.559, longitude: -46.663, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP", monthlyFee: 490.00 },
+        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", shift: "Tarde", status: "aguardando", active: true, latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
+        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", shift: "Tarde", status: "aguardando", active: true, latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
+        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", shift: "Tarde", status: "aguardando", active: true, latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
+        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", shift: "Tarde", status: "aguardando", active: false, latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
+        { id: "student-17", name: "Theo Integral", schoolId: "school-1", parentId: "parent-1", shift: "Integral", status: "aguardando", active: true, latitude: -23.552, longitude: -46.642, street: "Rua do Teste", number: "123", neighborhood: "Centro", city: "São Paulo", state: "SP", zipCode: "01002-000", monthlyFee: 800.00 }
     ],
     routes: [
         { 
             id: "route-1", 
-            name: "Colégio Marjore Paula", 
+            name: "Colégio Vanguarda - Manhã", 
+            shift: "Manhã",
             driverId: "driver-2", 
             monitorId: "user-monitor-1", 
-            studentIds: ["student-1", "student-2", "student-3", "student-17", "student-4", "student-5", "student-6", "student-7", "student-8", "student-9", "student-10", "student-11", "student-12"], 
+            studentIds: ["student-1", "student-2", "student-3", "student-17", "student-5", "student-7", "student-11"], 
             turnByTurnDirections: [
               "Siga para o sudeste na Rua A em direção à Rua B",
               "Vire à direita na Rua B",
@@ -334,7 +335,8 @@ export const initialMockData = {
         },
         { 
             id: "route-2", 
-            name: "Rota Centro", 
+            name: "Rota Centro - Manhã", 
+            shift: "Manhã",
             driverId: "driver-1", 
             monitorId: "user-monitor-2", 
             studentIds: [], 
@@ -350,17 +352,18 @@ export const initialMockData = {
                 "O seu destino, Colégio Vanguarda, estará à direita."
             ]
         },
-        { id: "route-3", name: "Rota Zona Oeste", driverId: "driver-3", monitorId: "user-monitor-3", studentIds: [] },
-        { id: "route-4", name: "Rota Eixo Jardins", driverId: "driver-4", monitorId: "", studentIds: [] },
-        { id: "route-5", name: "Rota Morumbi", driverId: "driver-5", monitorId: "user-monitor-1", studentIds: [] },
-        { id: "route-6", name: "Rota Jardins 2", driverId: "driver-6", monitorId: "user-monitor-2", studentIds: [] },
-        { id: "route-7", name: "Rota Itaim", driverId: "driver-7", monitorId: "", studentIds: [] },
+        { id: "route-3", name: "Rota Zona Oeste - Tarde", shift: "Tarde", driverId: "driver-3", monitorId: "user-monitor-3", studentIds: [] },
+        { id: "route-4", name: "Rota Eixo Jardins - Manhã", shift: "Manhã", driverId: "driver-4", monitorId: "", studentIds: [] },
+        { id: "route-5", name: "Rota Morumbi - Tarde", shift: "Tarde", driverId: "driver-5", monitorId: "user-monitor-1", studentIds: ["student-9", "student-10", "student-15"] },
+        { id: "route-6", name: "Rota Jardins 2 - Manhã", shift: "Manhã", driverId: "driver-6", monitorId: "user-monitor-2", studentIds: [] },
+        { id: "route-7", name: "Rota Itaim - Tarde", shift: "Tarde", driverId: "driver-7", monitorId: "", studentIds: [] },
         { 
             id: "route-8", 
-            name: "Rota Jardins", 
+            name: "Colégio Vanguarda - Tarde",
+            shift: "Tarde",
             driverId: "driver-1", 
             monitorId: "user-monitor-3", 
-            studentIds: ["student-13", "student-14", "student-15"], 
+            studentIds: ["student-13", "student-14", "student-4", "student-6", "student-8", "student-12"], 
             turnByTurnDirections: []
         },
     ],
@@ -556,7 +559,7 @@ export const initialMockData = {
             templateId: "ctpl-1",
             studentId: "student-2",
             parentUserId: "user-pai-2",
-            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCLÁUSULA PRIMEIRA - PARTES\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: João Costa, portador(a) do CPF nº 444.555.666-77.\n\nCLÁUSULA SEGUNDA - OBJETO\n\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) Beatriz Costa, a ser transportado(a) do endereço residencial (Avenida das Oliveiras, 20) para a instituição de ensino (Colégio Vanguarda) e vice-versa, durante o período letivo de 2024.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\n\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ 480,50, com vencimento no 5º (quinto) dia útil de cada mês.\n\nCLÁUSULA QUARTA - OBRIGAÇÕES DA CONTRATADA\n\n- Cumprir os horários estabelecidos.\n- Manter o veículo em perfeitas condições de segurança e higiene.\n- Comunicar aos responsáveis qualquer imprevisto.\n\nCLÁUSULA QUINTA - OBRIGAÇÕES DO(A) CONTRATANTE\n\n- Efetuar o pagamento da mensalidade pontualmente.\n- Aguardar com o(a) aluno(a) no local de embarque no horário combinado.\n- Manter os dados cadastrais atualizados.\n\nE, por estarem justos e contratados, assinam o presente instrumento.\n\nSão Paulo, 01 de agosto de 2024.\n",
+            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCLÁUSULA PRIMEIRA - PARTES\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: João Costa, portador(a) do CPF nº 444.555.666-77.\n\nCLÁUSULA SEGUNDA - OBJETO\n\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) Beatriz Costa, a ser transportado(a) do endereço residencial (Avenida das Oliveiras, 20) para a instituição de ensino (Colégio Vanguarda) e vice-versa, durante o período letivo de 2024.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\n\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ 480,50, com vencimento no 5º (quinto) dia útil de cada mês.\n\nCLÁUSULA QUARTA - OBRIGAÇÕES DA CONTRATADA\n\n- Cumprir os horários estabelecidos.\n- Manter o veículo em perfeitas condições de segurança e higiene.\n- Comunicar aos responsáveis qualquer imprevisto.\n\nCLÁUSULA QUINTA - OBRIGAÇÕES DO(A) CONTRATANTE\n\n- Efetuar o pagamento da mensalidade pontualmente.\n- Aguardar com o(a) aluno(a) no local de embarque no horário combinado.\n- Manter os dados cadastrais atualizados.\n\nE, por estarem de acordo, assinam o presente.\n\nSão Paulo, 01 de agosto de 2024.\n",
             status: "pending_acceptance",
             acceptedAt: null,
             createdAt: "2024-08-01T11:00:00Z"
@@ -585,3 +588,6 @@ export const initialMockData = {
 
 
 
+
+
+  

@@ -1,3 +1,4 @@
+
 {
   "entities": {
     "User": {
@@ -256,10 +257,6 @@
           "type": "string",
           "description": "Reference to Parent. (Relationship: Parent 1:N Student)"
         },
-        "routeId": {
-          "type": "string",
-          "description": "Reference to Route. (Relationship: Route 1:N Student)"
-        },
         "latitude": {
           "type": "number",
           "description": "Latitude of the student's home."
@@ -489,6 +486,14 @@
           "type": "string",
           "description": "Reference to Monitor (User ID)."
         },
+        "shift": {
+          "type": "string",
+          "description": "The shift this route operates in.",
+          "enum": [
+            "Manhã",
+            "Tarde"
+          ]
+        },
         "studentIds": {
           "type": "array",
           "description": "Ordered references to Students for the route stops.",
@@ -512,7 +517,8 @@
       "required": [
         "id",
         "name",
-        "driverId"
+        "driverId",
+        "shift"
       ]
     },
     "Invoice": {
@@ -1148,3 +1154,5 @@
     "reasoning": "The Firestore data structure is designed to support the 'Rota Segura Mobile' application, focusing on real-time incident reporting, route optimization, and communication. The design prioritizes Authorization Independence by denormalizing authorization data where necessary. It utilizes structural segregation to maintain a homogeneous security posture within collections. Access Modeling follows consistent patterns for user-owned data and collaborative scenarios.\n\n**Authorization Independence:**\n\n*   For entities where authorization depends on parent data, like messages between parents and the system, the relevant authorization context (e.g., parent ID, system ID) is included directly within each message document. This avoids `get()` calls in security rules and enables atomic operations.\n*   For collaborative entities like routes, the `driverId` is denormalized to allow direct association and simplified security rules.\n\n**Structural Segregation:**\n\n*   Data with different access requirements are stored in separate collections. For example, global roles for admins are stored in `/roles_admin/{uid}` rather than mixing admin and non-admin user data in a single `/users` collection.\n*   User-specific data, like parent-student messages, is stored within a hierarchical path (`/users/{userId}/messages/{messageId}`) to ensure clear ownership and simplified security rules.\n\n**Access Modeling:**\n\n*   Private data is managed using path-based ownership (e.g., `/users/{userId}/invoices/{invoiceId}`).\n*   User-owned data is organized hierarchically (e.g., `/users/{userId}/routes/{routeId}`).\n*   Collaborative data (if any) would typically use a membership map (`members: {uid1: \"role\", uid2: \"role\"}`), but it's not explicitly needed in the current feature set. If future features require it (e.g., shared routes), this model should be implemented.\n\n**QAPs (Rules are not Filters):**\n\n*   The structure enables secure `list` operations by ensuring all documents within a collection share the same security requirements. For example, listing routes is secure because only authorized users can access the `/routes` collection, and all documents within that collection adhere to the same authorization rules (e.g., admin access). The alternative is to implement filtering in security rules, which is avoided."
   }
 }
+
+  

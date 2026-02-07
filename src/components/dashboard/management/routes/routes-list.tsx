@@ -49,6 +49,7 @@ type Route = {
   monitorId?: string;
   studentIds: string[];
   lastOptimizedAt?: string;
+  shift?: 'Manhã' | 'Tarde';
 };
 type Driver = { id: string; name: string };
 type Student = { id: string; name: string; schoolId: string; };
@@ -151,6 +152,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
           <RouteForm
             key={selectedRoute?.id || 'new-route'}
             route={selectedRoute || undefined} 
+            allRoutes={routes || []}
             drivers={drivers || []}
             students={students || []}
             monitors={monitors || []}
@@ -342,3 +344,5 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     </div>
   );
 }
+
+  
