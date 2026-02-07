@@ -468,20 +468,20 @@ export function RouteForm({
                             const serieTurma = student ? [student.serie, student.turma].filter(Boolean).join(' / ') : null;
 
                             return (
-                                <div key={`${stop.id}-${index}`} className="flex items-center justify-between rounded-md p-1 hover:bg-accent/50">
-                                    <div className="flex min-w-0 flex-1 items-center gap-2">
-                                        <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                        {stop.type === 'student' ? <Users className="h-4 w-4 text-muted-foreground"/> : <School className="h-4 w-4 text-muted-foreground"/>}
-                                        <div className="min-w-0">
-                                            <p className="truncate font-medium text-sm">{stop.name}</p>
-                                            {(serieTurma || stop.details) && (
-                                                <p className="truncate text-xs text-muted-foreground">
-                                                    {serieTurma ? `${serieTurma} • ${stop.details}` : stop.details}
-                                                </p>
-                                            )}
-                                        </div>
+                                <div key={`${stop.id}-${index}`} className="flex items-center gap-2 rounded-md p-1 hover:bg-accent/50">
+                                    <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                    {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
+                                    
+                                    <div className="flex-grow min-w-0">
+                                        <p className="truncate font-medium text-sm">{stop.name}</p>
+                                        {(serieTurma || stop.details) && (
+                                            <p className="truncate text-xs text-muted-foreground">
+                                                {serieTurma ? `${serieTurma} • ${stop.details}` : stop.details}
+                                            </p>
+                                        )}
                                     </div>
-                                    <div className="flex items-center">
+                                
+                                    <div className="flex flex-shrink-0 items-center">
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}><ArrowUp className="h-4 w-4" /></Button>
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}><X className="h-4 w-4 text-destructive" /></Button>
@@ -541,6 +541,7 @@ export function RouteForm({
     
 
     
+
 
 
 
