@@ -18,6 +18,7 @@ const OptimizeRouteInputSchema = z.object({
     .describe('The current route as a series of waypoints.'),
   trafficConditions: z
     .string()
+
     .describe('A description of the current traffic conditions.'),
   reportedIncidents: z
     .string()
