@@ -23,7 +23,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School, Info, GripVertical } from 'lucide-react';
+import { Users, AlertCircle, X, PlusCircle, School, Info, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -48,9 +48,9 @@ type Driver = { id: string; name: string; vehicleId?: string; };
 type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string; serie?: string; turma?: string; };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
-type SchoolData = { id: string; name: string; }; // Renamed from School to avoid conflict
+type SchoolData = { id: string; name: string; };
 type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; };
-type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string };
+type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string, uniqueId: string };
 
 
 interface RouteFormProps {
@@ -68,37 +68,9 @@ const getAbbreviatedClass = (student: Student | null | undefined) => {
     if (!student) return null;
     const serie = student.serie || '';
     const turma = student.turma || '';
-    // Transforms "5º Ano" into "5º" or "3º Ano A" into "3º A"
     const abbreviatedSerie = serie.replace(/ ano/i, '').trim();
     return [abbreviatedSerie, turma].filter(Boolean).join(' ');
 };
-
-function SortableStopItem({ stop, index, children }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-  } = useSortable({id: `${stop.type}-${stop.id}-${index}`});
-  
-  const style = {
-    transform: CSS.Transform.toString(transform),
-    transition,
-  };
-  
-  return (
-    <div ref={setNodeRef} style={style} {...attributes} className="flex items-center w-full bg-background rounded-md my-1">
-        <Button {...listeners} variant="ghost" size="icon" className="h-full w-10 cursor-grab flex-shrink-0">
-             <GripVertical className="h-5 w-5 text-muted-foreground" />
-        </Button>
-        <div className="flex-1 min-w-0 pr-2">
-          {children}
-        </div>
-    </div>
-  );
-}
-
 
 export function RouteForm({
   route,
@@ -137,17 +109,18 @@ export function RouteForm({
     route?.studentIds?.forEach(stopId => {
         const type = stopId.substring(0, stopId.indexOf('-'));
         const id = stopId.substring(stopId.indexOf('-') + 1);
+        const uniqueId = stopId; 
 
         if (type === 'student') {
             const student = studentsMap.get(id);
             if (student) {
-                initialStops.push({ id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name });
+                initialStops.push({ id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name, uniqueId });
                 initialSchoolIds.add(student.schoolId);
             }
         } else if (type === 'school') {
             const school = schoolsMap.get(id);
             if (school) {
-                initialStops.push({ id, type: 'school', name: school.name, details: 'Ponto de desembarque' });
+                initialStops.push({ id, type: 'school', name: school.name, details: 'Ponto de desembarque', uniqueId });
                 initialSchoolIds.add(id);
             }
         }
@@ -233,7 +206,7 @@ export function RouteForm({
         }
     }, [studentsOnRoute, shift, selectedSchoolIds, allRoutes, route?.id, students]);
 
-  const addStop = (stop: Stop) => {
+  const addStop = (stop: Omit<Stop, 'uniqueId'>) => {
     if (stop.type === 'student' && studentsOnRoute.length >= vehicleCapacity) {
       toast({
         title: "Capacidade do veículo excedida!",
@@ -242,13 +215,16 @@ export function RouteForm({
       });
       return;
     }
-    setStops((prev) => [...prev, stop]);
+    const newStop: Stop = {
+      ...stop,
+      uniqueId: `${stop.type}-${stop.id}`
+    };
+    setStops((prev) => [...prev, newStop]);
   };
   
   const handleAddSchoolToRoute = (schoolId: string) => {
     const school = schoolsMap.get(schoolId);
     if (school) {
-        // Prevent adding duplicate school stops
         if (stops.some(stop => stop.type === 'school' && stop.id === schoolId)) {
             toast({
                 title: "Escola já está no itinerário",
@@ -280,7 +256,6 @@ export function RouteForm({
             });
             return;
         }
-        // Also remove from the selectedSchoolIds list
         setSelectedSchoolIds(prev => prev.filter(id => id !== stopToRemove.id));
     }
     setStops(prev => prev.filter((_, i) => i !== index));
@@ -291,7 +266,7 @@ export function RouteForm({
         name,
         driverId,
         monitorId: monitorId === 'none' ? '' : monitorId,
-        studentIds: stopsToSave.map(s => `${s.type}-${s.id}`), // Prefixo para diferenciar
+        studentIds: stopsToSave.map(s => s.uniqueId), 
         shift
     };
     
@@ -306,11 +281,12 @@ export function RouteForm({
   }
 
   const handleConfirmSaveAndAdd = () => {
-    const studentStopsToAdd = missingIntegralStudents.map(s => ({
+    const studentStopsToAdd: Stop[] = missingIntegralStudents.map(s => ({
         id: s.id,
-        type: 'student' as 'student',
+        type: 'student',
         name: s.name,
-        details: schoolsMap.get(s.schoolId)?.name
+        details: schoolsMap.get(s.schoolId)?.name,
+        uniqueId: `student-${s.id}`
     }));
     performSave([...stops, ...studentStopsToAdd]); 
     setIsMissingStudentAlertOpen(false);
@@ -377,12 +353,51 @@ export function RouteForm({
     const {active, over} = event;
     if (over && active.id !== over.id) {
       setStops((items) => {
-        const oldIndex = items.findIndex((_, i) => `${active.id}`.endsWith(`-${i}`));
-        const newIndex = items.findIndex((_, i) => `${over.id}`.endsWith(`-${i}`));
+        const oldIndex = items.findIndex((item) => item.uniqueId === active.id);
+        const newIndex = items.findIndex((item) => item.uniqueId === over.id);
         return arrayMove(items, oldIndex, newIndex);
       });
     }
   }
+
+function SortableStopItem({ stop, index, onRemove }) {
+  const { attributes, listeners, setNodeRef, transform, transition } = useSortable({ id: stop.uniqueId });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+
+  const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
+  const displayClass = getAbbreviatedClass(student);
+
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} className="flex items-center w-full bg-background rounded-md my-1">
+        <Button {...listeners} variant="ghost" size="icon" className="h-full w-10 cursor-grab flex-shrink-0">
+             <GripVertical className="h-5 w-5 text-muted-foreground" />
+        </Button>
+        <div className="flex items-center justify-between gap-2 flex-1 min-w-0">
+            <div className="flex items-center gap-2 flex-1 min-w-0">
+                <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
+                {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
+                <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-1.5">
+                        <p className="truncate font-medium text-sm">{stop.name}</p>
+                        {displayClass && <p className="text-xs text-muted-foreground">({displayClass})</p>}
+                    </div>
+                    {stop.details && (
+                        <p className="truncate text-xs text-muted-foreground">
+                            {stop.details}
+                        </p>
+                    )}
+                </div>
+            </div>
+            <div className="flex-shrink-0 pr-2">
+                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => onRemove(index)}>
+                    <X className="h-4 w-4 text-destructive" />
+                </Button>
+            </div>
+        </div>
+    </div>
+  );
+}
+
 
   return (
     <DialogContent className="sm:max-w-3xl">
@@ -527,40 +542,17 @@ export function RouteForm({
                             onDragEnd={handleDragEnd}
                         >
                             <SortableContext 
-                                items={stops.map((s, i) => `${s.type}-${s.id}-${i}`)}
+                                items={stops.map(s => s.uniqueId)}
                                 strategy={verticalListSortingStrategy}
                             >
-                                {stops.length > 0 ? stops.map((stop, index) => {
-                                    const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
-                                    const displayClass = getAbbreviatedClass(student);
-
-                                    return (
-                                      <SortableStopItem key={`${stop.type}-${stop.id}-${index}`} stop={stop} index={index}>
-                                        <div className="flex items-center justify-between gap-2 w-full">
-                                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                                {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
-                                                <div className="flex-1 min-w-0">
-                                                     <div className="flex items-center gap-1.5">
-                                                        <p className="truncate font-medium text-sm">{stop.name}</p>
-                                                        {displayClass && <p className="text-xs text-muted-foreground">({displayClass})</p>}
-                                                    </div>
-                                                    {stop.details && (
-                                                        <p className="truncate text-xs text-muted-foreground">
-                                                            {stop.details}
-                                                        </p>
-                                                    )}
-                                                </div>
-                                            </div>
-                                            <div className="flex items-center flex-shrink-0">
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
-                                                    <X className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </div>
-                                        </div>
-                                      </SortableStopItem>
-                                    )
-                                }) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
+                                {stops.length > 0 ? stops.map((stop, index) => (
+                                    <SortableStopItem 
+                                      key={stop.uniqueId} 
+                                      stop={stop} 
+                                      index={index} 
+                                      onRemove={removeStop}
+                                    />
+                                )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
                             </SortableContext>
                         </DndContext>
                     </ScrollArea>
@@ -630,3 +622,4 @@ export function RouteForm({
 
     
 
+    
