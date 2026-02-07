@@ -42,7 +42,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 
 
 type Driver = { id: string; name: string; vehicleId?: string; };
-type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string };
+type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string; serie?: string; turma?: string; };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 type SchoolData = { id: string; name: string; }; // Renamed from School to avoid conflict
@@ -80,7 +80,6 @@ export function RouteForm({
   const [shift, setShift] = useState<'Manhã' | 'Tarde' | ''>(route?.shift || '');
 
   const [selectedSchoolIds, setSelectedSchoolIds] = useState<string[]>([]);
-  const [schoolToAdd, setSchoolToAdd] = useState<string>('');
   
   const [stops, setStops] = useState<Stop[]>([]);
   const [studentSearch, setStudentSearch] = useState('');
@@ -226,6 +225,25 @@ export function RouteForm({
   };
   
   const removeStop = (index: number) => {
+    const stopToRemove = stops[index];
+    if (stopToRemove.type === 'school') {
+        const isSchoolInUse = stops.some(s => {
+            if (s.type !== 'student') return false;
+            const student = studentsMap.get(s.id);
+            return student?.schoolId === stopToRemove.id;
+        });
+
+        if (isSchoolInUse) {
+            toast({
+                title: "Ação não permitida",
+                description: "Você não pode remover uma escola do itinerário enquanto houver alunos dela na rota.",
+                variant: "destructive",
+            });
+            return;
+        }
+        // Also remove from the selectedSchoolIds list
+        setSelectedSchoolIds(prev => prev.filter(id => id !== stopToRemove.id));
+    }
     setStops(prev => prev.filter((_, i) => i !== index));
   }
   
@@ -362,30 +380,13 @@ export function RouteForm({
             
              <div className="space-y-2">
                 <Label>Escolas Atendidas</Label>
-                <div className="flex gap-2">
-                    <Select value={schoolToAdd} onValueChange={setSchoolToAdd}>
-                        <SelectTrigger><SelectValue placeholder="Adicionar escola..." /></SelectTrigger>
-                        <SelectContent>
-                            {schools.filter(s => !selectedSchoolIds.includes(s.id)).map(s => (
-                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                    <Button type="button" variant="outline" size="icon" onClick={() => {
-                        if (schoolToAdd && !selectedSchoolIds.includes(schoolToAdd)) {
-                            setSelectedSchoolIds(prev => [...prev, schoolToAdd]);
-                            setSchoolToAdd('');
-                        }
-                    }} disabled={!schoolToAdd}><PlusCircle className="h-4 w-4"/></Button>
-                </div>
-                 {errors.schoolIds && <p className="text-sm font-medium text-destructive">{errors.schoolIds}</p>}
-                 <div className="flex flex-wrap gap-2 pt-2">
+                 <div className="flex flex-wrap gap-2 pt-1">
                      {selectedSchoolIds.map(id => (
                         <Badge key={id} variant="secondary" className="flex items-center gap-1">
                             {schoolsMap.get(id)?.name}
-                            <button onClick={() => setSelectedSchoolIds(prev => prev.filter(sId => sId !== id))}><X className="h-3 w-3"/></button>
                         </Badge>
                      ))}
+                     {selectedSchoolIds.length === 0 && <p className="text-xs text-muted-foreground">Nenhuma escola selecionada. Adicione escolas no itinerário.</p>}
                  </div>
             </div>
             
@@ -398,7 +399,7 @@ export function RouteForm({
                         <div className="h-64 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
                             <School className="h-8 w-8 mb-2"/>
                             <p className="font-semibold">Selecione escolas e um turno</p>
-                            <p className="text-sm">Escolha as escolas e o turno da rota para ver os alunos disponíveis.</p>
+                            <p className="text-sm">Escolha as escolas no itinerário e o turno da rota para ver os alunos disponíveis.</p>
                         </div>
                     ) : (
                         <ScrollArea className="h-56">
@@ -416,7 +417,12 @@ export function RouteForm({
                                         {students.map(s => (
                                             <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                 <div className="flex min-w-0 flex-1 items-center gap-2">
-                                                    <span className="truncate font-medium text-sm">{s.name}</span>
+                                                    <div>
+                                                        <p className="truncate font-medium text-sm">{s.name}</p>
+                                                        {[s.serie, s.turma].filter(Boolean).length > 0 && (
+                                                            <p className="text-xs text-muted-foreground truncate">{[s.serie, s.turma].filter(Boolean).join(' - ')}</p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div className="flex items-center">
                                                     <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
@@ -455,35 +461,44 @@ export function RouteForm({
             <Card>
                 <CardContent className="p-2">
                     <ScrollArea className="h-[28rem]">
-                        {stops.length > 0 ? stops.map((stop, index) => (
-                            <div key={`${stop.id}-${index}`} className="flex items-center justify-between rounded-md p-1 hover:bg-accent/50 group">
-                                <div className="flex min-w-0 flex-1 items-center gap-2">
-                                    <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                    {stop.type === 'student' ? <Users className="h-4 w-4 text-muted-foreground"/> : <School className="h-4 w-4 text-muted-foreground"/>}
-                                    <div>
-                                        <p className="truncate font-medium text-sm">{stop.name}</p>
-                                        {stop.details && <p className="truncate text-xs text-muted-foreground">{stop.details}</p>}
+                        {stops.length > 0 ? stops.map((stop, index) => {
+                            const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
+                            const serieTurma = student ? [student.serie, student.turma].filter(Boolean).join(' - ') : null;
+
+                            return (
+                                <div key={`${stop.id}-${index}`} className="flex items-center justify-between rounded-md p-1 hover:bg-accent/50 group">
+                                    <div className="flex min-w-0 flex-1 items-center gap-2">
+                                        <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                        {stop.type === 'student' ? <Users className="h-4 w-4 text-muted-foreground"/> : <School className="h-4 w-4 text-muted-foreground"/>}
+                                        <div>
+                                            <p className="truncate font-medium text-sm">{stop.name}</p>
+                                            {(serieTurma || stop.details) && (
+                                                <p className="truncate text-xs text-muted-foreground">
+                                                    {serieTurma ? `${serieTurma} • ${stop.details}` : stop.details}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}><ArrowUp className="h-4 w-4" /></Button>
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}><X className="h-4 w-4 text-destructive" /></Button>
                                     </div>
                                 </div>
-                                <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}><ArrowUp className="h-4 w-4" /></Button>
-                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
-                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}><X className="h-4 w-4 text-destructive" /></Button>
-                                </div>
-                            </div>
-                        )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
+                            )
+                        }) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
                     </ScrollArea>
                     <div className="p-2 border-t">
                         <DropdownMenu>
                             <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full" disabled={selectedSchoolIds.length === 0}>
+                                <Button variant="outline" size="sm" className="w-full">
                                     <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Parada (Escola)
                                 </Button>
                             </DropdownMenuTrigger>
                             <DropdownMenuContent>
-                                {selectedSchoolIds.map(schoolId => (
-                                    <DropdownMenuItem key={schoolId} onSelect={() => handleAddSchoolToRoute(schoolId)}>
-                                        {schoolsMap.get(schoolId)?.name}
+                                {schools.map(school => (
+                                    <DropdownMenuItem key={school.id} onSelect={() => handleAddSchoolToRoute(school.id)}>
+                                        {school.name}
                                     </DropdownMenuItem>
                                 ))}
                             </DropdownMenuContent>
@@ -524,5 +539,6 @@ export function RouteForm({
     
 
     
+
 
 
