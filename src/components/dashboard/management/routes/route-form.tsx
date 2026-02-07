@@ -486,49 +486,50 @@ export function RouteForm({
                 <ScrollArea className="h-[28rem] p-2">
                     {stops.length > 0 ? (
                         <div className="space-y-1">
-                            {stops.map((stop, index) => {
-                                return (
-                                    <div key={index} className="flex items-center justify-between w-full bg-background rounded-md p-2 hover:bg-accent/50">
-                                        <div className="flex items-center flex-1 min-w-0">
-                                            <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                            <div className="flex items-center gap-2 flex-1 min-w-0 ml-2">
-                                                {stop.type === 'student' ? (
-                                                    <Avatar className="h-8 w-8 flex-shrink-0">
-                                                        <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
-                                                        <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                                    </Avatar>
-                                                ) : (
-                                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
-                                                        <School className="h-4 w-4 text-muted-foreground" />
-                                                    </div>
-                                                )}
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
-                                                    {stop.type === 'student' && (
-                                                        <p className="text-xs text-muted-foreground truncate">
-                                                            {schoolsMap.get(studentsMap.get(stop.id)?.schoolId || '')?.name}
-                                                        </p>
-                                                    )}
-                                                    {stop.type === 'school' && (
-                                                        <p className="text-xs text-muted-foreground truncate">{stop.details}</p>
-                                                    )}
-                                                </div>
+                           {stops.map((stop, index) => (
+                                <div key={index} className="grid grid-cols-[auto_1fr_auto] items-start w-full bg-background rounded-md p-2 hover:bg-accent/50 gap-2">
+                                    {/* Column 1: Number */}
+                                    <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground pt-2">{index + 1}</span>
+
+                                    {/* Column 2: Content */}
+                                    <div className="flex items-center gap-2 min-w-0">
+                                        {stop.type === 'student' ? (
+                                            <Avatar className="h-8 w-8 flex-shrink-0">
+                                                <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
+                                                <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                            </Avatar>
+                                        ) : (
+                                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
+                                                <School className="h-4 w-4 text-muted-foreground" />
                                             </div>
-                                        </div>
-                                        <div className="flex items-center flex-shrink-0">
-                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
-                                                <ArrowUp className="h-4 w-4" />
-                                            </Button>
-                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
-                                                <ArrowDown className="h-4 w-4" />
-                                            </Button>
-                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
-                                                <X className="h-4 w-4 text-destructive" />
-                                            </Button>
+                                        )}
+                                        <div className="flex-1 min-w-0">
+                                            <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
+                                            {stop.type === 'student' && (
+                                                <p className="text-xs text-muted-foreground truncate">
+                                                    {schoolsMap.get(studentsMap.get(stop.id)?.schoolId || '')?.name}
+                                                </p>
+                                            )}
+                                            {stop.type === 'school' && (
+                                                <p className="text-xs text-muted-foreground truncate">{stop.details}</p>
+                                            )}
                                         </div>
                                     </div>
-                                )
-                            })}
+
+                                    {/* Column 3: Buttons */}
+                                    <div className="flex items-center flex-shrink-0">
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
+                                            <ArrowUp className="h-4 w-4" />
+                                        </Button>
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
+                                            <ArrowDown className="h-4 w-4" />
+                                        </Button>
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
+                                            <X className="h-4 w-4 text-destructive" />
+                                        </Button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                     ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
                 </ScrollArea>
