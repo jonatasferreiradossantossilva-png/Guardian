@@ -489,36 +489,34 @@ export function RouteForm({
                         <div className="space-y-1">
                             {stops.map((stop, index) => {
                                 return (
-                                    <div key={index} className="flex items-center w-full bg-background rounded-md p-2 hover:bg-accent/50">
-                                        <div className="flex items-center justify-between w-full">
-                                            <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                                {stop.type === 'student' ? (
-                                                    <Avatar className="h-8 w-8">
-                                                        <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
-                                                        <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                                    </Avatar>
-                                                ) : (
-                                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
-                                                        <School className="h-4 w-4 text-muted-foreground" />
-                                                    </div>
-                                                )}
-                                                <div className="flex-1 min-w-0">
-                                                    <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
-                                                    {stop.type === 'student' && <p className="text-xs text-muted-foreground truncate">{stop.details}</p>}
+                                    <div key={index} className="flex items-center justify-between w-full bg-background rounded-md p-2 hover:bg-accent/50">
+                                        <div className="flex items-start gap-3 flex-1 min-w-0">
+                                            <span className="w-6 flex-shrink-0 pt-2 text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                            {stop.type === 'student' ? (
+                                                <Avatar className="h-8 w-8 flex-shrink-0">
+                                                    <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
+                                                    <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                </Avatar>
+                                            ) : (
+                                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
+                                                    <School className="h-4 w-4 text-muted-foreground" />
                                                 </div>
+                                            )}
+                                            <div className="flex-1 min-w-0 pt-1">
+                                                <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
+                                                {stop.type === 'student' && <p className="text-xs text-muted-foreground truncate">{schoolsMap.get(studentsMap.get(stop.id)?.schoolId || '')?.name}</p>}
                                             </div>
-                                            <div className="flex items-center flex-shrink-0">
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
-                                                    <ArrowUp className="h-4 w-4" />
-                                                </Button>
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
-                                                    <ArrowDown className="h-4 w-4" />
-                                                </Button>
-                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
-                                                    <X className="h-4 w-4 text-destructive" />
-                                                </Button>
-                                            </div>
+                                        </div>
+                                        <div className="flex items-center flex-shrink-0">
+                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
+                                                <ArrowUp className="h-4 w-4" />
+                                            </Button>
+                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
+                                                <ArrowDown className="h-4 w-4" />
+                                            </Button>
+                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
+                                                <X className="h-4 w-4 text-destructive" />
+                                            </Button>
                                         </div>
                                     </div>
                                 )
