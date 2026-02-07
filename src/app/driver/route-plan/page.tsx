@@ -12,6 +12,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -416,7 +417,7 @@ export default function DriverRoutePlanPage() {
   useEffect(() => {
     // In a real app, you'd get this from your auth state.
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || "user-motorista-2"); 
+    setMockUserId(storedUserId || "user-motorista-4"); 
     const storedActiveRouteId = sessionStorage.getItem('activeRouteId');
     setActiveRouteId(storedActiveRouteId);
   }, []);
@@ -608,22 +609,16 @@ export default function DriverRoutePlanPage() {
 
     const studentsOnThisRoute = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
 
-    if (direction === 'ida') {
-        studentsOnThisRoute.forEach(student => {
+    studentsOnThisRoute.forEach(student => {
+        if (student.status !== 'ausente') {
             updateDoc('students', student.id, { status: 'aguardando' });
-        });
-    } else if (direction === 'volta') {
-        studentsOnThisRoute.forEach(student => {
-             if (student.status !== 'ausente') { 
-                updateDoc('students', student.id, { status: 'a_bordo' });
-            }
-        });
-    }
-
+        }
+    });
+   
     updateDoc('drivers', driverId, { status: 'em_rota' });
     toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
 
-    if (isOnline) {
+    if (isOnline && direction === 'ida') {
       toast({ description: "✨ Otimizando... Buscando um caminho mais rápido para hoje." });
       
       try {
@@ -1115,3 +1110,4 @@ export default function DriverRoutePlanPage() {
 }
 
     
+

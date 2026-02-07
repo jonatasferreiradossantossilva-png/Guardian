@@ -417,7 +417,7 @@ export const initialMockData = {
         {id: "inv-jul-11", studentId: "student-11", parentUserId: "user-pai-7", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-07-10", status: "paid" },
         {id: "inv-jul-12", studentId: "student-12", parentUserId: "user-pai-8", description: "Mensalidade Transporte", amount: 490.00, dueDate: "2024-07-10", status: "paid" },
   
-        // Meses Anteriores (Histórico)
+        // Meses Anteriores (Histórico) - Lucrativo
         {id: "inv-jun-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-06-10", status: "paid" },
         {id: "inv-jun-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 480.50, dueDate: "2024-06-10", status: "paid" },
         {id: "inv-jun-3", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-06-10", status: "paid" },
@@ -564,6 +564,7 @@ export const initialMockData = {
 
 
   
+
 
 
 
