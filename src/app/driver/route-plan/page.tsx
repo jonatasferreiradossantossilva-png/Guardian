@@ -15,6 +15,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -50,6 +51,7 @@ import {
   LocateFixed,
   WifiOff,
   QrCode,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -215,6 +217,41 @@ const NextStopSchoolCard = ({ school, onDropOff, onNavigate, onShareRoute }: { s
   );
 };
 
+const NextStopSchoolPickupCard = ({ school, onPickup, onNavigate, onShareRoute }: { school: SchoolData, onPickup: (id: string) => void, onNavigate: (data: any) => void, onShareRoute: () => void }) => {
+  return (
+    <Card className="w-full shadow-lg border-primary/20">
+      <CardHeader>
+        <CardDescription>Próxima Parada (Embarque)</CardDescription>
+        <CardTitle className="flex items-start gap-3 text-2xl">
+          <div className="flex items-center justify-center h-12 w-12 flex-shrink-0 bg-secondary rounded-lg">
+            <School className="h-6 w-6 text-muted-foreground" />
+          </div>
+          <div className="flex-grow">
+            <span>{school.name}</span>
+          </div>
+        </CardTitle>
+        <p className="text-sm text-muted-foreground pt-1">
+          {school.street ? `${school.street}, ${school.number}` : 'Endereço não disponível'}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Button size="lg" className="w-full bg-green-600 hover:bg-green-700" onClick={() => onPickup(school.id)}>
+          <Users className="mr-2 h-5 w-5" /> Realizar Embarque
+        </Button>
+      </CardContent>
+      <CardFooter className="grid grid-cols-2 gap-2">
+        <Button variant="outline" className="h-auto py-3" onClick={() => onNavigate(school)}>
+          <Navigation className="mr-2 h-5 w-5" />
+          <span>Navegar</span>
+        </Button>
+        <Button variant="outline" className="h-auto py-3" onClick={onShareRoute}>
+          <Share2 className="mr-2 h-5 w-5"/>
+          <span>Localização</span>
+        </Button>
+      </CardFooter>
+    </Card>
+  );
+};
 
 const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], formatStudentDetails: (student: Student) => string }) => {
   if (!stops || stops.length === 0) {
@@ -552,31 +589,47 @@ export default function DriverRoutePlanPage() {
     if (driverProfile?.status !== 'em_rota' || !orderedStops) {
       return { activeStop: null, upcomingStops: [] };
     }
-    
+  
     let nextStopIndex = -1;
-
+  
     if (direction === 'ida') {
-        nextStopIndex = orderedStops.findIndex(stop => {
-            if (stop.type === 'student') {
-                return stop.data.status === 'aguardando';
-            }
-            // A school is a valid next stop if there are no 'aguardando' students before it.
-            // This is implicitly handled by findIndex.
-            return true;
-        });
+      nextStopIndex = orderedStops.findIndex(stop => {
+        if (stop.type === 'student') {
+          return stop.data.status === 'aguardando';
+        }
+        return true;
+      });
     } else { // 'volta'
-        nextStopIndex = orderedStops.findIndex(stop => 
-            stop.type === 'student' && (stop.data as Student).status === 'a_bordo'
+      // Phase 1: Find the next school to pick up from.
+      const nextSchoolStopIndex = orderedStops.findIndex(stop => {
+        if (stop.type !== 'school') return false;
+        
+        const studentsFromThisSchool = orderedStops.filter(s => 
+          s.type === 'student' && (s.data as Student).schoolId === stop.id
         );
+        
+        // This school is the next stop if any of its students are still waiting.
+        return studentsFromThisSchool.some(s => (s.data as Student).status === 'aguardando');
+      });
+  
+      if (nextSchoolStopIndex !== -1) {
+        // We are still in the pickup phase. The next stop is a school.
+        nextStopIndex = nextSchoolStopIndex;
+      } else {
+        // Phase 2: All pickups are done, find the next student to drop off.
+        nextStopIndex = orderedStops.findIndex(stop => 
+          stop.type === 'student' && (stop.data as Student).status === 'a_bordo'
+        );
+      }
     }
     
     if (nextStopIndex === -1) {
       return { activeStop: null, upcomingStops: [] };
     }
-
+  
     const activeStop = orderedStops[nextStopIndex];
     const upcoming = orderedStops.slice(nextStopIndex + 1);
-
+  
     return { activeStop, upcomingStops: upcoming };
   }, [orderedStops, driverProfile?.status, direction]);
   
@@ -871,6 +924,24 @@ export default function DriverRoutePlanPage() {
         
         setIsScannerOpen(false);
     }, [activeStop, direction, handleStatusChange, toast]);
+
+    const handlePickup = useCallback((schoolId: string) => {
+        // This is a temporary simulation. In the real flow, this would open a checklist.
+        const studentsToPickup = orderedStops
+            .filter(stop => stop.type === 'student' && (stop.data as Student).status === 'aguardando' && (stop.data as Student).schoolId === schoolId)
+            .map(stop => stop.id);
+
+        if (studentsToPickup.length === 0) {
+            toast({ title: "Nenhum aluno para embarcar", description: "Não há alunos aguardando nesta escola.", variant: "destructive" });
+            return;
+        }
+
+        studentsToPickup.forEach(studentId => {
+            updateDoc('students', studentId, { status: 'a_bordo' });
+        });
+
+        toast({ title: "Alunos Embarcados! (Simulação)", description: `${studentsToPickup.length} alunos foram marcados como 'a bordo'.` });
+    }, [orderedStops, updateDoc, toast]);
    
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
@@ -1076,6 +1147,14 @@ export default function DriverRoutePlanPage() {
                                         onShareRoute={handleShareRoute}
                                     />
                                 )}
+                                {activeStop?.type === 'school' && direction === 'volta' && (
+                                    <NextStopSchoolPickupCard 
+                                        school={activeStop.data as SchoolData}
+                                        onPickup={handlePickup}
+                                        onNavigate={handleNavigateToStudent}
+                                        onShareRoute={handleShareRoute}
+                                    />
+                                )}
                                 {upcomingStops.length > 0 && <UpcomingStopsList stops={upcomingStops} formatStudentDetails={formatStudentDetails} />}
                             </>
                         )}
@@ -1194,5 +1273,6 @@ export default function DriverRoutePlanPage() {
 }
 
     
+
 
 
