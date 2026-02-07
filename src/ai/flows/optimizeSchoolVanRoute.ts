@@ -25,14 +25,19 @@ const SchoolInputSchema = z.object({
   address: z.string(),
 });
 
-const OptimizeSchoolVanRouteInputSchema = z.object({
+const OptimizeSchoolVanRouteInputSchemaBase = z.object({
   startAddress: z.string().optional().describe("O endereço de partida ou as coordenadas (lat,lng) da rota. Se não for fornecido, a rota começa na primeira parada."),
   students: z.array(StudentStopSchema).describe("Lista de alunos (paradas de embarque) com seus endereços e IDs de escola para serem incluídos na rota."),
   schools: z.array(SchoolInputSchema).describe("Lista de escolas (paradas de desembarque) com seus endereços, nomes e IDs reais."),
   vehicleCapacity: z.number().optional().describe("A capacidade máxima de passageiros do veículo."),
   context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito, interdições de vias ou incidentes reportados."),
 });
+
+const OptimizeSchoolVanRouteInputSchema = OptimizeSchoolVanRouteInputSchemaBase.extend({
+  optimizationMode: z.enum(['safe', 'flexible']).optional().default('safe').describe("'safe' para a regra do gestor (coletar todos primeiro), 'flexible' para a otimização em tempo real do motorista."),
+});
 export type OptimizeSchoolVanRouteInput = z.infer<typeof OptimizeSchoolVanRouteInputSchema>;
+
 
 const OptimizedStopSchema = z.object({
     id: z.string().describe("O ID único do item da parada. Deve ser o ID EXATO fornecido na entrada (ex: 'student-1' ou 'school-1')."),
@@ -44,22 +49,32 @@ const OptimizeSchoolVanRouteOutputSchema = z.object({
   summary: z.string().describe('Um resumo da otimização, explicando os benefícios (ex: tempo/distância economizados) e como o contexto (ex: incidentes) influenciou a decisão.'),
   estimatedTimeMinutes: z.number().describe('O tempo total estimado para a rota otimizada em minutos.'),
   estimatedDistanceKm: z.number().describe('A distância total estimada para a rota otimizada em quilômetros.'),
-  turnByTurnDirections: z.array(z.string()).describe('Uma lista de instruções de direção passo a passo para a rota, como "Vire à direita na Rua X".')
+  turnByTurnDirections: z.array(z.string()).describe('Uma lista de instruções de direção passo a passo para a rota, como um GPS, partindo do início e seguindo por TODAS as paradas na ordem otimizada.')
 });
 export type OptimizeSchoolVanRouteOutput = z.infer<typeof OptimizeSchoolVanRouteOutputSchema>;
 
+// The prompt needs a schema with the boolean flag, not the enum
+const PromptInputSchema = OptimizeSchoolVanRouteInputSchemaBase.extend({
+  isFlexibleMode: z.boolean(),
+});
 
 const prompt = ai.definePrompt({
   name: 'optimizeSchoolVanRoutePrompt',
-  input: {schema: OptimizeSchoolVanRouteInputSchema},
+  input: {schema: PromptInputSchema},
   output: {schema: OptimizeSchoolVanRouteOutputSchema},
   prompt: `Você é um especialista em logística e um assistente de navegação GPS para transporte escolar. Sua tarefa é criar a rota mais eficiente possível, incluindo múltiplos destinos (escolas), e fornecer as direções detalhadas.
 
 Você receberá uma lista de alunos e uma lista de escolas. Cada aluno possui um 'schoolId' que corresponde ao 'id' da sua escola de destino.
 
-**REGRA DE OURO DA OPERAÇÃO (Plano do Gestor):** A rota deve ser estruturada em duas fases:
+{{#if isFlexibleMode}}
+**REGRAS DA OTIMIZAÇÃO EM TEMPO REAL (PLANO DO MOTORISTA):**
+1.  **Flexibilidade:** Você tem liberdade para embarcar e desembarcar alunos em fases para criar a rota mais rápida possível.
+2.  **REGRA CRÍTICA DE DESEMBARQUE:** Uma parada de desembarque em uma escola (ex: Escola A) só é permitida se **TODOS** os alunos destinados à Escola A que estão na lista de entrada já tiverem sido embarcados. Você não pode fazer duas paradas de desembarque na mesma escola.
+{{else}}
+**REGRA DE OURO DA OPERAÇÃO (PLANO DO GESTOR):** A rota deve ser estruturada em duas fases:
 1.  **Fase 1: Embarque.** A rota deve primeiro embarcar TODOS os alunos. A sequência de embarque dos alunos deve ser otimizada para o menor tempo/distância.
 2.  **Fase 2: Desembarque.** Somente após o último aluno ter sido embarcado, a rota deve prosseguir para o desembarque nas escolas. A ordem de visita às escolas também deve ser otimizada.
+{{/if}}
 
 **REGRA ADICIONAL IMPORTANTE:** Um aluno SÓ PODE ser desembarcado na sua escola correspondente. É um erro grave sugerir que um aluno seja deixado em uma escola diferente da sua. A parada de uma escola na rota representa o momento de desembarque de TODOS os alunos que pertencem àquela escola e que já estão no veículo.
 
@@ -93,7 +108,10 @@ export const optimizeSchoolVanRoute = ai.defineFlow(
     outputSchema: OptimizeSchoolVanRouteOutputSchema,
   },
   async (input) => {
-    const {output} = await prompt(input);
+    const isFlexibleMode = input.optimizationMode === 'flexible';
+    const { optimizationMode, ...baseInput } = input;
+    const promptInput = { ...baseInput, isFlexibleMode };
+    const {output} = await prompt(promptInput);
     return output!;
   }
 );

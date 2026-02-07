@@ -9,6 +9,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -54,12 +55,13 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
+import { optimizeSchoolVanRoute, type OptimizeSchoolVanRouteOutput } from '@/ai/flows/optimizeSchoolVanRoute';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -405,6 +407,7 @@ export default function DriverRoutePlanPage() {
   const [showRecalculatePrompt, setShowRecalculatePrompt] = useState(false);
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
+  const [optimizationSuggestion, setOptimizationSuggestion] = useState<OptimizeSchoolVanRouteOutput | null>(null);
   const prevStudentsRef = useRef<Student[]>();
   const isOnline = useOnlineStatus();
 
@@ -416,6 +419,17 @@ export default function DriverRoutePlanPage() {
     const storedActiveRouteId = sessionStorage.getItem('activeRouteId');
     setActiveRouteId(storedActiveRouteId);
   }, []);
+  
+  useEffect(() => {
+    if (optimizationSuggestion) {
+      const timer = setTimeout(() => {
+        setOptimizationSuggestion(null);
+        toast({ description: "Sugestão de rota ignorada. Mantendo plano original." });
+      }, 20000); // 20 seconds
+      return () => clearTimeout(timer);
+    }
+  }, [optimizationSuggestion, toast]);
+
 
   const shift = selectedShift;
   const direction = selectedDirection;
@@ -601,7 +615,7 @@ export default function DriverRoutePlanPage() {
 }, [orderedStops, updateDoc, toast]);
 
 
-  const handleStartRoute = useCallback(() => {
+  const handleStartRoute = useCallback(async () => {
     if (!driverId || !route) return;
     
     sessionStorage.setItem('activeRouteId', route.id);
@@ -621,17 +635,58 @@ export default function DriverRoutePlanPage() {
         });
     }
 
-    if (route.optimizationNotice) {
-        toast({
-            title: "Aviso de Rota",
-            description: route.optimizationNotice,
-        });
-        updateDoc('routes', route.id, { optimizationNotice: '' });
-    }
-
     updateDoc('drivers', driverId, { status: 'em_rota' });
     toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
-  }, [driverId, route, direction, orderedStops, updateDoc, toast]);
+
+    if (isOnline) {
+      toast({ description: "✨ Otimizando... Buscando um caminho mais rápido para hoje." });
+      
+      try {
+        const studentsOnRoute = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
+        const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
+            .map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
+        const driver = drivers[0];
+
+        if (studentsOnRoute.length > 0 && schoolsOnRoute.length > 0 && driver) {
+            const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
+            
+            const input = {
+                students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
+                schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+                startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
+                optimizationMode: 'flexible' as 'flexible',
+            };
+            const result = await optimizeSchoolVanRoute(input);
+            const currentStopIds = orderedStops.map(s => s.id).join(',');
+            const newStopIds = result.optimizedStops.map(s => s.id).join(',');
+
+            if (newStopIds !== currentStopIds) {
+                setOptimizationSuggestion(result);
+            }
+        }
+      } catch (error) {
+        console.error("Optional real-time optimization failed:", error);
+        // Fail silently. The driver is already on their way with the safe route.
+      }
+    }
+
+
+  }, [driverId, route, direction, orderedStops, updateDoc, toast, isOnline, drivers, schoolsMap]);
+  
+  const handleAcceptOptimization = () => {
+    if (!optimizationSuggestion || !route) return;
+    updateDoc('routes', route.id, {
+        studentIds: optimizationSuggestion.optimizedStops.map(s => s.id),
+        turnByTurnDirections: optimizationSuggestion.turnByTurnDirections,
+        lastOptimizedAt: new Date().toISOString(),
+    });
+    toast({ title: "Rota atualizada!", description: "O itinerário foi otimizado com a sugestão da IA." });
+    setOptimizationSuggestion(null);
+  };
+
+  const handleDeclineOptimization = () => {
+    setOptimizationSuggestion(null);
+  };
 
   const handlePauseRoute = useCallback(() => {
       if (!driverId) return;
@@ -1052,11 +1107,27 @@ export default function DriverRoutePlanPage() {
                 onClose={() => setIsScannerOpen(false)}
                 onScanSuccess={handleScanSuccess}
             />
+            
+            <AlertDialog open={!!optimizationSuggestion} onOpenChange={(open) => !open && setOptimizationSuggestion(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2"><Sparkles className="text-primary" /> Oportunidade de Otimização!</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Encontramos um trajeto que parece ser mais rápido para a rota de hoje. Deseja usar esta rota otimizada?
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel onClick={handleDeclineOptimization}>Não, Manter Rota Original</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleAcceptOptimization}>Sim, Usar Rota Otimizada</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }
 
     
+
 
 
 
