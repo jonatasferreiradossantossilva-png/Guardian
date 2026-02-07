@@ -260,7 +260,7 @@ export function RouteForm({
                               <CardContent className="p-2">
                                   <ScrollArea className="h-48">
                                       {availableStudents.length > 0 ? availableStudents.map(s => (
-                                          <div key={s.id} onClick={() => toggleSelection(s.id)} className="flex cursor-pointer items-center space-x-3 rounded-md p-2 hover:bg-accent/50">
+                                          <div key={s.id} className="flex items-center space-x-3 rounded-md p-2 hover:bg-accent/50">
                                               <Checkbox
                                                   id={`add-${s.id}`}
                                                   checked={selectedAvailable.has(s.id)}
