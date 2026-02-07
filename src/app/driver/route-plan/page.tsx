@@ -506,7 +506,6 @@ export default function DriverRoutePlanPage() {
   
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
   const [isRecalculating, setIsRecalculating] = useState(false);
-  const [showRecalculatePrompt, setShowRecalculatePrompt] = useState(false);
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [optimizationSuggestion, setOptimizationSuggestion] = useState<OptimizeSchoolVanRouteOutput | null>(null);
@@ -649,9 +648,15 @@ export default function DriverRoutePlanPage() {
     }).filter((s): s is Stop => s !== null);
   }, [route?.studentIds, allStudents, schools, shift]);
 
-  const { activeStop, upcomingStops } = useMemo(() => {
-    if (driverProfile?.status !== 'em_rota' || !orderedStops) {
-      return { activeStop: null, upcomingStops: [] };
+  const { activeStop, upcomingStops, absentStudentsCount } = useMemo(() => {
+    if (!orderedStops) {
+      return { activeStop: null, upcomingStops: [], absentStudentsCount: 0 };
+    }
+  
+    const absentCount = orderedStops.filter(s => s.type === 'student' && (s.data as Student).status === 'ausente').length;
+  
+    if (driverProfile?.status !== 'em_rota') {
+      return { activeStop: null, upcomingStops: [], absentStudentsCount: absentCount };
     }
   
     let nextStopIndex = -1;
@@ -664,11 +669,8 @@ export default function DriverRoutePlanPage() {
         return true;
       });
     } else { // 'volta'
-      // Phase 1: Find the next school to pick up from.
       const nextSchoolStopIndex = orderedStops.findIndex(stop => {
         if (stop.type !== 'school') return false;
-        
-        // This school is the next stop if any of its students are still waiting to be picked up.
         return orderedStops.some(s => 
             s.type === 'student' && 
             (s.data as Student).schoolId === stop.id && 
@@ -677,10 +679,8 @@ export default function DriverRoutePlanPage() {
       });
   
       if (nextSchoolStopIndex !== -1) {
-        // We are still in the pickup phase. The next stop is a school.
         nextStopIndex = nextSchoolStopIndex;
       } else {
-        // Phase 2: All pickups are done, find the next student to drop off.
         nextStopIndex = orderedStops.findIndex(stop => 
           stop.type === 'student' && (stop.data as Student).status === 'a_bordo'
         );
@@ -688,13 +688,13 @@ export default function DriverRoutePlanPage() {
     }
     
     if (nextStopIndex === -1) {
-      return { activeStop: null, upcomingStops: [] };
+      return { activeStop: null, upcomingStops: [], absentStudentsCount: absentCount };
     }
   
     const activeStop = orderedStops[nextStopIndex];
     const upcoming = orderedStops.slice(nextStopIndex + 1);
   
-    return { activeStop, upcomingStops: upcoming };
+    return { activeStop, upcomingStops: upcoming, absentStudentsCount: absentCount };
   }, [orderedStops, driverProfile?.status, direction]);
   
 
@@ -707,11 +707,7 @@ export default function DriverRoutePlanPage() {
         title: 'Status Atualizado',
         description: `${student?.name || 'O aluno'} foi marcado(a) como ${statusText[newStatus]}.`,
     });
-
-    if (newStatus === 'ausente' && driverProfile?.status === 'em_rota' && direction === 'ida') {
-        setShowRecalculatePrompt(true);
-    }
-  }, [updateDoc, orderedStops, toast, driverProfile?.status, direction]);
+  }, [updateDoc, orderedStops, toast]);
   
   const handleDropOff = useCallback((schoolId: string) => {
     const studentsToDropOff = orderedStops
@@ -733,7 +729,6 @@ export default function DriverRoutePlanPage() {
     const handleStartRoute = useCallback((finalStops: Stop[]) => {
         if (!driverId || !route) return;
 
-        // This part is synchronous and updates the UI immediately
         const finalStopIds = finalStops.map(s => s.id);
         
         if (JSON.stringify(finalStopIds) !== JSON.stringify(route.studentIds)) {
@@ -754,7 +749,6 @@ export default function DriverRoutePlanPage() {
         updateDoc('drivers', driverId, { status: 'em_rota' });
         toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
 
-        // This function will run asynchronously in the background
         const triggerBackgroundOptimization = async () => {
             if (!isOnline || direction !== 'ida' || !route) return;
 
@@ -762,7 +756,7 @@ export default function DriverRoutePlanPage() {
 
             try {
                 const studentsOnRoute = finalStops.filter(s => s.type === 'student').map(s => s.data as Student);
-                if (studentsOnRoute.length < 2) return; // No need to optimize for 1 or 0 students
+                if (studentsOnRoute.length < 2) return;
 
                 const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
                     .map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
@@ -788,11 +782,9 @@ export default function DriverRoutePlanPage() {
                 }
             } catch (error) {
                 console.error("Optional real-time optimization failed:", error);
-                // Silent fail is better here not to confuse the user with an error for a background task.
             }
         };
 
-        // Fire and forget
         triggerBackgroundOptimization();
     }, [driverId, route, updateDoc, toast, isOnline, direction, selectedDirection, drivers, schoolsMap, setOptimizationSuggestion]);
 
@@ -826,7 +818,6 @@ export default function DriverRoutePlanPage() {
 
         if (!selectedSchool) return;
 
-        // Reverse student stops for a more logical default drop-off order ("last in, first out")
         const reversedStudentStops = [...allStudentStops].reverse();
 
         const reorderedStops: Stop[] = [
@@ -845,7 +836,6 @@ export default function DriverRoutePlanPage() {
     
     let finalStopIds = optimizationSuggestion.optimizedStops.map(s => s.id);
 
-    // This handles the special case for the 'volta' drop-off optimization
     if (direction === 'volta' && optimizationSuggestion.optimizedStops.every(s => s.type === 'student')) {
       const schoolStops = route.studentIds.filter(id => id.startsWith('school-'));
       const optimizedStudentStops = optimizationSuggestion.optimizedStops.map(s => s.id);
@@ -882,7 +872,7 @@ export default function DriverRoutePlanPage() {
       updateDoc('drivers', driverId, { status: 'inativo' });
       sessionStorage.removeItem('activeRouteId');
       setActiveRouteId(null);
-      setCurrentView('route'); // Reset view on end
+      setCurrentView('route'); 
       setChecklistSchool(null);
       
       allStudents.forEach(student => {
@@ -959,14 +949,8 @@ export default function DriverRoutePlanPage() {
         }
     }, [route, orderedStops, schools, driverProfile, updateDoc, toast, setIsRecalculating, selectedDirection]);
 
-   const handleRecalculateFromPrompt = () => {
-     setShowRecalculatePrompt(false);
-     handleRecalculate();
-   }
-
    const handleUndoLastAction = () => {
        if (!lastProcessedStudent) return;
-       // The 'undo' is simply to revert to the previous status
        const previousStatus = direction === 'ida' ? 'aguardando' : 'a_bordo';
        updateDoc('students', lastProcessedStudent.id, { status: previousStatus });
        toast({
@@ -1010,15 +994,12 @@ export default function DriverRoutePlanPage() {
         setCurrentView('route');
         toast({ title: `Embarque concluído em ${checklistSchool?.name}!` });
 
-        // Check if this was the last school pickup
         const otherSchoolStopsToVisit = orderedStops.filter(stop => {
             if (stop.type !== 'school' || stop.id === checklistSchool?.id) return false;
-            // A school stop still needs to be visited if it has students who are still 'aguardando'
             return orderedStops.some(s => s.type === 'student' && (s.data as Student).schoolId === stop.id && (s.data as Student).status === 'aguardando');
         });
 
         if (otherSchoolStopsToVisit.length === 0 && isOnline) {
-            // This was the last pickup, trigger optimization for drop-offs
             toast({ description: "✨ Otimizando a rota de entrega..." });
             try {
                 const studentsOnBoard = orderedStops
@@ -1034,7 +1015,7 @@ export default function DriverRoutePlanPage() {
 
                 const input = {
                     students: studentsOnBoard.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
-                    schools: [], // No school destinations for drop-off phase
+                    schools: [], 
                     startAddress: (driverLocation?.latitude && driverLocation?.longitude) ? `${driverLocation.latitude},${driverLocation.longitude}` : undefined,
                     optimizationMode: 'flexible' as 'flexible',
                     direction: 'volta' as 'volta',
@@ -1278,10 +1259,20 @@ export default function DriverRoutePlanPage() {
                 </div>
                 
                 <TabsContent value="plan" className="mt-4 p-4">
-                    <div className="text-center mb-6">
+                    <div className="text-center mb-4">
                         <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
                         <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
                     </div>
+
+                    {absentStudentsCount > 0 && driverProfile.status === 'em_rota' && (
+                        <div className="max-w-md mx-auto mb-4">
+                            <Button variant="outline" className="w-full border-primary/40 text-primary hover:text-primary animate-pulse" onClick={handleRecalculate} disabled={isRecalculating}>
+                                {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
+                                Otimizar rota para {absentStudentsCount} aluno(s) ausente(s)
+                            </Button>
+                        </div>
+                    )}
+
                     <div className="max-w-md mx-auto space-y-4">
                         {isRouteFinished ? (
                             <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
@@ -1383,27 +1374,20 @@ export default function DriverRoutePlanPage() {
                 </TabsContent>
              </Tabs>
 
-            {showRecalculatePrompt && (
-                <div className="fixed bottom-24 left-4 right-4 z-50 md:left-1/2 md:-translate-x-1/2 md:max-w-md">
-                    <Card className="w-full bg-background/95 backdrop-blur-sm border-primary/50 shadow-2xl">
-                        <CardHeader className="p-3 flex-row items-center gap-3">
-                            <Siren className="h-5 w-5 text-primary"/>
-                            <CardTitle className="text-base">Otimizar Rota?</CardTitle>
-                        </CardHeader>
-                        <CardContent className="p-3 pt-0">
-                            <p className="text-sm text-muted-foreground">Detectamos um aluno ausente. Deseja recalcular a rota para um trajeto mais curto?</p>
-                        </CardContent>
-                        <CardFooter className="p-3 pt-0 flex gap-2">
-                            <Button className="flex-1" onClick={handleRecalculateFromPrompt} disabled={isRecalculating}>
-                                {isRecalculating ? <Loader2 className="animate-spin mr-2"/> : <Sparkles className="mr-2"/> }
-                                Sim, Otimizar
-                            </Button>
-                            <Button className="flex-1" variant="ghost" onClick={() => setShowRecalculatePrompt(false)}>Ignorar</Button>
-                        </CardFooter>
-                    </Card>
-                </div>
-            )}
-
+            <AlertDialog open={!!optimizationSuggestion} onOpenChange={(open) => !open && setOptimizationSuggestion(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                    <AlertDialogTitle className="flex items-center gap-2"><Sparkles className="text-primary" /> Oportunidade de Otimização!</AlertDialogTitle>
+                    <AlertDialogDescription>
+                        Encontramos um trajeto que parece ser mais rápido para a rota de hoje. Deseja usar esta rota otimizada?
+                    </AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                    <AlertDialogCancel onClick={handleDeclineOptimization}>Não, Manter Rota Original</AlertDialogCancel>
+                    <AlertDialogAction onClick={handleAcceptOptimization}>Sim, Usar Rota Otimizada</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
 
              <FixedBottomBar 
                 status={driverProfile.status} 
@@ -1426,20 +1410,6 @@ export default function DriverRoutePlanPage() {
                 onScanSuccess={handleScanSuccess}
             />
             
-            <AlertDialog open={!!optimizationSuggestion} onOpenChange={(open) => !open && setOptimizationSuggestion(null)}>
-                <AlertDialogContent>
-                    <AlertDialogHeader>
-                    <AlertDialogTitle className="flex items-center gap-2"><Sparkles className="text-primary" /> Oportunidade de Otimização!</AlertDialogTitle>
-                    <AlertDialogDescription>
-                        Encontramos um trajeto que parece ser mais rápido para a rota de hoje. Deseja usar esta rota otimizada?
-                    </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                    <AlertDialogCancel onClick={handleDeclineOptimization}>Não, Manter Rota Original</AlertDialogCancel>
-                    <AlertDialogAction onClick={handleAcceptOptimization}>Sim, Usar Rota Otimizada</AlertDialogAction>
-                    </AlertDialogFooter>
-                </AlertDialogContent>
-            </AlertDialog>
         </div>
     );
 }
@@ -1455,4 +1425,5 @@ export default function DriverRoutePlanPage() {
     
 
     
+
 
