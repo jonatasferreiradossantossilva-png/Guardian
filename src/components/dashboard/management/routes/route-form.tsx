@@ -63,7 +63,7 @@ interface RouteFormProps {
 const getAbbreviatedClass = (student: Student | null | undefined) => {
     if (!student?.serie) return null;
     // Ex: "3º Ano A" -> "3º A"
-    return student.serie.replace(/ ano/i, 'º').trim();
+    return student.serie.replace(/ ano/i, '').trim();
 };
 
 export function RouteForm({
@@ -440,12 +440,10 @@ export function RouteForm({
                                             return (
                                                 <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                     <div className="flex-1 min-w-0">
-                                                        <div>
-                                                            <p className="font-medium text-sm">{s.name}</p>
-                                                            {getAbbreviatedClass(s) && (
-                                                                <p className="text-xs text-muted-foreground">{getAbbreviatedClass(s)}</p>
-                                                            )}
-                                                        </div>
+                                                        <p className="font-medium text-sm">{s.name}</p>
+                                                        {getAbbreviatedClass(s) && (
+                                                            <p className="text-xs text-muted-foreground">{getAbbreviatedClass(s)}</p>
+                                                        )}
                                                     </div>
                                                     <div className="flex items-center flex-shrink-0">
                                                         <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
@@ -491,11 +489,10 @@ export function RouteForm({
                                 return (
                                     <div key={index} className="flex items-center w-full bg-background rounded-md p-2 hover:bg-accent/50">
                                         <div className="flex items-center justify-between w-full">
-                                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                                {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
+                                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                                                <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground">{index + 1}</span>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-medium text-sm">{stop.name}</p>
+                                                    <p className="font-medium text-sm break-words">{stop.name}</p>
                                                     {stop.type === 'student' ? (
                                                         <div className="flex items-baseline gap-1.5 text-xs text-muted-foreground">
                                                             <p className="truncate">{stop.details}</p>
