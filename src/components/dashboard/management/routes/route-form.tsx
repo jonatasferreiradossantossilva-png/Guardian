@@ -489,21 +489,22 @@ export function RouteForm({
                             {stops.map((stop, index) => {
                                 return (
                                     <div key={index} className="flex items-center justify-between w-full bg-background rounded-md p-2 hover:bg-accent/50">
-                                        <div className="flex items-center gap-2 flex-1 min-w-0">
+                                        <div className="flex items-center flex-1 min-w-0">
                                             <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                            {stop.type === 'student' ? (
-                                                <Avatar className="h-8 w-8 flex-shrink-0">
-                                                    <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
-                                                    <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                                </Avatar>
-                                            ) : (
-                                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
-                                                    <School className="h-4 w-4 text-muted-foreground" />
+                                            <div className="flex items-center gap-2 flex-1 min-w-0 ml-1">
+                                                {stop.type === 'student' ? (
+                                                    <Avatar className="h-8 w-8 flex-shrink-0">
+                                                        <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
+                                                        <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                    </Avatar>
+                                                ) : (
+                                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
+                                                        <School className="h-4 w-4 text-muted-foreground" />
+                                                    </div>
+                                                )}
+                                                <div className="flex-1 min-w-0">
+                                                    <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
                                                 </div>
-                                            )}
-                                            <div className="flex-1 min-w-0">
-                                                <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
-                                                {stop.type === 'student' && <p className="text-xs text-muted-foreground truncate">{schoolsMap.get(studentsMap.get(stop.id)?.schoolId || '')?.name}</p>}
                                             </div>
                                         </div>
                                         <div className="flex items-center flex-shrink-0">
@@ -589,4 +590,5 @@ export function RouteForm({
     
 
     
+
 
