@@ -236,18 +236,100 @@ export function RouteForm({
     setStops(prev => prev.filter((_, i) => i !== index));
   }
 
-  // Effect to automatically remove students if their school is unchecked and re-optimize
+  const handleAddStudentsBySchool = async (schoolId: string) => {
+    const currentStudentCount = stops.filter(s => s.type === 'student').length;
+    const availableSpots = vehicleCapacity - currentStudentCount;
+
+    if (availableSpots <= 0) {
+        toast({ title: "Capacidade máxima atingida", description: "Não há mais vagas no veículo.", variant: "destructive" });
+        return;
+    }
+
+    const currentStudentIds = new Set(stops.map(s => s.id));
+    const studentsForSchool = students.filter(s => 
+        s.schoolId === schoolId && 
+        !currentStudentIds.has(s.id) &&
+        s.active !== false
+    );
+    
+    const studentsToAdd = studentsForSchool
+        .sort((a, b) => a.name.localeCompare(b.name))
+        .slice(0, availableSpots);
+
+    if (studentsToAdd.length === 0) {
+        toast({ title: "Nenhum aluno a adicionar", description: "Todos os alunos disponíveis desta escola já estão na rota.", variant: "default" });
+        return;
+    }
+
+    const newStudentStops: Stop[] = studentsToAdd.map(s => ({
+        id: s.id,
+        type: 'student',
+        name: s.name,
+        details: schoolsMap.get(s.schoolId)?.name
+    }));
+
+    const updatedStops = [...stops, ...newStudentStops];
+
+    setIsOptimizing(true);
+    try {
+        const studentsOnNewRoute = updatedStops.filter(s => s.type === 'student').map(s => studentsMap.get(s.id)).filter(Boolean) as Student[];
+        const schoolsOnNewRoute = selectedSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
+        const driver = drivers.find(d => d.id === driverId);
+
+        if (studentsOnNewRoute.length < 1 || schoolsOnNewRoute.length === 0 || !driver) {
+            throw new Error("Dados insuficientes para otimização.");
+        }
+        
+        const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
+
+        const input = {
+            students: studentsOnNewRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
+            schools: schoolsOnNewRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+            startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
+            vehicleCapacity,
+        };
+
+        const result = await optimizeSchoolVanRoute(input);
+        
+        const newOptimizedStops = result.optimizedStops.map(stop => {
+            const student = studentsMap.get(stop.id);
+            const school = schoolsMap.get(stop.id);
+            if (student) return { id: stop.id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name };
+            if (school) return { id: stop.id, type: 'school', name: school.name, details: 'Ponto de desembarque' };
+            return null;
+        }).filter(Boolean) as Stop[];
+        
+        setStops(newOptimizedStops);
+        setWasOptimized(true);
+
+        toast({
+            title: "Alunos Adicionados e Rota Otimizada!",
+            description: `${studentsToAdd.length} aluno(s) foram adicionados e o itinerário recalculado. Salve para confirmar.`,
+        });
+
+    } catch (error) {
+        console.error("Failed to add and optimize route:", error);
+        setStops(updatedStops);
+        toast({
+            title: "Erro na Otimização",
+            description: "Os alunos foram adicionados, mas a otimização automática falhou. Otimize manualmente.",
+            variant: "destructive",
+        });
+    } finally {
+        setIsOptimizing(false);
+    }
+};
+
   useEffect(() => {
     const prevIds = prevSchoolIdsRef.current;
-    // Don't run on initial render
     if (prevIds === undefined) {
       prevSchoolIdsRef.current = selectedSchoolIds;
       return;
     }
-
+  
     const currentIds = new Set(selectedSchoolIds);
     const removedSchoolIds = prevIds.filter(id => !currentIds.has(id));
-
+  
     if (removedSchoolIds.length > 0) {
       const runAsyncUpdate = async () => {
         
@@ -261,14 +343,14 @@ export function RouteForm({
             }
             return true;
         });
-
-        const studentsRemovedCount = stops.length - stopsAfterRemoval.length;
-        setStops(stopsAfterRemoval); // Update UI immediately
-
-        if (studentsRemovedCount === 0) return; // No relevant students were removed
-
+  
+        const studentsRemovedCount = stops.filter(s => s.type === 'student').length - stopsAfterRemoval.filter(s => s.type === 'student').length;
+        setStops(stopsAfterRemoval);
+  
+        if (studentsRemovedCount === 0) return;
+  
         const remainingStudents = stopsAfterRemoval.filter(s => s.type === 'student').map(s => studentsMap.get(s.id)).filter(Boolean) as Student[];
-
+  
         if (remainingStudents.length >= 2) {
           setIsOptimizing(true);
           try {
@@ -278,19 +360,19 @@ export function RouteForm({
             const remainingSchoolIds = Array.from(new Set(remainingStudents.map(s => s.schoolId)));
             const schoolsOnRoute = remainingSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
             if (schoolsOnRoute.length === 0) throw new Error("Nenhuma escola corresponde aos alunos restantes.");
-
+  
             const formatAddress = (entity: Student | SchoolData | null) => {
               if (!entity?.street) return 'Endereço indisponível';
               return `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
             };
-  
+    
             const input = {
               students: remainingStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
               schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
               startAddress: (driverForOptimizing.latitude && driverForOptimizing.longitude) ? `${driverForOptimizing.latitude},${driverForOptimizing.longitude}` : undefined,
               vehicleCapacity,
             };
-  
+    
             const result = await optimizeSchoolVanRoute(input);
             const newOptimizedStops = result.optimizedStops.map(stop => {
               const student = studentsMap.get(stop.id);
@@ -325,10 +407,9 @@ export function RouteForm({
       };
       runAsyncUpdate();
     }
-  
+    
     prevSchoolIdsRef.current = selectedSchoolIds;
-  }, [selectedSchoolIds, studentsMap, schoolsMap, driversMap, driverId, vehicleCapacity, toast, stops]);
-
+  }, [selectedSchoolIds, studentsMap, schoolsMap, driversMap, driverId, vehicleCapacity, toast, stops, drivers]);
 
   const handleOptimizeOrder = async () => {
     if (studentsOnRoute.length < 2) {
@@ -540,30 +621,47 @@ export function RouteForm({
                                             acc[schoolName].push(student);
                                             return acc;
                                         }, {} as Record<string, Student[]>)
-                                    ).map(([schoolName, students]) => (
-                                        <div key={schoolName}>
-                                            <h4 className="font-semibold text-sm text-muted-foreground px-2 py-1.5">{schoolName}</h4>
-                                            {students.map(s => {
-                                                const studentWithClass = getAbbreviatedClass(s);
-                                                return (
-                                                    <div key={s.id} className="flex items-center gap-2 rounded-md p-2 hover:bg-accent/50">
-                                                        <div className="flex-grow flex items-center gap-2 min-w-0">
-                                                            <p className="font-medium text-sm truncate">{s.name}</p>
-                                                            {studentWithClass && (
-                                                                <span className="text-xs text-muted-foreground">({studentWithClass})</span>
-                                                            )}
+                                    ).map(([schoolName, students]) => {
+                                        const schoolId = students[0]?.schoolId;
+                                        return(
+                                            <div key={schoolName}>
+                                                <div className="flex justify-between items-center px-2 py-1.5 bg-secondary/50 border-y">
+                                                    <h4 className="font-semibold text-sm text-muted-foreground">{schoolName}</h4>
+                                                    {schoolId && (
+                                                        <Button
+                                                            type="button"
+                                                            variant="secondary"
+                                                            size="sm"
+                                                            className="h-7"
+                                                            onClick={() => handleAddStudentsBySchool(schoolId)}
+                                                            disabled={isOptimizing}
+                                                        >
+                                                            <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Todos
+                                                        </Button>
+                                                    )}
+                                                </div>
+                                                {students.map(s => {
+                                                    const studentWithClass = getAbbreviatedClass(s);
+                                                    return (
+                                                        <div key={s.id} className="flex items-center gap-2 rounded-md p-2 hover:bg-accent/50">
+                                                            <div className="flex-grow flex items-center gap-2 min-w-0">
+                                                                <p className="font-medium text-sm truncate">{s.name}</p>
+                                                                {studentWithClass && (
+                                                                    <span className="text-xs text-muted-foreground">({studentWithClass})</span>
+                                                                )}
+                                                            </div>
+                                                            <div className="flex-shrink-0 flex items-center gap-2">
+                                                                <span className="text-xs text-muted-foreground">{s.shift}</span>
+                                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
+                                                                    <PlusCircle className="h-4 w-4 text-green-500" />
+                                                                </Button>
+                                                            </div>
                                                         </div>
-                                                        <div className="flex-shrink-0 flex items-center gap-2">
-                                                            <span className="text-xs text-muted-foreground">{s.shift}</span>
-                                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
-                                                                <PlusCircle className="h-4 w-4 text-green-500" />
-                                                            </Button>
-                                                        </div>
-                                                    </div>
-                                                )
-                                            })}
-                                        </div>
-                                    ))
+                                                    )
+                                                })}
+                                            </div>
+                                        )
+                                    })
                                 ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para as escolas/turno selecionados ou para a busca.</p>}
                             </ScrollArea>
                         )}
