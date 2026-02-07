@@ -38,6 +38,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 
 type Driver = { id: string; name: string; vehicleId?: string; };
@@ -62,7 +63,7 @@ interface RouteFormProps {
 
 const getAbbreviatedClass = (student: Student | null | undefined) => {
     if (!student?.serie) return null;
-    const seriePart = student.serie.replace(/ ano/i, '').trim();
+    const seriePart = student.serie.replace(/ ano/i, '°').trim();
     return [seriePart, student.turma].filter(Boolean).join(' ');
 };
 
@@ -441,7 +442,7 @@ export function RouteForm({
                                                 <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                     <div className="flex-1 min-w-0">
                                                         <p className="font-medium text-sm whitespace-normal">
-                                                            {s.name}
+                                                            {s.name} 
                                                             {getAbbreviatedClass(s) && (
                                                                 <span className="text-xs text-muted-foreground ml-2 font-normal">({getAbbreviatedClass(s)})</span>
                                                             )}
@@ -490,11 +491,21 @@ export function RouteForm({
                                 return (
                                     <div key={index} className="flex items-center w-full bg-background rounded-md p-2 hover:bg-accent/50">
                                         <div className="flex items-center justify-between w-full">
-                                            <div className="flex items-center gap-4 flex-1 min-w-0">
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
                                                 <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                                {stop.type === 'student' ? (
+                                                    <Avatar className="h-8 w-8">
+                                                        <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
+                                                        <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                                    </Avatar>
+                                                ) : (
+                                                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
+                                                        <School className="h-4 w-4 text-muted-foreground" />
+                                                    </div>
+                                                )}
                                                 <div className="flex-1 min-w-0">
                                                     <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
-                                                    <p className="text-xs text-muted-foreground truncate">{stop.details}</p>
+                                                    {stop.type === 'student' && <p className="text-xs text-muted-foreground truncate">{stop.details}</p>}
                                                 </div>
                                             </div>
                                             <div className="flex items-center flex-shrink-0">
