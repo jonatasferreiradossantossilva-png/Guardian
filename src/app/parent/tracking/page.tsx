@@ -6,6 +6,8 @@
 
 
 
+
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -79,6 +81,7 @@ interface Driver {
     neighborhood?: string;
     city?: string;
     state?: string;
+    vehicleId?: string;
 }
 
 const statusText: Record<Student["status"], string> = {
@@ -288,7 +291,6 @@ export default function ParentTrackingPage() {
       description: "O motorista foi notificado.",
     });
 
-    // Check if we can do a silent, automatic re-optimization
     const route = getDoc('routes', student.routeId);
     if (!route) return;
 
@@ -303,19 +305,27 @@ export default function ParentTrackingPage() {
         // This is the automatic, silent recalculation for the driver
         const allStudentsOnRoute = getCollection('students', [{ field: 'id', op: 'in', value: route.studentIds }]);
         // Important: Filter out the student who will be marked absent
-        const presentStudents = allStudentsOnRoute.filter(s => s.id !== student.id); 
+        const presentStudents = allStudentsOnRoute.filter(s => s.id !== student.id && s.active !== false);
         
-        if (presentStudents.length === 0) return; // Don't optimize an empty route
+        if (presentStudents.length === 0) {
+            updateDoc('routes', route.id, { studentIds: [] });
+            return;
+        }
 
-        const school = getDoc('schools', student.schoolId);
-        const vehicle = getDoc('vehicles', driver.vehicleId);
-        const formatAddress = (entity) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : '';
+        const schoolIds = Array.from(new Set(presentStudents.map(s => s.schoolId)));
+        const allSchools = getCollection('schools');
+        const schoolsOnRoute = allSchools.filter(s => schoolIds.includes(s.id));
+        
+        const vehicle = driver.vehicleId ? getDoc('vehicles', driver.vehicleId) : null;
+        const formatAddress = (entity) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
         
         const input = {
-            students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-            schoolAddress: formatAddress(school),
+            students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
+            schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
             startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
             vehicleCapacity: vehicle?.capacity,
+            optimizationMode: 'safe' as 'safe',
+            direction: 'ida' as 'ida'
         };
 
         const result = await optimizeSchoolVanRoute(input);
@@ -324,7 +334,7 @@ export default function ParentTrackingPage() {
         const optimizationNotice = `Rota otimizada. ${student.name} foi removido(a) por ausência.`;
         
         updateDoc('routes', route.id, { 
-            studentIds: result.optimizedStudentIds,
+            studentIds: result.optimizedStops.map(s => s.id),
             turnByTurnDirections: result.turnByTurnDirections,
             lastOptimizedAt: new Date().toISOString(),
             optimizationNotice: optimizationNotice,
@@ -597,5 +607,3 @@ export default function ParentTrackingPage() {
 }
 
     
-
-

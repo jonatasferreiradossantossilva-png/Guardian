@@ -287,6 +287,8 @@ export function RouteForm({
             schools: schoolsOnNewRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
             startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
             vehicleCapacity,
+            optimizationMode: 'safe' as 'safe',
+            direction: 'ida' as 'ida',
         };
 
         const result = await optimizeSchoolVanRoute(input);
@@ -371,6 +373,8 @@ export function RouteForm({
               schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
               startAddress: (driverForOptimizing.latitude && driverForOptimizing.longitude) ? `${driverForOptimizing.latitude},${driverForOptimizing.longitude}` : undefined,
               vehicleCapacity,
+              optimizationMode: 'safe' as 'safe',
+              direction: 'ida' as 'ida',
             };
     
             const result = await optimizeSchoolVanRoute(input);
@@ -452,6 +456,8 @@ export function RouteForm({
             schools: schoolsInput,
             startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
             vehicleCapacity: vehicleCapacity,
+            optimizationMode: 'safe' as 'safe',
+            direction: 'ida' as 'ida',
         };
 
         const result = await optimizeSchoolVanRoute(input);

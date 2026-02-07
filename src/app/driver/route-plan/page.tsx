@@ -11,6 +11,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -639,6 +640,7 @@ export default function DriverRoutePlanPage() {
                 schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
                 startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
                 optimizationMode: 'flexible' as 'flexible',
+                direction: selectedDirection,
             };
             const result = await optimizeSchoolVanRoute(input);
             const currentStopIds = orderedStops.map(s => s.id).join(',');
@@ -655,7 +657,7 @@ export default function DriverRoutePlanPage() {
     }
 
 
-  }, [driverId, route, direction, orderedStops, updateDoc, toast, isOnline, drivers, schoolsMap]);
+  }, [driverId, route, direction, selectedDirection, orderedStops, updateDoc, toast, isOnline, drivers, schoolsMap]);
   
   const handleAcceptOptimization = () => {
     if (!optimizationSuggestion || !route) return;
@@ -735,6 +737,8 @@ export default function DriverRoutePlanPage() {
                 students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
                 schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
                 startAddress: (driverProfile.latitude && driverProfile.longitude) ? `${driverProfile.latitude},${driverProfile.longitude}` : undefined,
+                optimizationMode: 'flexible' as 'flexible',
+                direction: selectedDirection,
             };
 
             const result = await optimizeSchoolVanRoute(input);
@@ -760,7 +764,7 @@ export default function DriverRoutePlanPage() {
         } finally {
             setIsRecalculating(false);
         }
-    }, [route, orderedStops, schools, driverProfile, updateDoc, toast, setIsRecalculating]);
+    }, [route, orderedStops, schools, driverProfile, updateDoc, toast, setIsRecalculating, selectedDirection]);
 
    const handleRecalculateFromPrompt = () => {
      setShowRecalculatePrompt(false);
@@ -1111,8 +1115,3 @@ export default function DriverRoutePlanPage() {
 }
 
     
-
-
-
-
-

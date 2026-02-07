@@ -27,10 +27,11 @@ const SchoolInputSchema = z.object({
 
 const OptimizeSchoolVanRouteInputSchemaBase = z.object({
   startAddress: z.string().optional().describe("O endereço de partida ou as coordenadas (lat,lng) da rota. Se não for fornecido, a rota começa na primeira parada."),
-  students: z.array(StudentStopSchema).describe("Lista de alunos (paradas de embarque) com seus endereços e IDs de escola para serem incluídos na rota."),
-  schools: z.array(SchoolInputSchema).describe("Lista de escolas (paradas de desembarque) com seus endereços, nomes e IDs reais."),
+  students: z.array(StudentStopSchema).describe("Lista de alunos (paradas de embarque/desembarque) com seus endereços e IDs de escola para serem incluídos na rota."),
+  schools: z.array(SchoolInputSchema).describe("Lista de escolas (paradas de embarque/desembarque) com seus endereços, nomes e IDs reais."),
   vehicleCapacity: z.number().optional().describe("A capacidade máxima de passageiros do veículo."),
   context: z.string().optional().describe("Contexto adicional para a IA considerar, como condições de trânsito, interdições de vias ou incidentes reportados."),
+  direction: z.enum(['ida', 'volta']).optional().default('ida').describe("A direção da viagem: 'ida' (para a escola) ou 'volta' (de volta para casa)."),
 });
 
 const OptimizeSchoolVanRouteInputSchema = OptimizeSchoolVanRouteInputSchemaBase.extend({
@@ -53,9 +54,10 @@ const OptimizeSchoolVanRouteOutputSchema = z.object({
 });
 export type OptimizeSchoolVanRouteOutput = z.infer<typeof OptimizeSchoolVanRouteOutputSchema>;
 
-// The prompt needs a schema with the boolean flag, not the enum
+// The prompt needs a schema with the boolean flags, not enums
 const PromptInputSchema = OptimizeSchoolVanRouteInputSchemaBase.extend({
   isFlexibleMode: z.boolean(),
+  isIda: z.boolean(),
 });
 
 const prompt = ai.definePrompt({
@@ -67,23 +69,30 @@ const prompt = ai.definePrompt({
 Você receberá uma lista de alunos e uma lista de escolas. Cada aluno possui um 'schoolId' que corresponde ao 'id' da sua escola de destino.
 
 {{#if isFlexibleMode}}
-**REGRAS DA OTIMIZAÇÃO EM TEMPO REAL (PLANO DO MOTORISTA):**
-1.  **Flexibilidade:** Você tem liberdade para embarcar e desembarcar alunos em fases para criar a rota mais rápida possível.
-2.  **REGRA CRÍTICA DE DESEMBARQUE:** Uma parada de desembarque em uma escola (ex: Escola A) só é permitida se **TODOS** os alunos destinados à Escola A que estão na lista de entrada já tiverem sido embarcados. Você não pode fazer duas paradas de desembarque na mesma escola.
+  **REGRAS DA OTIMIZAÇÃO EM TEMPO REAL (PLANO DO MOTORISTA):**
+  1.  **Flexibilidade:** A rota pode ser otimizada para ser a mais rápida possível, embarcando e desembarcando em fases.
+
+  {{#if isIda}}
+    **DIREÇÃO: IDA (Para a escola)**
+    2.  **REGRA CRÍTICA DE DESEMBARQUE:** Uma parada de desembarque em uma escola (ex: Escola A) só é permitida se **TODOS** os alunos destinados à Escola A que estão na lista de entrada já tiverem sido embarcados. Você não pode fazer duas paradas de desembarque na mesma escola.
+  {{else}}
+    **DIREÇÃO: VOLTA (Para casa)**
+    2.  **REGRA CRÍTICA DE EMBARQUE:** Ao visitar uma escola para embarcar alunos (ex: Escola A), você deve embarcar **TODOS** os alunos daquela escola que fazem parte da rota de uma só vez. A IA está proibida de planejar uma rota que volte para a mesma escola para pegar mais alunos.
+  {{/if}}
 {{else}}
-**REGRA DE OURO DA OPERAÇÃO (PLANO DO GESTOR):** A rota deve ser estruturada em duas fases:
-1.  **Fase 1: Embarque.** A rota deve primeiro embarcar TODOS os alunos. A sequência de embarque dos alunos deve ser otimizada para o menor tempo/distância.
-2.  **Fase 2: Desembarque.** Somente após o último aluno ter sido embarcado, a rota deve prosseguir para o desembarque nas escolas. A ordem de visita às escolas também deve ser otimizada.
+  **REGRA DE OURO DA OPERAÇÃO (PLANO DO GESTOR):** A rota deve ser estruturada em duas fases:
+  1.  **Fase 1: Embarque.** A rota deve primeiro embarcar TODOS os alunos. A sequência de embarque dos alunos deve ser otimizada para o menor tempo/distância.
+  2.  **Fase 2: Desembarque.** Somente após o último aluno ter sido embarcado, a rota deve prosseguir para o desembarque nas escolas. A ordem de visita às escolas também deve ser otimizada.
 {{/if}}
 
-**REGRA ADICIONAL IMPORTANTE:** Um aluno SÓ PODE ser desembarcado na sua escola correspondente. É um erro grave sugerir que um aluno seja deixado em uma escola diferente da sua. A parada de uma escola na rota representa o momento de desembarque de TODOS os alunos que pertencem àquela escola e que já estão no veículo.
+**REGRA ADICIONAL IMPORTANTE:** Na IDA, um aluno só pode ser desembarcado na sua escola correspondente. Na VOLTA, um aluno só pode ser desembarcado no seu endereço (que está associado ao ID do aluno). A parada de uma escola na rota representa o momento de embarque (na volta) ou desembarque (na ida) de TODOS os alunos que pertencem àquela escola e que já estão no veículo.
 
 Considere as seguintes informações:
 {{#if startAddress}}
 - **Ponto de Partida (Obrigatório se fornecido):** {{{startAddress}}} (Comece a rota a partir deste ponto, que pode ser um endereço ou coordenadas lat,lng)
 {{/if}}
-- **Lista de Alunos (Paradas de Embarque):** {{{json students}}} (Use o 'id' de cada aluno EXATAMENTE como está aqui. Note o campo 'schoolId' em cada aluno.)
-- **Lista de Escolas (Paradas de Desembarque):** {{{json schools}}} (Use o 'id' de cada escola EXATAMENTE como está aqui.)
+- **Lista de Alunos (Paradas):** {{{json students}}} (Use o 'id' de cada aluno EXATAMENTE como está aqui. Note o campo 'schoolId' em cada aluno.)
+- **Lista de Escolas (Paradas):** {{{json schools}}} (Use o 'id' de cada escola EXATAMENTE como está aqui.)
 {{#if vehicleCapacity}}
 - **Capacidade do Veículo:** {{{vehicleCapacity}}} passageiros. A rota otimizada não deve, sob nenhuma hipótese, incluir mais alunos do que a capacidade do veículo.
 {{/if}}
@@ -109,8 +118,15 @@ export const optimizeSchoolVanRoute = ai.defineFlow(
   },
   async (input) => {
     const isFlexibleMode = input.optimizationMode === 'flexible';
+    const isIda = input.direction === 'ida';
     const { optimizationMode, ...baseInput } = input;
-    const promptInput = { ...baseInput, isFlexibleMode };
+    
+    const promptInput = { 
+        ...baseInput,
+        isFlexibleMode,
+        isIda 
+    };
+
     const {output} = await prompt(promptInput);
     return output!;
   }
