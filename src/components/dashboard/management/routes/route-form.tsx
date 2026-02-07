@@ -62,8 +62,8 @@ interface RouteFormProps {
 
 const getAbbreviatedClass = (student: Student | null | undefined) => {
     if (!student?.serie) return null;
-    // Ex: "3º Ano A" -> "3º A"
-    return student.serie.replace(/ ano/i, '').trim();
+    const seriePart = student.serie.replace(/ ano/i, '').trim();
+    return [seriePart, student.turma].filter(Boolean).join(' ');
 };
 
 export function RouteForm({
@@ -440,10 +440,12 @@ export function RouteForm({
                                             return (
                                                 <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                     <div className="flex-1 min-w-0">
-                                                        <p className="font-medium text-sm">{s.name}</p>
-                                                        {getAbbreviatedClass(s) && (
-                                                            <p className="text-xs text-muted-foreground">{getAbbreviatedClass(s)}</p>
-                                                        )}
+                                                        <p className="font-medium text-sm whitespace-normal">
+                                                            {s.name}
+                                                            {getAbbreviatedClass(s) && (
+                                                                <span className="text-xs text-muted-foreground ml-2 font-normal">({getAbbreviatedClass(s)})</span>
+                                                            )}
+                                                        </p>
                                                     </div>
                                                     <div className="flex items-center flex-shrink-0">
                                                         <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
@@ -485,24 +487,14 @@ export function RouteForm({
                     {stops.length > 0 ? (
                         <div className="space-y-1">
                             {stops.map((stop, index) => {
-                                 const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
                                 return (
                                     <div key={index} className="flex items-center w-full bg-background rounded-md p-2 hover:bg-accent/50">
                                         <div className="flex items-center justify-between w-full">
                                             <div className="flex items-center gap-4 flex-1 min-w-0">
                                                 <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground">{index + 1}</span>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="font-medium text-sm break-words">{stop.name}</p>
-                                                    {stop.type === 'student' ? (
-                                                        <div className="flex items-baseline gap-1.5 text-xs text-muted-foreground">
-                                                            <p className="truncate">{stop.details}</p>
-                                                            {getAbbreviatedClass(student) && (
-                                                                <p className="font-semibold">({getAbbreviatedClass(student)})</p>
-                                                            )}
-                                                        </div>
-                                                    ) : (
-                                                        <p className="text-xs text-muted-foreground">{stop.details}</p>
-                                                    )}
+                                                    <p className="font-medium text-sm whitespace-normal">{stop.name}</p>
+                                                    <p className="text-xs text-muted-foreground truncate">{stop.details}</p>
                                                 </div>
                                             </div>
                                             <div className="flex items-center flex-shrink-0">
