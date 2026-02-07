@@ -10,6 +10,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -408,7 +409,6 @@ export default function DriverRoutePlanPage() {
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [optimizationSuggestion, setOptimizationSuggestion] = useState<OptimizeSchoolVanRouteOutput | null>(null);
-  const prevStudentsRef = useRef<Student[]>();
   const isOnline = useOnlineStatus();
 
 
@@ -564,23 +564,7 @@ export default function DriverRoutePlanPage() {
 
     return { activeStop, upcomingStops: upcoming };
   }, [orderedStops, driverProfile?.status, direction]);
-
   
-  useEffect(() => {
-    if (driverProfile?.status === 'em_rota' && prevStudentsRef.current && orderedStops) {
-        const currentStudents = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
-        const newlyAbsentStudent = currentStudents.find(currentStudent => {
-            const prevStudent = prevStudentsRef.current.find(p => p.id === currentStudent.id);
-            return prevStudent && prevStudent.status !== 'ausente' && currentStudent.status === 'ausente';
-        });
-
-        if (newlyAbsentStudent) {
-            setShowRecalculatePrompt(true);
-        }
-    }
-    prevStudentsRef.current = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
-  }, [orderedStops, driverProfile?.status]);
-
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     const student = (orderedStops.find(s => s.id === studentId)?.data as Student);
@@ -1127,6 +1111,7 @@ export default function DriverRoutePlanPage() {
 }
 
     
+
 
 
 
