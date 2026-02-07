@@ -243,20 +243,20 @@ export function RouteForm({
   }
 
   const handleOptimizeOrder = async () => {
-    if (selectedSchoolIds.length !== 1 || studentsOnRoute.length < 2) {
+    if (studentsOnRoute.length < 2) {
       toast({
         title: "Otimização não aplicável",
-        description: "A otimização por IA requer exatamente uma escola selecionada e pelo menos dois alunos na rota.",
+        description: "A otimização por IA requer pelo menos dois alunos na rota.",
         variant: "destructive",
       });
       return;
     }
     setIsOptimizing(true);
     try {
-        const school = schoolsMap.get(selectedSchoolIds[0]);
+        const schoolsOnRoute = selectedSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
         const driver = drivers.find(d => d.id === driverId);
 
-        if (!school || !driver) {
+        if (schoolsOnRoute.length === 0 || !driver) {
             throw new Error("Dados da escola ou motorista não encontrados.");
         }
 
@@ -265,34 +265,40 @@ export function RouteForm({
             return `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
         };
 
+        const studentInput = studentsOnRoute.map(s => ({
+            id: s.id,
+            name: s.name,
+            address: formatAddress(s)
+        }));
+        
+        const schoolAddresses = schoolsOnRoute.map(s => formatAddress(s));
+
         const input = {
-            students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-            schoolAddress: formatAddress(school),
+            students: studentInput,
+            schoolAddresses: schoolAddresses,
             startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
             vehicleCapacity: vehicleCapacity,
         };
 
         const result = await optimizeSchoolVanRoute(input);
         
-        const studentStops = result.optimizedStudentIds.map(studentId => {
-            const student = studentsMap.get(studentId);
-            if (!student) return null;
-            return {
-                id: studentId,
-                type: 'student',
-                name: student.name,
-                details: schoolsMap.get(student.schoolId)?.name,
-                uniqueId: `student-${studentId}`
-            };
+        const newOptimizedStops = result.optimizedStops.map(stop => {
+            const [type, id] = stop.id.split(/-(.*)/s) as ['student' | 'school', string];
+            if (type === 'student') {
+                const student = studentsMap.get(id);
+                if (student) return { id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name, uniqueId: stop.id };
+            } else if (type === 'school') {
+                const school = schoolsMap.get(id);
+                if (school) return { id, type: 'school', name: school.name, details: 'Ponto de desembarque/embarque', uniqueId: stop.id };
+            }
+            return null;
         }).filter(Boolean) as Stop[];
         
-        const schoolStops = stops.filter(s => s.type === 'school');
-
-        setStops([...studentStops, ...schoolStops]);
+        setStops(newOptimizedStops);
 
         toast({
             title: "Ordem da rota otimizada!",
-            description: "A IA sugeriu uma nova sequência para os alunos. Você pode fazer ajustes manuais se necessário.",
+            description: "A IA sugeriu uma nova sequência para as paradas. Você pode fazer ajustes manuais se necessário.",
         });
 
     } catch (error) {
@@ -478,20 +484,12 @@ export function RouteForm({
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <Label>Itinerário da Rota ({stops.length} paradas)</Label>
-                <Button type="button" size="sm" variant="outline" onClick={handleOptimizeOrder} disabled={isOptimizing || selectedSchoolIds.length !== 1 || studentsOnRoute.length < 2}>
+                <Button type="button" size="sm" variant="outline" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2}>
                     {isOptimizing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                     Otimizar Ordem
                 </Button>
              </div>
             <p className="text-sm text-muted-foreground">Adicione alunos, otimize a ordem e use as setas para ajustes finos.</p>
-            {selectedSchoolIds.length !== 1 && studentsOnRoute.length > 1 &&
-                <Alert variant="default" className="text-xs">
-                    <Info className="h-4 w-4" />
-                    <AlertDescription>
-                       A otimização com IA está disponível apenas para rotas com uma única escola.
-                    </AlertDescription>
-                </Alert>
-            }
             {isCapacityExceeded && (
                 <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
                     <AlertCircle className="h-4 w-4" />
@@ -572,35 +570,3 @@ export function RouteForm({
     </DialogContent>
   )
 }
-    
-    
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-    
-
-    
-
-
-
-
-    
-
-    
-
-
-
-
-    
