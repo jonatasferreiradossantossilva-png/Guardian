@@ -276,38 +276,48 @@ export function RouteForm({
   };
 
   useEffect(() => {
-    const prevIds = prevSchoolIdsRef.current;
-    if (prevIds === undefined) {
+    // On the first render, just store the initial IDs and do nothing.
+    if (prevSchoolIdsRef.current === undefined) {
       prevSchoolIdsRef.current = selectedSchoolIds;
       return;
     }
-  
-    const currentIds = new Set(selectedSchoolIds);
-    const prevIdSet = new Set(prevIds);
-    const hasChanged = selectedSchoolIds.length !== prevIds.length || prevIds.some(id => !currentIds.has(id));
+    
+    const prevIds = prevSchoolIdsRef.current;
+    const currentIdsSet = new Set(selectedSchoolIds);
+
+    // Check if the list of selected schools has actually changed.
+    const hasChanged = selectedSchoolIds.length !== prevIds.length || prevIds.some(id => !currentIdsSet.has(id));
 
     if (hasChanged) {
-        setIsOptimized(false);
-    }
-  
-    const removedSchoolIds = prevIds.filter(id => !currentIds.has(id));
-  
-    if (removedSchoolIds.length > 0) {
-        const stopsAfterRemoval = stops.filter(stop => {
-            if (stop.type === 'student') {
-                const student = studentsMap.get(stop.id);
-                return !(student && removedSchoolIds.includes(student.schoolId));
-            }
-            if (stop.type === 'school') {
-                return !removedSchoolIds.includes(stop.id);
-            }
-            return true;
+      // If there's any change, the route is no longer considered optimized.
+      setIsOptimized(false);
+      
+      // Specifically check if any schools were REMOVED.
+      const removedSchoolIds = prevIds.filter(id => !currentIdsSet.has(id));
+      
+      if (removedSchoolIds.length > 0) {
+        // If schools were removed, we use the functional form of setStops 
+        // to update the `stops` list without needing `stops` in the dependency array.
+        setStops(currentStops => {
+            return currentStops.filter(stop => {
+                if (stop.type === 'student') {
+                    const student = studentsMap.get(stop.id);
+                    // Keep the student if their school was NOT in the removed list.
+                    return !(student && removedSchoolIds.includes(student.schoolId));
+                }
+                if (stop.type === 'school') {
+                    // Keep the school stop if its ID was NOT in the removed list.
+                    return !removedSchoolIds.includes(stop.id);
+                }
+                return true; // Should not happen, but keep other stop types.
+            });
         });
-        setStops(stopsAfterRemoval);
+      }
     }
     
+    // After processing, update the ref to the current state for the next render.
     prevSchoolIdsRef.current = selectedSchoolIds;
-  }, [selectedSchoolIds, studentsMap, stops]);
+  }, [selectedSchoolIds, studentsMap]);
 
   const handleOptimizeOrder = async () => {
     if (studentsOnRoute.length < 2) {
