@@ -1,24 +1,5 @@
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -817,7 +798,8 @@ export default function DriverRoutePlanPage() {
             if (direction === 'volta') {
                 const schoolStops = stopsToUse.filter(s => s.type === 'school');
                 const studentStops = stopsToUse.filter(s => s.type === 'student');
-                stopsToUse = [...schoolStops, ...studentStops];
+                const reversedStudentStops = [...studentStops].reverse(); // Reverse for default drop-off
+                stopsToUse = [...schoolStops, ...reversedStudentStops];
             }
             handleStartRoute(stopsToUse);
         }
@@ -834,10 +816,13 @@ export default function DriverRoutePlanPage() {
 
         if (!selectedSchool) return;
 
+        // Reverse student stops for a more logical default drop-off order ("last in, first out")
+        const reversedStudentStops = [...allStudentStops].reverse();
+
         const reorderedStops: Stop[] = [
             { id: selectedSchool.id, type: 'school', data: selectedSchool },
             ...otherSchools.map(s => ({ id: s.id, type: 'school', data: s } as Stop)),
-            ...allStudentStops
+            ...reversedStudentStops
         ];
         
         handleStartRoute(reorderedStops);
@@ -1062,7 +1047,7 @@ export default function DriverRoutePlanPage() {
         }
         
         setChecklistSchool(null);
-    }, [checklistSchool, isOnline, orderedStops, toast, drivers, driverLocation, updateDoc]);
+    }, [checklistSchool, isOnline, orderedStops, toast, drivers, driverLocation, updateDoc, route, schoolsMap]);
     
     const handleScanSuccess = useCallback((scannedId: string) => {
         const student = (allStudents || []).find(s => s.id === scannedId);
@@ -1456,5 +1441,7 @@ export default function DriverRoutePlanPage() {
 
 
 
+
+    
 
     
