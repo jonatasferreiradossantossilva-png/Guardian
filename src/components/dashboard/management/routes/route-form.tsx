@@ -84,17 +84,7 @@ export function RouteForm({
     },
   });
 
-  const [driverId, setDriverId] = useState(form.getValues('driverId'));
-
-  useEffect(() => {
-    const subscription = form.watch((value, { name }) => {
-      if (name === 'driverId') {
-        setDriverId(value.driverId);
-      }
-    });
-    return () => subscription.unsubscribe();
-  }, [form.watch]);
-
+  const driverId = form.watch('driverId');
 
   const { vehicle, vehicleCapacity } = useMemo(() => {
     if (!driverId || !drivers || !vehicles) return { vehicle: null, vehicleCapacity: Infinity };
@@ -326,3 +316,5 @@ export function RouteForm({
     </DialogContent>
   );
 }
+
+    
