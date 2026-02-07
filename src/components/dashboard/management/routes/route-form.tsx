@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -22,7 +23,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School, Info } from 'lucide-react';
+import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School, Info, Trash2 } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -45,6 +46,8 @@ type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 type School = { id: string; name: string; };
 type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; };
+type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string };
+
 
 interface RouteFormProps {
   route?: Route;
@@ -73,25 +76,44 @@ export function RouteForm({
   const [name, setName] = useState(route?.name || '');
   const [driverId, setDriverId] = useState(route?.driverId || '');
   const [monitorId, setMonitorId] = useState(route?.monitorId || '');
-  const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [shift, setShift] = useState<'Manhã' | 'Tarde' | ''>(route?.shift || '');
-  const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
+
+  const [selectedSchoolIds, setSelectedSchoolIds] = useState<string[]>([]);
+  const [schoolToAdd, setSchoolToAdd] = useState<string>('');
   
+  const [stops, setStops] = useState<Stop[]>([]);
   const [studentSearch, setStudentSearch] = useState('');
-  const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolId?: string, shift?: string}>({});
+  const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolIds?: string, shift?: string}>({});
 
   const [isMissingStudentAlertOpen, setIsMissingStudentAlertOpen] = useState(false);
   const [missingIntegralStudents, setMissingIntegralStudents] = useState<Student[]>([]);
 
+  const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
+  const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
 
   useEffect(() => {
-    if (route) {
-        const studentMap = new Map(students.map(s => [s.id, s]));
-        const firstStudentId = route.studentIds?.[0];
-        const firstStudent = firstStudentId ? studentMap.get(firstStudentId) : null;
-        setSelectedSchoolId(firstStudent?.schoolId || '');
-    }
-  }, [route, students]);
+      const initialStops: Stop[] = [];
+      const initialSchoolIds = new Set<string>();
+
+      route?.studentIds?.forEach(stopId => {
+          const [type, id] = stopId.split('-');
+          if (type === 'student') {
+              const student = studentsMap.get(id);
+              if (student) {
+                  initialStops.push({ id, type, name: student.name, details: schoolsMap.get(student.schoolId)?.name });
+                  initialSchoolIds.add(student.schoolId);
+              }
+          } else if (type === 'school') {
+              const school = schoolsMap.get(id);
+              if (school) {
+                  initialStops.push({ id, type, name: school.name, details: 'Ponto de desembarque' });
+                  initialSchoolIds.add(id);
+              }
+          }
+      });
+      setStops(initialStops);
+      setSelectedSchoolIds(Array.from(initialSchoolIds));
+  }, [route, studentsMap, schoolsMap]);
 
 
   const { vehicle, vehicleCapacity } = useMemo(() => {
@@ -110,68 +132,67 @@ export function RouteForm({
     for (const r of allRoutes) {
         if (r.id === route?.id) continue;
         if (r.shift === shift) {
-            r.studentIds?.forEach(id => studentIdSet.add(id));
+            r.studentIds?.forEach(id => {
+                if (id.startsWith('student-')) {
+                    studentIdSet.add(id.split('-')[1]);
+                }
+            });
         }
     }
     return studentIdSet;
   }, [allRoutes, shift, route]);
 
 
-  const { isCapacityExceeded, availableStudents, studentsInCurrentRoute } = useMemo(() => {
-    const studentMap = new Map(students.map(s => [s.id, s]));
-    const studentsInCurrentRoute = currentStudentIds
-        .map(id => studentMap.get(id))
-        .filter(Boolean) as Student[];
+  const { isCapacityExceeded, availableStudents, studentsOnRoute } = useMemo(() => {
+    const currentStudentIds = new Set(stops.filter(s => s.type === 'student').map(s => s.id));
+    const studentsOnRoute = stops
+      .filter(stop => stop.type === 'student')
+      .map(stop => studentsMap.get(stop.id))
+      .filter(Boolean) as Student[];
 
-    const isExceeded = studentsInCurrentRoute.length > vehicleCapacity;
+    const isExceeded = studentsOnRoute.length > vehicleCapacity;
 
     let filteredAvailableStudents = [];
-    if (selectedSchoolId && shift) {
+    if (selectedSchoolIds.length > 0 && shift) {
         filteredAvailableStudents = students.filter(s => {
+            if (!selectedSchoolIds.includes(s.schoolId)) return false;
             if (assignedStudentsInOtherRoutes.has(s.id)) return false;
-            if (currentStudentIds.includes(s.id)) return false;
+            if (currentStudentIds.has(s.id)) return false;
             
             const matchesSearch = s.name.toLowerCase().includes(studentSearch.toLowerCase());
-            const belongsToSchool = s.schoolId === selectedSchoolId;
             const isCompatibleShift = s.shift === 'Integral' || s.shift === shift;
 
-            return s.active !== false && belongsToSchool && matchesSearch && isCompatibleShift;
+            return s.active !== false && matchesSearch && isCompatibleShift;
         });
     }
 
-    return { isCapacityExceeded: isExceeded, availableStudents: filteredAvailableStudents, studentsInCurrentRoute };
-  }, [currentStudentIds, students, studentSearch, vehicleCapacity, selectedSchoolId, shift, assignedStudentsInOtherRoutes]);
+    return { isCapacityExceeded: isExceeded, availableStudents: filteredAvailableStudents, studentsOnRoute };
+  }, [stops, students, studentSearch, vehicleCapacity, selectedSchoolIds, shift, assignedStudentsInOtherRoutes, studentsMap]);
 
-    const { missingRouteWarning, integralStudentsOnThisRoute } = useMemo(() => {
-        if (!shift || !selectedSchoolId || !studentsInCurrentRoute.length) return { missingRouteWarning: null, integralStudentsOnThisRoute: [] };
+    const { missingRouteWarning } = useMemo(() => {
+        if (!shift || selectedSchoolIds.length === 0 || studentsOnRoute.length === 0) return { missingRouteWarning: null };
 
-        const integralStudents = studentsInCurrentRoute.filter(s => s.shift === 'Integral');
-        if (integralStudents.length === 0) {
-            return { missingRouteWarning: null, integralStudentsOnThisRoute: [] };
+        const integralStudentsOnThisRoute = studentsOnRoute.some(s => s.shift === 'Integral');
+        if (!integralStudentsOnThisRoute) {
+            return { missingRouteWarning: null };
         }
 
         const oppositeShift = shift === 'Manhã' ? 'Tarde' : 'Manhã';
         const correspondingRouteExists = allRoutes.some(r => {
             if (r.id === route?.id || r.shift !== oppositeShift) return false;
-            const firstStudentOnOtherRoute = students.find(s => s.id === r.studentIds?.[0]);
-            return firstStudentOnOtherRoute?.schoolId === selectedSchoolId;
+            const firstStudentOnOtherRoute = students.find(s => r.studentIds && s.id === r.studentIds[0]?.split('-')[1]);
+            return firstStudentOnOtherRoute && selectedSchoolIds.includes(firstStudentOnOtherRoute.schoolId);
         });
 
         if (correspondingRouteExists) {
-            return { 
-                missingRouteWarning: `Atenção: Você adicionou aluno(s) de período integral. Certifique-se de que ele(s) também esteja(m) na rota de '${oppositeShift}' correspondente.`,
-                integralStudentsOnThisRoute: integralStudents
-            };
+            return { missingRouteWarning: `Atenção: Você adicionou aluno(s) de período integral. Certifique-se de que ele(s) também esteja(m) na rota de '${oppositeShift}' correspondente.` };
         } else {
-            return { 
-                missingRouteWarning: `Atenção: Aluno(s) integral(is) adicionado(s), mas não foi encontrada uma rota de '${oppositeShift}' para esta escola. Lembre-se de criá-la.`,
-                integralStudentsOnThisRoute: integralStudents
-            };
+            return { missingRouteWarning: `Atenção: Aluno(s) integral(is) adicionado(s), mas não foi encontrada uma rota de '${oppositeShift}' para esta(s) escola(s). Lembre-se de criá-la.`};
         }
-    }, [studentsInCurrentRoute, shift, selectedSchoolId, allRoutes, route?.id, students]);
+    }, [studentsOnRoute, shift, selectedSchoolIds, allRoutes, route?.id, students]);
 
-  const addStudentToRoute = (studentId: string) => {
-    if (currentStudentIds.length >= vehicleCapacity) {
+  const addStop = (stop: Stop) => {
+    if (stop.type === 'student' && studentsOnRoute.length >= vehicleCapacity) {
       toast({
         title: "Capacidade do veículo excedida!",
         description: `A rota não pode ter mais de ${vehicleCapacity} alunos para este veículo.`,
@@ -179,33 +200,37 @@ export function RouteForm({
       });
       return;
     }
-    setCurrentStudentIds((prev) => [...prev, studentId]);
-  };
-
-  const moveInRoute = (studentId: string, direction: 'up' | 'down') => {
-    const index = currentStudentIds.indexOf(studentId);
-    if (index === -1) return;
-
-    const newList = [...currentStudentIds];
-    if (direction === 'up' && index > 0) {
-        [newList[index - 1], newList[index]] = [newList[index], newList[index-1]];
-        setCurrentStudentIds(newList);
-    } else if (direction === 'down' && index < newList.length - 1) {
-        [newList[index + 1], newList[index]] = [newList[index], newList[index+1]];
-        setCurrentStudentIds(newList);
-    }
+    setStops((prev) => [...prev, stop]);
   };
   
-  const removeStudentFromRoute = (studentId: string) => {
-    setCurrentStudentIds(prev => prev.filter(id => id !== studentId));
+  const handleAddSchoolToRoute = (schoolId: string) => {
+    const school = schoolsMap.get(schoolId);
+    if (school) {
+        addStop({id: schoolId, type: 'school', name: school.name, details: 'Ponto de desembarque'})
+    }
+  }
+
+  const moveStop = (index: number, direction: 'up' | 'down') => {
+    if (direction === 'up' && index === 0) return;
+    if (direction === 'down' && index === stops.length - 1) return;
+
+    const newList = [...stops];
+    const item = newList.splice(index, 1)[0];
+    const newIndex = direction === 'up' ? index - 1 : index + 1;
+    newList.splice(newIndex, 0, item);
+    setStops(newList);
+  };
+  
+  const removeStop = (index: number) => {
+    setStops(prev => prev.filter((_, i) => i !== index));
   }
   
-  const performSave = (studentIdsToSave: string[]) => {
+  const performSave = (stopsToSave: Stop[]) => {
     const finalData = {
         name,
         driverId,
         monitorId: monitorId === 'none' ? '' : monitorId,
-        studentIds: studentIdsToSave,
+        studentIds: stopsToSave.map(s => `${s.type}-${s.id}`), // Prefixo para diferenciar
         shift
     };
     
@@ -220,215 +245,271 @@ export function RouteForm({
   }
 
   const handleConfirmSaveAndAdd = () => {
-    const newStudentIds = [...currentStudentIds, ...missingIntegralStudents.map(s => s.id)];
-    performSave(newStudentIds); 
+    const studentStopsToAdd = missingIntegralStudents.map(s => ({
+        id: s.id,
+        type: 'student' as 'student',
+        name: s.name,
+        details: schoolsMap.get(s.schoolId)?.name
+    }));
+    performSave([...stops, ...studentStopsToAdd]); 
     setIsMissingStudentAlertOpen(false);
   }
   
   const handleConfirmSaveWithMissing = () => {
-    performSave(currentStudentIds);
+    performSave(stops);
     setIsMissingStudentAlertOpen(false);
   }
 
   const handleSubmit = () => {
-    const newErrors: {name?: string, driverId?: string, schoolId?: string, shift?: string} = {};
+    const newErrors: {name?: string, driverId?: string, schoolIds?: string, shift?: string} = {};
     if (!name.trim()) newErrors.name = 'O nome é obrigatório.';
     if (!driverId) newErrors.driverId = 'Selecione um motorista.';
-    if (!selectedSchoolId) newErrors.schoolId = 'Selecione uma escola.';
+    if (selectedSchoolIds.length === 0) newErrors.schoolIds = 'Selecione pelo menos uma escola.';
     if (!shift) newErrors.shift = 'Selecione um turno para a rota.';
     
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     
-    // --- Start Integral Student Validation ---
     const oppositeShift = shift === 'Manhã' ? 'Tarde' : 'Manhã';
-    const otherRoute = allRoutes.find(r => {
+    const otherRoutes = allRoutes.filter(r => {
         if (r.id === route?.id || r.shift !== oppositeShift) return false;
-        const firstStudentOnOtherRoute = students.find(s => s.id === r.studentIds?.[0]);
-        return firstStudentOnOtherRoute?.schoolId === selectedSchoolId;
+        const firstStudentOnOtherRoute = students.find(s => r.studentIds && s.id === r.studentIds[0]?.split('-')[1]);
+        return firstStudentOnOtherRoute && selectedSchoolIds.includes(firstStudentOnOtherRoute.schoolId);
     });
 
-    if (otherRoute) {
-        const otherRouteIntegralStudents = (otherRoute.studentIds || [])
-            .map(id => students.find(s => s.id === id))
-            .filter((s): s is Student => !!s && s.shift === 'Integral');
+    if (otherRoutes.length > 0) {
+        const otherRouteIntegralStudents = new Set<string>();
+        otherRoutes.forEach(r => {
+            r.studentIds?.forEach(stopId => {
+                const [type, id] = stopId.split('-');
+                if (type === 'student') {
+                    const student = studentsMap.get(id);
+                    if (student?.shift === 'Integral') {
+                        otherRouteIntegralStudents.add(id);
+                    }
+                }
+            })
+        });
         
-        const thisRouteStudentIds = new Set(currentStudentIds);
-        const studentsToWarnAbout = otherRouteIntegralStudents.filter(s => !thisRouteStudentIds.has(s.id));
+        const thisRouteStudentIds = new Set(studentsOnRoute.map(s => s.id));
+        const studentsToWarnAbout = Array.from(otherRouteIntegralStudents).filter(id => !thisRouteStudentIds.has(id)).map(id => studentsMap.get(id)).filter(Boolean) as Student[];
 
         if (studentsToWarnAbout.length > 0) {
             setMissingIntegralStudents(studentsToWarnAbout);
             setIsMissingStudentAlertOpen(true);
-            return; // Stop the save, let the dialog handle it.
+            return;
         }
     }
-    // --- End Integral Student Validation ---
 
-    performSave(currentStudentIds);
+    performSave(stops);
   };
   
   return (
-    <DialogContent className="sm:max-w-2xl">
+    <DialogContent className="sm:max-w-3xl">
       <DialogHeader>
         <DialogTitle>{route ? 'Editar Rota' : 'Adicionar Rota'}</DialogTitle>
         <DialogDescription>
-          Preencha as informações da rota, defina o motorista e organize os alunos que farão parte dela.
+          Preencha as informações, adicione escolas, e monte o itinerário da rota.
         </DialogDescription>
       </DialogHeader>
-      <div className="space-y-4">
-          <ScrollArea className="max-h-[65vh] space-y-4 overflow-y-auto py-1 pr-6">
-            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-              <div className="space-y-2">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
+        {/* Coluna da Esquerda: Configurações e Alunos Disponíveis */}
+        <div className="space-y-4">
+            <div className="space-y-2">
                 <Label htmlFor="routeName">Nome da Rota</Label>
-                <Input id="routeName" placeholder="Ex: Rota Matinal - Zona Sul" value={name} onChange={(e) => setName(e.target.value)} />
+                <Input id="routeName" placeholder="Ex: Rota Matinal - Escolas A e B" value={name} onChange={(e) => setName(e.target.value)} />
                 {errors.name && <p className="text-sm font-medium text-destructive">{errors.name}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="schoolId">Escola</Label>
-                <Select onValueChange={setSelectedSchoolId} value={selectedSchoolId} disabled={!!route && currentStudentIds.length > 0}>
-                    <SelectTrigger id="schoolId"><SelectValue placeholder="Selecione uma escola" /></SelectTrigger>
-                    <SelectContent>{schools.map(s => (<SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>))}</SelectContent>
-                </Select>
-                {errors.schoolId && <p className="text-sm font-medium text-destructive">{errors.schoolId}</p>}
-                 {!!route && currentStudentIds.length > 0 && <p className="text-xs text-muted-foreground">A escola não pode ser alterada em uma rota com alunos.</p>}
-              </div>
             </div>
-             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 pt-4">
-               <div className="space-y-2">
-                <Label htmlFor="shiftId">Turno da Rota</Label>
-                <Select onValueChange={(v) => setShift(v as 'Manhã' | 'Tarde')} value={shift}>
-                    <SelectTrigger id="shiftId"><SelectValue placeholder="Selecione um turno" /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="Manhã">Manhã</SelectItem>
-                        <SelectItem value="Tarde">Tarde</SelectItem>
-                    </SelectContent>
-                </Select>
-                 {errors.shift && <p className="text-sm font-medium text-destructive">{errors.shift}</p>}
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="driverId">Motorista</Label>
-                <Select onValueChange={setDriverId} value={driverId}>
-                    <SelectTrigger id="driverId"><SelectValue placeholder="Selecione um motorista" /></SelectTrigger>
-                    <SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent>
-                </Select>
-                {vehicle && (
-                    <p className="text-xs text-muted-foreground">
-                    Veículo: {vehicle.model} (Capacidade: {vehicle.capacity} alunos)
-                    </p>
-                )}
-                {errors.driverId && <p className="text-sm font-medium text-destructive">{errors.driverId}</p>}
-              </div>
-              <div className="space-y-2">
-                  <Label htmlFor="monitorId">Monitor</Label>
-                  <Select onValueChange={setMonitorId} value={monitorId || 'none'}>
-                    <SelectTrigger id="monitorId"><SelectValue placeholder="Selecione um monitor (opcional)" /></SelectTrigger>
+
+            <div className="grid grid-cols-2 gap-4">
+                 <div className="space-y-2">
+                    <Label htmlFor="shiftId">Turno da Rota</Label>
+                    <Select onValueChange={(v) => setShift(v as 'Manhã' | 'Tarde')} value={shift}>
+                        <SelectTrigger id="shiftId"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="Manhã">Manhã</SelectItem>
+                            <SelectItem value="Tarde">Tarde</SelectItem>
+                        </SelectContent>
+                    </Select>
+                     {errors.shift && <p className="text-sm font-medium text-destructive">{errors.shift}</p>}
+                </div>
+                <div className="space-y-2">
+                    <Label htmlFor="driverId">Motorista</Label>
+                    <Select onValueChange={setDriverId} value={driverId}>
+                        <SelectTrigger id="driverId"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                        <SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent>
+                    </Select>
+                    {vehicle && <p className="text-xs text-muted-foreground">Veículo: {vehicle.model} (Capacidade: {vehicle.capacity})</p>}
+                    {errors.driverId && <p className="text-sm font-medium text-destructive">{errors.driverId}</p>}
+                </div>
+            </div>
+
+             <div className="space-y-2">
+                <Label htmlFor="monitorId">Monitor (Opcional)</Label>
+                <Select onValueChange={setMonitorId} value={monitorId || 'none'}>
+                    <SelectTrigger id="monitorId"><SelectValue placeholder="Selecione um monitor" /></SelectTrigger>
                     <SelectContent>
                         <SelectItem value="none">Nenhum</SelectItem>
                         {monitors.map(a => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}
                     </SelectContent>
-                  </Select>
-              </div>
+                </Select>
             </div>
-
-            <div className="pt-4">
-              <Label>Alunos na Rota</Label>
-              <p className="text-sm text-muted-foreground mb-2">Ordene os alunos para definir as paradas ou adicione novos alunos na aba ao lado.</p>
-              {isCapacityExceeded && (
-                  <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
-                      <AlertCircle className="h-4 w-4" />
-                      Capacidade de {vehicleCapacity} alunos excedida! Salve ou remova alunos.
-                  </div>
-              )}
-               {missingRouteWarning && (
-                  <Alert className="my-2">
-                      <Info className="h-4 w-4" />
-                      <AlertDescription>
-                          {missingRouteWarning}
-                      </AlertDescription>
-                  </Alert>
-              )}
-              
-              <div className="flex flex-col gap-4">
-                  <Tabs defaultValue="inRoute">
-                      <TabsList className="grid w-full grid-cols-2">
-                          <TabsTrigger value="inRoute">Na Rota ({studentsInCurrentRoute.length})</TabsTrigger>
-                          <TabsTrigger value="available">Adicionar Alunos</TabsTrigger>
-                      </TabsList>
-                      <TabsContent value="inRoute">
-                          <Card>
-                              <CardContent className="p-2">
-                                  <ScrollArea className="h-56">
-                                      {studentsInCurrentRoute.length > 0 ? studentsInCurrentRoute.map((s, index) => (
-                                          <div key={s.id} className="flex items-center justify-between rounded-md p-1 hover:bg-accent/50">
-                                              <div className="flex min-w-0 flex-1 items-center gap-2">
-                                                  <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                                  <span className="truncate font-medium text-sm">{s.name}</span>
-                                              </div>
-                                              <div className="flex items-center">
-                                                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveInRoute(s.id, 'up')} disabled={index === 0}>
-                                                      <ArrowUp className="h-4 w-4" />
-                                                  </Button>
-                                                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveInRoute(s.id, 'down')} disabled={index === studentsInCurrentRoute.length - 1}>
-                                                      <ArrowDown className="h-4 w-4" />
-                                                  </Button>
-                                                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStudentFromRoute(s.id)}>
-                                                      <X className="h-4 w-4 text-destructive" />
-                                                  </Button>
-                                              </div>
-                                          </div>
-                                      )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno na rota.</p>}
-                                  </ScrollArea>
-                              </CardContent>
-                          </Card>
-                      </TabsContent>
-                      <TabsContent value="available">
-                          <Card>
-                              {!selectedSchoolId || !shift ? (
-                                <div className="h-64 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
-                                    <School className="h-8 w-8 mb-2"/>
-                                    <p className="font-semibold">Selecione uma escola e um turno</p>
-                                    <p className="text-sm">Escolha uma escola e um turno nos campos acima para ver os alunos disponíveis.</p>
+            
+             <div className="space-y-2">
+                <Label>Escolas Atendidas</Label>
+                <div className="flex gap-2">
+                    <Select value={schoolToAdd} onValueChange={setSchoolToAdd}>
+                        <SelectTrigger><SelectValue placeholder="Adicionar escola..." /></SelectTrigger>
+                        <SelectContent>
+                            {schools.filter(s => !selectedSchoolIds.includes(s.id)).map(s => (
+                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                    <Button type="button" variant="outline" size="icon" onClick={() => {
+                        if (schoolToAdd && !selectedSchoolIds.includes(schoolToAdd)) {
+                            setSelectedSchoolIds(prev => [...prev, schoolToAdd]);
+                            setSchoolToAdd('');
+                        }
+                    }} disabled={!schoolToAdd}><PlusCircle className="h-4 w-4"/></Button>
+                </div>
+                 {errors.schoolIds && <p className="text-sm font-medium text-destructive">{errors.schoolIds}</p>}
+                 <div className="flex flex-wrap gap-2 pt-2">
+                     {selectedSchoolIds.map(id => (
+                        <Badge key={id} variant="secondary" className="flex items-center gap-1">
+                            {schoolsMap.get(id)?.name}
+                            <button onClick={() => setSelectedSchoolIds(prev => prev.filter(sId => sId !== id))}><X className="h-3 w-3"/></button>
+                        </Badge>
+                     ))}
+                 </div>
+            </div>
+            
+            <Tabs defaultValue="availableStudents">
+                <TabsList className="grid w-full grid-cols-1">
+                    <TabsTrigger value="availableStudents">Alunos Disponíveis</TabsTrigger>
+                </TabsList>
+                <TabsContent value="availableStudents">
+                    <Card>
+                        {!selectedSchoolIds.length || !shift ? (
+                            <div className="h-64 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
+                                <School className="h-8 w-8 mb-2"/>
+                                <p className="font-semibold">Selecione escolas e um turno</p>
+                                <p className="text-sm">Escolha as escolas e o turno da rota para ver os alunos disponíveis.</p>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="border-b p-2">
+                                    <Input placeholder="Buscar aluno por nome..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="h-8"/>
                                 </div>
-                              ) : (
-                                <>
-                                  <div className="border-b p-2">
-                                      <Input
-                                      placeholder="Buscar aluno por nome..."
-                                      value={studentSearch}
-                                      onChange={(e) => setStudentSearch(e.target.value)}
-                                      className="h-8"
-                                      />
-                                  </div>
-                                  <CardContent className="p-2">
-                                      <ScrollArea className="h-56">
-                                          {availableStudents.length > 0 ? availableStudents.map(s => (
-                                              <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
-                                                  <div className="flex min-w-0 flex-1 items-center gap-2">
-                                                      <span className="truncate font-medium text-sm">{s.name}</span>
-                                                  </div>
-                                                  <div className="flex items-center">
-                                                      <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
-                                                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStudentToRoute(s.id)}>
-                                                          <PlusCircle className="h-4 w-4 text-green-500" />
-                                                      </Button>
-                                                  </div>
-                                              </div>
-                                          )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para esta escola, turno ou busca.</p>}
-                                      </ScrollArea>
-                                  </CardContent>
-                                </>
-                              )}
-                          </Card>
-                      </TabsContent>
-                  </Tabs>
-              </div>
-            </div>
-          </ScrollArea>
-          <DialogFooter className="pt-4">
-            <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-            <Button type="button" onClick={handleSubmit} disabled={isCapacityExceeded}>Salvar</Button>
-          </DialogFooter>
+                                <CardContent className="p-2">
+                                    <ScrollArea className="h-56">
+                                        {availableStudents.length > 0 ? (
+                                            Object.entries(
+                                                availableStudents.reduce((acc, student) => {
+                                                    const schoolName = schoolsMap.get(student.schoolId)?.name || 'Outra';
+                                                    if (!acc[schoolName]) acc[schoolName] = [];
+                                                    acc[schoolName].push(student);
+                                                    return acc;
+                                                }, {} as Record<string, Student[]>)
+                                            ).map(([schoolName, students]) => (
+                                                <div key={schoolName}>
+                                                    <h4 className="font-semibold text-sm text-muted-foreground px-2 py-1.5">{schoolName}</h4>
+                                                    {students.map(s => (
+                                                         <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
+                                                            <div className="flex min-w-0 flex-1 items-center gap-2">
+                                                                <span className="truncate font-medium text-sm">{s.name}</span>
+                                                            </div>
+                                                            <div className="flex items-center">
+                                                                <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
+                                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
+                                                                    <PlusCircle className="h-4 w-4 text-green-500" />
+                                                                </Button>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            ))
+                                        ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para as escolas/turno selecionados ou para a busca.</p>}
+                                    </ScrollArea>
+                                </CardContent>
+                            </>
+                        )}
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </div>
+
+        {/* Coluna da Direita: Itinerário */}
+        <div className="space-y-4">
+             <Label>Itinerário da Rota ({stops.length} paradas)</Label>
+            <p className="text-sm text-muted-foreground">Arraste para reordenar as paradas, incluindo o desembarque nas escolas.</p>
+            {isCapacityExceeded && (
+                <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
+                    <AlertCircle className="h-4 w-4" />
+                    Capacidade de {vehicleCapacity} alunos excedida!
+                </div>
+            )}
+             {missingRouteWarning && (
+                <Alert className="my-2">
+                    <Info className="h-4 w-4" />
+                    <AlertDescription>{missingRouteWarning}</AlertDescription>
+                </Alert>
+            )}
+
+            <Tabs defaultValue="itinerary">
+                <TabsList className="grid w-full grid-cols-2">
+                    <TabsTrigger value="itinerary">Itinerário</TabsTrigger>
+                    <TabsTrigger value="addSchoolStop">Parada Escola</TabsTrigger>
+                </TabsList>
+                <TabsContent value="itinerary">
+                     <Card>
+                        <CardContent className="p-2">
+                             <ScrollArea className="h-[28rem]">
+                                {stops.length > 0 ? stops.map((stop, index) => (
+                                    <div key={`${stop.id}-${index}`} className="flex items-center justify-between rounded-md p-1 hover:bg-accent/50 group">
+                                        <div className="flex min-w-0 flex-1 items-center gap-2">
+                                            <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                            {stop.type === 'student' ? <Users className="h-4 w-4 text-muted-foreground"/> : <School className="h-4 w-4 text-muted-foreground"/>}
+                                            <div>
+                                                <p className="truncate font-medium text-sm">{stop.name}</p>
+                                                {stop.details && <p className="truncate text-xs text-muted-foreground">{stop.details}</p>}
+                                            </div>
+                                        </div>
+                                        <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}><ArrowUp className="h-4 w-4" /></Button>
+                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
+                                            <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}><X className="h-4 w-4 text-destructive" /></Button>
+                                        </div>
+                                    </div>
+                                )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
+                            </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+                <TabsContent value="addSchoolStop">
+                    <Card>
+                        <CardContent className="p-2">
+                            <ScrollArea className="h-[28rem]">
+                               {selectedSchoolIds.map(schoolId => (
+                                   <div key={schoolId} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
+                                       <p className="font-medium text-sm">{schoolsMap.get(schoolId)?.name}</p>
+                                       <Button type="button" variant="outline" size="sm" onClick={() => handleAddSchoolToRoute(schoolId)}>
+                                           <PlusCircle className="mr-2 h-4 w-4"/> Adicionar Parada
+                                       </Button>
+                                   </div>
+                               ))}
+                                {selectedSchoolIds.length === 0 && <p className="p-8 text-center text-sm text-muted-foreground">Selecione uma ou mais escolas para poder adicioná-las como paradas.</p>}
+                           </ScrollArea>
+                        </CardContent>
+                    </Card>
+                </TabsContent>
+            </Tabs>
+        </div>
       </div>
+      <DialogFooter className="pt-4 mt-4 border-t">
+        <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
+        <Button type="button" onClick={handleSubmit} disabled={isCapacityExceeded}>Salvar Rota</Button>
+      </DialogFooter>
 
        <AlertDialog open={isMissingStudentAlertOpen} onOpenChange={setIsMissingStudentAlertOpen}>
             <AlertDialogContent>
@@ -452,3 +533,5 @@ export function RouteForm({
     </DialogContent>
   )
 }
+
+    

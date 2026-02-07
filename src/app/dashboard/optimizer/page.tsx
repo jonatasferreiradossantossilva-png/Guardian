@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, User, Bot, School, Navigation, Siren, Home, MapPin, ListTree, LocateFixed } from "lucide-react";
+import { Sparkles, Loader2, Clock, Route as RouteIcon, Users, User, Bot, School, Navigation, Siren, Home, MapPin, ListTree, LocateFixed, AlertTriangle } from "lucide-react";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { optimizeSchoolVanRoute, OptimizeSchoolVanRouteOutput } from "@/ai/flows/optimizeSchoolVanRoute";
 import { useToast } from "@/hooks/use-toast";
@@ -93,6 +93,26 @@ export default function OptimizerPage() {
         if (!selectedRouteId || !routes) return null;
         return routes.find(r => r.id === selectedRouteId);
     }, [selectedRouteId, routes]);
+    
+    const { isMultiSchoolRoute, routeStops } = useMemo(() => {
+        if (!selectedRoute || !studentsMap.size || !schoolsMap.size) return { isMultiSchoolRoute: false, routeStops: [] };
+
+        const stops = (selectedRoute.studentIds || [])
+            .map(stopId => {
+                const [type, id] = stopId.split('-');
+                if (type === 'student') return studentsMap.get(id);
+                if (type === 'school') return schoolsMap.get(id);
+                return null;
+            })
+            .filter(Boolean);
+
+        const schoolIds = new Set(stops.filter(s => s && 'cnpj' in s).map(s => s.id));
+        return {
+            isMultiSchoolRoute: schoolIds.size > 1,
+            routeStops: stops
+        };
+    }, [selectedRoute, studentsMap, schoolsMap]);
+
 
     const driverForRoute = useMemo(() => {
         if (!selectedRoute || !drivers) return null;
@@ -106,7 +126,10 @@ export default function OptimizerPage() {
 
     const studentsInRoute = useMemo(() => {
         if (!selectedRoute) return [];
-        return selectedRoute.studentIds.map(id => studentsMap.get(id)).filter(Boolean);
+        return (selectedRoute.studentIds || [])
+            .filter(id => id.startsWith('student-'))
+            .map(id => studentsMap.get(id.split('-')[1]))
+            .filter(Boolean);
     }, [selectedRoute, studentsMap]);
 
     const schoolForRoute = useMemo(() => {
@@ -123,7 +146,7 @@ export default function OptimizerPage() {
 
 
     const handleOptimize = useCallback(async () => {
-        if (!selectedRoute || studentsInRoute.length === 0 || !schoolForRoute) {
+        if (!selectedRoute || studentsInRoute.length === 0 || !schoolForRoute || isMultiSchoolRoute) {
             return;
         }
         
@@ -165,7 +188,7 @@ export default function OptimizerPage() {
         } finally {
             setIsLoading(false);
         }
-    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast, incidents, vehicleForRoute, driverForRoute, startFromDriverHome]);
+    }, [selectedRoute, studentsInRoute, schoolForRoute, context, toast, incidents, vehicleForRoute, driverForRoute, startFromDriverHome, isMultiSchoolRoute]);
     
     // This effect is specifically for the 'autoOptimize=true' parameter from the routes page
     useEffect(() => {
@@ -195,13 +218,21 @@ export default function OptimizerPage() {
         if (selectedRouteId) {
             handleOptimize();
         }
-    }, [selectedRouteId, context, startFromDriverHome]); 
+    }, [selectedRouteId, context, startFromDriverHome, handleOptimize]); 
 
 
     const handleSaveChanges = () => {
         if (!selectedRouteId || !optimizationResult) return;
+        
+        // Mantém as paradas de escola na ordem original, substituindo apenas a ordem dos alunos
+        const newStudentOrder = new Set(optimizationResult.optimizedStudentIds);
+        const oldSchoolStops = (selectedRoute?.studentIds || []).filter(id => id.startsWith('school-'));
+        const newStops = optimizationResult.optimizedStudentIds.map(id => `student-${id}`);
+
+        // This logic is too simple for multi-school and needs to be revisited. For now, it only saves students.
+        // A more complex logic would be needed to interleave school stops correctly.
         updateDoc('routes', selectedRouteId, { 
-            studentIds: optimizationResult.optimizedStudentIds,
+            studentIds: newStops,
             turnByTurnDirections: optimizationResult.turnByTurnDirections,
             lastOptimizedAt: new Date().toISOString()
         });
@@ -276,6 +307,12 @@ export default function OptimizerPage() {
                                             </div>
                                         )}
                                     </div>
+                                     {isMultiSchoolRoute && (
+                                        <div className="mt-3 text-sm text-destructive-foreground p-3 bg-destructive/90 rounded-md border border-destructive">
+                                            <p className="font-bold flex items-center gap-1.5"><AlertTriangle size={16}/> Otimizador Indisponível</p>
+                                            <p className="text-xs mt-1">A otimização por IA ainda não suporta rotas que atendem a múltiplas escolas.</p>
+                                        </div>
+                                    )}
                                 </CardContent>
                             </Card>
                         </div>
@@ -373,7 +410,10 @@ export default function OptimizerPage() {
                                         )}
                                         {!isLoading && !optimizationResult && (
                                             <div className="text-center p-8 border-dashed border-2 rounded-lg text-muted-foreground">
-                                                <p>O resultado da otimização aparecerá aqui.</p>
+                                                {isMultiSchoolRoute 
+                                                    ? <p>Otimizador indisponível para esta rota.</p> 
+                                                    : <p>O resultado da otimização aparecerá aqui.</p>
+                                                }
                                             </div>
                                         )}
                                     </div>
@@ -545,5 +585,8 @@ function RouteMap({ originalRoute, optimizedRoute, school, driver, recenterTrigg
     
 
     
+
+    
+
 
     

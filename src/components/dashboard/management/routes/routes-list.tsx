@@ -132,6 +132,10 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     setIsFormOpen(false);
     setSelectedRoute(null);
   }, []);
+  
+  const getStudentCount = (studentIds: string[] = []) => {
+      return studentIds.filter(id => id.startsWith('student-')).length;
+  }
 
   return (
     <div>
@@ -194,7 +198,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                       <TableCell className="font-medium">{route.name}</TableCell>
                       <TableCell>{driversMap.get(route.driverId) || 'N/A'}</TableCell>
                       <TableCell>{monitorsMap.get(route.monitorId) || 'N/A'}</TableCell>
-                      <TableCell>{route.studentIds?.length || 0}</TableCell>
+                      <TableCell>{getStudentCount(route.studentIds)}</TableCell>
                       <TableCell>
                           {route.lastOptimizedAt ? (
                               <span className="text-sm text-muted-foreground">
@@ -292,7 +296,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                                 </div>
                             </div>
                             <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline"><Users className="mr-1.5 h-3 w-3" />{route.studentIds?.length || 0} alunos</Badge>
+                                <Badge variant="outline"><Users className="mr-1.5 h-3 w-3" />{getStudentCount(route.studentIds)} alunos</Badge>
                                 <Badge variant="outline"><Car className="mr-1.5 h-3 w-3" />{monitorName ? `Monitor: ${monitorName}` : 'Sem monitor'}</Badge>
                                 {route.lastOptimizedAt ? (
                                     <Badge variant="default" className="border-transparent bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700 hover:bg-green-100/80">
@@ -346,3 +350,5 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
 }
 
   
+
+    
