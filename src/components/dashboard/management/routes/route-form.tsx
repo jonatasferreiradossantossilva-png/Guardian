@@ -36,8 +36,9 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem, DropdownMenuCheckboxItem, DropdownMenuLabel, DropdownMenuSeparator } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 type Driver = { id: string; name: string; vehicleId?: string; };
@@ -398,38 +399,33 @@ export function RouteForm({
             
             <div className="space-y-2">
                 <Label>Escolas Atendidas</Label>
-                <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                        <Button variant="outline" className="w-full justify-start text-left font-normal">
-                            <School className="mr-2 h-4 w-4" />
-                            <span className="truncate">
-                                {selectedSchoolIds.length > 0
-                                ? selectedSchoolIds.map(id => schoolsMap.get(id)?.name).join(', ')
-                                : "Selecione as escolas"}
-                            </span>
-                        </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="w-[var(--radix-dropdown-menu-trigger-width)]">
-                        <DropdownMenuLabel>Selecione as escolas para esta rota</DropdownMenuLabel>
-                        <DropdownMenuSeparator />
-                        {schools.map(school => (
-                            <DropdownMenuCheckboxItem
-                                key={school.id}
-                                checked={selectedSchoolIds.includes(school.id)}
-                                onSelect={(e) => e.preventDefault()}
-                                onCheckedChange={(checked) => {
-                                    setSelectedSchoolIds(prev =>
-                                        checked
-                                            ? [...prev, school.id]
-                                            : prev.filter(id => id !== school.id)
-                                    );
-                                }}
-                            >
-                                {school.name}
-                            </DropdownMenuCheckboxItem>
-                        ))}
-                    </DropdownMenuContent>
-                </DropdownMenu>
+                <div className="space-y-2 rounded-md border p-4 max-h-32 overflow-y-auto">
+                    {schools.length > 0 ? (
+                        schools.map(school => (
+                            <div key={school.id} className="flex items-center space-x-2">
+                                <Checkbox
+                                    id={`school-${school.id}`}
+                                    checked={selectedSchoolIds.includes(school.id)}
+                                    onCheckedChange={(checked) => {
+                                        setSelectedSchoolIds(prev =>
+                                            checked
+                                                ? [...prev, school.id]
+                                                : prev.filter(id => id !== school.id)
+                                        );
+                                    }}
+                                />
+                                <label
+                                    htmlFor={`school-${school.id}`}
+                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                    {school.name}
+                                </label>
+                            </div>
+                        ))
+                    ) : (
+                        <p className="text-sm text-muted-foreground">Nenhuma escola cadastrada.</p>
+                    )}
+                </div>
                  {errors.schoolIds && <p className="text-sm font-medium text-destructive">{errors.schoolIds}</p>}
             </div>
 
@@ -622,4 +618,5 @@ export function RouteForm({
     
 
     
+
 
