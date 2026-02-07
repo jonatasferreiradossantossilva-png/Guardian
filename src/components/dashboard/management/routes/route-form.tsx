@@ -101,21 +101,15 @@ export function RouteForm({
     const initialSchoolIds = new Set<string>();
 
     route?.studentIds?.forEach(stopId => {
-        const isStudent = stopId.startsWith('student-');
-        const isSchool = stopId.startsWith('school-');
+        const student = studentsMap.get(stopId);
+        const school = schoolsMap.get(stopId);
 
-        if (isStudent) {
-            const student = studentsMap.get(stopId);
-            if (student) {
-                initialStops.push({ id: stopId, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name });
-                initialSchoolIds.add(student.schoolId);
-            }
-        } else if (isSchool) {
-            const school = schoolsMap.get(stopId);
-            if (school) {
-                initialStops.push({ id: stopId, type: 'school', name: school.name, details: 'Ponto de desembarque' });
-                initialSchoolIds.add(stopId);
-            }
+        if (student) {
+            initialStops.push({ id: stopId, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name });
+            initialSchoolIds.add(student.schoolId);
+        } else if (school) {
+            initialStops.push({ id: stopId, type: 'school', name: school.name, details: 'Ponto de desembarque' });
+            initialSchoolIds.add(stopId);
         }
     });
     setStops(initialStops);
@@ -262,7 +256,8 @@ export function RouteForm({
         const studentInput = studentsOnRoute.map(s => ({
             id: s.id,
             name: s.name,
-            address: formatAddress(s)
+            address: formatAddress(s),
+            schoolId: s.schoolId,
         }));
         
         const schoolsInput = schoolsOnRoute.map(s => ({
@@ -281,16 +276,12 @@ export function RouteForm({
         const result = await optimizeSchoolVanRoute(input);
         
         const newOptimizedStops = result.optimizedStops.map(stop => {
-            const isStudent = stop.id.startsWith('student-');
-            const isSchool = stop.id.startsWith('school-');
+            const student = studentsMap.get(stop.id);
+            const school = schoolsMap.get(stop.id);
             
-            if (isStudent) {
-                const student = studentsMap.get(stop.id);
-                if (student) return { id: stop.id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name };
-            } else if (isSchool) {
-                const school = schoolsMap.get(stop.id);
-                if (school) return { id: stop.id, type: 'school', name: school.name, details: 'Ponto de desembarque/embarque' };
-            }
+            if (student) return { id: stop.id, type: 'student', name: student.name, details: schoolsMap.get(student.schoolId)?.name };
+            if (school) return { id: stop.id, type: 'school', name: school.name, details: 'Ponto de desembarque/embarque' };
+            
             return null;
         }).filter(Boolean) as Stop[];
         
