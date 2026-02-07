@@ -158,8 +158,8 @@ export default function PresentationPage() {
                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
                             <Sparkles className="h-8 w-8" />
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold">IA para Planejamento Inteligente</h3>
-                        <p className="mt-2 text-muted-foreground">Nossa IA de planejamento analisa todas as suas paradas para criar a rota mais econômica em tempo e dinheiro durante a fase de planejamento. O gestor define a rota perfeita, e o motorista a executa com precisão.</p>
+                        <h3 className="mt-4 text-xl font-semibold">Planejamento de Rota Eficiente</h3>
+                        <p className="mt-2 text-muted-foreground">Nossa ferramenta de planejamento analisa suas paradas para criar a rota mais econômica em tempo e dinheiro. O gestor define a rota perfeita no painel, e o motorista a executa com precisão.</p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
@@ -205,7 +205,7 @@ export default function PresentationPage() {
                         <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-end items-end text-right">
                              <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary">
                                 <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
-                                <p className="text-sm text-foreground">Plataforma B2B completa com IA, Financeiro e Comunicação. Valor para a empresa e para os pais.</p>
+                                <p className="text-sm text-foreground">Plataforma B2B completa, com roteirização, financeiro e comunicação. Valor para a empresa e para os pais.</p>
                             </div>
                         </div>
                         <div className="row-start-3 col-start-2 p-4 border-r border-dashed border-border flex flex-col justify-start items-start">
@@ -257,7 +257,7 @@ export default function PresentationPage() {
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão Completa</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Rastreamento em Tempo Real</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Comunicação Integrada</li>
-                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Otimizador de Rotas (IA)</li>
+                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Otimizador de Rotas Avançado</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão Financeira</li>
                         </ul>
                     </div>
@@ -269,7 +269,7 @@ export default function PresentationPage() {
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão Completa</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Rastreamento em Tempo Real</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Comunicação Integrada</li>
-                            <li className="flex items-center gap-2 text-muted-foreground"><XCircle className="h-5 w-5"/> Otimizador de Rotas (IA)</li>
+                            <li className="flex items-center gap-2 text-muted-foreground"><XCircle className="h-5 w-5"/> Otimizador de Rotas Avançado</li>
                             <li className="flex items-center gap-2 text-muted-foreground"><XCircle className="h-5 w-5"/> Gestão Financeira</li>
                         </ul>
                     </div>

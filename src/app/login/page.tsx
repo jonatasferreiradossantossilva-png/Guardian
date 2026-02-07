@@ -134,7 +134,7 @@ export default function LandingPage() {
                      <Image src="https://picsum.photos/seed/dashboard-ui/600/400" alt="Painel do Gestor" fill objectFit="cover" data-ai-hint="dashboard analytics" />
                   </div>
                   <div className="space-y-4 pt-4">
-                    <FeatureItem icon={Sparkles} title="Otimizador de Rotas com IA" description="Crie rotas eficientes em segundos. Reduza custos, tempo e o desgaste da sua frota com nossa IA." />
+                    <FeatureItem icon={Sparkles} title="Planejador de Rota Otimizado" description="Crie rotas eficientes em segundos para reduzir custos de combustível e tempo no trânsito." />
                     <FeatureItem icon={DollarSign} title="Gestão Financeira Inteligente" description="Gere faturas mensais, envie lembretes de pagamento e recibos automáticos via WhatsApp, e defina dias de vencimento personalizados por cliente." />
                     <FeatureItem icon={Users} title="Comunicação e Gestão Centralizada" description="Tenha uma visão 360° da sua frota, motoristas, monitores e alunos, com canais de comunicação diretos." />
                   </div>
@@ -194,8 +194,8 @@ export default function LandingPage() {
                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
                             <Sparkles className="h-8 w-8" />
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold">Inteligência Artificial a seu Favor</h3>
-                        <p className="mt-2 text-muted-foreground">Nossa IA analisa as paradas, o trânsito e incidentes para criar a rota mais econômica em tempo e dinheiro, um diferencial que nenhum concorrente oferece de forma integrada.</p>
+                        <h3 className="mt-4 text-xl font-semibold">Planejamento de Rota Avançado</h3>
+                        <p className="mt-2 text-muted-foreground">Nossa ferramenta de planejamento analisa suas paradas para criar a rota mais econômica em tempo e dinheiro, dando ao gestor controle total sobre o percurso mais eficiente.</p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
@@ -233,7 +233,7 @@ export default function LandingPage() {
                 <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-end items-end text-right">
                   <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary">
                       <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
-                      <p className="text-sm text-foreground">Plataforma B2B completa com IA, Financeiro e Comunicação. Valor para a empresa e para os pais.</p>
+                      <p className="text-sm text-foreground">Plataforma B2B completa, com roteirização, financeiro e comunicação. Valor para a empresa e para os pais.</p>
                   </div>
                 </div>
                 <div className="row-start-3 col-start-2 p-4 border-r border-dashed border-border flex flex-col justify-start items-start">
