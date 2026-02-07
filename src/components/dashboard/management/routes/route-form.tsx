@@ -396,7 +396,7 @@ export function RouteForm({
                 </CardHeader>
                 <CardContent className="p-0">
                     {!selectedSchoolIds.length || !shift ? (
-                        <div className="h-64 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
+                        <div className="h-56 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
                             <School className="h-8 w-8 mb-2"/>
                             <p className="font-semibold">Selecione escolas e um turno</p>
                             <p className="text-sm">Escolha as escolas no itinerário e o turno da rota para ver os alunos disponíveis.</p>
@@ -419,8 +419,10 @@ export function RouteForm({
                                                 <div className="flex min-w-0 flex-1 items-center gap-2">
                                                     <div className="min-w-0">
                                                         <p className="truncate font-medium text-sm">{s.name}</p>
-                                                        {[s.serie, s.turma].filter(Boolean).length > 0 && (
-                                                            <p className="text-xs text-muted-foreground truncate">{[s.serie, s.turma].filter(Boolean).join(' - ')}</p>
+                                                        {(s.serie || s.turma) && (
+                                                            <p className="truncate text-xs text-muted-foreground">
+                                                                {[s.serie, s.turma].filter(Boolean).join(' / ')}
+                                                            </p>
                                                         )}
                                                     </div>
                                                 </div>
@@ -470,7 +472,7 @@ export function RouteForm({
                                     <div className="flex min-w-0 flex-1 items-center gap-2">
                                         <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
                                         {stop.type === 'student' ? <Users className="h-4 w-4 text-muted-foreground"/> : <School className="h-4 w-4 text-muted-foreground"/>}
-                                        <div className="min-w-0 flex-1">
+                                        <div className="min-w-0">
                                             <p className="truncate font-medium text-sm">{stop.name}</p>
                                             {(serieTurma || stop.details) && (
                                                 <p className="truncate text-xs text-muted-foreground">
@@ -539,6 +541,7 @@ export function RouteForm({
     
 
     
+
 
 
 
