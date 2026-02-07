@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -93,7 +92,7 @@ export function RouteForm({
   const [studentSearch, setStudentSearch] = useState('');
   const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolIds?: string, shift?: string}>({});
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [wasOptimized, setWasOptimized] = useState(false);
+  const [isOptimized, setIsOptimized] = useState(false);
 
   const prevSchoolIdsRef = useRef<string[]>();
 
@@ -199,6 +198,7 @@ export function RouteForm({
       return;
     }
     setStops((prev) => [...prev, stop]);
+    setIsOptimized(false);
   };
   
   const handleAddSchoolToRoute = (schoolId: string) => {
@@ -234,6 +234,7 @@ export function RouteForm({
         }
     }
     setStops(prev => prev.filter((_, i) => i !== index));
+    setIsOptimized(false);
   }
 
   const handleAddStudentsBySchool = async (schoolId: string) => {
@@ -269,6 +270,7 @@ export function RouteForm({
     }));
 
     const updatedStops = [...stops, ...newStudentStops];
+    setIsOptimized(false);
 
     setIsOptimizing(true);
     try {
@@ -302,7 +304,7 @@ export function RouteForm({
         }).filter(Boolean) as Stop[];
         
         setStops(newOptimizedStops);
-        setWasOptimized(true);
+        setIsOptimized(true);
 
         toast({
             title: "Alunos Adicionados e Rota Otimizada!",
@@ -314,7 +316,7 @@ export function RouteForm({
         setStops(updatedStops);
         toast({
             title: "Erro na Otimização",
-            description: "Os alunos foram adicionados, mas a otimização automática falhou. Otimize manualmente.",
+            description: "Os alunos foram adicionados, mas a otimização automática falhou. Otimize manually.",
             variant: "destructive",
         });
     } finally {
@@ -330,6 +332,13 @@ export function RouteForm({
     }
   
     const currentIds = new Set(selectedSchoolIds);
+    const prevIdSet = new Set(prevIds);
+    const hasChanged = selectedSchoolIds.length !== prevIds.length || prevIds.some(id => !currentIds.has(id));
+
+    if (hasChanged) {
+        setIsOptimized(false);
+    }
+  
     const removedSchoolIds = prevIds.filter(id => !currentIds.has(id));
   
     if (removedSchoolIds.length > 0) {
@@ -387,7 +396,7 @@ export function RouteForm({
             }).filter(Boolean) as Stop[];
             
             setStops(newOptimizedStops);
-            setWasOptimized(true);
+            setIsOptimized(true);
             toast({
               title: "Rota Reotimizada Automaticamente!",
               description: `${studentsRemovedCount} aluno(s) foram removidos e o itinerário foi recalculado. Clique em 'Salvar Rota' para confirmar.`,
@@ -473,7 +482,7 @@ export function RouteForm({
         }).filter(Boolean) as Stop[];
         
         setStops(newOptimizedStops);
-        setWasOptimized(true);
+        setIsOptimized(true);
 
         toast({
             title: "Ordem da rota otimizada!",
@@ -508,7 +517,7 @@ export function RouteForm({
         monitorId: monitorId === 'none' ? '' : monitorId,
         studentIds: stops.map(s => s.id), 
         shift,
-        ...(wasOptimized && { lastOptimizedAt: new Date().toISOString() })
+        ...(isOptimized && { lastOptimizedAt: new Date().toISOString() })
     };
     
     if (route) {
@@ -519,6 +528,16 @@ export function RouteForm({
       toast({ title: 'Rota adicionada!', description: `A rota ${finalData.name} foi adicionada ao sistema.` });
     }
     onFormSubmit();
+  };
+
+  const handleDriverChange = (newDriverId: string) => {
+    setDriverId(newDriverId);
+    setIsOptimized(false);
+  };
+
+  const handleShiftChange = (newShift: 'Manhã' | 'Tarde' | '') => {
+    setShift(newShift);
+    setIsOptimized(false);
   };
   
   return (
@@ -541,7 +560,7 @@ export function RouteForm({
             <div className="grid grid-cols-2 gap-4">
                  <div className="space-y-2">
                     <Label htmlFor="shiftId">Turno da Rota</Label>
-                    <Select onValueChange={(v) => setShift(v as 'Manhã' | 'Tarde')} value={shift}>
+                    <Select onValueChange={(v) => handleShiftChange(v as 'Manhã' | 'Tarde')} value={shift}>
                         <SelectTrigger id="shiftId"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                         <SelectContent>
                             <SelectItem value="Manhã">Manhã</SelectItem>
@@ -552,7 +571,7 @@ export function RouteForm({
                 </div>
                 <div className="space-y-2">
                     <Label htmlFor="driverId">Motorista</Label>
-                    <Select onValueChange={setDriverId} value={driverId}>
+                    <Select onValueChange={handleDriverChange} value={driverId}>
                         <SelectTrigger id="driverId"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                         <SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent>
                     </Select>
@@ -681,7 +700,7 @@ export function RouteForm({
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <Label>Itinerário da Rota ({stops.length} paradas)</Label>
-                <Button type="button" size="sm" variant="outline" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2}>
+                <Button type="button" size="sm" variant="outline" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized}>
                     {isOptimizing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
                     Otimizar Ordem
                 </Button>
@@ -767,3 +786,5 @@ export function RouteForm({
     </DialogContent>
   )
 }
+
+    
