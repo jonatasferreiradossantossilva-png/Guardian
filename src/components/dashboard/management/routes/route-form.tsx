@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -428,10 +427,12 @@ export function RouteForm({
                                         {students.map(s => (
                                             <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="truncate font-medium text-sm">{s.name}</p>
-                                                    <p className="truncate text-xs text-muted-foreground">
-                                                        {[s.serie, s.turma].filter(Boolean).join(' / ')}
-                                                    </p>
+                                                    <div className="flex items-baseline gap-1.5">
+                                                        <p className="truncate font-medium text-sm">{s.name}</p>
+                                                        {[s.serie, s.turma].filter(Boolean).length > 0 && (
+                                                            <p className="truncate text-xs text-muted-foreground">({[s.serie, s.turma].filter(Boolean).join(' / ')})</p>
+                                                        )}
+                                                    </div>
                                                 </div>
                                                 <div className="flex items-center">
                                                     <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
@@ -480,10 +481,13 @@ export function RouteForm({
                                         <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
                                         {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
                                         <div className="flex-1 min-w-0">
-                                            <p className="truncate font-medium text-sm">{stop.name}</p>
-                                            {(serieTurma || stop.details) && (
+                                            <div className="flex items-baseline gap-1.5">
+                                                <p className="truncate font-medium text-sm">{stop.name}</p>
+                                                {serieTurma && <p className="truncate text-xs text-muted-foreground">({serieTurma})</p>}
+                                            </div>
+                                            {stop.details && (
                                                 <p className="truncate text-xs text-muted-foreground">
-                                                    {serieTurma ? `${serieTurma} • ${stop.details}` : stop.details}
+                                                    {stop.type === 'student' ? stop.details : stop.details}
                                                 </p>
                                             )}
                                         </div>
@@ -565,3 +569,6 @@ export function RouteForm({
 
 
 
+
+
+    
