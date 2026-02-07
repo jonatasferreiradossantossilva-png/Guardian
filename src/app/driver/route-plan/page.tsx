@@ -13,6 +13,8 @@
 
 
 
+
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -413,6 +415,11 @@ export default function DriverRoutePlanPage() {
   const [optimizationSuggestion, setOptimizationSuggestion] = useState<OptimizeSchoolVanRouteOutput | null>(null);
   const isOnline = useOnlineStatus();
 
+  // State for school selection dialog
+  const [isSchoolSelectorOpen, setIsSchoolSelectorOpen] = useState(false);
+  const [schoolsForSelection, setSchoolsForSelection] = useState<SchoolData[]>([]);
+  const [selectedStartSchoolId, setSelectedStartSchoolId] = useState<string>('');
+
 
   useEffect(() => {
     // In a real app, you'd get this from your auth state.
@@ -509,6 +516,12 @@ export default function DriverRoutePlanPage() {
     });
     return details;
   }, [routes, allStudents, schools]);
+  
+  const schoolsInSelectedRoute = useMemo(() => {
+    if (!route || !allStudents || !schools) return [];
+    const schoolIdsInRoute = new Set(allStudents.filter(s => route.studentIds.includes(s.id)).map(s => s.schoolId));
+    return schools.filter(s => schoolIdsInRoute.has(s.id));
+}, [route, allStudents, schools]);
 
 
   const orderedStops = useMemo<Stop[]>(() => {
@@ -578,10 +591,10 @@ export default function DriverRoutePlanPage() {
         description: `${student?.name || 'O aluno'} foi marcado(a) como ${statusText[newStatus]}.`,
     });
 
-    if (newStatus === 'ausente' && driverProfile?.status === 'em_rota') {
+    if (newStatus === 'ausente' && driverProfile?.status === 'em_rota' && direction === 'ida') {
         setShowRecalculatePrompt(true);
     }
-  }, [updateDoc, orderedStops, toast, driverProfile?.status]);
+  }, [updateDoc, orderedStops, toast, driverProfile?.status, direction]);
   
   const handleDropOff = useCallback((schoolId: string) => {
     const studentsToDropOff = orderedStops
@@ -600,59 +613,101 @@ export default function DriverRoutePlanPage() {
     toast({ title: "Alunos desembarcados!", description: `${studentsToDropOff.length} alunos foram marcados como desembarcados.` });
 }, [orderedStops, updateDoc, toast]);
 
+    const handleStartRoute = useCallback(async (finalStops: Stop[]) => {
+        if (!driverId || !route) return;
 
-  const handleStartRoute = useCallback(async () => {
-    if (!driverId || !route) return;
-    
-    sessionStorage.setItem('activeRouteId', route.id);
-    setActiveRouteId(route.id);
-
-    const studentsOnThisRoute = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
-
-    studentsOnThisRoute.forEach(student => {
-        if (student.status !== 'ausente') {
-            updateDoc('students', student.id, { status: 'aguardando' });
+        const finalStopIds = finalStops.map(s => s.id);
+        
+        if (JSON.stringify(finalStopIds) !== JSON.stringify(route.studentIds)) {
+            updateDoc('routes', route.id, { studentIds: finalStopIds });
         }
-    });
-   
-    updateDoc('drivers', driverId, { status: 'em_rota' });
-    toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
+        
+        sessionStorage.setItem('activeRouteId', route.id);
+        setActiveRouteId(route.id);
 
-    if (isOnline && direction === 'ida') {
-      toast({ description: "✨ Otimizando... Buscando um caminho mais rápido para hoje." });
-      
-      try {
-        const studentsOnRoute = orderedStops.filter(s => s.type === 'student').map(s => s.data as Student);
-        const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
-            .map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
-        const driver = drivers[0];
+        const studentsOnThisRoute = finalStops.filter(s => s.type === 'student').map(s => s.data as Student);
 
-        if (studentsOnRoute.length > 0 && schoolsOnRoute.length > 0 && driver) {
-            const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
-            
-            const input = {
-                students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
-                schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-                startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
-                optimizationMode: 'flexible' as 'flexible',
-                direction: selectedDirection,
-            };
-            const result = await optimizeSchoolVanRoute(input);
-            const currentStopIds = orderedStops.map(s => s.id).join(',');
-            const newStopIds = result.optimizedStops.map(s => s.id).join(',');
-
-            if (newStopIds !== currentStopIds) {
-                setOptimizationSuggestion(result);
+        studentsOnThisRoute.forEach(student => {
+            if (student.status !== 'ausente') {
+                updateDoc('students', student.id, { status: 'aguardando' });
             }
+        });
+    
+        updateDoc('drivers', driverId, { status: 'em_rota' });
+        toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
+
+        if (isOnline && direction === 'ida') {
+        toast({ description: "✨ Otimizando... Buscando um caminho mais rápido para hoje." });
+        
+        try {
+            const studentsOnRoute = finalStops.filter(s => s.type === 'student').map(s => s.data as Student);
+            const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
+                .map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
+            const driver = drivers[0];
+
+            if (studentsOnRoute.length > 0 && schoolsOnRoute.length > 0 && driver) {
+                const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
+                
+                const input = {
+                    students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
+                    schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+                    startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
+                    optimizationMode: 'flexible' as 'flexible',
+                    direction: selectedDirection,
+                };
+                const result = await optimizeSchoolVanRoute(input);
+                const currentStopIds = finalStops.map(s => s.id).join(',');
+                const newStopIds = result.optimizedStops.map(s => s.id).join(',');
+
+                if (newStopIds !== currentStopIds) {
+                    setOptimizationSuggestion(result);
+                }
+            }
+        } catch (error) {
+            console.error("Optional real-time optimization failed:", error);
         }
-      } catch (error) {
-        console.error("Optional real-time optimization failed:", error);
-        // Fail silently. The driver is already on their way with the safe route.
-      }
-    }
+        }
+    }, [driverId, route, updateDoc, toast, isOnline, direction, selectedDirection, drivers, schoolsMap]);
 
+    const handleInitiateStart = () => {
+        if (!route) return;
 
-  }, [driverId, route, direction, selectedDirection, orderedStops, updateDoc, toast, isOnline, drivers, schoolsMap]);
+        if (direction === 'volta' && schoolsInSelectedRoute.length > 1) {
+            setSchoolsForSelection(schoolsInSelectedRoute);
+            setSelectedStartSchoolId(schoolsInSelectedRoute[0]?.id || '');
+            setIsSchoolSelectorOpen(true);
+        } else {
+            let stopsToUse = orderedStops;
+            if (direction === 'volta') {
+                const schoolStops = stopsToUse.filter(s => s.type === 'school');
+                const studentStops = stopsToUse.filter(s => s.type === 'student');
+                stopsToUse = [...schoolStops, ...studentStops];
+            }
+            handleStartRoute(stopsToUse);
+        }
+    };
+    
+    const handleConfirmSchoolAndStart = () => {
+        if (!selectedStartSchoolId || !route) return;
+
+        const allStudentStops = orderedStops.filter(s => s.type === 'student');
+        const allSchoolData = schoolsInSelectedRoute;
+        
+        const selectedSchool = allSchoolData.find(s => s.id === selectedStartSchoolId);
+        const otherSchools = allSchoolData.filter(s => s.id !== selectedStartSchoolId);
+
+        if (!selectedSchool) return;
+
+        const reorderedStops: Stop[] = [
+            { id: selectedSchool.id, type: 'school', data: selectedSchool },
+            ...otherSchools.map(s => ({ id: s.id, type: 'school', data: s } as Stop)),
+            ...allStudentStops
+        ];
+        
+        handleStartRoute(reorderedStops);
+        setIsSchoolSelectorOpen(false);
+    };
+
   
   const handleAcceptOptimization = () => {
     if (!optimizationSuggestion || !route) return;
@@ -840,71 +895,100 @@ export default function DriverRoutePlanPage() {
   
   if (driverProfile.status === 'inativo') {
     return (
-      <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6">
-        {!isOnline && (
-            <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2 rounded-md absolute top-4">
-                <WifiOff className="h-4 w-4" />
-                Você está offline. Conecte-se para iniciar uma rota.
-            </div>
-        )}
-        <Card className="w-full max-w-sm text-center">
-          <CardHeader>
-            <CardTitle>Pronto para Começar?</CardTitle>
-            <CardDescription>Selecione a viagem que você irá realizar.</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2 text-left">
-                <Label>Selecione a Rota</Label>
-                <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Escolha uma rota..."/>
-                    </SelectTrigger>
-                    <SelectContent>
-                        {Array.from(routeDetailsMap.values()).map(r => (
-                            <SelectItem key={r.id} value={r.id}>{r.name} ({r.schoolName})</SelectItem>
-                        ))}
-                    </SelectContent>
-                </Select>
-            </div>
-            
-            <div className="grid grid-cols-2 gap-4 pt-4">
-                <div>
-                    <Label className="text-base">Turno</Label>
-                    <RadioGroup value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)} className="space-y-2 pt-2">
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Manhã" id="manha" />
-                            <Label htmlFor="manha" className="font-normal">Manhã</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="Tarde" id="tarde" />
-                            <Label htmlFor="tarde" className="font-normal">Tarde</Label>
-                        </div>
-                    </RadioGroup>
-                </div>
-                <div>
-                    <Label className="text-base">Viagem</Label>
-                    <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as 'ida' | 'volta')} className="space-y-2 pt-2">
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="ida" id="ida" />
-                            <Label htmlFor="ida" className="font-normal">Ida para Escola</Label>
-                        </div>
-                        <div className="flex items-center space-x-2">
-                            <RadioGroupItem value="volta" id="volta" />
-                            <Label htmlFor="volta" className="font-normal">Volta para Casa</Label>
-                        </div>
-                    </RadioGroup>
-                </div>
-            </div>
-          </CardContent>
-          <CardFooter>
-             <Button size="lg" className="w-full" onClick={handleStartRoute} disabled={!selectedRouteIdForStart || !isOnline}>
-                <Play className="mr-2 h-5 w-5"/>
-                Iniciar Viagem
-            </Button>
-          </CardFooter>
-        </Card>
-         <Button asChild variant="ghost"><Link href="/">Voltar ao Login</Link></Button>
-      </div>
+      <>
+        <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6">
+          {!isOnline && (
+              <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2 rounded-md absolute top-4">
+                  <WifiOff className="h-4 w-4" />
+                  Você está offline. Conecte-se para iniciar uma rota.
+              </div>
+          )}
+          <Card className="w-full max-w-sm text-center">
+            <CardHeader>
+              <CardTitle>Pronto para Começar?</CardTitle>
+              <CardDescription>Selecione a viagem que você irá realizar.</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2 text-left">
+                  <Label>Selecione a Rota</Label>
+                  <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
+                      <SelectTrigger>
+                          <SelectValue placeholder="Escolha uma rota..."/>
+                      </SelectTrigger>
+                      <SelectContent>
+                          {Array.from(routeDetailsMap.values()).map(r => (
+                              <SelectItem key={r.id} value={r.id}>{r.name} ({r.schoolName})</SelectItem>
+                          ))}
+                      </SelectContent>
+                  </Select>
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4 pt-4">
+                  <div>
+                      <Label className="text-base">Turno</Label>
+                      <RadioGroup value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)} className="space-y-2 pt-2">
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Manhã" id="manha" />
+                              <Label htmlFor="manha" className="font-normal">Manhã</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="Tarde" id="tarde" />
+                              <Label htmlFor="tarde" className="font-normal">Tarde</Label>
+                          </div>
+                      </RadioGroup>
+                  </div>
+                  <div>
+                      <Label className="text-base">Viagem</Label>
+                      <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as 'ida' | 'volta')} className="space-y-2 pt-2">
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="ida" id="ida" />
+                              <Label htmlFor="ida" className="font-normal">Ida para Escola</Label>
+                          </div>
+                          <div className="flex items-center space-x-2">
+                              <RadioGroupItem value="volta" id="volta" />
+                              <Label htmlFor="volta" className="font-normal">Volta para Casa</Label>
+                          </div>
+                      </RadioGroup>
+                  </div>
+              </div>
+            </CardContent>
+            <CardFooter>
+               <Button size="lg" className="w-full" onClick={handleInitiateStart} disabled={!selectedRouteIdForStart || !isOnline}>
+                  <Play className="mr-2 h-5 w-5"/>
+                  Iniciar Viagem
+              </Button>
+            </CardFooter>
+          </Card>
+           <Button asChild variant="ghost"><Link href="/">Voltar ao Login</Link></Button>
+        </div>
+
+        <AlertDialog open={isSchoolSelectorOpen} onOpenChange={setIsSchoolSelectorOpen}>
+          <AlertDialogContent>
+              <AlertDialogHeader>
+                  <AlertDialogTitle>Por onde você vai começar?</AlertDialogTitle>
+                  <AlertDialogDescription>
+                      Selecione a escola que será seu primeiro ponto de embarque para a viagem de volta.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="py-4">
+                  <RadioGroup value={selectedStartSchoolId} onValueChange={setSelectedStartSchoolId} className="space-y-2">
+                      {schoolsForSelection.map(school => (
+                          <div key={school.id} className="flex items-center space-x-3 p-3 rounded-md border has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-secondary">
+                              <RadioGroupItem value={school.id} id={`school-select-${school.id}`} />
+                              <Label htmlFor={`school-select-${school.id}`} className="font-normal text-base cursor-pointer">{school.name}</Label>
+                          </div>
+                      ))}
+                  </RadioGroup>
+              </div>
+              <AlertDialogFooter>
+                  <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                  <AlertDialogAction onClick={handleConfirmSchoolAndStart}>
+                      Confirmar e Iniciar
+                  </AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+      </>
     );
   }
   
@@ -1110,4 +1194,5 @@ export default function DriverRoutePlanPage() {
 }
 
     
+
 
