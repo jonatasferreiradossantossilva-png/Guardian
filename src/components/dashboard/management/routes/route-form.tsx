@@ -24,7 +24,7 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School, Info } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -417,7 +417,7 @@ export function RouteForm({
                                         {students.map(s => (
                                             <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                 <div className="flex min-w-0 flex-1 items-center gap-2">
-                                                    <div>
+                                                    <div className="min-w-0">
                                                         <p className="truncate font-medium text-sm">{s.name}</p>
                                                         {[s.serie, s.turma].filter(Boolean).length > 0 && (
                                                             <p className="text-xs text-muted-foreground truncate">{[s.serie, s.turma].filter(Boolean).join(' - ')}</p>
@@ -426,7 +426,7 @@ export function RouteForm({
                                                 </div>
                                                 <div className="flex items-center">
                                                     <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
+                                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name})}>
                                                         <PlusCircle className="h-4 w-4 text-green-500" />
                                                     </Button>
                                                 </div>
@@ -463,14 +463,14 @@ export function RouteForm({
                     <ScrollArea className="h-[28rem]">
                         {stops.length > 0 ? stops.map((stop, index) => {
                             const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
-                            const serieTurma = student ? [student.serie, student.turma].filter(Boolean).join(' - ') : null;
+                            const serieTurma = student ? [student.serie, student.turma].filter(Boolean).join(' / ') : null;
 
                             return (
-                                <div key={`${stop.id}-${index}`} className="flex items-center justify-between rounded-md p-1 hover:bg-accent/50 group">
+                                <div key={`${stop.id}-${index}`} className="flex items-center justify-between rounded-md p-1 hover:bg-accent/50">
                                     <div className="flex min-w-0 flex-1 items-center gap-2">
                                         <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
                                         {stop.type === 'student' ? <Users className="h-4 w-4 text-muted-foreground"/> : <School className="h-4 w-4 text-muted-foreground"/>}
-                                        <div>
+                                        <div className="min-w-0 flex-1">
                                             <p className="truncate font-medium text-sm">{stop.name}</p>
                                             {(serieTurma || stop.details) && (
                                                 <p className="truncate text-xs text-muted-foreground">
@@ -479,7 +479,7 @@ export function RouteForm({
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <div className="flex items-center">
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}><ArrowUp className="h-4 w-4" /></Button>
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}><X className="h-4 w-4 text-destructive" /></Button>
@@ -539,6 +539,7 @@ export function RouteForm({
     
 
     
+
 
 
 
