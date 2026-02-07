@@ -23,9 +23,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School, Info, Trash2 } from 'lucide-react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School, Info } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -46,7 +45,7 @@ type Driver = { id: string; name: string; vehicleId?: string; };
 type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
-type School = { id: string; name: string; };
+type SchoolData = { id: string; name: string; }; // Renamed from School to avoid conflict
 type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; };
 type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string };
 
@@ -58,7 +57,7 @@ interface RouteFormProps {
   students: Student[];
   monitors: Monitor[];
   vehicles: Vehicle[];
-  schools: School[];
+  schools: SchoolData[];
   onFormSubmit: () => void;
 }
 
@@ -525,4 +524,5 @@ export function RouteForm({
     
 
     
+
 
