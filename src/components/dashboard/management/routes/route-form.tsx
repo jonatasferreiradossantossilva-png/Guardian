@@ -486,7 +486,7 @@ export function RouteForm({
                     {stops.length > 0 ? (
                         <div className="space-y-1">
                            {stops.map((stop, index) => (
-                                <div key={index} className="grid grid-cols-[auto_1fr_auto] items-start w-full bg-background rounded-md p-2 hover:bg-accent/50">
+                                <div key={index} className="grid grid-cols-[auto_1fr_auto] items-center w-full bg-background rounded-md p-2 hover:bg-accent/50">
                                     {/* Column 1: Number */}
                                     <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground pt-2">{index + 1}</span>
 
