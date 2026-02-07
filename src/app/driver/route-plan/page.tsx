@@ -475,7 +475,7 @@ function BoardingChecklist({
                     </Button>
                     <div className="space-y-2 max-h-[50vh] overflow-y-auto p-1">
                         {students.map(student => (
-                            <StudentChecklistRow key={student.id} student={student} onStatusChange={onStatusChange} />
+                            <StudentChecklistRow key={student.id} student={student} student={student} onStatusChange={onStatusChange} />
                         ))}
                     </div>
                 </CardContent>
@@ -730,9 +730,10 @@ export default function DriverRoutePlanPage() {
     toast({ title: "Alunos desembarcados!", description: `${studentsToDropOff.length} alunos foram marcados como desembarcados.` });
 }, [orderedStops, updateDoc, toast]);
 
-    const handleStartRoute = useCallback(async (finalStops: Stop[]) => {
+    const handleStartRoute = useCallback((finalStops: Stop[]) => {
         if (!driverId || !route) return;
 
+        // This part is synchronous and updates the UI immediately
         const finalStopIds = finalStops.map(s => s.id);
         
         if (JSON.stringify(finalStopIds) !== JSON.stringify(route.studentIds)) {
@@ -749,15 +750,20 @@ export default function DriverRoutePlanPage() {
                 updateDoc('students', student.id, { status: 'aguardando' });
             }
         });
-    
+
         updateDoc('drivers', driverId, { status: 'em_rota' });
         toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
 
-        if (isOnline && direction === 'ida') {
-            toast({ description: "✨ Otimizando... Buscando um caminho mais rápido para hoje." });
-            
+        // This function will run asynchronously in the background
+        const triggerBackgroundOptimization = async () => {
+            if (!isOnline || direction !== 'ida' || !route) return;
+
+            toast({ description: "✨ Verificando rota... Buscando um caminho mais rápido para hoje." });
+
             try {
                 const studentsOnRoute = finalStops.filter(s => s.type === 'student').map(s => s.data as Student);
+                if (studentsOnRoute.length < 2) return; // No need to optimize for 1 or 0 students
+
                 const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
                     .map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
                 const driver = drivers[0];
@@ -776,15 +782,19 @@ export default function DriverRoutePlanPage() {
                     const currentStopIds = finalStops.map(s => s.id).join(',');
                     const newStopIds = result.optimizedStops.map(s => s.id).join(',');
 
-                    if (newStopIds !== currentStopIds) {
+                    if (newStopIds && newStopIds !== currentStopIds) {
                         setOptimizationSuggestion(result);
                     }
                 }
             } catch (error) {
                 console.error("Optional real-time optimization failed:", error);
+                // Silent fail is better here not to confuse the user with an error for a background task.
             }
-        }
-    }, [driverId, route, updateDoc, toast, isOnline, direction, selectedDirection, drivers, schoolsMap]);
+        };
+
+        // Fire and forget
+        triggerBackgroundOptimization();
+    }, [driverId, route, updateDoc, toast, isOnline, direction, selectedDirection, drivers, schoolsMap, setOptimizationSuggestion]);
 
     const handleInitiateStart = () => {
         if (!route) return;
@@ -1445,3 +1455,4 @@ export default function DriverRoutePlanPage() {
     
 
     
+
