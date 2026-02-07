@@ -396,16 +396,22 @@ export function RouteForm({
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     
-    const finalData = {
+    const finalData: Partial<Route> & { name: string; driverId: string; shift: 'Manhã' | 'Tarde' } = {
         name,
         driverId,
         monitorId: monitorId === 'none' ? '' : monitorId,
         studentIds: stops.map(s => s.id), 
         shift,
-        ...(isOptimized && { lastOptimizedAt: new Date().toISOString() })
     };
     
+    if (isOptimized) {
+        finalData.lastOptimizedAt = new Date().toISOString();
+    }
+    
     if (route) {
+      if (!isOptimized) {
+          finalData.lastOptimizedAt = '';
+      }
       updateDoc('routes', route.id, finalData);
       toast({ title: 'Rota atualizada!', description: `A rota ${finalData.name} foi atualizada.` });
     } else {
@@ -671,5 +677,5 @@ export function RouteForm({
         <Button type="button" onClick={handleSubmit} disabled={isCapacityExceeded}>Salvar Rota</Button>
       </DialogFooter>
     </DialogContent>
-  )
+  );
 }
