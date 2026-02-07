@@ -22,10 +22,9 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
+import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Button } from '@/components/ui/button';
 
 type Driver = { id: string; name: string; vehicleId?: string; };
@@ -58,7 +57,6 @@ export function RouteForm({
   const [monitorId, setMonitorId] = useState(route?.monitorId || '');
   const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
   
-  const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
   const [errors, setErrors] = useState<{name?: string, driverId?: string}>({});
 
@@ -89,10 +87,8 @@ export function RouteForm({
     return { isCapacityExceeded: isExceeded, availableStudents, studentsInCurrentRoute };
   }, [currentStudentIds, students, route, studentSearch, vehicleCapacity]);
 
-  const addSelectedStudents = () => {
-    const studentsToAdd = [...Array.from(selectedAvailable)];
-    
-    if (currentStudentIds.length + studentsToAdd.length > vehicleCapacity) {
+  const addStudentToRoute = (studentId: string) => {
+    if (currentStudentIds.length >= vehicleCapacity) {
       toast({
         title: "Capacidade do veículo excedida!",
         description: `A rota não pode ter mais de ${vehicleCapacity} alunos para este veículo.`,
@@ -100,12 +96,7 @@ export function RouteForm({
       });
       return;
     }
-    setCurrentStudentIds(prev => [...prev, ...studentsToAdd]);
-    setSelectedAvailable(new Set());
-    toast({
-        title: `${studentsToAdd.length} aluno(s) adicionado(s)!`,
-        description: 'Eles foram adicionados ao final da rota.',
-    });
+    setCurrentStudentIds((prev) => [...prev, studentId]);
   };
 
   const moveInRoute = (studentId: string, direction: 'up' | 'down') => {
@@ -122,18 +113,6 @@ export function RouteForm({
     }
   };
   
-  const toggleSelection = (id: string) => {
-    setSelectedAvailable(prev => {
-        const newSet = new Set(prev);
-        if (newSet.has(id)) {
-            newSet.delete(id);
-        } else {
-            newSet.add(id);
-        }
-        return newSet;
-    });
-  };
-
   const removeStudentFromRoute = (studentId: string) => {
     setCurrentStudentIds(prev => prev.filter(id => id !== studentId));
   }
@@ -258,24 +237,23 @@ export function RouteForm({
                                   />
                               </div>
                               <CardContent className="p-2">
-                                  <ScrollArea className="h-48">
+                                  <ScrollArea className="h-56">
                                       {availableStudents.length > 0 ? availableStudents.map(s => (
-                                          <div key={s.id} className="flex items-center space-x-3 rounded-md p-2 hover:bg-accent/50">
-                                              <Checkbox
-                                                  id={`add-${s.id}`}
-                                                  checked={selectedAvailable.has(s.id)}
-                                                  onCheckedChange={() => toggleSelection(s.id)}
-                                              />
-                                              <label htmlFor={`add-${s.id}`} className="flex-1 cursor-pointer truncate text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                                                {s.name}
-                                              </label>
-                                              <span className="text-xs text-muted-foreground">{s.shift}</span>
+                                          <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
+                                              <div className="flex min-w-0 flex-1 items-center gap-2">
+                                                  <span className="truncate font-medium text-sm">{s.name}</span>
+                                              </div>
+                                              <div className="flex items-center">
+                                                  <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
+                                                  <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStudentToRoute(s.id)}>
+                                                      <PlusCircle className="h-4 w-4 text-green-500" />
+                                                  </Button>
+                                              </div>
                                           </div>
                                       )) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível.</p>}
                                   </ScrollArea>
                               </CardContent>
                           </Card>
-                          <Button type="button" className="mt-2 w-full" onClick={addSelectedStudents} disabled={selectedAvailable.size === 0}>Adicionar Selecionados ({selectedAvailable.size})</Button>
                       </TabsContent>
                   </Tabs>
               </div>
