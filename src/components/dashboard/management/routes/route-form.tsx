@@ -61,10 +61,12 @@ interface RouteFormProps {
   onFormSubmit: () => void;
 }
 
-const formatSerie = (serie?: string) => {
-  if (!serie) return null;
-  // Abbreviates "Ano" from the series string for a more compact view.
-  return serie.replace(/ ano/i, '').trim();
+const getAbbreviatedClass = (student: Student | null | undefined) => {
+    if (!student) return null;
+    const serie = student.serie || '';
+    // Transforms "5º Ano" into "5º" or "3º Ano A" into "3º A"
+    const abbreviatedSerie = serie.replace(/ ano/i, '').trim();
+    return abbreviatedSerie || null;
 };
 
 export function RouteForm({
@@ -432,18 +434,18 @@ export function RouteForm({
                                     <div key={schoolName}>
                                         <h4 className="font-semibold text-sm text-muted-foreground px-2 py-1.5">{schoolName}</h4>
                                         {students.map(s => {
-                                            const displaySerie = formatSerie(s.serie);
+                                            const displayClass = getAbbreviatedClass(s);
                                             return (
                                                 <div key={s.id} className="flex items-center justify-between rounded-md p-2 hover:bg-accent/50">
                                                     <div className="flex-1 min-w-0">
                                                         <div className="flex items-baseline gap-1.5">
                                                             <p className="truncate font-medium text-sm">{s.name}</p>
-                                                            {displaySerie && (
-                                                                <p className="truncate text-xs text-muted-foreground">({displaySerie})</p>
+                                                            {displayClass && (
+                                                                <p className="text-xs text-muted-foreground">({displayClass})</p>
                                                             )}
                                                         </div>
                                                     </div>
-                                                    <div className="flex items-center">
+                                                    <div className="flex items-center flex-shrink-0">
                                                         <span className="text-xs text-muted-foreground mr-2">{s.shift}</span>
                                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name})}>
                                                             <PlusCircle className="h-4 w-4 text-green-500" />
@@ -483,7 +485,7 @@ export function RouteForm({
                     <ScrollArea className="h-[28rem]">
                         {stops.length > 0 ? stops.map((stop, index) => {
                             const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
-                            const displaySerie = student ? formatSerie(student.serie) : null;
+                            const displayClass = getAbbreviatedClass(student);
 
                             return (
                                 <div key={`${stop.type}-${stop.id}-${index}`} className="flex items-center justify-between gap-2 rounded-md p-1 hover:bg-accent/50">
@@ -493,11 +495,11 @@ export function RouteForm({
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-baseline gap-1.5">
                                                 <p className="truncate font-medium text-sm">{stop.name}</p>
-                                                {displaySerie && <p className="truncate text-xs text-muted-foreground">({displaySerie})</p>}
+                                                {displayClass && <p className="text-xs text-muted-foreground">({displayClass})</p>}
                                             </div>
                                             {stop.details && (
                                                 <p className="truncate text-xs text-muted-foreground">
-                                                    {stop.type === 'student' ? stop.details : stop.details}
+                                                    {stop.details}
                                                 </p>
                                             )}
                                         </div>
