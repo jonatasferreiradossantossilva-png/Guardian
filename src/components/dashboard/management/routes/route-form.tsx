@@ -96,7 +96,9 @@ export function RouteForm({
       const initialSchoolIds = new Set<string>();
 
       route?.studentIds?.forEach(stopId => {
-          const [type, id] = stopId.split('-');
+          const [type, ...idParts] = stopId.split('-');
+          const id = idParts.join('-');
+
           if (type === 'student') {
               const student = studentsMap.get(id);
               if (student) {
@@ -134,7 +136,8 @@ export function RouteForm({
         if (r.shift === shift) {
             r.studentIds?.forEach(id => {
                 if (id.startsWith('student-')) {
-                    studentIdSet.add(id.split('-')[1]);
+                    const studentId = id.substring(id.indexOf('-') + 1);
+                    studentIdSet.add(studentId);
                 }
             });
         }
@@ -166,7 +169,7 @@ export function RouteForm({
         });
     }
 
-    return { isCapacityExceeded: isExceeded, availableStudents: filteredAvailableStudents, studentsOnRoute };
+    return { isCapacityExceeded: isExceeded, availableStudents: filteredAvailableStudents, studentsOnRoute: studentsOnRoute };
   }, [stops, students, studentSearch, vehicleCapacity, selectedSchoolIds, shift, assignedStudentsInOtherRoutes, studentsMap]);
 
     const { missingRouteWarning } = useMemo(() => {
@@ -180,7 +183,7 @@ export function RouteForm({
         const oppositeShift = shift === 'Manhã' ? 'Tarde' : 'Manhã';
         const correspondingRouteExists = allRoutes.some(r => {
             if (r.id === route?.id || r.shift !== oppositeShift) return false;
-            const firstStudentOnOtherRoute = students.find(s => r.studentIds && s.id === r.studentIds[0]?.split('-')[1]);
+            const firstStudentOnOtherRoute = students.find(s => r.studentIds && s.id === r.studentIds[0]?.substring(r.studentIds[0].indexOf('-') + 1));
             return firstStudentOnOtherRoute && selectedSchoolIds.includes(firstStudentOnOtherRoute.schoolId);
         });
 
@@ -273,7 +276,7 @@ export function RouteForm({
     const oppositeShift = shift === 'Manhã' ? 'Tarde' : 'Manhã';
     const otherRoutes = allRoutes.filter(r => {
         if (r.id === route?.id || r.shift !== oppositeShift) return false;
-        const firstStudentOnOtherRoute = students.find(s => r.studentIds && s.id === r.studentIds[0]?.split('-')[1]);
+        const firstStudentOnOtherRoute = students.find(s => r.studentIds && s.id === r.studentIds[0]?.substring(r.studentIds[0].indexOf('-') + 1));
         return firstStudentOnOtherRoute && selectedSchoolIds.includes(firstStudentOnOtherRoute.schoolId);
     });
 
@@ -281,7 +284,8 @@ export function RouteForm({
         const otherRouteIntegralStudents = new Set<string>();
         otherRoutes.forEach(r => {
             r.studentIds?.forEach(stopId => {
-                const [type, id] = stopId.split('-');
+                const type = stopId.substring(0, stopId.indexOf('-'));
+                const id = stopId.substring(stopId.indexOf('-') + 1);
                 if (type === 'student') {
                     const student = studentsMap.get(id);
                     if (student?.shift === 'Integral') {
@@ -533,6 +537,7 @@ export function RouteForm({
     </DialogContent>
   )
 }
+    
     
 
     
