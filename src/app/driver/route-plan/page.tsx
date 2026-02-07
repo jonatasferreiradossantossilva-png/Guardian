@@ -754,35 +754,35 @@ export default function DriverRoutePlanPage() {
         toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
 
         if (isOnline && direction === 'ida') {
-        toast({ description: "✨ Otimizando... Buscando um caminho mais rápido para hoje." });
-        
-        try {
-            const studentsOnRoute = finalStops.filter(s => s.type === 'student').map(s => s.data as Student);
-            const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
-                .map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
-            const driver = drivers[0];
+            toast({ description: "✨ Otimizando... Buscando um caminho mais rápido para hoje." });
+            
+            try {
+                const studentsOnRoute = finalStops.filter(s => s.type === 'student').map(s => s.data as Student);
+                const schoolsOnRoute = Array.from(new Set(studentsOnRoute.map(s => s.schoolId)))
+                    .map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
+                const driver = drivers[0];
 
-            if (studentsOnRoute.length > 0 && schoolsOnRoute.length > 0 && driver) {
-                const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
-                
-                const input = {
-                    students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
-                    schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-                    startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
-                    optimizationMode: 'flexible' as 'flexible',
-                    direction: selectedDirection,
-                };
-                const result = await optimizeSchoolVanRoute(input);
-                const currentStopIds = finalStops.map(s => s.id).join(',');
-                const newStopIds = result.optimizedStops.map(s => s.id).join(',');
+                if (studentsOnRoute.length > 0 && schoolsOnRoute.length > 0 && driver) {
+                    const formatAddress = (entity: any) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
+                    
+                    const input = {
+                        students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
+                        schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+                        startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
+                        optimizationMode: 'flexible' as 'flexible',
+                        direction: selectedDirection,
+                    };
+                    const result = await optimizeSchoolVanRoute(input);
+                    const currentStopIds = finalStops.map(s => s.id).join(',');
+                    const newStopIds = result.optimizedStops.map(s => s.id).join(',');
 
-                if (newStopIds !== currentStopIds) {
-                    setOptimizationSuggestion(result);
+                    if (newStopIds !== currentStopIds) {
+                        setOptimizationSuggestion(result);
+                    }
                 }
+            } catch (error) {
+                console.error("Optional real-time optimization failed:", error);
             }
-        } catch (error) {
-            console.error("Optional real-time optimization failed:", error);
-        }
         }
     }, [driverId, route, updateDoc, toast, isOnline, direction, selectedDirection, drivers, schoolsMap]);
 
