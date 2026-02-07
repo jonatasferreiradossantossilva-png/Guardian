@@ -109,25 +109,41 @@ export function LoginForm() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      value={field.value}
+                      defaultValue={field.value}
                       className="grid grid-cols-2 gap-4"
                     >
-                      <div className="flex items-center space-x-3">
-                        <RadioGroupItem value="gestor" id="profile-gestor" />
-                        <label htmlFor="profile-gestor" className="font-normal flex items-center gap-2 cursor-pointer"><Shield/> Gestor</label>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <RadioGroupItem value="motorista" id="profile-motorista" />
-                        <label htmlFor="profile-motorista" className="font-normal flex items-center gap-2 cursor-pointer"><Car/> Motorista</label>
-                      </div>
-                      <div className="flex items-center space-x-3">
-                        <RadioGroupItem value="pai" id="profile-pai" />
-                        <label htmlFor="profile-pai" className="font-normal flex items-center gap-2 cursor-pointer"><Users/> Pais</label>
-                      </div>
-                       <div className="flex items-center space-x-3">
-                        <RadioGroupItem value="monitor" id="profile-monitor" />
-                        <label htmlFor="profile-monitor" className="font-normal flex items-center gap-2 cursor-pointer"><ClipboardCheck/> Monitor</label>
-                      </div>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="gestor" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
+                          <Shield/> Gestor
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="motorista" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
+                          <Car/> Motorista
+                        </FormLabel>
+                      </FormItem>
+                      <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="pai" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
+                          <Users/> Pais
+                        </FormLabel>
+                      </FormItem>
+                       <FormItem className="flex items-center space-x-3 space-y-0">
+                        <FormControl>
+                          <RadioGroupItem value="monitor" />
+                        </FormControl>
+                        <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
+                           <ClipboardCheck/> Monitor
+                        </FormLabel>
+                      </FormItem>
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />
