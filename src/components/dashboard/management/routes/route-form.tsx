@@ -1,20 +1,9 @@
 
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
-import { useForm } from 'react-hook-form';
-import * as z from 'zod';
-import {
-  Form,
-  FormControl,
-  FormDescription,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
+import { useState, useMemo } from 'react';
+import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
-import { Button } from '@/components/ui/button';
 import {
   DialogContent,
   DialogHeader,
@@ -31,28 +20,21 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMemo, useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { ArrowUp, ArrowDown, Users, AlertCircle, X } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Button } from '@/components/ui/button';
 
-const formSchema = z.object({
-  name: z.string().min(1, { message: 'O nome é obrigatório.' }),
-  driverId: z.string().min(1, { message: 'Selecione um motorista.' }),
-  monitorId: z.string().optional(),
-});
-
-type RouteFormValues = z.infer<typeof formSchema>;
 type Driver = { id: string; name: string; vehicleId?: string; };
 type Student = { id: string; name: string, routeId?: string, shift: string, active?: boolean };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 
 interface RouteFormProps {
-  route?: { id: string; studentIds?: string[] } & Partial<RouteFormValues>;
+  route?: { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; };
   drivers: Driver[];
   students: Student[];
   monitors: Monitor[];
@@ -70,41 +52,32 @@ export function RouteForm({
 }: RouteFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
+  
+  const [name, setName] = useState(route?.name || '');
+  const [driverId, setDriverId] = useState(route?.driverId || '');
+  const [monitorId, setMonitorId] = useState(route?.monitorId || '');
+  const [errors, setErrors] = useState<{name?: string, driverId?: string}>({});
 
   const [currentStudentIds, setCurrentStudentIds] = useState<string[]>(route?.studentIds || []);
   const [selectedAvailable, setSelectedAvailable] = useState<Set<string>>(new Set());
   const [studentSearch, setStudentSearch] = useState('');
-  
-  const form = useForm<RouteFormValues>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: route?.name || '',
-      driverId: route?.driverId || '',
-      monitorId: route?.monitorId || '',
-    },
-  });
-
-  const driverId = form.watch('driverId');
 
   const { vehicle, vehicleCapacity } = useMemo(() => {
-    if (!driverId || !drivers || !vehicles) return { vehicle: null, vehicleCapacity: Infinity };
-    const driver = drivers.find(d => d.id === driverId);
-    if (!driver?.vehicleId) return { vehicle: null, vehicleCapacity: Infinity };
-    const vehicle = vehicles.find(v => v.id === driver.vehicleId);
-    if (!vehicle) return { vehicle: null, vehicleCapacity: Infinity };
-    return { vehicle, vehicleCapacity: vehicle.capacity };
+     if (!driverId || !drivers || !vehicles) return { vehicle: null, vehicleCapacity: Infinity };
+     const driver = drivers.find(d => d.id === driverId);
+     if (!driver?.vehicleId) return { vehicle: null, vehicleCapacity: Infinity };
+     const vehicle = vehicles.find(v => v.id === driver.vehicleId);
+     if (!vehicle) return { vehicle: null, vehicleCapacity: Infinity };
+     return { vehicle, vehicleCapacity: vehicle.capacity };
   }, [driverId, drivers, vehicles]);
 
-  const isCapacityExceeded = useMemo(() => {
-    return currentStudentIds.length > vehicleCapacity;
-  }, [currentStudentIds, vehicleCapacity]);
-
-  
-  const { availableStudents, studentsInCurrentRoute } = useMemo(() => {
+  const { isCapacityExceeded, availableStudents, studentsInCurrentRoute } = useMemo(() => {
     const studentMap = new Map(students.map(s => [s.id, s]));
     const studentsInCurrentRoute = currentStudentIds
         .map(id => studentMap.get(id))
         .filter(Boolean) as Student[];
+
+    const isExceeded = studentsInCurrentRoute.length > vehicleCapacity;
 
     const availableStudents = students.filter(s => {
         const isInAnotherRoute = s.routeId && s.routeId !== route?.id;
@@ -113,8 +86,8 @@ export function RouteForm({
         return s.active !== false && !isInAnotherRoute && !isAlreadyInThisRoute && matchesSearch;
     });
 
-    return { availableStudents, studentsInCurrentRoute };
-  }, [currentStudentIds, students, route, studentSearch]);
+    return { isCapacityExceeded: isExceeded, availableStudents, studentsInCurrentRoute };
+  }, [currentStudentIds, students, route, studentSearch, vehicleCapacity]);
 
   const addSelectedStudents = () => {
     const studentsToAdd = [...Array.from(selectedAvailable)];
@@ -165,13 +138,21 @@ export function RouteForm({
     setCurrentStudentIds(prev => prev.filter(id => id !== studentId));
   }
 
-  const onSubmit = (data: RouteFormValues) => {
-    // Combine form data with the managed student list state
-    const finalData = { ...data, studentIds: currentStudentIds };
-    if (!finalData.monitorId || finalData.monitorId === 'none') {
-        delete (finalData as Partial<typeof finalData>).monitorId;
-    }
+  const handleSubmit = () => {
+    const newErrors: {name?: string, driverId?: string} = {};
+    if (!name.trim()) newErrors.name = 'O nome é obrigatório.';
+    if (!driverId) newErrors.driverId = 'Selecione um motorista.';
+    
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) return;
 
+    const finalData = {
+        name,
+        driverId,
+        monitorId: monitorId === 'none' ? '' : monitorId,
+        studentIds: currentStudentIds
+    };
+    
     if (route) {
       updateDoc('routes', route.id, finalData);
       toast({ title: 'Rota atualizada!', description: `A rota ${finalData.name} foi atualizada.` });
@@ -181,7 +162,7 @@ export function RouteForm({
     }
     onFormSubmit();
   };
-
+  
   return (
     <DialogContent className="sm:max-w-xl">
       <DialogHeader>
@@ -190,49 +171,42 @@ export function RouteForm({
           Preencha as informações da rota, defina o motorista e organize os alunos que farão parte dela.
         </DialogDescription>
       </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+      <div className="space-y-4">
           <ScrollArea className="max-h-[65vh] space-y-4 overflow-y-auto py-1 pr-6">
             <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
-              <FormField control={form.control} name="name" render={({ field }) => (
-                <FormItem><FormLabel>Nome da Rota</FormLabel><FormControl><Input placeholder="Ex: Rota Matinal - Zona Sul" {...field} /></FormControl><FormMessage /></FormItem>
-              )}/>
-              <FormField control={form.control} name="driverId" render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Motorista</FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value}><FormControl><SelectTrigger><SelectValue placeholder="Selecione um motorista" /></SelectTrigger></FormControl><SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent></Select>
-                  {vehicle && (
-                      <FormDescription>
-                      Veículo: {vehicle.model} (Capacidade: {vehicle.capacity} alunos)
-                      </FormDescription>
-                  )}
-                  <FormMessage />
-                  </FormItem>
-              )}/>
-              <FormField control={form.control} name="monitorId" render={({ field }) => (
-                  <FormItem>
-                      <FormLabel>Monitor</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value || 'none'}>
-                          <FormControl>
-                              <SelectTrigger>
-                                  <SelectValue placeholder="Selecione um monitor (opcional)" />
-                              </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                              <SelectItem value="none">Nenhum</SelectItem>
-                              {monitors.map(a => (
-                                  <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
-                              ))}
-                          </SelectContent>
-                      </Select>
-                      <FormMessage />
-                  </FormItem>
-              )}/>
+              <div className="space-y-2">
+                <Label htmlFor="routeName">Nome da Rota</Label>
+                <Input id="routeName" placeholder="Ex: Rota Matinal - Zona Sul" value={name} onChange={(e) => setName(e.target.value)} />
+                {errors.name && <p className="text-sm font-medium text-destructive">{errors.name}</p>}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="driverId">Motorista</Label>
+                <Select onValueChange={setDriverId} value={driverId}>
+                    <SelectTrigger id="driverId"><SelectValue placeholder="Selecione um motorista" /></SelectTrigger>
+                    <SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent>
+                </Select>
+                {vehicle && (
+                    <p className="text-xs text-muted-foreground">
+                    Veículo: {vehicle.model} (Capacidade: {vehicle.capacity} alunos)
+                    </p>
+                )}
+                {errors.driverId && <p className="text-sm font-medium text-destructive">{errors.driverId}</p>}
+              </div>
+              <div className="space-y-2">
+                  <Label htmlFor="monitorId">Monitor</Label>
+                  <Select onValueChange={setMonitorId} value={monitorId || 'none'}>
+                    <SelectTrigger id="monitorId"><SelectValue placeholder="Selecione um monitor (opcional)" /></SelectTrigger>
+                    <SelectContent>
+                        <SelectItem value="none">Nenhum</SelectItem>
+                        {monitors.map(a => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}
+                    </SelectContent>
+                  </Select>
+              </div>
             </div>
 
             <div className="pt-4">
-              <FormLabel>Alunos na Rota</FormLabel>
-              <FormDescription className="mb-2">Ordene os alunos para definir as paradas ou adicione novos alunos na aba ao lado.</FormDescription>
+              <Label>Alunos na Rota</Label>
+              <p className="text-sm text-muted-foreground mb-2">Ordene os alunos para definir as paradas ou adicione novos alunos na aba ao lado.</p>
               {isCapacityExceeded && (
                   <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
                       <AlertCircle className="h-4 w-4" />
@@ -309,12 +283,9 @@ export function RouteForm({
           </ScrollArea>
           <DialogFooter className="pt-4">
             <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-            <Button type="submit" disabled={isCapacityExceeded}>Salvar</Button>
+            <Button type="button" onClick={handleSubmit} disabled={isCapacityExceeded}>Salvar</Button>
           </DialogFooter>
-        </form>
-      </Form>
+      </div>
     </DialogContent>
-  );
+  )
 }
-
-    
