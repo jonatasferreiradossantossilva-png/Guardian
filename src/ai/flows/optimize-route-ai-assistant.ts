@@ -41,7 +41,7 @@ export async function optimizeRoute(input: OptimizeRouteInput): Promise<Optimize
 
 const prompt = ai.definePrompt({
   name: 'optimizeRoutePrompt',
-  model: googleAI.model('gemini-1.0-pro'),
+  model: googleAI.model('gemini-pro'),
   input: {schema: OptimizeRouteInputSchema},
   output: {schema: OptimizeRouteOutputSchema},
   prompt: `You are a route optimization expert, skilled at finding the best routes for drivers based on traffic conditions and reported incidents.

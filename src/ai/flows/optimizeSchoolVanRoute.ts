@@ -63,7 +63,7 @@ const PromptInputSchema = OptimizeSchoolVanRouteInputSchemaBase.extend({
 
 const prompt = ai.definePrompt({
   name: 'optimizeSchoolVanRoutePrompt',
-  model: googleAI.model('gemini-1.0-pro'),
+  model: googleAI.model('gemini-pro'),
   input: {schema: PromptInputSchema},
   output: {schema: OptimizeSchoolVanRouteOutputSchema},
   prompt: `Você é um especialista em logística e um assistente de navegação GPS para transporte escolar. Sua tarefa é criar a rota mais eficiente possível, incluindo múltiplos destinos (escolas), e fornecer as direções detalhadas.
@@ -82,12 +82,15 @@ Você receberá uma lista de alunos e uma lista de escolas. Cada aluno possui um
     2.  **REGRA CRÍTICA DE EMBARQUE:** Ao visitar uma escola para embarcar alunos (ex: Escola A), você deve embarcar **TODOS** os alunos daquela escola que fazem parte da rota de uma só vez. A IA está proibida de planejar uma rota que volte para a mesma escola para pegar mais alunos.
   {{/if}}
 {{else}}
-  **REGRA DE OURO DA OPERAÇÃO (PLANO DO GESTOR):** A rota deve ser estruturada em duas fases:
+  **REGRAS DE OURO DA OPERAÇÃO (PLANO DO GESTOR):**
   1.  **Fase 1: Embarque.** A rota deve primeiro embarcar TODOS os alunos. A sequência de embarque dos alunos deve ser otimizada para o menor tempo/distância.
   2.  **Fase 2: Desembarque.** Somente após o último aluno ter sido embarcado, a rota deve prosseguir para o desembarque nas escolas. A ordem de visita às escolas também deve ser otimizada.
 {{/if}}
 
-**REGRA ADICIONAL IMPORTANTE:** Na IDA, um aluno só pode ser desembarcado na sua escola correspondente. Na VOLTA, um aluno só pode ser desembarcado no seu endereço (que está associado ao ID do aluno). A parada de uma escola na rota representa o momento de embarque (na volta) ou desembarque (na ida) de TODOS os alunos que pertencem àquela escola e que já estão no veículo.
+**REGRAS ADICIONAIS IMPORTANTES:**
+- Na **IDA**, um aluno só pode ser desembarcado na sua escola correspondente.
+- Na **VOLTA**, um aluno só pode ser desembarcado no seu endereço (que está associado ao ID do aluno).
+- A parada de uma escola na rota representa o momento de embarque (na volta) ou desembarque (na ida) de TODOS os alunos que pertencem àquela escola e que já estão no veículo ou na lista para aquela rota.
 
 Considere as seguintes informações:
 {{#if startAddress}}
