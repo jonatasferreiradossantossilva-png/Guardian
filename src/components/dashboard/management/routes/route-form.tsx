@@ -46,7 +46,7 @@ type Driver = { id: string; name: string; vehicleId?: string; latitude?: number;
 type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string; serie?: string; turma?: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; latitude?: number; longitude?: number; };
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
-type SchoolData = { id: string; name: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; };
+type SchoolData = { id: string; name: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; latitude?: number; longitude?: number; };
 type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; };
 type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string };
 
@@ -92,6 +92,7 @@ export function RouteForm({
   const [studentSearch, setStudentSearch] = useState('');
   const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolIds?: string, shift?: string}>({});
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [wasOptimized, setWasOptimized] = useState(false);
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
@@ -134,14 +135,15 @@ export function RouteForm({
         if (r.id === route?.id) continue;
         if (r.shift === shift) {
             r.studentIds?.forEach(id => {
-                if (id.startsWith('student-')) {
+                const student = studentsMap.get(id);
+                if (student) {
                     studentIdSet.add(id);
                 }
             });
         }
     }
     return studentIdSet;
-  }, [allRoutes, shift, route]);
+  }, [allRoutes, shift, route, studentsMap]);
 
 
   const { isCapacityExceeded, availableStudents, studentsOnRoute } = useMemo(() => {
@@ -248,7 +250,7 @@ export function RouteForm({
             throw new Error("Dados da escola ou motorista não encontrados.");
         }
 
-        const formatAddress = (entity) => {
+        const formatAddress = (entity: Student | SchoolData | null) => {
             if (!entity?.street) return 'Endereço indisponível';
             return `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}`;
         };
@@ -286,6 +288,7 @@ export function RouteForm({
         }).filter(Boolean) as Stop[];
         
         setStops(newOptimizedStops);
+        setWasOptimized(true);
 
         toast({
             title: "Ordem da rota otimizada!",
@@ -304,25 +307,6 @@ export function RouteForm({
     }
   };
   
-  const performSave = (stopsToSave: Stop[]) => {
-    const finalData = {
-        name,
-        driverId,
-        monitorId: monitorId === 'none' ? '' : monitorId,
-        studentIds: stopsToSave.map(s => s.id), 
-        shift
-    };
-    
-    if (route) {
-      updateDoc('routes', route.id, finalData);
-      toast({ title: 'Rota atualizada!', description: `A rota ${finalData.name} foi atualizada.` });
-    } else {
-      addDoc('routes', finalData);
-      toast({ title: 'Rota adicionada!', description: `A rota ${finalData.name} foi adicionada ao sistema.` });
-    }
-    onFormSubmit();
-  }
-
   const handleSubmit = () => {
     const newErrors: {name?: string, driverId?: string, schoolIds?: string, shift?: string} = {};
     if (!name.trim()) newErrors.name = 'O nome é obrigatório.';
@@ -333,7 +317,23 @@ export function RouteForm({
     setErrors(newErrors);
     if (Object.keys(newErrors).length > 0) return;
     
-    performSave(stops);
+    const finalData = {
+        name,
+        driverId,
+        monitorId: monitorId === 'none' ? '' : monitorId,
+        studentIds: stops.map(s => s.id), 
+        shift,
+        ...(wasOptimized && { lastOptimizedAt: new Date().toISOString() })
+    };
+    
+    if (route) {
+      updateDoc('routes', route.id, finalData);
+      toast({ title: 'Rota atualizada!', description: `A rota ${finalData.name} foi atualizada.` });
+    } else {
+      addDoc('routes', finalData);
+      toast({ title: 'Rota adicionada!', description: `A rota ${finalData.name} foi adicionada ao sistema.` });
+    }
+    onFormSubmit();
   };
   
   return (

@@ -316,8 +316,9 @@ export const initialMockData = {
             shift: "Manhã",
             driverId: "driver-4",
             monitorId: "user-monitor-1",
-            studentIds: ["student-student-1", "student-student-3", "student-student-11", "student-student-17", "student-student-13", "school-school-1", "student-student-2", "student-student-5", "student-student-7", "student-student-4", "student-student-6", "school-school-2"],
-            turnByTurnDirections: []
+            studentIds: ["student-1", "student-17", "student-19", "student-18", "student-3", "student-11", "student-13", "school-1", "student-2", "student-12", "student-4", "student-5", "student-7", "student-6", "school-2"],
+            turnByTurnDirections: [],
+            lastOptimizedAt: "2024-07-31T10:00:00.000Z"
         },
         { 
             id: "route-1", 
@@ -339,7 +340,7 @@ export const initialMockData = {
         },
         { id: "route-3", name: "Rota Zona Oeste - Tarde", shift: "Tarde", driverId: "driver-3", monitorId: "user-monitor-3", studentIds: [] },
         { id: "route-4", name: "Rota Eixo Jardins - Manhã", shift: "Manhã", driverId: "driver-4", monitorId: "", studentIds: [] },
-        { id: "route-5", name: "Rota Morumbi - Tarde", shift: "Tarde", driverId: "driver-5", monitorId: "user-monitor-1", studentIds: ["student-student-9", "student-student-10", "student-student-15"] },
+        { id: "route-5", name: "Rota Morumbi - Tarde", shift: "Tarde", driverId: "driver-5", monitorId: "user-monitor-1", studentIds: ["student-9", "student-10", "student-15"] },
         { id: "route-6", name: "Rota Jardins 2 - Manhã", shift: "Manhã", driverId: "driver-6", monitorId: "user-monitor-2", studentIds: [] },
         { 
             id: "route-7", 
@@ -347,7 +348,7 @@ export const initialMockData = {
             shift: "Tarde", 
             driverId: "driver-7", 
             monitorId: "", 
-            studentIds: ["student-student-17"]
+            studentIds: ["student-17"]
         },
         { 
             id: "route-8", 
@@ -355,7 +356,7 @@ export const initialMockData = {
             shift: "Tarde",
             driverId: "driver-1", 
             monitorId: "user-monitor-3", 
-            studentIds: ["student-student-14"], 
+            studentIds: ["student-14"], 
             turnByTurnDirections: []
         },
     ],
@@ -583,6 +584,7 @@ export const initialMockData = {
 
 
   
+
 
 
 
