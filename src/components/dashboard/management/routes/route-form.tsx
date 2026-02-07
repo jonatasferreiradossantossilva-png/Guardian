@@ -421,7 +421,7 @@ export function RouteForm({
                                                         <p className="truncate font-medium text-sm">{s.name}</p>
                                                         {(s.serie || s.turma) && (
                                                             <p className="truncate text-xs text-muted-foreground">
-                                                                {[s.serie, s.turma].filter(Boolean).join(' / ')}
+                                                                {s.serie} / {s.turma}
                                                             </p>
                                                         )}
                                                     </div>
@@ -468,11 +468,12 @@ export function RouteForm({
                             const serieTurma = student ? [student.serie, student.turma].filter(Boolean).join(' / ') : null;
 
                             return (
-                                <div key={`${stop.id}-${index}`} className="flex items-center justify-between gap-2 rounded-md p-1 hover:bg-accent/50">
-                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                <div key={`${stop.id}-${index}`} className="flex items-center gap-2 rounded-md p-1 hover:bg-accent/50">
+                                    {/* Text content section that can grow and shrink */}
+                                    <div className="flex flex-1 items-center gap-2 min-w-0">
                                         <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
                                         {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
-                                        <div className="min-w-0 flex-1">
+                                        <div className="flex-1 min-w-0">
                                             <p className="truncate font-medium text-sm">{stop.name}</p>
                                             {(serieTurma || stop.details) && (
                                                 <p className="truncate text-xs text-muted-foreground">
@@ -481,10 +482,18 @@ export function RouteForm({
                                             )}
                                         </div>
                                     </div>
-                                    <div className="flex items-center flex-shrink-0">
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}><ArrowUp className="h-4 w-4" /></Button>
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}><X className="h-4 w-4 text-destructive" /></Button>
+
+                                    {/* Action buttons section with fixed size */}
+                                    <div className="flex flex-shrink-0 items-center">
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
+                                            <ArrowUp className="h-4 w-4" />
+                                        </Button>
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
+                                            <ArrowDown className="h-4 w-4" />
+                                        </Button>
+                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
+                                            <X className="h-4 w-4 text-destructive" />
+                                        </Button>
                                     </div>
                                 </div>
                             )
@@ -541,6 +550,7 @@ export function RouteForm({
     
 
     
+
 
 
 
