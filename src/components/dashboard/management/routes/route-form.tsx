@@ -24,7 +24,6 @@ import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { Users, AlertCircle, X, PlusCircle, School, Info, ArrowUp, ArrowDown } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import {
@@ -415,11 +414,11 @@ export function RouteForm({
                  </div>
             </div>
             
-            <Card>
-                <CardHeader className="p-2 border-b">
-                    <Input placeholder="Buscar aluno por nome..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="h-8"/>
-                </CardHeader>
-                <CardContent className="p-0">
+            <div className="border rounded-md overflow-hidden">
+                <div className="p-2 border-b">
+                    <Input placeholder="Buscar aluno por nome..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none"/>
+                </div>
+                <div>
                     {!selectedSchoolIds.length || !shift ? (
                         <div className="h-56 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
                             <School className="h-8 w-8 mb-2"/>
@@ -465,8 +464,8 @@ export function RouteForm({
                             ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para as escolas/turno selecionados ou para a busca.</p>}
                         </ScrollArea>
                     )}
-                </CardContent>
-            </Card>
+                </div>
+            </div>
         </div>
 
         {/* Coluna da Direita: Itinerário */}
@@ -486,70 +485,68 @@ export function RouteForm({
                 </Alert>
             )}
 
-            <Card>
-                <CardContent className="p-2">
-                    <ScrollArea className="h-[28rem]">
-                        {stops.length > 0 ? (
-                            <div className="space-y-1">
-                                {stops.map((stop, index) => {
-                                     const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
-                                     const displayClass = getAbbreviatedClass(student);
-                                    return (
-                                        <div key={stop.uniqueId} className="flex items-center w-full bg-background rounded-md p-2 hover:bg-accent/50">
-                                            <div className="flex items-center justify-between gap-2 w-full">
-                                                <div className="flex items-center gap-2 flex-1 min-w-0">
-                                                    <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                                    {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="flex items-baseline gap-1.5">
-                                                            <p className="truncate font-medium text-sm">{stop.name}</p>
-                                                            {displayClass && (
-                                                                <p className="text-xs text-muted-foreground">({displayClass})</p>
-                                                            )}
-                                                        </div>
-                                                        {stop.details && (
-                                                            <p className="truncate text-xs text-muted-foreground">
-                                                                {stop.details}
-                                                            </p>
+            <div className="border rounded-md">
+                <ScrollArea className="h-[28rem] p-2">
+                    {stops.length > 0 ? (
+                        <div className="space-y-1">
+                            {stops.map((stop, index) => {
+                                 const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
+                                 const displayClass = getAbbreviatedClass(student);
+                                return (
+                                    <div key={index} className="flex items-center w-full bg-background rounded-md p-2 hover:bg-accent/50">
+                                        <div className="flex items-center justify-between w-full">
+                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                                {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
+                                                <div className="flex-1 min-w-0">
+                                                    <div className="flex items-baseline gap-1.5">
+                                                        <p className="truncate font-medium text-sm">{stop.name}</p>
+                                                        {displayClass && (
+                                                            <p className="text-xs text-muted-foreground">({displayClass})</p>
                                                         )}
                                                     </div>
-                                                </div>
-                                                <div className="flex items-center flex-shrink-0">
-                                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
-                                                        <ArrowUp className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
-                                                        <ArrowDown className="h-4 w-4" />
-                                                    </Button>
-                                                    <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
-                                                        <X className="h-4 w-4 text-destructive" />
-                                                    </Button>
+                                                    {stop.details && (
+                                                        <p className="truncate text-xs text-muted-foreground">
+                                                            {stop.details}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             </div>
+                                            <div className="flex items-center flex-shrink-0">
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
+                                                    <ArrowUp className="h-4 w-4" />
+                                                </Button>
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
+                                                    <ArrowDown className="h-4 w-4" />
+                                                </Button>
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
+                                                    <X className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                    )
-                                })}
-                            </div>
-                        ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
-                    </ScrollArea>
-                    <div className="p-2 border-t">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full">
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Parada (Escola)
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent>
-                                {schools.map(school => (
-                                    <DropdownMenuItem key={school.id} onSelect={() => handleAddSchoolToRoute(school.id)}>
-                                        {school.name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </CardContent>
-            </Card>
+                                    </div>
+                                )
+                            })}
+                        </div>
+                    ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
+                </ScrollArea>
+                <div className="p-2 border-t">
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="outline" size="sm" className="w-full">
+                                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Parada (Escola)
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent>
+                            {schools.map(school => (
+                                <DropdownMenuItem key={school.id} onSelect={() => handleAddSchoolToRoute(school.id)}>
+                                    {school.name}
+                                </DropdownMenuItem>
+                            ))}
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                </div>
+            </div>
         </div>
       </div>
       <DialogFooter className="pt-4 mt-4 border-t">
