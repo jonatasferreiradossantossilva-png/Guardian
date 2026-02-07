@@ -1,4 +1,5 @@
 
+
 // @ts-nocheck
 // This file contains mock data for the presentation mode.
 
@@ -320,28 +321,7 @@ export const initialMockData = {
             turnByTurnDirections: [],
             lastOptimizedAt: "2024-07-31T10:00:00.000Z"
         },
-        { 
-            id: "route-1", 
-            name: "Colégio Vanguarda - Manhã (VAZIA)", 
-            shift: "Manhã",
-            driverId: "driver-2", 
-            monitorId: "user-monitor-1", 
-            studentIds: [], 
-            turnByTurnDirections: []
-        },
-        { 
-            id: "route-2", 
-            name: "Escola Saber - Manhã (VAZIA)", 
-            shift: "Manhã",
-            driverId: "driver-1", 
-            monitorId: "user-monitor-2", 
-            studentIds: [], 
-            turnByTurnDirections: []
-        },
-        { id: "route-3", name: "Rota Zona Oeste - Tarde", shift: "Tarde", driverId: "driver-3", monitorId: "user-monitor-3", studentIds: [] },
-        { id: "route-4", name: "Rota Eixo Jardins - Manhã", shift: "Manhã", driverId: "driver-4", monitorId: "", studentIds: [] },
         { id: "route-5", name: "Rota Morumbi - Tarde", shift: "Tarde", driverId: "driver-5", monitorId: "user-monitor-1", studentIds: ["student-9", "student-10", "student-15"] },
-        { id: "route-6", name: "Rota Jardins 2 - Manhã", shift: "Manhã", driverId: "driver-6", monitorId: "user-monitor-2", studentIds: [] },
         { 
             id: "route-7", 
             name: "Escola Saber - Tarde", 
@@ -584,6 +564,7 @@ export const initialMockData = {
 
 
   
+
 
 
 
