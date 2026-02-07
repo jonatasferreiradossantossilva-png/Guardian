@@ -1,4 +1,5 @@
 
+
 'use client';
 
 import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, HandHeart, Bus, Sparkles, Newspaper, Mail, Building } from 'lucide-react';
@@ -157,8 +158,8 @@ export default function PresentationPage() {
                          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
                             <Sparkles className="h-8 w-8" />
                         </div>
-                        <h3 className="mt-4 text-xl font-semibold">Inteligência Artificial a seu Favor</h3>
-                        <p className="mt-2 text-muted-foreground">Nossa IA analisa as paradas, o trânsito e incidentes para criar a rota mais econômica em tempo e dinheiro, um diferencial que nenhum concorrente oferece de forma integrada.</p>
+                        <h3 className="mt-4 text-xl font-semibold">IA para Planejamento Inteligente</h3>
+                        <p className="mt-2 text-muted-foreground">Nossa IA de planejamento analisa todas as suas paradas para criar a rota mais econômica em tempo e dinheiro durante a fase de planejamento. O gestor define a rota perfeita, e o motorista a executa com precisão.</p>
                     </div>
                     <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
@@ -363,3 +364,5 @@ export default function PresentationPage() {
         </main>
     );
 }
+
+    

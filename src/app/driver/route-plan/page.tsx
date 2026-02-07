@@ -28,7 +28,6 @@ import {
   XCircle,
   Siren,
   Share2,
-  Sparkles,
   ArrowLeft,
   MapPin,
   ListTree,
@@ -504,7 +503,6 @@ export default function DriverRoutePlanPage() {
   const [selectedDirection, setSelectedDirection] = useState<'ida' | 'volta'>('ida');
   
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
-  const [isRecalculating, setIsRecalculating] = useState(false);
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const isOnline = useOnlineStatus();
@@ -636,15 +634,13 @@ export default function DriverRoutePlanPage() {
     }).filter((s): s is Stop => s !== null);
   }, [route?.studentIds, allStudents, schools, shift]);
 
-  const { activeStop, upcomingStops, absentStudentsCount } = useMemo(() => {
+  const { activeStop, upcomingStops } = useMemo(() => {
     if (!orderedStops) {
-      return { activeStop: null, upcomingStops: [], absentStudentsCount: 0 };
+      return { activeStop: null, upcomingStops: [] };
     }
-  
-    const absentCount = orderedStops.filter(s => s.type === 'student' && (s.data as Student).status === 'ausente').length;
-  
+    
     if (driverProfile?.status !== 'em_rota') {
-      return { activeStop: null, upcomingStops: [], absentStudentsCount: absentCount };
+      return { activeStop: null, upcomingStops: [] };
     }
   
     let nextStopIndex = -1;
@@ -676,13 +672,13 @@ export default function DriverRoutePlanPage() {
     }
     
     if (nextStopIndex === -1) {
-      return { activeStop: null, upcomingStops: [], absentStudentsCount: absentCount };
+      return { activeStop: null, upcomingStops: [] };
     }
   
     const activeStop = orderedStops[nextStopIndex];
     const upcoming = orderedStops.slice(nextStopIndex + 1);
   
-    return { activeStop, upcomingStops: upcoming, absentStudentsCount: absentCount };
+    return { activeStop, upcomingStops: upcoming };
   }, [orderedStops, driverProfile?.status, direction]);
   
 
@@ -830,15 +826,6 @@ export default function DriverRoutePlanPage() {
     }
   }, [toast]);
   
-   const handleRecalculate = useCallback(async () => {
-        // This function is now a placeholder or can be removed.
-        // The AI call logic has been disabled.
-        toast({
-            title: "Otimização Manual",
-            description: "Esta funcionalidade está em desenvolvimento.",
-        });
-        setIsRecalculating(false);
-    }, [route, orderedStops, schools, driverProfile, updateDoc, toast, setIsRecalculating, selectedDirection]);
 
    const handleUndoLastAction = () => {
        if (!lastProcessedStudent) return;
@@ -1111,15 +1098,6 @@ export default function DriverRoutePlanPage() {
                         <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
                     </div>
 
-                    {absentStudentsCount > 0 && driverProfile.status === 'em_rota' && (
-                        <div className="max-w-md mx-auto mb-4">
-                            <Button variant="outline" className="w-full border-primary/40 text-primary hover:text-primary" onClick={handleRecalculate} disabled={isRecalculating}>
-                                {isRecalculating ? <Loader2 className="mr-2 h-4 w-4 animate-spin"/> : <Sparkles className="mr-2 h-4 w-4" />}
-                                Otimizar rota para {absentStudentsCount} aluno(s) ausente(s)
-                            </Button>
-                        </div>
-                    )}
-
                     <div className="max-w-md mx-auto space-y-4">
                         {isRouteFinished ? (
                             <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
@@ -1261,5 +1239,7 @@ export default function DriverRoutePlanPage() {
 
 
 
+
+    
 
     

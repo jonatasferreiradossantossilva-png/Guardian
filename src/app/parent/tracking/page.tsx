@@ -8,6 +8,7 @@
 
 
 
+
 "use client";
 
 import { useMemo, useState, useEffect, useRef, useCallback } from "react";
@@ -27,7 +28,6 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { optimizeSchoolVanRoute } from "@/ai/flows/optimizeSchoolVanRoute";
 
 
 // Types matching mock data
@@ -254,7 +254,7 @@ function ParentRouteMap({ busLocation, student, school, toast, recenterTrigger }
 
 export default function ParentTrackingPage() {
   const { toast } = useToast();
-  const { updateDoc, getCollection, getDoc } = useMockData();
+  const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
 
@@ -288,73 +288,9 @@ export default function ParentTrackingPage() {
     updateDoc('students', student.id, { status: 'ausente' });
     toast({
       title: "Ausência comunicada",
-      description: "O motorista foi notificado.",
+      description: "O motorista e a gestão foram notificados.",
     });
-
-    const route = getDoc('routes', student.routeId);
-    if (!route) return;
-
-    const driver = getDoc('drivers', route.driverId);
-    // Only auto-optimize if the driver hasn't started the route yet
-    if (!driver || driver.status !== 'inativo') {
-        // If driver is already on the way, the driver's screen will handle the suggestion
-        return;
-    }
-
-    try {
-        // This is the automatic, silent recalculation for the driver
-        const allStudentsOnRoute = getCollection('students', [{ field: 'id', op: 'in', value: route.studentIds }]);
-        // Important: Filter out the student who will be marked absent
-        const presentStudents = allStudentsOnRoute.filter(s => s.id !== student.id && s.active !== false);
-        
-        if (presentStudents.length === 0) {
-            updateDoc('routes', route.id, { studentIds: [] });
-            return;
-        }
-
-        const schoolIds = Array.from(new Set(presentStudents.map(s => s.schoolId)));
-        const allSchools = getCollection('schools');
-        const schoolsOnRoute = allSchools.filter(s => schoolIds.includes(s.id));
-        
-        const vehicle = driver.vehicleId ? getDoc('vehicles', driver.vehicleId) : null;
-        const formatAddress = (entity) => entity && entity.street ? `${entity.street}, ${entity.number}, ${entity.neighborhood}, ${entity.city} - ${entity.state}` : 'Endereço indisponível';
-        
-        const input = {
-            students: presentStudents.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
-            schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
-            startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
-            vehicleCapacity: vehicle?.capacity,
-            optimizationMode: 'safe' as 'safe',
-            direction: 'ida' as 'ida'
-        };
-
-        const result = await optimizeSchoolVanRoute(input);
-        
-        // Add a notice for the driver to see when they start the route
-        const optimizationNotice = `Rota otimizada. ${student.name} foi removido(a) por ausência.`;
-        
-        updateDoc('routes', route.id, { 
-            studentIds: result.optimizedStops.map(s => s.id),
-            turnByTurnDirections: result.turnByTurnDirections,
-            lastOptimizedAt: new Date().toISOString(),
-            optimizationNotice: optimizationNotice,
-        });
-        
-        // This toast is for the parent, but we can also have one for the driver later.
-        toast({
-            title: "Rota do motorista otimizada!",
-            description: "O motorista receberá o novo plano de rota automaticamente.",
-        });
-
-    } catch (error) {
-        console.error("Failed to automatically recalculate route:", error);
-        toast({
-            title: "Erro na Otimização Automática",
-            description: "Não foi possível otimizar a rota para o motorista.",
-            variant: "destructive"
-        });
-    }
-  }, [student, getCollection, getDoc, updateDoc, toast]);
+  }, [student, updateDoc, toast]);
 
   const handleConfirmPresence = () => {
     if (!student) return;
@@ -605,5 +541,7 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
+
+    
 
     
