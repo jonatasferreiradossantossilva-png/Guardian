@@ -23,7 +23,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
-import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School, Info } from 'lucide-react';
+import { ArrowUp, ArrowDown, Users, AlertCircle, X, PlusCircle, School, Info, GripVertical } from 'lucide-react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
@@ -39,6 +39,9 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DndContext, closestCenter, KeyboardSensor, PointerSensor, useSensor, useSensors } from '@dnd-kit/core';
+import { arrayMove, SortableContext, sortableKeyboardCoordinates, useSortable, verticalListSortingStrategy } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
 
 
 type Driver = { id: string; name: string; vehicleId?: string; };
@@ -64,10 +67,38 @@ interface RouteFormProps {
 const getAbbreviatedClass = (student: Student | null | undefined) => {
     if (!student) return null;
     const serie = student.serie || '';
+    const turma = student.turma || '';
     // Transforms "5º Ano" into "5º" or "3º Ano A" into "3º A"
     const abbreviatedSerie = serie.replace(/ ano/i, '').trim();
-    return abbreviatedSerie || null;
+    return [abbreviatedSerie, turma].filter(Boolean).join(' ');
 };
+
+function SortableStopItem({ stop, index, children }) {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+  } = useSortable({id: `${stop.type}-${stop.id}-${index}`});
+  
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+  
+  return (
+    <div ref={setNodeRef} style={style} {...attributes} className="flex items-center w-full bg-background rounded-md my-1">
+        <Button {...listeners} variant="ghost" size="icon" className="h-full w-10 cursor-grab flex-shrink-0">
+             <GripVertical className="h-5 w-5 text-muted-foreground" />
+        </Button>
+        <div className="flex-1 min-w-0 pr-2">
+          {children}
+        </div>
+    </div>
+  );
+}
+
 
 export function RouteForm({
   route,
@@ -232,17 +263,6 @@ export function RouteForm({
     }
   }
 
-  const moveStop = (index: number, direction: 'up' | 'down') => {
-    if (direction === 'up' && index === 0) return;
-    if (direction === 'down' && index === stops.length - 1) return;
-
-    const newList = [...stops];
-    const item = newList.splice(index, 1)[0];
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    newList.splice(newIndex, 0, item);
-    setStops(newList);
-  };
-  
   const removeStop = (index: number) => {
     const stopToRemove = stops[index];
     if (stopToRemove.type === 'school') {
@@ -346,6 +366,24 @@ export function RouteForm({
     performSave(stops);
   };
   
+  const sensors = useSensors(
+    useSensor(PointerSensor),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event) => {
+    const {active, over} = event;
+    if (over && active.id !== over.id) {
+      setStops((items) => {
+        const oldIndex = items.findIndex((_, i) => `${active.id}`.endsWith(`-${i}`));
+        const newIndex = items.findIndex((_, i) => `${over.id}`.endsWith(`-${i}`));
+        return arrayMove(items, oldIndex, newIndex);
+      });
+    }
+  }
+
   return (
     <DialogContent className="sm:max-w-3xl">
       <DialogHeader>
@@ -483,41 +521,48 @@ export function RouteForm({
             <Card>
                 <CardContent className="p-2">
                     <ScrollArea className="h-[28rem]">
-                        {stops.length > 0 ? stops.map((stop, index) => {
-                            const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
-                            const displayClass = getAbbreviatedClass(student);
+                        <DndContext 
+                            sensors={sensors}
+                            collisionDetection={closestCenter}
+                            onDragEnd={handleDragEnd}
+                        >
+                            <SortableContext 
+                                items={stops.map((s, i) => `${s.type}-${s.id}-${i}`)}
+                                strategy={verticalListSortingStrategy}
+                            >
+                                {stops.length > 0 ? stops.map((stop, index) => {
+                                    const student = stop.type === 'student' ? studentsMap.get(stop.id) : null;
+                                    const displayClass = getAbbreviatedClass(student);
 
-                            return (
-                                <div key={`${stop.type}-${stop.id}-${index}`} className="flex items-center justify-between gap-2 rounded-md p-1 hover:bg-accent/50">
-                                    <div className="flex items-center gap-2 flex-1 min-w-0">
-                                        <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
-                                        {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-baseline gap-1.5">
-                                                <p className="truncate font-medium text-sm">{stop.name}</p>
-                                                {displayClass && <p className="text-xs text-muted-foreground">({displayClass})</p>}
+                                    return (
+                                      <SortableStopItem key={`${stop.type}-${stop.id}-${index}`} stop={stop} index={index}>
+                                        <div className="flex items-center justify-between gap-2 w-full">
+                                            <div className="flex items-center gap-2 flex-1 min-w-0">
+                                                <span className="w-6 flex-shrink-0 text-center text-xs font-mono text-muted-foreground">{index + 1}</span>
+                                                {stop.type === 'student' ? <Users className="h-4 w-4 flex-shrink-0 text-muted-foreground"/> : <School className="h-4 w-4 flex-shrink-0 text-muted-foreground"/>}
+                                                <div className="flex-1 min-w-0">
+                                                     <div className="flex items-center gap-1.5">
+                                                        <p className="truncate font-medium text-sm">{stop.name}</p>
+                                                        {displayClass && <p className="text-xs text-muted-foreground">({displayClass})</p>}
+                                                    </div>
+                                                    {stop.details && (
+                                                        <p className="truncate text-xs text-muted-foreground">
+                                                            {stop.details}
+                                                        </p>
+                                                    )}
+                                                </div>
                                             </div>
-                                            {stop.details && (
-                                                <p className="truncate text-xs text-muted-foreground">
-                                                    {stop.details}
-                                                </p>
-                                            )}
+                                            <div className="flex items-center flex-shrink-0">
+                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
+                                                    <X className="h-4 w-4 text-destructive" />
+                                                </Button>
+                                            </div>
                                         </div>
-                                    </div>
-                                    <div className="flex items-center flex-shrink-0">
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
-                                            <ArrowUp className="h-4 w-4" />
-                                        </Button>
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
-                                            <ArrowDown className="h-4 w-4" />
-                                        </Button>
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
-                                            <X className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            )
-                        }) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
+                                      </SortableStopItem>
+                                    )
+                                }) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
+                            </SortableContext>
+                        </DndContext>
                     </ScrollArea>
                     <div className="p-2 border-t">
                         <DropdownMenu>
@@ -584,3 +629,4 @@ export function RouteForm({
 
 
     
+
