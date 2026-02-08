@@ -35,7 +35,6 @@ import { useMockData } from '@/hooks/use-mock-data';
 import { Copy, Info, Loader2 } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
-import { geocodeAddress } from '@/ai/flows/geocode-address';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -45,13 +44,13 @@ const formSchema = z.object({
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
   shift: z.enum(['Manhã', 'Tarde', 'Integral'], { required_error: 'Selecione um turno.' }),
   monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
-  zipCode: z.string().min(8, { message: 'O CEP é obrigatório e deve ter pelo menos 8 dígitos.' }),
-  street: z.string().min(1, { message: 'A rua é obrigatória.' }),
-  number: z.string().min(1, { message: 'O número é obrigatório.' }),
+  zipCode: z.string().optional(),
+  street: z.string().optional(),
+  number: z.string().optional(),
   complement: z.string().optional(),
-  neighborhood: z.string().min(1, { message: 'O bairro é obrigatório.' }),
-  city: z.string().min(1, { message: 'A cidade é obrigatória.' }),
-  state: z.string().min(2, { message: 'O estado (UF) deve ter 2 caracteres.' }).max(2, { message: 'O estado (UF) deve ter 2 caracteres.' }),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
   active: z.boolean().default(true),
   serie: z.string().optional(),
   turma: z.string().optional(),
@@ -88,7 +87,6 @@ export function StudentForm({
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(formSchema),
@@ -126,10 +124,10 @@ export function StudentForm({
           if (!response.ok) throw new Error('Falha ao buscar CEP');
           const data = await response.json();
           if (!data.erro) {
-            form.setValue('street', data.logradouro, { shouldValidate: true });
-            form.setValue('neighborhood', data.bairro, { shouldValidate: true });
-            form.setValue('city', data.localidade, { shouldValidate: true });
-            form.setValue('state', data.uf, { shouldValidate: true });
+            form.setValue('street', data.logradouro);
+            form.setValue('neighborhood', data.bairro);
+            form.setValue('city', data.localidade);
+            form.setValue('state', data.uf);
             toast({
               title: 'Endereço preenchido!',
               description: 'Os dados de endereço foram carregados automaticamente.',
@@ -182,13 +180,13 @@ export function StudentForm({
     }
     const selectedParent = parents.find((p) => p.id === parentId);
     if (selectedParent && selectedParent.street) {
-      form.setValue('zipCode', selectedParent.zipCode || '', { shouldValidate: true });
-      form.setValue('street', selectedParent.street || '', { shouldValidate: true });
-      form.setValue('number', selectedParent.number || '', { shouldValidate: true });
+      form.setValue('zipCode', selectedParent.zipCode || '');
+      form.setValue('street', selectedParent.street || '');
+      form.setValue('number', selectedParent.number || '');
       form.setValue('complement', selectedParent.complement || '');
-      form.setValue('neighborhood', selectedParent.neighborhood || '', { shouldValidate: true });
-      form.setValue('city', selectedParent.city || '', { shouldValidate: true });
-      form.setValue('state', selectedParent.state || '', { shouldValidate: true });
+      form.setValue('neighborhood', selectedParent.neighborhood || '');
+      form.setValue('city', selectedParent.city || '');
+      form.setValue('state', selectedParent.state || '');
       toast({
         title: 'Endereço copiado!',
         description: `O endereço de ${selectedParent.name} foi preenchido.`,
@@ -203,44 +201,22 @@ export function StudentForm({
     }
   };
 
-  const onSubmit = async (data: StudentFormValues) => {
-    setIsSaving(true);
-    try {
-      const address = `${data.street}, ${data.number}, ${data.neighborhood}, ${data.city}, ${data.state}`;
-      const geocodeResult = await geocodeAddress({ address });
-
-      const finalData = {
-        ...data,
-        latitude: geocodeResult.latitude,
-        longitude: geocodeResult.longitude,
-      };
-
-      if (student) {
-        updateDoc('students', student.id, finalData);
-        toast({
-          title: 'Aluno atualizado!',
-          description: `Os dados de ${data.name} foram atualizados com sucesso.`,
-        });
-      } else {
-        const studentData = { ...finalData, status: 'aguardando' };
-        addDoc('students', studentData);
-        toast({
-          title: 'Aluno adicionado!',
-          description: `${data.name} foi adicionado com sucesso.`,
-        });
-      }
-      onFormSubmit();
-
-    } catch (error) {
-      console.error("Geocoding failed:", error);
+  const onSubmit = (data: StudentFormValues) => {
+    if (student) {
+      updateDoc('students', student.id, data);
       toast({
-        title: "Erro ao Salvar Endereço",
-        description: "Não foi possível encontrar as coordenadas para o endereço fornecido. Verifique o endereço e tente novamente.",
-        variant: "destructive",
+        title: 'Aluno atualizado!',
+        description: `Os dados de ${data.name} foram atualizados com sucesso.`,
       });
-    } finally {
-      setIsSaving(false);
+    } else {
+      const studentData = { ...data, status: 'aguardando' };
+      addDoc('students', studentData);
+      toast({
+        title: 'Aluno adicionado!',
+        description: `${data.name} foi adicionado com sucesso.`,
+      });
     }
+    onFormSubmit();
   };
 
   return (
@@ -305,7 +281,7 @@ export function StudentForm({
                     control={form.control} name="zipCode"
                     render={({ field }) => (
                         <FormItem className="md:col-span-1">
-                        <FormLabel>CEP</FormLabel>
+                        <FormLabel>CEP (Opcional)</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input placeholder="00000-000" {...field} />
@@ -322,7 +298,7 @@ export function StudentForm({
                     control={form.control} name="street"
                     render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                        <FormLabel>Rua</FormLabel>
+                        <FormLabel>Rua (Opcional)</FormLabel>
                         <FormControl><Input placeholder="Rua das Flores" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -334,7 +310,7 @@ export function StudentForm({
                     control={form.control} name="number"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Número</FormLabel>
+                        <FormLabel>Número (Opcional)</FormLabel>
                         <FormControl><Input placeholder="123" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -354,7 +330,7 @@ export function StudentForm({
                     control={form.control} name="neighborhood"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Bairro</FormLabel>
+                        <FormLabel>Bairro (Opcional)</FormLabel>
                         <FormControl><Input placeholder="Centro" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -366,7 +342,7 @@ export function StudentForm({
                     control={form.control} name="city"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Cidade</FormLabel>
+                        <FormLabel>Cidade (Opcional)</FormLabel>
                         <FormControl><Input placeholder="São Paulo" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
@@ -376,13 +352,42 @@ export function StudentForm({
                     control={form.control} name="state"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Estado (UF)</FormLabel>
+                        <FormLabel>Estado (UF) (Opcional)</FormLabel>
                         <FormControl><Input placeholder="SP" {...field} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
                 />
              </div>
+          </div>
+          
+           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
+            <FormField
+              control={form.control}
+              name="latitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Latitude (Opcional)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="any" placeholder="-23.55052" {...field} value={field.value ?? ''} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="longitude"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Longitude (Opcional)</FormLabel>
+                  <FormControl>
+                    <Input type="number" step="any" placeholder="-46.633308" {...field} value={field.value ?? ''}/>
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
           </div>
 
           <FormField
@@ -509,13 +514,12 @@ export function StudentForm({
                 Cancelar
               </Button>
             </DialogClose>
-            <Button type="submit" disabled={isSaving}>
-              {isSaving ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              {isSaving ? 'Salvando...' : 'Salvar'}
-            </Button>
+            <Button type="submit">Salvar</Button>
           </DialogFooter>
         </form>
       </Form>
     </DialogContent>
   );
 }
+
+    
