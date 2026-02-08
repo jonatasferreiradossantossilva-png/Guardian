@@ -184,35 +184,35 @@ export default function LandingPage() {
 
         {/* Differentiators Section */}
         <section id="diferenciais" className="w-full py-20 md:py-28">
-            <div className="container mx-auto">
-                <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Nossos Diferenciais: Uma Vantagem Competitiva Real</h2>
-                 <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg">
-                    Não somos apenas um mapa. Somos uma plataforma de inteligência operacional que gera economia e segurança.
-                </p>
-                <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
-                         <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
-                            <Sparkles className="h-8 w-8" />
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold">Planejamento de Rota Avançado</h3>
-                        <p className="mt-2 text-muted-foreground">Nossa ferramenta de planejamento analisa suas paradas para criar a rota mais econômica em tempo e dinheiro, dando ao gestor controle total sobre o percurso mais eficiente.</p>
+          <div className="container mx-auto">
+            <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Nossos Diferenciais: Uma Vantagem Competitiva Real</h2>
+             <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg">
+                Não somos apenas um mapa. Somos uma plataforma de inteligência operacional que gera economia e segurança.
+            </p>
+            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
+                <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                        <Sparkles className="h-8 w-8" />
                     </div>
-                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
-                            <ShieldCheck className="h-8 w-8" />
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold">Confiabilidade e Segurança</h3>
-                        <p className="mt-2 text-muted-foreground">Com funcionalidades como check-in por QR Code e operação offline, garantimos que o sistema funcione de forma confiável e segura em todas as situações, aumentando a tranquilidade de todos.</p>
+                    <h3 className="mt-4 text-xl font-semibold">Planejamento de Rota Inteligente</h3>
+                    <p className="mt-2 text-muted-foreground">Nossa ferramenta de planejamento analisa suas paradas para criar a rota mais econômica em tempo e dinheiro, dando ao gestor controle total sobre o percurso mais eficiente.</p>
+                </div>
+                <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                        <ShieldCheck className="h-8 w-8" />
                     </div>
-                    <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
-                        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
-                            <Users className="h-8 w-8" />
-                        </div>
-                        <h3 className="mt-4 text-xl font-semibold">Ecossistema 360° Integrado</h3>
-                        <p className="mt-2 text-muted-foreground">Conectamos gestores, motoristas, monitores e pais em uma única plataforma, eliminando a necessidade de apps fragmentados e criando uma fonte única de verdade para toda a operação.</p>
+                    <h3 className="mt-4 text-xl font-semibold">Confiabilidade e Segurança</h3>
+                    <p className="mt-2 text-muted-foreground">Com funcionalidades como check-in por QR Code e operação offline, garantimos que o sistema funcione de forma confiável e segura em todas as situações, aumentando a tranquilidade de todos.</p>
+                </div>
+                <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
+                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
+                        <Users className="h-8 w-8" />
                     </div>
+                    <h3 className="mt-4 text-xl font-semibold">Ecossistema 360° Integrado</h3>
+                    <p className="mt-2 text-muted-foreground">Conectamos gestores, motoristas, monitores e pais em uma única plataforma, eliminando a necessidade de apps fragmentados e criando uma fonte única de verdade para toda a operação.</p>
                 </div>
             </div>
+          </div>
         </section>
 
         {/* Competitive Analysis Section */}
@@ -233,7 +233,7 @@ export default function LandingPage() {
                 <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-end items-end text-right">
                   <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary">
                       <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
-                      <p className="text-sm text-foreground">Plataforma B2B completa, com roteirização, financeiro e comunicação. Valor para a empresa e para os pais.</p>
+                      <p className="text-sm text-foreground">Plataforma B2B que integra operações, finanças e comunicação. Valor para a empresa e para os pais.</p>
                   </div>
                 </div>
                 <div className="row-start-3 col-start-2 p-4 border-r border-dashed border-border flex flex-col justify-start items-start">
@@ -293,14 +293,14 @@ export default function LandingPage() {
                     <Card className="w-full max-w-md border-2 border-primary shadow-2xl shadow-primary/10">
                         <CardHeader>
                             <CardTitle className="text-xl">Plano PRO Completo</CardTitle>
-                            <CardDescription>Todas as funcionalidades, sem limites.</CardDescription>
+                            <CardDescription>A partir de R$ 9,90 por aluno/mês. Preço justo que escala com seu negócio.</CardDescription>
                         </CardHeader>
                         <CardContent>
                             <ul className="text-left space-y-3">
                                 <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Gestão Completa de Cadastros</span></li>
                                 <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Rastreamento em Tempo Real</span></li>
                                 <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Comunicação Integrada</span></li>
-                                <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Otimizador de Rotas com IA</span></li>
+                                <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Planejador de Rotas Inteligente</span></li>
                                 <li className="flex items-center gap-3"><CheckCircle className="h-5 w-5 text-primary" /><span className="font-medium">Gestão Financeira Completa</span></li>
                             </ul>
                         </CardContent>

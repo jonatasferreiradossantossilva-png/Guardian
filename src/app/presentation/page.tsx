@@ -150,8 +150,8 @@ export default function PresentationPage() {
             {/* Differentiators Section */}
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Gem className="inline-block text-primary h-12 w-12 mr-4" />Nossos Diferenciais</h2>
-                <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg mb-12">
-                    Não somos apenas um mapa. Somos uma plataforma de inteligência operacional que gera economia e segurança.
+                 <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg mb-12">
+                    Nossa vantagem competitiva não é uma única funcionalidade, mas a **integração completa** do ecossistema de transporte escolar em uma plataforma única.
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                      <div className="flex flex-col items-center text-center p-6 border-transparent rounded-lg">
@@ -251,26 +251,30 @@ export default function PresentationPage() {
                 <div className="grid md:grid-cols-2 gap-8 w-full max-w-4xl">
                     <div className="border-2 border-primary/50 rounded-xl p-8 text-center ring-4 ring-primary/10">
                         <h3 className="text-2xl font-bold">Plano PRO</h3>
-                        <p className="text-5xl font-bold my-4">R$ 89</p>
-                        <p className="text-muted-foreground font-medium">por veículo / mês</p>
+                        <div className="flex items-end justify-center my-4">
+                            <span className="text-5xl font-bold">R$ 9,90</span>
+                        </div>
+                        <p className="text-muted-foreground font-medium">por aluno / mês</p>
                         <ul className="text-left space-y-2 mt-6">
-                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão Completa</li>
+                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão Completa de Cadastros</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Rastreamento em Tempo Real</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Comunicação Integrada</li>
-                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Otimizador de Rotas Avançado</li>
-                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão Financeira</li>
+                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Planejador de Rotas</li>
+                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão Financeira Completa</li>
                         </ul>
                     </div>
                      <div className="border border-border rounded-xl p-8 text-center opacity-70">
                         <h3 className="text-2xl font-bold">Plano Básico</h3>
-                        <p className="text-5xl font-bold my-4">R$ 59</p>
-                        <p className="text-muted-foreground font-medium">por veículo / mês</p>
+                         <div className="flex items-end justify-center my-4">
+                            <span className="text-5xl font-bold">R$ 6,90</span>
+                        </div>
+                        <p className="text-muted-foreground font-medium">por aluno / mês</p>
                         <ul className="text-left space-y-2 mt-6">
-                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão Completa</li>
+                            <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Gestão de Cadastros</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Rastreamento em Tempo Real</li>
                             <li className="flex items-center gap-2"><CheckCircle className="text-primary h-5 w-5"/> Comunicação Integrada</li>
-                            <li className="flex items-center gap-2 text-muted-foreground"><XCircle className="h-5 w-5"/> Otimizador de Rotas Avançado</li>
-                            <li className="flex items-center gap-2 text-muted-foreground"><XCircle className="h-5 w-5"/> Gestão Financeira</li>
+                            <li className="flex items-center gap-2 text-muted-foreground"><XCircle className="h-5 w-5"/> Planejador de Rotas</li>
+                            <li className="flex items-center gap-2 text-muted-foreground"><XCircle className="h-5 w-5"/> Gestão Financeira Completa</li>
                         </ul>
                     </div>
                 </div>
