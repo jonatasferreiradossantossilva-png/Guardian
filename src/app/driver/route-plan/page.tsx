@@ -422,7 +422,7 @@ function BoardingChecklist({
                     </Button>
                     <div className="space-y-2 max-h-[50vh] overflow-y-auto p-1">
                         {students.map(student => (
-                            <StudentChecklistRow key={student.id} student={student} student={student} onStatusChange={onStatusChange} />
+                            <StudentChecklistRow key={student.id} student={student} onStatusChange={onStatusChange} />
                         ))}
                     </div>
                 </CardContent>
