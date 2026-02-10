@@ -2,6 +2,7 @@
 
 
 
+
 'use client';
 
 import { useState, useMemo, useEffect, memo, useCallback } from 'react';
@@ -28,6 +29,7 @@ import {
   Check,
   WifiOff,
   QrCode,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -127,14 +129,24 @@ const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: St
                 </>
             )}
             {student.status === 'a_bordo' && (
-                <Button size="sm" className="w-full" onClick={() => onStatusChange(student.id, 'desembarcado')}>
-                <Bus className="mr-2 h-4 w-4" /> Desembarcar
-                </Button>
+                <>
+                    <Button size="sm" className="flex-1" onClick={() => onStatusChange(student.id, 'desembarcado')}>
+                    <Bus className="mr-2 h-4 w-4" /> Desembarcar
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => onStatusChange(student.id, 'aguardando')} title="Corrigir status">
+                        <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                </>
             )}
             {(student.status === 'desembarcado' || student.status === 'ausente') && (
-                <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1.5 text-sm">
-                {statusText[student.status]}
-                </Badge>
+                 <>
+                    <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1.5 text-sm flex-1">
+                    {statusText[student.status]}
+                    </Badge>
+                    <Button variant="ghost" size="icon" onClick={() => onStatusChange(student.id, 'aguardando')} title="Corrigir status">
+                        <RotateCcw className="h-4 w-4 text-muted-foreground" />
+                    </Button>
+                </>
             )}
         </div>
       </CardContent>
