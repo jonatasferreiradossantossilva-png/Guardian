@@ -37,6 +37,7 @@ import {
   Check,
   X,
   Sparkles,
+  AlertOctagon,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -57,6 +58,8 @@ import { cn } from '@/lib/utils';
 import { RoutePolyline } from '@/components/shared/route-polyline';
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { routingGeoapify } from '@/ai/flows/routing-geoapify';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { ReportIncidentForm } from '@/components/dashboard/report-incident-form';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -105,7 +108,7 @@ const statusText: Record<StudentStatus, string> = {
   ausente: 'Ausente',
 };
 
-// --- Sub-components for the new UI ---
+// --- Sub-components ---
 
 const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute, onScanQrCode, details }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, onNavigate: (data: any) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onShareRoute: () => void, onScanQrCode: () => void, details: string }) => {
   if (!student) return null;
@@ -284,33 +287,43 @@ const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], for
   );
 };
 
-const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
+const FixedBottomBar = ({ onPause, onResume, onEnd, status, onReportIncident }) => (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-3 z-50">
-        <div className="mx-auto max-w-md">
-            <div className="grid grid-cols-3 gap-3">
-                <Button asChild variant="outline" className="flex flex-col h-auto py-2 items-center justify-center gap-1">
+        <div className="mx-auto max-w-lg">
+            <div className="grid grid-cols-4 gap-2">
+                <Button asChild variant="outline" className="flex flex-col h-auto py-2 items-center justify-center gap-1 px-1">
                     <Link href="/driver/messages">
                         <MessageSquare className="h-5 w-5" />
-                        <span className="text-xs font-normal">Mensagens</span>
+                        <span className="text-[10px] font-normal">Chat</span>
                     </Link>
                 </Button>
                 
+                <Dialog>
+                    <DialogTrigger asChild>
+                        <Button variant="outline" className="flex flex-col h-auto py-2 items-center justify-center gap-1 px-1 text-amber-500 border-amber-500/20">
+                            <AlertOctagon className="h-5 w-5" />
+                            <span className="text-[10px] font-normal">Incidente</span>
+                        </Button>
+                    </DialogTrigger>
+                    <ReportIncidentForm onFormSubmit={() => {}} />
+                </Dialog>
+                
                 {status === 'em_rota' && (
-                    <Button variant="outline" className="flex flex-col h-auto py-2 items-center justify-center gap-1" onClick={onPause}>
+                    <Button variant="outline" className="flex flex-col h-auto py-2 items-center justify-center gap-1 px-1" onClick={onPause}>
                         <Pause className="h-5 w-5" />
-                        <span className="text-xs font-normal">Pausar</span>
+                        <span className="text-[10px] font-normal">Pausar</span>
                     </Button>
                 )}
                 {status === 'pausa' && (
-                    <Button className="flex flex-col h-auto py-2 items-center justify-center gap-1" onClick={onResume}>
+                    <Button className="flex flex-col h-auto py-2 items-center justify-center gap-1 px-1" onClick={onResume}>
                         <Play className="h-5 w-5" />
-                        <span className="text-xs font-normal">Retomar</span>
+                        <span className="text-[10px] font-normal">Retomar</span>
                     </Button>
                 )}
 
-                <Button variant="destructive" className="flex flex-col h-auto py-2 items-center justify-center gap-1" onClick={onEnd}>
+                <Button variant="destructive" className="flex flex-col h-auto py-2 items-center justify-center gap-1 px-1" onClick={onEnd}>
                     <Square className="h-5 w-5" />
-                    <span className="text-xs font-normal">Finalizar</span>
+                    <span className="text-[10px] font-normal">Finalizar</span>
                 </Button>
             </div>
         </div>
@@ -443,7 +456,7 @@ function BoardingChecklist({
 
 
 export default function DriverRoutePlanPage() {
-  const { updateDoc } = useMockData();
+  const { updateDoc, setDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -472,7 +485,6 @@ export default function DriverRoutePlanPage() {
 
 
   useEffect(() => {
-    // In a real app, you'd get this from your auth state.
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId || "user-motorista-4"); 
     const storedActiveRouteId = sessionStorage.getItem('activeRouteId');
@@ -492,6 +504,26 @@ export default function DriverRoutePlanPage() {
   const driverId = driverProfile?.id;
   
   const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
+
+  // --- Real-time Movement Simulation ---
+  useEffect(() => {
+    if (driverProfile?.status !== 'em_rota' || !driverId || !driverLocation) return;
+
+    const interval = setInterval(() => {
+        // Simula uma pequena variação de posição para o pai ver movimento
+        const jitterLat = (Math.random() - 0.5) * 0.0002;
+        const jitterLng = (Math.random() - 0.5) * 0.0002;
+        
+        setDoc(`locations/${driverId}`, {
+            latitude: driverLocation.latitude + jitterLat,
+            longitude: driverLocation.longitude + jitterLng,
+            timestamp: new Date().toISOString()
+        });
+    }, 10000); // Atualiza a cada 10 segundos
+
+    return () => clearInterval(interval);
+  }, [driverProfile?.status, driverId, driverLocation, setDoc]);
+
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
     'routes',
@@ -516,15 +548,14 @@ export default function DriverRoutePlanPage() {
   }, [routes, selectedRouteIdForStart]);
 
   const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s])), [schools]);
+  const studentsMap = useMemo(() => new Map(allStudents?.map(s => [s.id, s])), [allStudents]);
 
   const formatStudentDetails = useCallback((student: Student) => {
     if (!student) return '';
     const school = schoolsMap.get(student.schoolId);
 
-    // School abbreviation
     let schoolAbbr = school?.name?.replace(/^(Escola |Colégio )/i, '') || '';
 
-    // Serie/Turma abbreviation
     let classInfo = '';
     if (student.serie) {
         classInfo = student.serie.replace(/ (Ano|Série)/i, '').trim();
@@ -699,7 +730,7 @@ export default function DriverRoutePlanPage() {
             });
 
             // 2. Traduzir IDs da IA para nosso formato de Stop
-            const optimizedStops: Stop[] = optimization.optimizedStops.map(os => {
+            const optimizedStops: Stop[] = (optimization.optimizedStops || []).map(os => {
                 const student = studentsMap.get(os.id);
                 const school = schoolsMap.get(os.id);
                 if (student) return { id: student.id, type: 'student', data: student };
@@ -711,15 +742,16 @@ export default function DriverRoutePlanPage() {
             const waypoints = optimizedStops.map(s => ({ lat: s.data.latitude, lng: s.data.longitude }));
             if (driverLocation) waypoints.unshift({ lat: driverLocation.latitude, lng: driverLocation.longitude });
 
-            const routing = await routingGeoapify({ waypoints });
-
-            // 4. Salvar tudo no Firestore e Sessão
-            const finalStopIds = optimizedStops.map(s => s.id);
-            updateDoc('routes', route.id, { 
-                studentIds: finalStopIds,
-                polyline: routing.polyline,
-                lastOptimizedAt: new Date().toISOString()
-            });
+            if (waypoints.length >= 2) {
+                const routing = await routingGeoapify({ waypoints });
+                updateDoc('routes', route.id, { 
+                    studentIds: optimizedStops.map(s => s.id),
+                    polyline: routing.polyline,
+                    lastOptimizedAt: new Date().toISOString()
+                });
+            } else {
+                updateDoc('routes', route.id, { studentIds: optimizedStops.map(s => s.id) });
+            }
 
             sessionStorage.setItem('activeRouteId', route.id);
             setActiveRouteId(route.id);
@@ -735,13 +767,12 @@ export default function DriverRoutePlanPage() {
 
         } catch (error) {
             console.error("Erro ao iniciar rota dinâmica:", error);
-            // Fallback para início manual simples em caso de falha de rede
             const finalStopIds = baseStops.map(s => s.id);
             updateDoc('routes', route.id, { studentIds: finalStopIds });
             sessionStorage.setItem('activeRouteId', route.id);
             setActiveRouteId(route.id);
             updateDoc('drivers', driverId, { status: 'em_rota' });
-            toast({ title: "Viagem Iniciada", description: "Não foi possível otimizar agora, seguindo plano padrão." });
+            toast({ title: "Viagem Iniciada", description: "Seguindo plano padrão." });
         } finally {
             setIsStarting(false);
         }
@@ -760,7 +791,7 @@ export default function DriverRoutePlanPage() {
             if (direction === 'volta') {
                 const schoolStops = stopsToUse.filter(s => s.type === 'school');
                 const studentStops = stopsToUse.filter(s => s.type === 'student');
-                const reversedStudentStops = [...studentStops].reverse(); // Reverse for default drop-off
+                const reversedStudentStops = [...studentStops].reverse(); 
                 stopsToUse = [...schoolStops, ...reversedStudentStops];
             }
             handleStartRoute(stopsToUse);
@@ -852,11 +883,7 @@ export default function DriverRoutePlanPage() {
    
     const handleShareRoute = useCallback(() => {
         if (!driverLocation) {
-            toast({
-                title: "Localização não disponível",
-                description: "Não foi possível obter sua localização atual para compartilhar.",
-                variant: "destructive",
-            });
+            toast({ title: "Localização não disponível", variant: "destructive" });
             return;
         }
 
@@ -866,11 +893,7 @@ export default function DriverRoutePlanPage() {
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
 
         window.open(whatsappUrl, '_blank');
-
-        toast({
-            title: "Pronto para compartilhar!",
-            description: "Sua mensagem foi gerada para ser enviada no WhatsApp.",
-        });
+        toast({ title: "Pronto para compartilhar!" });
     }, [driverLocation, toast]);
 
     const handlePickup = (schoolId: string) => {
@@ -890,7 +913,7 @@ export default function DriverRoutePlanPage() {
     const handleScanSuccess = useCallback((scannedId: string) => {
         const student = (allStudents || []).find(s => s.id === scannedId);
         if (!student) {
-            toast({ title: "Aluno não encontrado", description: "O QR code não corresponde a um aluno nesta rota.", variant: "destructive"});
+            toast({ title: "Aluno não encontrado", variant: "destructive"});
             return;
         }
 
@@ -903,12 +926,12 @@ export default function DriverRoutePlanPage() {
             if (checklistSchool && student.schoolId === checklistSchool.id) {
                 newStatus = 'a_bordo';
             } else {
-                 toast({ title: "Ação não permitida", description: "Este aluno não pertence a este ponto de embarque.", variant: "destructive"});
+                 toast({ title: "Ação não permitida", variant: "destructive"});
                 return;
             }
         }
         else {
-             toast({ title: "Ação não permitida", description: `O status de ${student.name} não pode ser alterado via QR Code neste momento.`, variant: "destructive"});
+             toast({ title: "Ação não permitida", variant: "destructive"});
             return;
         }
 
@@ -948,7 +971,7 @@ export default function DriverRoutePlanPage() {
           {!isOnline && (
               <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2 rounded-md absolute top-4">
                   <WifiOff className="h-4 w-4" />
-                  Você está offline. Conecte-se para iniciar uma rota.
+                  Você está offline.
               </div>
           )}
           <Card className="w-full max-w-sm text-center">
@@ -990,11 +1013,11 @@ export default function DriverRoutePlanPage() {
                       <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as 'ida' | 'volta')} className="space-y-2 pt-2">
                           <div className="flex items-center space-x-2">
                               <RadioGroupItem value="ida" id="ida" />
-                              <Label htmlFor="ida" className="font-normal">Ida para Escola</Label>
+                              <Label htmlFor="ida" className="font-normal">Ida</Label>
                           </div>
                           <div className="flex items-center space-x-2">
                               <RadioGroupItem value="volta" id="volta" />
-                              <Label htmlFor="volta" className="font-normal">Volta para Casa</Label>
+                              <Label htmlFor="volta" className="font-normal">Volta</Label>
                           </div>
                       </RadioGroup>
                   </div>
@@ -1024,7 +1047,7 @@ export default function DriverRoutePlanPage() {
               <AlertDialogHeader>
                   <AlertDialogTitle>Por onde você vai começar?</AlertDialogTitle>
                   <AlertDialogDescription>
-                      Selecione a escola que será seu primeiro ponto de embarque para a viagem de volta.
+                      Selecione a escola de embarque.
                   </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="py-4">
@@ -1052,12 +1075,6 @@ export default function DriverRoutePlanPage() {
    if (driverProfile.status === 'pausa') {
         return (
             <div className="flex flex-col items-center justify-center h-screen p-4 space-y-6 bg-secondary">
-                 {!isOnline && (
-                    <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2 rounded-md absolute top-4">
-                        <WifiOff className="h-4 w-4" />
-                        Você está offline. As alterações serão sincronizadas quando a conexão voltar.
-                    </div>
-                 )}
                  <Pause className="h-16 w-16 text-muted-foreground" />
                  <h1 className="text-2xl font-bold">Viagem Pausada</h1>
                  <Button size="lg" onClick={handleResumeRoute}>
@@ -1067,7 +1084,8 @@ export default function DriverRoutePlanPage() {
                   <FixedBottomBar 
                     status={driverProfile.status} 
                     onEnd={handleEndRoute} 
-                    onResume={handleResumeRoute} 
+                    onResume={handleResumeRoute}
+                    onReportIncident={() => {}}
                   />
             </div>
         );
@@ -1103,7 +1121,7 @@ export default function DriverRoutePlanPage() {
             {!isOnline && (
                 <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm flex items-center justify-center gap-2 sticky top-0 z-50">
                     <WifiOff className="h-4 w-4" />
-                    Você está offline. As alterações serão salvas e sincronizadas quando a conexão voltar.
+                    Offline. Sincronização automática pendente.
                 </div>
             )}
             <Tabs defaultValue="plan" className="w-full">
@@ -1125,10 +1143,10 @@ export default function DriverRoutePlanPage() {
                             <Card className="w-full shadow-lg border-green-500/20 text-center p-8">
                                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4"/>
                                 <CardTitle className="text-2xl">Viagem Finalizada!</CardTitle>
-                                <CardDescription className="mt-2">Todos os alunos foram embarcados/desembarcados. Clique em "Finalizar" na barra inferior para concluir.</CardDescription>
+                                <CardDescription className="mt-2">Todos os alunos foram processados.</CardDescription>
                                 <CardFooter className="flex-col gap-3 mt-6">
                                     <Button variant="destructive" className="w-full" onClick={handleEndRoute}>
-                                    <Square className="mr-2 h-4 w-4" /> Finalizar e Arquivar Viagem
+                                    <Square className="mr-2 h-4 w-4" /> Finalizar Viagem
                                     </Button>
                                     <Button variant="outline" className="w-full" onClick={handleUndoLastAction} disabled={!lastProcessedStudent}>
                                     <ArrowLeft className="mr-2 h-4 w-4" /> Corrigir Última Parada
@@ -1171,11 +1189,6 @@ export default function DriverRoutePlanPage() {
                     </div>
                 </TabsContent>
                 <TabsContent value="map" className="mt-4">
-                     <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground px-4">
-                        <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Sua Posição</span></div>
-                        <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Aluno</span></div>
-                        <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
-                    </div>
                      <div className="relative h-[70vh] w-full border-y">
                         <Button
                              variant="outline"
@@ -1190,9 +1203,6 @@ export default function DriverRoutePlanPage() {
                                 <div className="flex h-full w-full items-center justify-center bg-secondary/30">
                                     <div className="text-center p-4">
                                         <p className="font-semibold text-lg">Mapa Indisponível</p>
-                                        <p className="text-muted-foreground text-sm">
-                                            A chave da API do Google Maps não foi configurada.
-                                        </p>
                                     </div>
                                 </div>
                             ) : (
@@ -1204,9 +1214,6 @@ export default function DriverRoutePlanPage() {
                                         gestureHandling={'greedy'}
                                         disableDefaultUI={true}
                                         zoomControl={true}
-                                        zoomControlOptions={{
-                                            position: 3,
-                                        }}
                                     >
                                         <RouteMap 
                                             driverLocation={driverLocation}
@@ -1228,6 +1235,7 @@ export default function DriverRoutePlanPage() {
                 onPause={handlePauseRoute} 
                 onResume={handleResumeRoute}
                 onEnd={handleEndRoute}
+                onReportIncident={() => {}}
             />
 
             {isModalOpen && selectedStudentForModal && (

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -30,6 +31,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import { useMockData } from '@/hooks/use-mock-data';
+import { useEffect, useState } from 'react';
 
 const formSchema = z.object({
   category: z.enum(['Trânsito', 'Acidente', 'Perigo', 'Outro'], { required_error: 'Selecione uma categoria.' }),
@@ -46,6 +48,11 @@ interface ReportIncidentFormProps {
 export function ReportIncidentForm({ onFormSubmit }: ReportIncidentFormProps) {
   const { toast } = useToast();
   const { addDoc } = useMockData();
+  const [mockUserId, setMockUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setMockUserId(sessionStorage.getItem('mockUserId'));
+  }, []);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -57,12 +64,11 @@ export function ReportIncidentForm({ onFormSubmit }: ReportIncidentFormProps) {
   });
 
   const onSubmit = (data: FormValues) => {
-    // In a real app, we'd get the user's location. For now, we'll use a default.
     const newIncident = {
       ...data,
       timestamp: new Date().toISOString(),
-      location: { lat: -23.555, lng: -46.645 }, // Default location
-      reporter: 'Admin User', // Assuming the admin is reporting
+      location: { lat: -23.555, lng: -46.645 }, // Localização padrão de exemplo
+      reporter: mockUserId || 'Usuário do Sistema',
     };
     addDoc('incidents', newIncident);
     toast({

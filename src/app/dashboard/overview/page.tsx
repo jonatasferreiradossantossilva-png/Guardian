@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
+import { MonthlyRevenueChart } from "@/components/dashboard/monthly-revenue-chart";
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
@@ -96,49 +97,14 @@ export default function DashboardOverviewPage() {
         </div>
       </div>
 
-      {/* API Diagnostics (Visible only during development/validation) */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium flex items-center justify-between">
-                <span>Diagnóstico de Integração (Geoapify)</span>
-                <Button variant="ghost" size="sm" onClick={handleValidateApis} disabled={isValidating} className="h-8">
-                    {isValidating ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <RefreshCw className="h-3 w-3 mr-2" />}
-                    Re-testar
-                </Button>
-            </CardTitle>
-        </CardHeader>
-        <CardContent className="py-3 flex gap-6 text-xs">
-            <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Geocoding:</span>
-                {isValidating ? (
-                    <span className="text-muted-foreground italic flex items-center gap-1 animate-pulse"><Loader2 className="h-3 w-3 animate-spin"/> Verificando...</span>
-                ) : apiStatus ? (
-                    apiStatus.geocoding.status === 'ok' ? 
-                    <span className="text-green-500 flex items-center gap-1 font-semibold"><ShieldCheck className="h-3 w-3"/> Ativo</span> : 
-                    <span className="text-red-500 flex items-center gap-1 font-semibold" title={apiStatus.geocoding.message}><ShieldAlert className="h-3 w-3"/> Erro</span>
-                ) : <span className="text-muted-foreground italic">Aguardando...</span>}
-            </div>
-            <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Routing:</span>
-                {isValidating ? (
-                    <span className="text-muted-foreground italic flex items-center gap-1 animate-pulse"><Loader2 className="h-3 w-3 animate-spin"/> Verificando...</span>
-                ) : apiStatus ? (
-                    apiStatus.routing.status === 'ok' ? 
-                    <span className="text-green-500 flex items-center gap-1 font-semibold"><ShieldCheck className="h-3 w-3"/> Ativo</span> : 
-                    <span className="text-red-500 flex items-center gap-1 font-semibold" title={apiStatus.routing.message}><ShieldAlert className="h-3 w-3"/> Erro</span>
-                ) : <span className="text-muted-foreground italic">Aguardando...</span>}
-            </div>
-            {apiStatus && (apiStatus.geocoding.status === 'error' || apiStatus.routing.status === 'error') && (
-                <p className="text-red-400 italic">Verifique se os serviços Geocoding e Routing estão habilitados para sua chave no painel da Geoapify.</p>
-            )}
-        </CardContent>
-      </Card>
-
       <OverviewCards filters={filters} />
 
       <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
+        <MonthlyRevenueChart />
         <InvoicesStatusChart filters={filters}/>
-        <ExpensesCategoryChart filters={filters} />
+        <div className="lg:col-span-2">
+            <ExpensesCategoryChart filters={filters} />
+        </div>
       </div>
     </div>
   );
