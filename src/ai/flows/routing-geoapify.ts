@@ -29,7 +29,6 @@ export type RoutingGeoapifyOutput = z.infer<typeof RoutingGeoapifyOutputSchema>;
  * Função auxiliar para buscar um trecho da rota
  */
 async function fetchRouteChunk(waypoints: {lat: number, lng: number}[], mode: string, apiKey: string) {
-    // Validar se todos os pontos são números válidos e finitos antes de enviar
     const validWaypoints = waypoints.filter(w => 
         typeof w.lat === 'number' && Number.isFinite(w.lat) && 
         typeof w.lng === 'number' && Number.isFinite(w.lng)
@@ -39,9 +38,7 @@ async function fetchRouteChunk(waypoints: {lat: number, lng: number}[], mode: st
         throw new Error('Número insuficiente de coordenadas válidas para traçar a rota.');
     }
 
-    // Garantir que o modo de transporte seja válido e nunca undefined
     const activeMode = mode || 'drive';
-
     const waypointsStr = validWaypoints.map(w => `${w.lat.toFixed(6)},${w.lng.toFixed(6)}`).join('|');
     const url = `https://api.geoapify.com/v1/routing?waypoints=${encodeURIComponent(waypointsStr)}&mode=${activeMode}&apiKey=${apiKey}`;
 
@@ -71,10 +68,7 @@ export const routingGeoapify = ai.defineFlow(
     const apiKey = process.env.GEOAPIFY_API_KEY;
     if (!apiKey) throw new Error('GEOAPIFY_API_KEY não configurada.');
 
-    // Garantir fallback para o modo de transporte
     const activeMode = mode || 'drive';
-
-    // Limpeza inicial de segurança nos inputs
     const cleanedWaypoints = waypoints.filter(w => 
         Number.isFinite(w.lat) && Number.isFinite(w.lng)
     );
@@ -83,7 +77,6 @@ export const routingGeoapify = ai.defineFlow(
         throw new Error('Dados de GPS insuficientes para gerar a rota.');
     }
 
-    // O plano gratuito da Geoapify permite no máximo 5 waypoints por chamada.
     const MAX_POINTS = 5;
     
     if (cleanedWaypoints.length <= MAX_POINTS) {
@@ -95,7 +88,6 @@ export const routingGeoapify = ai.defineFlow(
         };
     }
 
-    // Lógica de Chunking: sobrepomos o último ponto de um chunk como o primeiro do próximo
     let combinedCoordinates: number[][] = [];
     let totalDistance = 0;
     let totalTime = 0;
@@ -108,18 +100,18 @@ export const routingGeoapify = ai.defineFlow(
             const route = await fetchRouteChunk(chunk, activeMode, apiKey);
             const coords = route.geometry.coordinates;
             
-            if (combinedCoordinates.length > 0) {
-                // Remove o primeiro ponto para não duplicar com o último do chunk anterior
-                combinedCoordinates.push(...coords.slice(1));
-            } else {
-                combinedCoordinates.push(...coords);
+            // Validar que os dados retornados são úteis antes de processar
+            if (Array.isArray(coords) && coords.length > 0) {
+                if (combinedCoordinates.length > 0) {
+                    combinedCoordinates.push(...coords.slice(1));
+                } else {
+                    combinedCoordinates.push(...coords);
+                }
+                totalDistance += route.properties.distance || 0;
+                totalTime += route.properties.time || 0;
             }
-
-            totalDistance += route.properties.distance;
-            totalTime += route.properties.time;
         } catch (e) {
             console.error("Falha ao processar chunk de rota:", e);
-            // Se um chunk falhar e já temos dados, paramos por aqui para não quebrar tudo
             if (combinedCoordinates.length > 0) break;
             throw e;
         }

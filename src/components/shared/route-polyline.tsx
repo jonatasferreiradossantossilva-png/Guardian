@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useEffect, useMemo } from 'react';
@@ -25,20 +24,27 @@ export function RoutePolyline({
 
   const path = useMemo(() => {
     if (encodedPath) {
-        // Se tivéssemos um helper de decode, usaríamos aqui. 
-        // Para este protótipo, focaremos no GeoJSON do Geoapify.
+        // Placeholder para futura implementação de decode de polylines comprimidas
         return null;
     }
 
     if (geoJsonPath) {
       try {
         const geometry = JSON.parse(geoJsonPath);
-        if (geometry.type === 'LineString') {
+        if (geometry.type === 'LineString' && Array.isArray(geometry.coordinates)) {
           // GeoJSON usa [lng, lat], Google usa {lat, lng}
-          return geometry.coordinates.map((coord: number[]) => ({
-            lat: coord[1],
-            lng: coord[0],
-          }));
+          // Filtramos rigorosamente para garantir que apenas números finitos sejam passados ao Google Maps
+          return geometry.coordinates
+            .filter((coord: any) => 
+                Array.isArray(coord) && 
+                coord.length >= 2 && 
+                typeof coord[0] === 'number' && Number.isFinite(coord[0]) &&
+                typeof coord[1] === 'number' && Number.isFinite(coord[1])
+            )
+            .map((coord: number[]) => ({
+              lat: coord[1],
+              lng: coord[0],
+            }));
         }
       } catch (e) {
         console.error("Erro ao processar GeoJSON da rota", e);
@@ -48,20 +54,25 @@ export function RoutePolyline({
   }, [encodedPath, geoJsonPath]);
 
   useEffect(() => {
-    if (!map || !path) return;
+    // Só criamos a polyline se o mapa estiver pronto e o path tiver pelo menos 2 pontos válidos
+    if (!map || !path || path.length < 2) return;
 
-    const polyline = new google.maps.Polyline({
-      path: path,
-      geodesic: true,
-      strokeColor: strokeColor,
-      strokeOpacity: 0.8,
-      strokeWeight: strokeWeight,
-      map: map,
-    });
+    try {
+        const polyline = new google.maps.Polyline({
+          path: path,
+          geodesic: true,
+          strokeColor: strokeColor,
+          strokeOpacity: 0.8,
+          strokeWeight: strokeWeight,
+          map: map,
+        });
 
-    return () => {
-      polyline.setMap(null);
-    };
+        return () => {
+          polyline.setMap(null);
+        };
+    } catch (err) {
+        console.error("Erro ao renderizar Polyline no Google Maps:", err);
+    }
   }, [map, path, strokeColor, strokeWeight]);
 
   return null;
