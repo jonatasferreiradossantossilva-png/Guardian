@@ -26,6 +26,7 @@ import {
   WifiOff,
   QrCode,
   RotateCcw,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -206,7 +207,7 @@ export default function AssistantRoutePlanPage() {
   const { pendingStudents, completedStudents } = useMemo(() => {
     if (!orderedStudents) return { pendingStudents: [], completedStudents: [] };
     const pending = orderedStudents.filter(s => s.status === 'aguardando');
-    const completed = orderedStudents.sort((a, b) => (a.status === 'aguardando' ? -1 : 1)).filter(s => s.status !== 'aguardando');
+    const completed = [...orderedStudents].sort((a, b) => (a.status === 'aguardando' ? -1 : 1)).filter(s => s.status !== 'aguardando');
     return { pendingStudents: pending, completedStudents: completed };
   }, [orderedStudents]);
   
@@ -226,6 +227,19 @@ export default function AssistantRoutePlanPage() {
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
   }, [updateDoc]);
+
+  const handleCollectiveBoarding = useCallback(() => {
+    if (pendingStudents.length === 0) return;
+    
+    pendingStudents.forEach(student => {
+      updateDoc('students', student.id, { status: 'a_bordo' });
+    });
+    
+    toast({ 
+      title: "Embarque Coletivo Realizado!", 
+      description: `${pendingStudents.length} alunos foram marcados como a bordo.`,
+    });
+  }, [pendingStudents, updateDoc, toast]);
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
     setSelectedStudentForModal(student);
@@ -341,7 +355,19 @@ export default function AssistantRoutePlanPage() {
             
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
               <div className="space-y-4">
-                <h2 className="text-2xl font-bold tracking-tight">A Fazer ({pendingStudents.length})</h2>
+                <div className="flex items-center justify-between">
+                    <h2 className="text-2xl font-bold tracking-tight">A Fazer ({pendingStudents.length})</h2>
+                    {pendingStudents.length > 0 && (
+                        <Button 
+                            size="sm" 
+                            variant="outline" 
+                            className="text-green-600 border-green-600 hover:bg-green-50 dark:hover:bg-green-950/30" 
+                            onClick={handleCollectiveBoarding}
+                        >
+                            <Users className="mr-2 h-4 w-4" /> Embarque Coletivo
+                        </Button>
+                    )}
+                </div>
                 {pendingStudents.length > 0 ? (
                   pendingStudents.map((student) => (
                     <StudentCard
