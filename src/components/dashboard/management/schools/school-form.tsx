@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,9 +25,10 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Loader2, MapPin } from 'lucide-react';
+import { Loader2, MapPin, CheckCircle2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -73,6 +75,10 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       active: true,
     },
   });
+
+  const lat = form.watch('latitude');
+  const lng = form.watch('longitude');
+  const hasGps = !!(lat && lng);
 
   const handleGeocode = async () => {
     const { street, number, neighborhood, city, state } = form.getValues();
@@ -221,9 +227,15 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     )}
                 />
                  <div className="col-span-2 flex items-end">
-                    <Button type="button" variant="secondary" className="w-full" onClick={handleGeocode} disabled={isGeocoding}>
-                        {isGeocoding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
-                        Validar GPS da Escola
+                    <Button 
+                      type="button" 
+                      variant={hasGps ? "outline" : "secondary"} 
+                      className={cn("w-full transition-all", hasGps && "border-green-500/50 text-green-600")} 
+                      onClick={handleGeocode} 
+                      disabled={isGeocoding}
+                    >
+                        {isGeocoding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : hasGps ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <MapPin className="mr-2 h-4 w-4" />}
+                        {hasGps ? "Localização Validada" : "Validar GPS da Escola"}
                     </Button>
                 </div>
              </div>
@@ -247,14 +259,14 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
               control={form.control}
               name="latitude"
               render={({ field }) => (
-                <FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" step="any" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
               )}
             />
             <FormField
               control={form.control}
               name="longitude"
               render={({ field }) => (
-                <FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" step="any" {...field} /></FormControl><FormMessage /></FormItem>
+                <FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''}/></FormControl><FormMessage /></FormItem>
               )}
             />
           </div>

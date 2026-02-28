@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,8 +33,8 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Copy, Info, Loader2, MapPin, HeartPulse } from 'lucide-react';
-import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Copy, Info, Loader2, MapPin, HeartPulse, CheckCircle2 } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Textarea } from '@/components/ui/textarea';
@@ -118,6 +119,10 @@ export function StudentForm({
 
   const zipCode = form.watch('zipCode');
   const parentId = form.watch('parentId');
+  const lat = form.watch('latitude');
+  const lng = form.watch('longitude');
+
+  const hasGps = !!(lat && lng);
 
   const handleGeocode = async () => {
     const { street, number, neighborhood, city, state } = form.getValues();
@@ -309,9 +314,15 @@ export function StudentForm({
                     )}
                 />
                 <div className="flex items-end">
-                    <Button type="button" variant="secondary" className="w-full" onClick={handleGeocode} disabled={isGeocoding}>
-                        {isGeocoding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
-                        Validar GPS
+                    <Button 
+                      type="button" 
+                      variant={hasGps ? "outline" : "secondary"} 
+                      className={cn("w-full transition-all", hasGps && "border-green-500/50 text-green-600")} 
+                      onClick={handleGeocode} 
+                      disabled={isGeocoding}
+                    >
+                        {isGeocoding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : hasGps ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <MapPin className="mr-2 h-4 w-4" />}
+                        {hasGps ? "GPS Validado" : "Validar GPS"}
                     </Button>
                 </div>
              </div>
