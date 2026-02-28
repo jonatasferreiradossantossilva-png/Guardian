@@ -39,8 +39,11 @@ async function fetchRouteChunk(waypoints: {lat: number, lng: number}[], mode: st
         throw new Error('Número insuficiente de coordenadas válidas para traçar a rota.');
     }
 
+    // Garantir que o modo de transporte seja válido e nunca undefined
+    const activeMode = mode || 'drive';
+
     const waypointsStr = validWaypoints.map(w => `${w.lat.toFixed(6)},${w.lng.toFixed(6)}`).join('|');
-    const url = `https://api.geoapify.com/v1/routing?waypoints=${encodeURIComponent(waypointsStr)}&mode=${mode}&apiKey=${apiKey}`;
+    const url = `https://api.geoapify.com/v1/routing?waypoints=${encodeURIComponent(waypointsStr)}&mode=${activeMode}&apiKey=${apiKey}`;
 
     const response = await fetch(url);
     if (!response.ok) {
@@ -68,6 +71,9 @@ export const routingGeoapify = ai.defineFlow(
     const apiKey = process.env.GEOAPIFY_API_KEY;
     if (!apiKey) throw new Error('GEOAPIFY_API_KEY não configurada.');
 
+    // Garantir fallback para o modo de transporte
+    const activeMode = mode || 'drive';
+
     // Limpeza inicial de segurança nos inputs
     const cleanedWaypoints = waypoints.filter(w => 
         Number.isFinite(w.lat) && Number.isFinite(w.lng)
@@ -81,7 +87,7 @@ export const routingGeoapify = ai.defineFlow(
     const MAX_POINTS = 5;
     
     if (cleanedWaypoints.length <= MAX_POINTS) {
-        const route = await fetchRouteChunk(cleanedWaypoints, mode, apiKey);
+        const route = await fetchRouteChunk(cleanedWaypoints, activeMode, apiKey);
         return {
             polyline: JSON.stringify(route.geometry),
             distanceKm: route.properties.distance / 1000,
@@ -99,7 +105,7 @@ export const routingGeoapify = ai.defineFlow(
         if (chunk.length < 2) break;
 
         try {
-            const route = await fetchRouteChunk(chunk, mode, apiKey);
+            const route = await fetchRouteChunk(chunk, activeMode, apiKey);
             const coords = route.geometry.coordinates;
             
             if (combinedCoordinates.length > 0) {
