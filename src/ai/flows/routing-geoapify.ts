@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview Fluxo para obter rotas e polilinhas usando a API da Geoapify (OpenStreetMap).
- * Serve como motor de resiliência (Plano B) para o sistema Guardian.
+ * Implementa lógica de fatiamento para suportar o limite de 5 waypoints do plano gratuito.
  */
 
 import { ai } from '@/ai/genkit';
@@ -19,11 +19,33 @@ const RoutingGeoapifyInputSchema = z.object({
 export type RoutingGeoapifyInput = z.infer<typeof RoutingGeoapifyInputSchema>;
 
 const RoutingGeoapifyOutputSchema = z.object({
-  polyline: z.string().describe('A linha da rota no formato Encoded Polyline ou GeoJSON.'),
+  polyline: z.string().describe('A linha da rota no formato GeoJSON.'),
   distanceKm: z.number(),
   durationMinutes: z.number(),
 });
 export type RoutingGeoapifyOutput = z.infer<typeof RoutingGeoapifyOutputSchema>;
+
+/**
+ * Função auxiliar para buscar um trecho da rota
+ */
+async function fetchRouteChunk(waypoints: {lat: number, lng: number}[], mode: string, apiKey: string) {
+    const waypointsStr = waypoints.map(w => `${w.lat},${w.lng}`).join('|');
+    const url = `https://api.geoapify.com/v1/routing?waypoints=${encodeURIComponent(waypointsStr)}&mode=${mode}&apiKey=${apiKey}`;
+
+    const response = await fetch(url);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Erro Geoapify (${response.status}): ${errorText}`);
+      throw new Error(`Geoapify Routing falhou: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    if (!data.features || data.features.length === 0) {
+      throw new Error('Nenhuma rota encontrada para este trecho.');
+    }
+
+    return data.features[0];
+}
 
 export const routingGeoapify = ai.defineFlow(
   {
@@ -35,29 +57,52 @@ export const routingGeoapify = ai.defineFlow(
     const apiKey = process.env.GEOAPIFY_API_KEY;
     if (!apiKey) throw new Error('GEOAPIFY_API_KEY não configurada.');
 
-    const waypointsStr = waypoints.map(w => `${w.lat},${w.lng}`).join('|');
-    const url = `https://api.geoapify.com/v1/routing?waypoints=${encodeURIComponent(waypointsStr)}&mode=${mode}&apiKey=${apiKey}`;
-
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Geoapify Routing falhou: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    if (!data.features || data.features.length === 0) {
-      throw new Error('Nenhuma rota encontrada pela Geoapify.');
-    }
-
-    const route = data.features[0];
-    const properties = route.properties;
+    // O plano gratuito da Geoapify permite no máximo 5 waypoints por chamada.
+    // Para rotas maiores, dividimos em pedaços (chunks) e mesclamos os resultados.
+    const MAX_POINTS = 5;
     
-    // Geoapify retorna geometria em GeoJSON. Para simplificar o armazenamento e compatibilidade com Google,
-    // em uma implementação real converteríamos para Encoded Polyline. 
-    // Aqui retornaremos a string JSON da geometria para renderização via Leaflet/Google.
+    if (waypoints.length <= MAX_POINTS) {
+        const route = await fetchRouteChunk(waypoints, mode, apiKey);
+        return {
+            polyline: JSON.stringify(route.geometry),
+            distanceKm: route.properties.distance / 1000,
+            durationMinutes: Math.round(route.properties.time / 60),
+        };
+    }
+
+    // Lógica de Chunking: sobrepomos o último ponto de um chunk como o primeiro do próximo
+    let combinedCoordinates: number[][] = [];
+    let totalDistance = 0;
+    let totalTime = 0;
+
+    for (let i = 0; i < waypoints.length - 1; i += (MAX_POINTS - 1)) {
+        const chunk = waypoints.slice(i, i + MAX_POINTS);
+        if (chunk.length < 2) break;
+
+        try {
+            const route = await fetchRouteChunk(chunk, mode, apiKey);
+            const coords = route.geometry.coordinates;
+            
+            if (combinedCoordinates.length > 0) {
+                // Remove o primeiro ponto para não duplicar com o último do chunk anterior
+                combinedCoordinates.push(...coords.slice(1));
+            } else {
+                combinedCoordinates.push(...coords);
+            }
+
+            totalDistance += route.properties.distance;
+            totalTime += route.properties.time;
+        } catch (e) {
+            console.error("Falha ao processar chunk de rota:", e);
+            // Se um chunk falhar, continuamos para tentar obter o restante ou paramos
+            if (combinedCoordinates.length === 0) throw e;
+        }
+    }
+
     return {
-      polyline: JSON.stringify(route.geometry),
-      distanceKm: properties.distance / 1000,
-      durationMinutes: Math.round(properties.time / 60),
+      polyline: JSON.stringify({ type: 'LineString', coordinates: combinedCoordinates }),
+      distanceKm: totalDistance / 1000,
+      durationMinutes: Math.round(totalTime / 60),
     };
   }
 );

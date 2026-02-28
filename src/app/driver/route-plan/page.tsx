@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -739,7 +738,10 @@ export default function DriverRoutePlanPage() {
             }).filter((s): s is Stop => s !== null);
 
             // 3. Obter o traçado visual (Polyline) via Geoapify (Custo Zero)
-            const waypoints = optimizedStops.map(s => ({ lat: s.data.latitude, lng: s.data.longitude }));
+            const waypoints = optimizedStops
+                .map(s => ({ lat: s.data.latitude, lng: s.data.longitude }))
+                .filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
+                
             if (driverLocation) waypoints.unshift({ lat: driverLocation.latitude, lng: driverLocation.longitude });
 
             if (waypoints.length >= 2) {
