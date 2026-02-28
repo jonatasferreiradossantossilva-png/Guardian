@@ -1,11 +1,32 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
-import { LayoutGrid, MessageSquare, DollarSign, Milestone, Car, HelpCircle, ShieldCheck, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, ChevronRight, UserPlus, Share2, Activity, ExternalLink, Play, BookOpen } from 'lucide-react';
+import { 
+    LayoutGrid, 
+    MessageSquare, 
+    DollarSign, 
+    Milestone, 
+    Car, 
+    HelpCircle, 
+    ShieldCheck, 
+    Loader2, 
+    RefreshCw, 
+    Wrench, 
+    AlertTriangle, 
+    BarChart3, 
+    ChevronRight, 
+    UserPlus, 
+    Share2, 
+    Activity, 
+    ExternalLink, 
+    Play, 
+    BookOpen,
+    Sparkles,
+    ClipboardCheck
+} from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -62,7 +83,6 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 </p>
             </div>
 
-            {/* Invertido: Guia agora no topo */}
             <Card className="bg-primary/5 border-primary/20">
                 <CardHeader className="p-4 pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
@@ -91,7 +111,6 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 ))}
             </div>
 
-            {/* Invertido: Novo Cadastro agora embaixo */}
             <div className="space-y-2">
                 <Button variant="outline" className="w-full h-12" onClick={onShareRegistration}>
                     <UserPlus className="mr-2 h-5 w-5 text-primary" />
@@ -185,7 +204,6 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
           <p className="text-muted-foreground">Visão geral da sua operação.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            {/* Invertido: Botão de cadastro agora no cabeçalho */}
             <Button variant="outline" onClick={onShareRegistration}>
                 <UserPlus className="mr-2 h-4 w-4" />
                 Convidar Pais
@@ -218,7 +236,6 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Performance Shortcut Card */}
           <Link href="/dashboard/performance" className="md:col-span-2 group">
             <Card className="h-full border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer overflow-hidden relative">
                 <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
@@ -253,7 +270,6 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
             </Card>
           </Link>
 
-          {/* Invertido: Card do Guia de Início Rápido agora no lugar das vendas */}
           <Card className="h-full border-dashed border-primary/40 bg-secondary/20 relative overflow-hidden flex flex-col">
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
@@ -280,7 +296,6 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* Fleet Health Quick Look */}
           <Link href="/dashboard/performance" className="md:col-span-1">
             <Card className={cn(
                 "h-full transition-all cursor-pointer",
@@ -319,7 +334,6 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
             </Card>
           </Link>
 
-          {/* API Diagnostics */}
           <Card className="border-border/50 bg-muted/20 md:col-span-2">
             <CardHeader className="py-3 px-4">
                 <CardTitle className="text-xs font-medium flex items-center justify-between text-muted-foreground">
