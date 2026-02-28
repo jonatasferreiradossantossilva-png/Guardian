@@ -4,7 +4,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
 import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, TrendingDown, Sparkles, ChevronRight, UserPlus, Share2, Activity } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
@@ -370,28 +370,44 @@ export default function DashboardPage() {
 
     const handleOpenGuide = () => setShowOnboarding(true);
 
-    const handleShareRegistration = () => {
+    const handleShareRegistration = async () => {
         const registrationLink = `${window.location.origin}/register`;
         const shareText = `Olá! Para agilizar seu cadastro no Guardian, clique no link abaixo e use nossa ferramenta de leitura automática de documentos:\n\n${registrationLink}`;
         
-        // Use standard Web Share API if available, otherwise fallback to WhatsApp and Copy
-        if (navigator.share) {
-            navigator.share({
-                title: 'Convite Guardian',
-                text: shareText,
-                url: registrationLink
-            }).catch(() => {
-                // Fallback handled by toast/ui
-            });
-        } else {
+        try {
+            // Passo 1: SEMPRE copiar para o clipboard (mais confiável)
+            await navigator.clipboard.writeText(shareText);
+            
+            // Passo 2: Tentar compartilhar via API nativa (se mobile)
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Convite Guardian',
+                        text: shareText,
+                        url: registrationLink
+                    });
+                    return; // Se funcionou, paramos aqui
+                } catch (shareError) {
+                    // Erro no share nativo (ex: cancelado pelo usuário)
+                    console.warn("Share nativo ignorado ou falhou:", shareError);
+                }
+            }
+
+            // Passo 3: Fallback para WhatsApp
             const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
             window.open(whatsappUrl, '_blank');
             
-            // Also copy to clipboard for convenience
-            navigator.clipboard.writeText(shareText);
             toast({
                 title: "Link Copiado!",
-                description: "A mensagem de convite foi copiada e o WhatsApp aberto."
+                description: "A mensagem foi copiada e o WhatsApp aberto."
+            });
+
+        } catch (err) {
+            console.error("Falha ao compartilhar:", err);
+            toast({
+                title: "Erro ao compartilhar",
+                description: "Não foi possível copiar o link. Tente novamente.",
+                variant: "destructive"
             });
         }
     };

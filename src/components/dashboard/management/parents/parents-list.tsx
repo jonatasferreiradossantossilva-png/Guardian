@@ -97,23 +97,38 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     setSelectedParent(null);
   };
   
-  const handleShareInvite = () => {
+  const handleShareInvite = async () => {
     const registrationLink = `${window.location.origin}/register`;
     const shareText = `Olá! Para agilizar seu cadastro no Guardian, clique no link abaixo e use nossa ferramenta de leitura automática de documentos:\n\n${registrationLink}`;
     
-    if (navigator.share) {
-        navigator.share({
-            title: 'Convite Guardian',
-            text: shareText,
-            url: registrationLink
-        }).catch(console.error);
-    } else {
+    try {
+        // Copia primeiro para garantir
+        await navigator.clipboard.writeText(shareText);
+
+        if (navigator.share) {
+            try {
+                await navigator.share({
+                    title: 'Convite Guardian',
+                    text: shareText,
+                    url: registrationLink
+                });
+                return;
+            } catch (e) {
+                console.warn("Share nativo ignorado");
+            }
+        }
+
         const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
         window.open(whatsappUrl, '_blank');
-        navigator.clipboard.writeText(shareText);
+        
         toast({
             title: "Convite pronto!",
             description: "Link copiado e WhatsApp aberto para envio."
+        });
+    } catch (err) {
+        toast({
+            title: "Erro ao compartilhar",
+            variant: "destructive"
         });
     }
   };
