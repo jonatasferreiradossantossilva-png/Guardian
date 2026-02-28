@@ -11,7 +11,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -58,6 +58,7 @@ interface Route {
   driverId: string;
   studentIds: string[];
   polyline?: string;
+  direction?: 'ida' | 'volta';
 }
 interface LocationUpdate {
   latitude: number;
@@ -70,27 +71,6 @@ interface School {
     latitude: number;
     longitude: number;
 }
-
-const statusText: Record<Student["status"], string> = {
-  aguardando: "Confirmado / Aguardando",
-  a_bordo: "A bordo da van",
-  desembarcado: "Desembarcou em segurança",
-  ausente_ida: "Ausente na Ida (Manhã)",
-  ausente_volta: "Ausente na Volta (Tarde)",
-  ausente_dia_todo: "Ausente o Dia Todo",
-};
-
-const statusBadgeVariant: Record<
-  Student["status"],
-  "default" | "secondary" | "outline" | "destructive"
-> = {
-  a_bordo: "default",
-  aguardando: "secondary",
-  desembarcado: "outline",
-  ausente_ida: "destructive",
-  ausente_volta: "destructive",
-  ausente_dia_todo: "destructive",
-};
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
@@ -167,6 +147,69 @@ function ParentRouteMap({ busLocation, student, school, routePolyline, recenterT
   );
 }
 
+function JourneyTimeline({ status, direction }: { status: Student['status'], direction: 'ida' | 'volta' }) {
+    const isIda = direction === 'ida';
+    
+    // Status Logic
+    const isWaiting = status === 'aguardando';
+    const isOnBoard = status === 'a_bordo';
+    const isArrived = status === 'desembarcado';
+    const isAbsent = status.startsWith('ausente');
+
+    if (isAbsent) return null;
+
+    // Progression Stages
+    const steps = isIda 
+        ? [
+            { label: "Casa", icon: Home, active: true, completed: isOnBoard || isArrived },
+            { label: "Van", icon: Bus, active: isOnBoard || isArrived, completed: isArrived },
+            { label: "Escola", icon: School, active: isArrived, completed: false }
+          ]
+        : [
+            { label: "Escola", icon: School, active: true, completed: isOnBoard || isArrived },
+            { label: "Van", icon: Bus, active: isOnBoard || isArrived, completed: isArrived },
+            { label: "Casa", icon: Home, active: isArrived, completed: false }
+          ];
+
+    return (
+        <div className="py-6 px-4">
+            <div className="relative flex justify-between items-center w-full max-w-xs mx-auto">
+                {/* Connection Lines */}
+                <div className="absolute top-1/2 left-0 w-full h-0.5 bg-muted -translate-y-1/2 z-0">
+                    <div 
+                        className={cn(
+                            "h-full transition-all duration-500 ease-in-out",
+                            isIda ? "bg-primary" : "bg-orange-500"
+                        )}
+                        style={{ width: isArrived ? '100%' : isOnBoard ? '50%' : '0%' }}
+                    />
+                </div>
+
+                {/* Steps */}
+                {steps.map((step, idx) => (
+                    <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
+                        <div className={cn(
+                            "w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 shadow-sm",
+                            step.active 
+                                ? (isIda ? "bg-primary border-primary text-primary-foreground" : "bg-orange-500 border-orange-500 text-white") 
+                                : "bg-background border-muted text-muted-foreground",
+                            step.completed && "scale-90 opacity-80"
+                        )}>
+                            <step.icon className="h-5 w-5" />
+                        </div>
+                        <span className={cn(
+                            "text-[10px] font-bold uppercase tracking-wider",
+                            step.active ? "text-foreground" : "text-muted-foreground"
+                        )}>
+                            {step.label}
+                        </span>
+                    </div>
+                ))}
+            </div>
+        </div>
+    );
+}
+
 
 export default function ParentTrackingPage() {
   const { toast } = useToast();
@@ -206,7 +249,7 @@ export default function ParentTrackingPage() {
     setIsAbsenceDialogOpen(false);
     toast({
       title: "Ausência comunicada",
-      description: `O motorista foi notificado: ${statusText[selectedAbsenceType]}.`,
+      description: `O motorista foi notificado.`,
     });
   }, [student, selectedAbsenceType, updateDoc, toast]);
 
@@ -263,9 +306,32 @@ export default function ParentTrackingPage() {
   const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading || isDriverLoading;
   const studentStatus = student?.status || 'aguardando';
   const isAbsent = studentStatus.startsWith('ausente');
+  const journeyDirection = (route?.direction as 'ida' | 'volta') || 'ida';
+
+  // Human Friendly Status Labels
+  const journeyStatusLabel = useMemo(() => {
+      if (isAbsent) {
+          const map = { ausente_ida: "Ausente na Ida", ausente_volta: "Ausente na Volta", ausente_dia_todo: "Ausente o Dia Todo" };
+          return map[studentStatus as keyof typeof map] || "Ausente";
+      }
+      
+      if (journeyDirection === 'ida') {
+          if (studentStatus === 'aguardando') return "A van está chegando na sua casa";
+          if (studentStatus === 'a_bordo') return "A caminho da escola";
+          if (studentStatus === 'desembarcado') return "Chegou com segurança na escola";
+      } else {
+          if (studentStatus === 'aguardando') return "Aguardando saída da escola";
+          if (studentStatus === 'a_bordo') return "A caminho da sua casa";
+          if (studentStatus === 'desembarcado') return "Entregue em casa com segurança";
+      }
+      return "Processando jornada...";
+  }, [studentStatus, journeyDirection, isAbsent]);
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4">
+    <div className={cn(
+        "min-h-screen transition-colors duration-700 p-4",
+        journeyDirection === 'ida' ? "bg-background" : "bg-orange-50/10 dark:bg-orange-950/10"
+    )}>
       <div className="max-w-4xl mx-auto">
         <div className="flex justify-end items-center mb-6">
           <div className="flex items-center gap-2">
@@ -303,26 +369,44 @@ export default function ParentTrackingPage() {
             </TabsList>
             <TabsContent value="status" className="mt-4">
               <div className="flex flex-col gap-6">
-                 <Card>
-                    <CardHeader>
+                 <Card className={cn(
+                     "border-2 transition-all shadow-xl overflow-hidden",
+                     journeyDirection === 'ida' ? "border-primary/20" : "border-orange-500/20"
+                 )}>
+                    <CardHeader className={cn(
+                        "pb-2",
+                        journeyDirection === 'ida' ? "bg-primary/5" : "bg-orange-500/5"
+                    )}>
                         <div className="flex justify-between items-start">
                             <div className="flex items-center gap-4">
-                                <Avatar className="h-16 w-16">
+                                <Avatar className="h-16 w-16 border-2 border-background shadow-md">
                                     <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
                                     <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
                                 </Avatar>
                                 <div>
-                                    <CardTitle>Status de {student.name}</CardTitle>
-                                    <CardDescription className="mt-1">Acompanhe a viagem em tempo real.</CardDescription>
+                                    <CardTitle className="text-xl">Olá, {parent.name.split(' ')[0]}</CardTitle>
+                                    <CardDescription className="font-medium text-foreground/80">Jornada de {student.name}</CardDescription>
                                 </div>
                             </div>
-                            <Badge variant={statusBadgeVariant[studentStatus]} className="mt-1 h-fit text-center max-w-[120px]">{statusText[studentStatus]}</Badge>
+                            <Badge variant={isAbsent ? "destructive" : "secondary"} className="mt-1">
+                                {journeyDirection === 'ida' ? 'Período: Manhã' : 'Período: Tarde'}
+                            </Badge>
                         </div>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className="pt-6">
+                        <div className="text-center mb-4">
+                            <h3 className={cn(
+                                "text-lg font-bold tracking-tight",
+                                isAbsent ? "text-destructive" : (journeyDirection === 'ida' ? "text-primary" : "text-orange-600")
+                            )}>
+                                {journeyStatusLabel}
+                            </h3>
+                        </div>
+
+                        {!isAbsent && <JourneyTimeline status={studentStatus} direction={journeyDirection} />}
+
                         {isAbsent ? (
-                            <div className="space-y-3 text-center">
-                                <p className="text-sm text-muted-foreground">Você comunicou a ausência: <b>{statusText[studentStatus]}</b>.</p>
+                            <div className="space-y-3 text-center mt-4">
                                 <Button
                                     variant="secondary"
                                     className="w-full"
@@ -332,15 +416,12 @@ export default function ParentTrackingPage() {
                                 </Button>
                             </div>
                         ) : (
-                            <div className="space-y-3">
-                                <p className="text-center text-sm text-muted-foreground">
-                                    Presença confirmada. Avise-nos apenas se houver ausência.
-                                </p>
+                            <div className="space-y-3 mt-4">
                                 <Button
-                                    variant="destructive"
-                                    className="w-full"
+                                    variant="outline"
+                                    className="w-full border-destructive/20 text-destructive hover:bg-destructive/10"
                                     onClick={() => setIsAbsenceDialogOpen(true)}
-                                    disabled={student.active === false || studentStatus !== 'aguardando'}
+                                    disabled={student.active === false || (studentStatus !== 'aguardando' && journeyDirection === 'ida')}
                                 >
                                     <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência
                                 </Button>
@@ -350,54 +431,62 @@ export default function ParentTrackingPage() {
                 </Card>
 
                  <Card>
-                    <CardHeader>
-                        <CardTitle>Ações Rápidas</CardTitle>
+                    <CardHeader className="pb-3">
+                        <CardTitle className="text-base flex items-center gap-2"><Users className="h-4 w-4" />Menu de Gestão</CardTitle>
                     </CardHeader>
-                     <CardContent className="flex flex-col gap-2">
-                        <Button asChild variant="outline" className="w-full justify-start">
+                     <CardContent className="grid grid-cols-2 gap-2">
+                        <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs">
                             <Link href="/parent/qrcode">
-                                <QrCode className="mr-2 h-4 w-4" /> Meu QR Code
+                                <QrCode className="h-6 w-6 text-primary" />
+                                <span>Meu QR Code</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" className="w-full justify-start" onClick={handleShareTrip}>
-                            <Share2 className="mr-2 h-4 w-4" /> Compartilhar Viagem
+                        <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs" onClick={handleShareTrip}>
+                            <Share2 className="h-6 w-6 text-primary" />
+                            <span>Aproximação</span>
                         </Button>
-                        <Button asChild variant="outline" className="w-full justify-start">
+                        <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs">
                             <Link href="/parent/messages">
-                                <MessageCircle className="mr-2 h-4 w-4" /> Mensagens
+                                <MessageCircle className="h-6 w-6 text-primary" />
+                                <span>Mensagens</span>
                             </Link>
                         </Button>
-                         <Button asChild variant="outline" className="w-full justify-start">
+                         <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs">
                             <Link href="/parent/contract">
-                                <FileText className="mr-2 h-4 w-4" /> Contrato
+                                <FileText className="h-6 w-6 text-primary" />
+                                <span>Contrato</span>
                             </Link>
                         </Button>
-                        <Button asChild variant="outline" className="w-full justify-start">
+                        <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs">
                             <Link href="/parent/authorized">
-                                <Users className="mr-2 h-4 w-4" /> Autorizados
+                                <Users className="h-6 w-6 text-primary" />
+                                <span>Autorizados</span>
                             </Link>
                         </Button>
-                        <Button asChild variant="outline" className="w-full justify-start">
+                        <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs">
                             <Link href="/parent/financial">
-                                <DollarSign className="mr-2 h-4 w-4" /> Financeiro
-                            </Link>
-                        </Button>
-                        <Button asChild variant="outline" className="w-full justify-start">
-                            <Link href="/parent/requests">
-                                <RouteIcon className="mr-2 h-4 w-4" /> Viagens Avulsas
+                                <DollarSign className="h-6 w-6 text-primary" />
+                                <span>Financeiro</span>
                             </Link>
                         </Button>
                     </CardContent>
+                    <CardFooter className="pt-0 justify-center">
+                         <Button asChild variant="link" className="text-xs text-muted-foreground">
+                            <Link href="/parent/requests" className="flex items-center gap-1">
+                                <RouteIcon className="h-3 w-3" /> Viagens Avulsas <ChevronRight className="h-3 w-3"/>
+                            </Link>
+                        </Button>
+                    </CardFooter>
                 </Card>
               </div>
             </TabsContent>
             <TabsContent value="map" className="mt-4">
-               <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
+               <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground font-medium">
                     <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Van</span></div>
-                    <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Meu Filho</span></div>
+                    <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>{student.name.split(' ')[0]}</span></div>
                     <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
                 </div>
-              <Card className="h-[70vh]">
+              <Card className="h-[70vh] border-2 shadow-2xl overflow-hidden">
                 <CardContent className="p-0 h-full relative">
                   <div className="absolute inset-0 bg-secondary flex items-center justify-center overflow-hidden rounded-lg">
                     <Button

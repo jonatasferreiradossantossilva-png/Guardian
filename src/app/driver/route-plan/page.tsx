@@ -841,10 +841,11 @@ export default function DriverRoutePlanPage() {
                 updateDoc('routes', route.id, { 
                     studentIds: optimizedStops.map(s => s.id),
                     polyline: routing.polyline,
+                    direction: direction,
                     lastOptimizedAt: new Date().toISOString()
                 });
             } else {
-                updateDoc('routes', route.id, { studentIds: optimizedStops.map(s => s.id) });
+                updateDoc('routes', route.id, { studentIds: optimizedStops.map(s => s.id), direction: direction });
             }
 
             sessionStorage.setItem('activeRouteId', route.id);
@@ -862,7 +863,7 @@ export default function DriverRoutePlanPage() {
         } catch (error) {
             console.error("Erro ao iniciar rota dinâmica:", error);
             const finalStopIds = baseStops.map(s => s.id);
-            updateDoc('routes', route.id, { studentIds: finalStopIds });
+            updateDoc('routes', route.id, { studentIds: finalStopIds, direction: direction });
             sessionStorage.setItem('activeRouteId', route.id);
             setActiveRouteId(route.id);
             updateDoc('drivers', driverId, { status: 'em_rota' });
