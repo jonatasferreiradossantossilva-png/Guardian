@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -421,16 +422,12 @@ function BoardingChecklist({
   onComplete: () => void;
   onScanQrCode: () => void;
 }) {
-    const allStudentsProcessed = useMemo(() => {
-        return students.every(s => s.status !== 'aguardando');
-    }, [students]);
-
     return (
         <div className="p-4 max-w-md mx-auto">
             <Card>
                 <CardHeader>
                     <CardTitle className="flex items-center gap-2 text-xl"><Users />Embarque - {school.name}</CardTitle>
-                    <CardDescription>Confirme os alunos que embarcaram ou escaneie os QR Codes.</CardDescription>
+                    <CardDescription>Confirme os alunos que embarcaram ou use o atalho coletivo.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-3">
                     <Button className="w-full" variant="outline" onClick={onScanQrCode}>
@@ -444,9 +441,9 @@ function BoardingChecklist({
                     </div>
                 </CardContent>
                 <CardFooter>
-                    <Button className="w-full" disabled={!allStudentsProcessed} onClick={onComplete}>
+                    <Button className="w-full bg-green-600 hover:bg-green-700" onClick={onComplete}>
                         <CheckCircle className="mr-2 h-4 w-4" />
-                        Embarque Concluído na Escola
+                        Confirmar Embarque Coletivo
                     </Button>
                 </CardFooter>
             </Card>
@@ -799,7 +796,7 @@ export default function DriverRoutePlanPage() {
                 schoolId: s.schoolId
             }));
 
-            const schoolInput = schoolsToInclude.map(s => ({
+            const schoolInput = schoolToInclude.map(s => ({
                 id: s.id,
                 name: s.name,
                 address: formatAddr(s)
@@ -995,13 +992,31 @@ export default function DriverRoutePlanPage() {
     };
     
     const handleCompleteBoarding = useCallback(async () => {
+        if (!checklistSchool) return;
+
+        // Marcar automaticamente todos os alunos "aguardando" desta escola como "a_bordo"
+        const studentsToAutoBoard = orderedStops.filter(stop => 
+            stop.type === 'student' && 
+            (stop.data as Student).schoolId === checklistSchool.id && 
+            (stop.data as Student).status === 'aguardando'
+        );
+
+        if (studentsToAutoBoard.length > 0) {
+            studentsToAutoBoard.forEach(stop => {
+                updateDoc('students', stop.id, { status: 'a_bordo' });
+            });
+        }
+
         setCurrentView('route');
-        toast({ title: `Embarque concluído em ${checklistSchool?.name}!` });
+        toast({ 
+            title: `Embarque concluído em ${checklistSchool?.name}!`,
+            description: studentsToAutoBoard.length > 0 ? `${studentsToAutoBoard.length} alunos embarcados automaticamente.` : undefined
+        });
         setChecklistSchool(null);
         
         // Trigger continuous optimization
         setTimeout(handleContinuousOptimization, 1000);
-    }, [checklistSchool, toast, handleContinuousOptimization]);
+    }, [checklistSchool, orderedStops, updateDoc, toast, handleContinuousOptimization]);
     
     const handleScanSuccess = useCallback((scannedId: string) => {
         const student = (allStudents || []).find(s => s.id === scannedId);
