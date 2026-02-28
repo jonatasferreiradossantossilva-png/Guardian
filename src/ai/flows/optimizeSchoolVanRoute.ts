@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const StudentStopSchema = z.object({
   id: z.string(),
@@ -121,17 +120,38 @@ export const optimizeSchoolVanRoute = ai.defineFlow(
     outputSchema: OptimizeSchoolVanRouteOutputSchema,
   },
   async (input) => {
-    const isFlexibleMode = input.optimizationMode === 'flexible';
-    const isIda = input.direction === 'ida';
-    const { optimizationMode, ...baseInput } = input;
-    
-    const promptInput = { 
-        ...baseInput,
-        isFlexibleMode,
-        isIda 
-    };
+    try {
+        const isFlexibleMode = input.optimizationMode === 'flexible';
+        const isIda = input.direction === 'ida';
+        const { optimizationMode, ...baseInput } = input;
+        
+        const promptInput = { 
+            ...baseInput,
+            isFlexibleMode,
+            isIda 
+        };
 
-    const {output} = await prompt(promptInput);
-    return output!;
+        const {output} = await prompt(promptInput);
+        
+        if (!output) {
+            throw new Error("A IA não retornou um plano de rota válido.");
+        }
+        
+        return output;
+    } catch (error) {
+        console.error("Erro no fluxo de otimização de rota:", error);
+        // Fallback seguro: Retorna os alunos na ordem original e escolas ao final
+        const fallbackStops = [
+            ...input.students.map(s => ({ id: s.id, type: 'student' as const })),
+            ...input.schools.map(sch => ({ id: sch.id, type: 'school' as const }))
+        ];
+        return {
+            optimizedStops: fallbackStops,
+            summary: "Não foi possível otimizar via IA. Seguindo ordem padrão de cadastro por segurança.",
+            estimatedTimeMinutes: 30,
+            estimatedDistanceKm: 10,
+            turnByTurnDirections: ["Siga para a primeira parada."]
+        };
+    }
   }
 );

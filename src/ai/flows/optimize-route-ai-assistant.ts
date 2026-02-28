@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const OptimizeRouteInputSchema = z.object({
   currentRoute: z
@@ -18,7 +17,6 @@ const OptimizeRouteInputSchema = z.object({
     .describe('The current route as a series of waypoints.'),
   trafficConditions: z
     .string()
-
     .describe('A description of the current traffic conditions.'),
   reportedIncidents: z
     .string()
@@ -63,7 +61,18 @@ const optimizeRouteFlow = ai.defineFlow(
     outputSchema: OptimizeRouteOutputSchema,
   },
   async input => {
-    const {output} = await prompt(input);
-    return output!;
+    try {
+        const {output} = await prompt(input);
+        return output || {
+            optimizedRoute: input.currentRoute,
+            summary: "Mantida a rota atual por segurança."
+        };
+    } catch (error) {
+        console.error("Erro ao otimizar rota assistente:", error);
+        return {
+            optimizedRoute: input.currentRoute,
+            summary: "Erro na comunicação com a IA. Mantendo rota original."
+        };
+    }
   }
 );

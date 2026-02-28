@@ -10,7 +10,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { googleAI } from '@genkit-ai/google-genai';
 
 const SummarizeIncidentReportInputSchema = z.object({
   report: z.string().describe('The full text of the incident report.'),
@@ -49,7 +48,12 @@ const summarizeIncidentReportFlow = ai.defineFlow(
     outputSchema: SummarizeIncidentReportOutputSchema,
   },
   async input => {
-    const {output} = await summarizeIncidentReportPrompt(input);
-    return output!;
+    try {
+        const {output} = await summarizeIncidentReportPrompt(input);
+        return output || { summary: input.report };
+    } catch (error) {
+        console.error("Erro ao sumarizar incidente:", error);
+        return { summary: "Erro ao gerar resumo automático. Leia o relato original." };
+    }
   }
 );
