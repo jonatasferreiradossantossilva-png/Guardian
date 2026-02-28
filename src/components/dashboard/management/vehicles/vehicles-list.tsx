@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -11,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Wrench } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   Dialog,
@@ -36,6 +35,7 @@ import {
     AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { VehicleForm } from "@/components/dashboard/management/vehicles/vehicle-form";
+import { MaintenanceForm } from "@/components/dashboard/management/vehicles/maintenance-form";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
@@ -47,6 +47,8 @@ type Vehicle = {
   licensePlate: string;
   capacity: number;
   active: boolean;
+  currentOdometer: number;
+  lastMaintenanceOdometer: number;
 };
 
 interface VehiclesListProps {
@@ -58,6 +60,7 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
   const { deleteDoc } = useMockData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
 
@@ -67,6 +70,11 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
   const handleEdit = (vehicle: Vehicle) => {
     setSelectedVehicle(vehicle);
     setIsFormOpen(true);
+  };
+
+  const handleMaintenance = (vehicle: Vehicle) => {
+    setSelectedVehicle(vehicle);
+    setIsMaintenanceOpen(true);
   };
 
   const handleDelete = (vehicle: Vehicle) => {
@@ -88,6 +96,7 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
 
   const handleFormSubmit = () => {
     setIsFormOpen(false);
+    setIsMaintenanceOpen(false);
     setSelectedVehicle(null);
   };
 
@@ -123,6 +132,7 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                   <TableHead>Modelo</TableHead>
                   <TableHead>Placa</TableHead>
                   <TableHead>Capacidade</TableHead>
+                  <TableHead>Odômetro</TableHead>
                   <TableHead>Status</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -130,7 +140,7 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                       Carregando...
                     </TableCell>
                   </TableRow>
@@ -141,6 +151,7 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                       <TableCell className="font-medium">{vehicle.model}</TableCell>
                       <TableCell>{vehicle.licensePlate}</TableCell>
                       <TableCell>{vehicle.capacity}</TableCell>
+                      <TableCell>{vehicle.currentOdometer?.toLocaleString()} km</TableCell>
                       <TableCell>
                         <Badge variant={vehicle.active ? 'default' : 'secondary'} className={vehicle.active ? 'bg-green-600' : ''}>
                           {vehicle.active ? 'Ativo' : 'Inativo'}
@@ -148,6 +159,9 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
+                           <Button variant="outline" size="sm" onClick={() => handleMaintenance(vehicle)}>
+                               <Wrench className="mr-2 h-4 w-4" /> Manutenção
+                           </Button>
                            <Button variant="outline" size="sm" onClick={() => handleEdit(vehicle)}>
                                <Edit className="mr-2 h-4 w-4" /> Editar
                            </Button>
@@ -165,14 +179,14 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                                    </DropdownMenuItem>
                                </DropdownMenuContent>
                            </DropdownMenu>
-                       </div>
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
                 ) : (
                   !isLoading && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center h-24">
+                      <TableCell colSpan={6} className="text-center h-24">
                           Nenhum veículo cadastrado.
                       </TableCell>
                     </TableRow>
@@ -197,8 +211,8 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p className="text-muted-foreground text-xs">Capacidade</p>
-                            <p className="font-medium">{vehicle.capacity} passageiros</p>
+                            <p className="text-muted-foreground text-xs">Odômetro</p>
+                            <p className="font-medium">{vehicle.currentOdometer?.toLocaleString()} km</p>
                         </div>
                         <div>
                             <p className="text-muted-foreground text-xs">Status</p>
@@ -208,8 +222,11 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                         </div>
                         </div>
                     </div>
-                     <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
-                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(vehicle)}>
+                     <CardFooter className="p-2 bg-secondary/50 border-t flex flex-wrap gap-2">
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => handleMaintenance(vehicle)}>
+                            <Wrench className="mr-2 h-4 w-4" /> Manutenção
+                        </Button>
+                        <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(vehicle)}>
                             <Edit className="mr-2 h-4 w-4" /> Editar
                         </Button>
                         <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(vehicle)}>
@@ -240,6 +257,16 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Maintenance Dialog */}
+      <Dialog open={isMaintenanceOpen} onOpenChange={(open) => !open && handleFormSubmit()}>
+        {selectedVehicle && (
+            <MaintenanceForm 
+                vehicle={selectedVehicle} 
+                onFormSubmit={handleFormSubmit}
+            />
+        )}
+      </Dialog>
 
     </div>
   );

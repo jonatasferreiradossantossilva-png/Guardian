@@ -1,13 +1,16 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { Sparkles, TrendingDown, Clock, Leaf, Zap, ShieldCheck, ArrowDownRight, Gauge, Loader2 } from 'lucide-react';
+import { Sparkles, TrendingDown, Clock, Leaf, Zap, ShieldCheck, ArrowDownRight, Gauge, Loader2, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { cn } from '@/lib/utils';
+import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { MaintenanceForm } from '@/components/dashboard/management/vehicles/maintenance-form';
 
 const ecoData = [
   { day: 'Seg', planejado: 42, real: 38 },
@@ -31,6 +34,7 @@ const chartConfig = {
 
 export default function PerformancePage() {
   const { data: vehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
+  const [selectedVehicleForMaintenance, setSelectedVehicleForMaintenance] = useState<any>(null);
   
   const maintenanceAlerts = useMemo(() => {
     if (!vehicles) return [];
@@ -46,6 +50,7 @@ export default function PerformancePage() {
             model: v.model,
             plate: v.licensePlate,
             remaining,
+            currentOdometer: v.currentOdometer,
             isUrgent: remaining < 1000
         };
       })
@@ -189,9 +194,24 @@ export default function PerformancePage() {
                                 <Badge variant={alert.isUrgent ? "destructive" : "secondary"}>
                                     {alert.isUrgent ? "Urgente" : "Em breve"}
                                 </Badge>
-                                <span>{alert.model} ({alert.plate}): Revisão em {alert.remaining}km</span>
+                                <div>
+                                    <p className="font-medium">{alert.model} ({alert.plate})</p>
+                                    <p className="text-xs text-muted-foreground">Revisão em {alert.remaining}km</p>
+                                </div>
                             </div>
-                            {alert.isUrgent && <ArrowDownRight className="h-4 w-4 text-destructive" />}
+                            <Dialog open={selectedVehicleForMaintenance?.id === alert.id} onOpenChange={(open) => !open && setSelectedVehicleForMaintenance(null)}>
+                                <DialogTrigger asChild>
+                                    <Button variant="outline" size="sm" onClick={() => setSelectedVehicleForMaintenance(alert)}>
+                                        <Wrench className="mr-2 h-3 w-3" /> Registrar
+                                    </Button>
+                                </DialogTrigger>
+                                {selectedVehicleForMaintenance && (
+                                    <MaintenanceForm 
+                                        vehicle={selectedVehicleForMaintenance} 
+                                        onFormSubmit={() => setSelectedVehicleForMaintenance(null)}
+                                    />
+                                )}
+                            </Dialog>
                         </div>
                     ))
                 ) : (
