@@ -46,7 +46,7 @@ export const validateGeoapifyApi = ai.defineFlow(
       const geoUrl = `https://api.geoapify.com/v1/geocode/search?text=Sao%20Paulo&limit=1&apiKey=${apiKey}`;
       const geoRes = await fetch(geoUrl);
       if (geoRes.ok) {
-        results.geocoding = { status: 'ok', message: 'API de Geocodificação ativa e respondendo.' };
+        results.geocoding = { status: 'ok', message: 'API de Geocodificação ativa.' };
       } else {
         const data = await geoRes.json();
         results.geocoding = { status: 'error', message: data.message || `Erro ${geoRes.status}` };
@@ -60,7 +60,7 @@ export const validateGeoapifyApi = ai.defineFlow(
       const routeUrl = `https://api.geoapify.com/v1/routing?waypoints=-23.55,-46.63|-23.56,-46.64&mode=drive&apiKey=${apiKey}`;
       const routeRes = await fetch(routeUrl);
       if (routeRes.ok) {
-        results.routing = { status: 'ok', message: 'API de Roteirização ativa e respondendo.' };
+        results.routing = { status: 'ok', message: 'API de Roteirização ativa.' };
       } else {
         const data = await routeRes.json();
         results.routing = { status: 'error', message: data.message || `Erro ${routeRes.status}` };
