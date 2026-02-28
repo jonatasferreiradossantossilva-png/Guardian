@@ -65,7 +65,7 @@ interface LocationUpdate {
   longitude: number;
   timestamp: string;
 }
-interface School {
+interface SchoolData {
     id: string;
     name: string;
     latitude: number;
@@ -94,7 +94,7 @@ function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: n
 }
 
 
-function ParentRouteMap({ busLocation, student, school, routePolyline, recenterTrigger }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, routePolyline?: string, recenterTrigger: number }) {
+function ParentRouteMap({ busLocation, student, school, routePolyline, recenterTrigger }: { busLocation: LocationUpdate | null, student: Student | null, school: SchoolData | null, routePolyline?: string, recenterTrigger: number }) {
   const map = useMap();
 
   useEffect(() => {
@@ -258,7 +258,7 @@ export default function ParentTrackingPage() {
     const isWaitingPickup = journeyDirection === 'ida' && student.status === 'aguardando';
     const isComingHome = journeyDirection === 'volta' && student.status === 'a_bordo';
 
-    // Alerta de Proximidade em 800 metros
+    // Alerta de Proximidade em 800 metros (Apenas para o Pai se preparar em casa)
     if (currentDistance < 0.8 && (isWaitingPickup || isComingHome)) {
         if (!showProximityAlert) {
             setShowProximityAlert(true);
@@ -297,16 +297,26 @@ export default function ParentTrackingPage() {
     if (!student || !displayLocation) {
       toast({
         title: "Informações incompletas",
-        description: "Aguarde a localização da van e do aluno para compartilhar.",
+        description: "Aguarde a localização da van para compartilhar.",
         variant: "destructive",
       });
       return;
     }
 
-    const studentCoords = { lat: student.latitude, lng: student.longitude };
+    const journeyDirection = (route?.direction as 'ida' | 'volta') || 'ida';
+    const isOnBoard = student.status === 'a_bordo';
+    
+    // Inteligência do Destino: Na ida, se já estiver a bordo, o foco é a ESCOLA. Caso contrário, é a CASA.
+    const isTargetSchool = journeyDirection === 'ida' && isOnBoard && school;
+    
+    const targetCoords = isTargetSchool 
+        ? { lat: school!.latitude, lng: school!.longitude }
+        : { lat: student.latitude, lng: student.longitude };
+        
+    const targetName = isTargetSchool ? school!.name : "casa";
     const busCoords = { lat: displayLocation.latitude, lng: displayLocation.longitude };
 
-    const distance = haversineDistance(busCoords, studentCoords);
+    const distance = haversineDistance(busCoords, targetCoords);
     const avgSpeedKmH = 25;
     const timeHours = distance / avgSpeedKmH;
     const timeMinutes = Math.round(timeHours * 60);
@@ -316,13 +326,17 @@ export default function ParentTrackingPage() {
     const etaString = arrivalTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     const studentName = student.name;
-    const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${busCoords.lat},${busCoords.lng}&destination=${studentCoords.lat},${studentCoords.lng}`;
+    const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${busCoords.lat},${busCoords.lng}&destination=${targetCoords.lat},${targetCoords.lng}`;
 
     let message;
-    if (timeMinutes < 2) {
-        message = `Olá! A van do(a) ${studentName} está quase chegando. Acompanhe em tempo real aqui: ${mapLink}`;
+    if (isTargetSchool) {
+        message = `Olá! O(A) ${studentName} está a caminho da escola ${targetName}. Previsão de desembarque: ${etaString} (em aprox. ${timeMinutes} min). Acompanhe aqui: ${mapLink}`;
     } else {
-        message = `Olá! A van do(a) ${studentName} está a caminho. A previsão de chegada é por volta das ${etaString} (aprox. ${timeMinutes} min). Acompanhe em tempo real aqui: ${mapLink}`;
+        if (timeMinutes < 2) {
+            message = `Olá! A van do(a) ${studentName} está quase chegando em casa. Acompanhe em tempo real aqui: ${mapLink}`;
+        } else {
+            message = `Olá! A van do(a) ${studentName} está a caminho. A previsão de chegada em casa é às ${etaString} (aprox. ${timeMinutes} min). Acompanhe aqui: ${mapLink}`;
+        }
     }
     
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
@@ -330,14 +344,15 @@ export default function ParentTrackingPage() {
 
     toast({
       title: "Pronto para compartilhar!",
-      description: "Sua mensagem foi gerada para ser enviada no WhatsApp.",
+      description: `Notificação contextual para ${isTargetSchool ? 'a escola' : 'casa'} gerada.`,
     });
-  }, [student, displayLocation, toast]);
+  }, [student, displayLocation, route?.direction, school, toast]);
 
   const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading || isDriverLoading;
   const studentStatus = student?.status || 'aguardando';
   const isAbsent = studentStatus.startsWith('ausente');
   const journeyDirection = (route?.direction as 'ida' | 'volta') || 'ida';
+  const isOnBoard = studentStatus === 'a_bordo';
 
   // Human Friendly Status Labels
   const journeyStatusLabel = useMemo(() => {
@@ -411,7 +426,7 @@ export default function ParentTrackingPage() {
                                 </div>
                                 <div>
                                     <p className="font-bold text-lg">A van está quase chegando!</p>
-                                    <p className="text-sm opacity-90">Distância menor que 800 metros.</p>
+                                    <p className="text-sm opacity-90">Prepare-se. Distância menor que 800 metros.</p>
                                 </div>
                             </div>
                             <Sparkles className="h-8 w-8 opacity-50" />
@@ -479,19 +494,25 @@ export default function ParentTrackingPage() {
                         )}
                     </CardContent>
                     
-                    {/* Botão de WhatsApp de Aproximação - Agora no rodapé para contextualizar com o status */}
+                    {/* Botão de WhatsApp Inteligente e Contextual */}
                     <CardFooter className="pt-0 justify-center pb-6">
                         <Button 
                             variant="outline" 
                             size="sm" 
                             className={cn(
-                                "text-xs gap-2 transition-colors border-green-500/20 hover:bg-green-500/10 hover:text-green-600",
+                                "text-xs gap-2 transition-colors border-green-500/20 hover:bg-green-500/10 hover:text-green-600 shadow-sm",
                                 showProximityAlert && "bg-green-500/10 border-green-500 text-green-600 animate-pulse"
                             )} 
                             onClick={handleShareTrip}
+                            disabled={studentStatus === 'desembarcado' || isAbsent}
                         >
                             <Share2 className="h-4 w-4" />
-                            <span>Compartilhar Aproximação (WhatsApp)</span>
+                            <span>
+                                {journeyDirection === 'ida' && isOnBoard 
+                                    ? "Compartilhar Chegada (Escola)" 
+                                    : "Compartilhar Aproximação (Família)"
+                                }
+                            </span>
                         </Button>
                     </CardFooter>
                 </Card>
