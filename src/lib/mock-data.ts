@@ -1,31 +1,20 @@
 
 // @ts-nocheck
-// This file contains mock data for the presentation mode.
+/**
+ * @fileOverview Dados iniciais para o protótipo do Guardian.
+ * Centraliza todas as coleções do banco de dados para simulação offline.
+ */
 
 export const initialMockData = {
     users: [
-        { id: "user-admin-1", name: "Admin User", email: "admin@rotasegura.com", profile: 'gestor', active: true },
+        { id: "user-admin-1", name: "Admin Guardian", email: "admin@guardian.com", profile: 'gestor', active: true },
         { id: "user-motorista-2", name: "Mariana Costa", email: "mariana.costa@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-motorista-3", name: "Roberto Almeida", email: "roberto.almeida@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-motorista-4", name: "Juliano Castro", email: "juliano.castro@rotasegura.com", profile: 'motorista', active: true },
-        { id: "user-motorista-5", name: "Beatriz Santos", email: "beatriz.santos@rotasegura.com", profile: 'motorista', active: true },
-        { id: "user-motorista-6", name: "Paulo Lima", email: "paulo.lima@rotasegura.com", profile: 'motorista', active: true },
-        { id: "user-motorista-7", name: "Cristina Borges", email: "cristina.borges@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", profile: 'pai', active: true },
         { id: "user-pai-2", name: "João Costa", email: "joao.costa@email.com", profile: 'pai', active: true },
         { id: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", profile: 'pai', active: true },
-        { id: "user-pai-4", name: "Marcos Ribeiro", email: "marcos.ribeiro@email.com", profile: 'pai', active: true },
-        { id: "user-pai-5", name: "Sofia Oliveira", email: "sofia.oliveira@email.com", profile: 'pai', active: true },
-        { id: "user-pai-6", name: "Lucas Martins", email: "lucas.martins@email.com", profile: 'pai', active: true },
-        { id: "user-pai-7", name: "Juliana Andrade", email: "juliana.andrade@email.com", profile: 'pai', active: true },
-        { id: "user-pai-8", name: "Fernando Barros", email: "fernando.barros@email.com", profile: 'pai', active: true },
-        { id: "user-pai-9", name: "Patrícia Rocha", email: "patricia.rocha@email.com", profile: 'pai', active: true },
-        { id: "user-pai-10", name: "Sérgio Mendes", email: "sergio.mendes@email.com", profile: 'pai', active: true },
-        { id: "user-pai-11", name: "Camila Ferreira", email: "camila.ferreira@email.com", profile: 'pai', active: true },
-        { id: "user-pai-12", name: "Rafael Gomes", email: "rafael.gomes@email.com", profile: 'pai', active: true },
         { id: "user-monitor-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", profile: 'monitor', active: true },
-        { id: "user-monitor-2", name: "Ricardo Souza", email: "ricardo.souza@rotasegura.com", profile: 'monitor', active: true },
-        { id: "user-monitor-3", name: "Vanessa Alves", email: "vanessa.alves@rotasegura.com", profile: 'monitor', active: true },
     ],
     schools: [
         {
@@ -55,21 +44,7 @@ export const initialMockData = {
             city: "São Paulo",
             state: "SP",
             zipCode: "01305-000"
-        },
-         {
-            id: "school-3",
-            name: "Escola Aprender Mais",
-            cnpj: "11.222.333/0001-44",
-            active: true,
-            latitude: -23.6000,
-            longitude: -46.7000,
-            street: "Rua do Conhecimento",
-            number: "456",
-            neighborhood: "Morumbi",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "05653-070"
-        },
+        }
     ],
     parents: [
         {
@@ -78,12 +53,10 @@ export const initialMockData = {
             name: "Ana Pereira",
             email: "ana.pereira@email.com",
             phone: "11987654321",
-            active: true,
             cpf: "111.222.333-44",
-            rg: "12.345.678-9",
+            active: true,
             street: "Rua das Acácias",
             number: "10",
-            neighborhood: "Vila Madalena",
             city: "São Paulo",
             state: "SP",
             zipCode: "05445-010"
@@ -93,478 +66,243 @@ export const initialMockData = {
             userId: "user-pai-2",
             name: "João Costa",
             email: "joao.costa@email.com",
-            phone: "11912345678",
+            phone: "11977778888",
+            cpf: "222.333.444-55",
             active: true,
-            cpf: "444.555.666-77",
-            rg: "98.765.432-1",
-            street: "Avenida das Oliveiras",
-            number: "20",
-            neighborhood: "Pinheiros",
+            street: "Av. Paulista",
+            number: "1000",
             city: "São Paulo",
             state: "SP",
-            zipCode: "05402-000"
+            zipCode: "01310-100"
         },
         {
             id: "parent-3",
             userId: "user-pai-3",
             name: "Carla Dias",
             email: "carla.dias@email.com",
-            phone: "11999998888",
-            active: true,
-            cpf: "222.333.444-55",
-            rg: "23.456.789-0",
-            street: "Rua das Pedras",
-            number: "150",
-            neighborhood: "Itaim Bibi",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "04532-010"
-        },
-        {
-            id: "parent-4",
-            userId: "user-pai-4",
-            name: "Marcos Ribeiro",
-            email: "marcos.ribeiro@email.com",
-            phone: "11977776666",
-            active: true,
-            cpf: "666.777.888-99",
-            rg: "34.567.890-1",
-            street: "Alameda dos Anjos",
-            number: "300",
-            neighborhood: "Moema",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "04513-020"
-        },
-        {
-            id: "parent-5",
-            userId: "user-pai-5",
-            name: "Sofia Oliveira",
-            email: "sofia.oliveira@email.com",
             phone: "11966665555",
+            cpf: "333.444.555-66",
             active: true,
-            cpf: "777.888.999-00",
-            rg: "45.678.901-2",
-            street: "Rua das Bromélias",
-            number: "500",
-            neighborhood: "Brooklin",
+            street: "Rua Oscar Freire",
+            number: "50",
             city: "São Paulo",
             state: "SP",
-            zipCode: "04561-001"
+            zipCode: "01426-001"
+        }
+    ],
+    students: [
+        {
+            id: "student-1",
+            name: "Enzo Pereira",
+            schoolId: "school-1",
+            parentId: "parent-1",
+            shift: "Manhã",
+            status: "aguardando",
+            active: true,
+            latitude: -23.5580,
+            longitude: -46.6600,
+            street: "Rua das Acácias",
+            number: "10",
+            neighborhood: "Vila Madalena",
+            city: "São Paulo",
+            state: "SP",
+            zipCode: "05445-010",
+            monthlyFee: 450.00,
+            medicalNote: "Alérgico a lactose. Não pode ingerir derivados de leite no lanche."
         },
         {
-            id: "parent-6",
-            userId: "user-pai-6",
-            name: "Lucas Martins",
-            email: "lucas.martins@email.com",
-            phone: "11955554444",
+            id: "student-2",
+            name: "Beatriz Costa",
+            schoolId: "school-1",
+            parentId: "parent-2",
+            shift: "Manhã",
+            status: "aguardando",
             active: true,
-            cpf: "888.999.000-11",
-            rg: "56.789.012-3",
-            street: "Avenida das Nações",
+            latitude: -23.5650,
+            longitude: -46.6520,
+            street: "Av. Paulista",
             number: "1000",
-            neighborhood: "Santo Amaro",
+            neighborhood: "Bela Vista",
             city: "São Paulo",
             state: "SP",
-            zipCode: "04795-100"
+            zipCode: "01310-100",
+            monthlyFee: 420.00
         },
-        { id: "parent-7", userId: "user-pai-7", name: "Juliana Andrade", email: "juliana.andrade@email.com", phone: "11944443333", active: true, cpf: "121.232.343-45", street: "Rua dos Pinheiros", number: "1200", neighborhood: "Pinheiros", city: "São Paulo", state: "SP" },
-        { id: "parent-8", userId: "user-pai-8", name: "Fernando Barros", email: "fernando.barros@email.com", phone: "11933332222", active: true, cpf: "232.343.454-56", street: "Rua Augusta", number: "2500", neighborhood: "Cerqueira César", city: "São Paulo", state: "SP" },
-        { id: "parent-9", userId: "user-pai-9", name: "Patrícia Rocha", email: "patricia.rocha@email.com", phone: "11922221111", active: true, cpf: "343.454.565-67", street: "Rua Oscar Freire", number: "900", neighborhood: "Jardins", city: "São Paulo", state: "SP" },
-        { id: "parent-10", userId: "user-pai-10", name: "Sérgio Mendes", email: "sergio.mendes@email.com", phone: "11911110000", active: true, cpf: "454.565.676-78", street: "Avenida Brigadeiro Faria Lima", number: "3000", neighborhood: "Itaim Bibi", city: "São Paulo", state: "SP" },
-        { id: "parent-11", userId: "user-pai-11", name: "Camila Ferreira", email: "camila.ferreira@email.com", phone: "11988887777", active: true, cpf: "565.676.787-89", street: "Rua Verbo Divino", number: "1400", neighborhood: "Chácara Santo Antônio", city: "São Paulo", state: "SP" },
-        { id: "parent-12", userId: "user-pai-12", name: "Rafael Gomes", email: "rafael.gomes@email.com", phone: "11999996666", active: true, cpf: "676.787.898-90", street: "Rua Américo Brasiliense", number: "2000", neighborhood: "Chácara Santo Antônio", city: "São Paulo", state: "SP" },
-    ],
-    vehicles: [
-        { id: "vehicle-1", model: "Mercedes-Benz Sprinter", licensePlate: "BRA2E19", capacity: 15, active: true, currentOdometer: 45200, lastMaintenanceOdometer: 35650, maintenanceInterval: 10000 },
-        { id: "vehicle-2", model: "Renault Master", licensePlate: "ABC1D23", capacity: 12, active: true, currentOdometer: 28400, lastMaintenanceOdometer: 20000, maintenanceInterval: 10000 },
-        { id: "vehicle-3", model: "Fiat Ducato", licensePlate: "XYZ7W89", capacity: 18, active: true, currentOdometer: 15000, lastMaintenanceOdometer: 5000, maintenanceInterval: 10000 },
-        { id: "vehicle-4", model: "Iveco Daily", licensePlate: "QWE4R56", capacity: 20, active: false, currentOdometer: 89000, lastMaintenanceOdometer: 85000, maintenanceInterval: 10000 },
-        { id: "vehicle-5", model: "Ford Transit", licensePlate: "TYU7I89", capacity: 16, active: true, currentOdometer: 12300, lastMaintenanceOdometer: 10000, maintenanceInterval: 10000 },
-        { id: "vehicle-6", model: "Citroën Jumper", licensePlate: "JKL5M67", capacity: 15, active: true, currentOdometer: 5600, lastMaintenanceOdometer: 0, maintenanceInterval: 10000 },
-        { id: "vehicle-7", model: "Peugeot Boxer", licensePlate: "GHI8J90", capacity: 18, active: false, currentOdometer: 102000, lastMaintenanceOdometer: 90000, maintenanceInterval: 10000 },
+        {
+            id: "student-3",
+            name: "Gabriel Dias",
+            schoolId: "school-2",
+            parentId: "parent-3",
+            shift: "Manhã",
+            status: "aguardando",
+            active: true,
+            latitude: -23.5600,
+            longitude: -46.6650,
+            street: "Rua Oscar Freire",
+            number: "50",
+            neighborhood: "Jardins",
+            city: "São Paulo",
+            state: "SP",
+            zipCode: "01426-001",
+            monthlyFee: 480.00,
+            medicalNote: "Asma. Levar bombinha na mochila para emergências."
+        }
     ],
     drivers: [
         {
             id: "driver-1",
-            userId: "user-admin-1",
-            name: "Admin User",
+            userId: "user-motorista-4",
+            name: "Juliano Castro",
             status: "inativo",
-            active: true,
             vehicleId: "vehicle-1",
-            cpf: "123.456.789-00",
-            rg: "11.222.333-4",
-            cnh: "12345678901",
-            cnhCategory: "D",
-            street: "Rua dos Motoristas",
-            number: "1",
-            neighborhood: "Lapa",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "05061-000",
-            latitude: -23.5234,
-            longitude: -46.7027
+            active: true,
+            latitude: -23.5500,
+            longitude: -46.6300
         },
         {
             id: "driver-2",
             userId: "user-motorista-2",
             name: "Mariana Costa",
             status: "inativo",
-            active: true,
             vehicleId: "vehicle-2",
-            cpf: "098.765.432-11",
-            rg: "55.666.777-8",
-            cnh: "09876543211",
-            cnhCategory: "D",
-            street: "Rua das Condutoras",
-            number: "2",
-            neighborhood: "Barra Funda",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "01152-000",
-            latitude: -23.5262,
-            longitude: -46.6626
-        },
-        {
-            id: "driver-3",
-            userId: "user-motorista-3",
-            name: "Roberto Almeida",
-            status: "inativo",
-            active: true,
-            vehicleId: "vehicle-4",
-            cpf: "111.222.333-44",
-            rg: "99.888.777-6",
-            cnh: "11122233344",
-            cnhCategory: "D",
-            street: "Avenida dos Transportes",
-            number: "3",
-            neighborhood: "Mooca",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "03101-000",
-            latitude: -23.5585,
-            longitude: -46.6067
-        },
-        {
-            id: "driver-4",
-            userId: "user-motorista-4",
-            name: "Juliano Castro",
-            status: "inativo",
-            active: true,
-            vehicleId: "vehicle-3",
-            cpf: "444.555.666-77",
-            rg: "10.203.040-5",
-            cnh: "44455566677",
-            cnhCategory: "D",
-            street: "Praça do Condutor",
-            number: "4",
-            neighborhood: "Tatuapé",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "03309-000",
-            latitude: -23.5422,
-            longitude: -46.5740
-        },
-        {
-            id: "driver-5",
-            userId: "user-motorista-5",
-            name: "Beatriz Santos",
-            status: "inativo",
-            active: false,
-            vehicleId: "vehicle-5",
-            cpf: "555.666.777-88",
-            rg: "20.304.050-6",
-            cnh: "55566677788",
-            cnhCategory: "D",
-            street: "Rua da Direção",
-            number: "5",
-            neighborhood: "Santana",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "02011-000",
-            latitude: -23.5042,
-            longitude: -46.6260
-        },
-        {
-            id: "driver-6",
-            userId: "user-motorista-6",
-            name: "Paulo Lima",
-            status: "em_rota",
-            active: true,
-            vehicleId: "vehicle-6",
-            cpf: "666.777.888-99",
-            latitude: -23.5550,
-            longitude: -46.6650
-        },
-        {
-            id: "driver-7",
-            userId: "user-motorista-7",
-            name: "Cristina Borges",
-            status: "inativo",
-            active: true,
-            vehicleId: "vehicle-7",
-            cpf: "777.888.999-00",
-            latitude: -23.5750,
-            longitude: -46.6850
-        },
+            active: true
+        }
     ],
-    students: [
-        { id: "student-1", name: "Lucas Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5450, longitude: -46.6380, street: "Rua A", number: "10", neighborhood: "Bela Vista", city: "São Paulo", state: "SP", zipCode: "01311-000", monthlyFee: 450.00, serie: "3º Ano A", turma: "Sala 5", medicalNote: "Alérgico a Amendoim. Levar Epipen se necessário." },
-        { id: "student-2", name: "Beatriz Costa", schoolId: "school-2", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5550, longitude: -46.6400, street: "Rua B", number: "20", neighborhood: "Consolação", city: "São Paulo", state: "SP", zipCode: "01220-010", monthlyFee: 480.50, serie: "4º Ano C", turma: "Sala 8" },
-        { id: "student-3", name: "Fernando Lima", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6300, street: "Rua C", number: "30", neighborhood: "Liberdade", city: "São Paulo", state: "SP", zipCode: "01504-001", monthlyFee: 420.00 },
-        { id: "student-4", name: "Sofia Martins", schoolId: "school-2", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6500, street: "Rua D", number: "40", neighborhood: "Aclimação", city: "São Paulo", state: "SP", zipCode: "01529-000", monthlyFee: 500.00 },
-        { id: "student-5", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6600, street: "Rua E", number: "50", neighborhood: "Paraíso", city: "São Paulo", state: "SP", zipCode: "04004-040", monthlyFee: 450.00, medicalNote: "Faz uso de cadeira de rodas. Necessário rampa de acesso." },
-        { id: "student-6", name: "Isabela Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5750, longitude: -46.6650, street: "Rua F", number: "60", neighborhood: "Vila Mariana", city: "São Paulo", state: "SP", zipCode: "04011-060", monthlyFee: 450.00 },
-        { id: "student-7", name: "Davi Ribeiro", schoolId: "school-2", parentId: "parent-4", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5800, longitude: -46.6700, street: "Rua G", number: "70", neighborhood: "Ibirapuera", city: "São Paulo", state: "SP", zipCode: "04094-050", monthlyFee: 510.00 },
-        { id: "student-8", name: "Laura Ribeiro", schoolId: "school-2", parentId: "parent-4", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5850, longitude: -46.6750, street: "Rua H", number: "80", neighborhood: "Campo Belo", city: "São Paulo", state: "SP", zipCode: "04609-001", monthlyFee: 510.00 },
-        { id: "student-9", name: "Mateus Oliveira", schoolId: "school-3", parentId: "parent-5", shift: "Manhã", status: "aguardando", active: true, latitude: -23.6100, longitude: -46.7200, street: "Rua I", number: "90", neighborhood: "Vila Andrade", city: "São Paulo", state: "SP", zipCode: "05726-140", monthlyFee: 550.00 },
-        { id: "student-10", name: "Alice Martins", schoolId: "school-3", parentId: "parent-6", shift: "Tarde", status: "aguardando", active: true, latitude: -23.6200, longitude: -46.7300, street: "Rua J", number: "100", neighborhood: "Panamby", city: "São Paulo", state: "SP", zipCode: "05707-430", monthlyFee: 550.00 },
-        { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6620, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP", monthlyFee: 430.00 },
-        { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5590, longitude: -46.6630, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP", monthlyFee: 490.00 },
-        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6680, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
-        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6780, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
-        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", shift: "Tarde", status: "aguardando", active: true, latitude: -23.6300, longitude: -46.7000, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
-        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", shift: "Tarde", status: "aguardando", active: false, latitude: -23.6350, longitude: -46.7050, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
-        { id: "student-17", name: "Theo Integral", schoolId: "school-1", parentId: "parent-1", shift: "Integral", status: "aguardando", active: true, latitude: -23.5520, longitude: -46.6420, street: "Rua do Teste", number: "123", neighborhood: "Centro", city: "São Paulo", state: "SP", zipCode: "01002-000", monthlyFee: 800.00 },
-        { id: "student-18", name: "Heitor Mendes", schoolId: "school-1", parentId: "parent-10", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5480, longitude: -46.6480, street: "Rua Avanhandava", number: "100", city: "São Paulo", state: "SP", monthlyFee: 440.00 },
-        { id: "student-19", name: "Clara Ferreira", schoolId: "school-1", parentId: "parent-11", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5420, longitude: -46.6450, street: "Rua Martinho Prado", number: "250", city: "São Paulo", state: "SP", monthlyFee: 440.00 },
+    vehicles: [
+        {
+            id: "vehicle-1",
+            model: "Mercedes Sprinter",
+            licensePlate: "BRA2E19",
+            capacity: 15,
+            active: true,
+            currentOdometer: 45200,
+            lastMaintenanceOdometer: 40000,
+            maintenanceInterval: 10000
+        },
+        {
+            id: "vehicle-2",
+            model: "Renault Master",
+            licensePlate: "KLU4J22",
+            capacity: 18,
+            active: true,
+            currentOdometer: 12000,
+            lastMaintenanceOdometer: 10000,
+            maintenanceInterval: 10000
+        }
     ],
     routes: [
         {
-            id: "route-9",
-            name: "Rota Combinada - Manhã",
-            shift: "Manhã",
-            driverId: "driver-4",
+            id: "route-1",
+            name: "Rota Centro - Manhã",
+            driverId: "driver-1",
             monitorId: "user-monitor-1",
-            studentIds: ["student-1", "student-17", "student-19", "student-18", "student-3", "student-11", "student-13", "school-1", "student-2", "student-12", "student-4", "student-5", "student-7", "student-6", "school-2"],
-            turnByTurnDirections: [],
-            lastOptimizedAt: "2024-07-31T10:00:00.000Z"
-        },
-        { id: "route-5", name: "Rota Morumbi - Tarde", shift: "Tarde", driverId: "driver-5", monitorId: "user-monitor-1", studentIds: ["student-9", "student-10", "student-15"] },
-        { 
-            id: "route-7", 
-            name: "Escola Saber - Tarde", 
-            shift: "Tarde", 
-            driverId: "driver-7", 
-            monitorId: "", 
-            studentIds: ["student-17"]
-        },
-        { 
-            id: "route-8", 
-            name: "Colégio Vanguarda - Tarde",
-            shift: "Tarde",
-            driverId: "driver-1", 
-            monitorId: "user-monitor-3", 
-            studentIds: ["student-14"], 
-            turnByTurnDirections: []
-        },
+            shift: "Manhã",
+            studentIds: ["student-1", "student-2", "school-1", "student-3", "school-2"],
+            lastOptimizedAt: "2024-08-05T08:00:00Z",
+            polyline: ""
+        }
     ],
     locations: {
-      "driver-1": { latitude: -23.55052, longitude: -46.633308, timestamp: new Date().toISOString() },
-      "driver-2": { latitude: -23.5800, longitude: -46.6800, timestamp: new Date().toISOString() },
-      "driver-3": { latitude: -23.5700, longitude: -46.6900, timestamp: new Date().toISOString() },
-      "driver-4": { latitude: -23.5900, longitude: -46.6700, timestamp: new Date().toISOString() },
-      "driver-5": { latitude: -23.6000, longitude: -46.7100, timestamp: new Date().toISOString() },
-      "driver-6": { latitude: -23.5550, longitude: -46.6650, timestamp: new Date().toISOString() },
-      "driver-7": { latitude: -23.5750, longitude: -46.6850, timestamp: new Date().toISOString() },
+        "driver-1": { latitude: -23.5500, longitude: -46.6300, timestamp: new Date().toISOString() }
     },
     incidents: [
-      {
-        id: 'INC-001',
-        category: 'Trânsito',
-        severity: 'Média',
-        timestamp: '2024-07-29T08:15:00Z',
-        location: { lat: -23.55052, lng: -46.633308 },
-        description: 'Congestionamento intenso na Av. Paulista devido a obras na via. Atraso estimado de 20 minutos.',
-        reporter: 'Admin User',
-      },
-      {
-        id: 'INC-002',
-        category: 'Acidente',
-        severity: 'Alta',
-        timestamp: '2024-07-29T08:05:00Z',
-        location: { lat: -23.5613, lng: -46.6565 },
-        description: 'Colisão entre dois carros no cruzamento da Rua Augusta com a Alameda Santos. Vias bloqueadas.',
-        reporter: 'Mariana Costa',
-      },
-      {
-        id: 'INC-003',
-        category: 'Perigo',
-        severity: 'Crítica',
-        timestamp: '2024-07-29T07:50:00Z',
-        location: { lat: -23.5475, lng: -46.6359 },
-        description: 'Manifestação bloqueia totalmente a Praça da Sé. Risco de segurança. Evitar a área.',
-        reporter: 'Central',
-      },
-      {
-        id: 'INC-004',
-        category: 'Trânsito',
-        severity: 'Baixa',
-        timestamp: '2024-07-29T08:30:00Z',
-        location: { lat: -23.5869, lng: -46.6823 },
-        description: 'Semáforo com defeito na Av. Brigadeiro Faria Lima. Trânsito lento mas fluindo.',
-        reporter: 'Mariana Costa',
-      },
+        {
+            id: "inc-1",
+            category: "Trânsito",
+            severity: "Média",
+            timestamp: new Date().toISOString(),
+            location: { lat: -23.555, lng: -46.645 },
+            description: "Congestionamento intenso na subida da Rua Augusta sentido Centro.",
+            reporter: "Juliano Castro"
+        }
     ],
     invoices: [
-        // Mês Atual (Agosto 2024)
-        {id: "inv-aug-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "paid" },
-        {id: "inv-aug-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 480.50, dueDate: "2024-08-10", status: "paid" },
-        {id: "inv-aug-3", studentId: "student-3", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 420.00, dueDate: "2024-08-10", status: "pagamento_em_analise" },
-        {id: "inv-aug-4", studentId: "student-4", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 500.00, dueDate: "2024-08-10", status: "pending" },
-        {id: "inv-aug-5", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "overdue" },
-        {id: "inv-aug-6", studentId: "student-6", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-08-10", status: "paid" },
-        {id: "inv-aug-7", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-08-10", status: "paid" },
-        {id: "inv-aug-8", studentId: "student-8", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-08-10", status: "paid" },
-        {id: "inv-aug-9", studentId: "student-9", parentUserId: "user-pai-5", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-08-10", status: "pending" },
-        {id: "inv-aug-10", studentId: "student-10", parentUserId: "user-pai-6", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-08-10", status: "paid" },
-        {id: "inv-aug-11", studentId: "student-11", parentUserId: "user-pai-7", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-08-10", status: "paid" },
-        {id: "inv-aug-12", studentId: "student-12", parentUserId: "user-pai-8", description: "Mensalidade Transporte", amount: 490.00, dueDate: "2024-08-10", status: "paid" },
-        {id: "inv-avulsa-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Viagem Avulsa - 12/08/2024", amount: 25.00, dueDate: "2024-08-12", status: "paid" },
-        
-        // Mês Anterior (Julho 2024)
-        {id: "inv-jul-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 480.50, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-3", studentId: "student-3", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 420.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-4", studentId: "student-4", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 500.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-5", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-6", studentId: "student-6", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-7", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-8", studentId: "student-8", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-9", studentId: "student-9", parentUserId: "user-pai-5", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-10", studentId: "student-10", parentUserId: "user-pai-6", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-11", studentId: "student-11", parentUserId: "user-pai-7", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-07-10", status: "paid" },
-        {id: "inv-jul-12", studentId: "student-12", parentUserId: "user-pai-8", description: "Mensalidade Transporte", amount: 490.00, dueDate: "2024-07-10", status: "paid" },
-  
-        // Meses Anteriores (Histórico) - Lucrativo
-        {id: "inv-jun-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-06-10", status: "paid" },
-        {id: "inv-jun-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 480.50, dueDate: "2024-06-10", status: "paid" },
-        {id: "inv-jun-3", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-06-10", status: "paid" },
-        {id: "inv-jun-4", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-06-10", status: "paid" },
-        {id: "inv-jun-5", studentId: "student-8", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-06-10", status: "paid" },
-        {id: "inv-jun-6", studentId: "student-11", parentUserId: "user-pai-7", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-06-10", status: "paid" },
-        {id: "inv-jun-12", studentId: "student-12", parentUserId: "user-pai-8", description: "Mensalidade Transporte", amount: 490.00, dueDate: "2024-06-10", status: "paid" },
-        {id: "inv-jun-13", studentId: "student-13", parentUserId: "user-pai-9", description: "Mensalidade Transporte", amount: 465.00, dueDate: "2024-06-10", status: "paid" },
-  
-        {id: "inv-mai-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-05-10", status: "paid" },
-        {id: "inv-mai-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 480.50, dueDate: "2024-05-10", status: "paid" },
-        {id: "inv-mai-3", studentId: "student-3", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 400.00, dueDate: "2024-05-10", status: "paid" },
-        {id: "inv-mai-4", studentId: "student-4", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 500.00, dueDate: "2024-05-10", status: "paid" },
-        {id: "inv-mai-9", studentId: "student-9", parentUserId: "user-pai-5", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-05-10", status: "paid" },
-        {id: "inv-mai-10", studentId: "student-10", parentUserId: "user-pai-6", description: "Mensalidade Transporte", amount: 550.00, dueDate: "2024-05-10", status: "paid" },
-  
-        {id: "inv-apr-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-04-10", status: "paid" },
-        {id: "inv-apr-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 460.50, dueDate: "2024-04-10", status: "paid" },
-        {id: "inv-apr-5", studentId: "student-5", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-04-10", status: "paid" },
-        {id: "inv-apr-6", studentId: "student-6", parentUserId: "user-pai-3", description: "Mensalidade Transporte", amount: 450.00, dueDate: "2024-04-10", status: "paid" },
-  
-        {id: "inv-mar-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Transporte", amount: 430.00, dueDate: "2024-03-10", status: "paid" },
-        {id: "inv-mar-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Transporte", amount: 460.50, dueDate: "2024-03-10", status: "paid" },
-        {id: "inv-mar-7", studentId: "student-7", parentUserId: "user-pai-4", description: "Mensalidade Transporte", amount: 510.00, dueDate: "2024-03-10", status: "paid" },
-        {id: "inv-mar-14", studentId: "student-14", parentUserId: "user-pai-10", description: "Mensalidade Transporte", amount: 525.00, dueDate: "2024-03-10", status: "paid" },
+        {
+            id: "inv-1",
+            studentId: "student-1",
+            parentUserId: "user-pai-1",
+            description: "Mensalidade Agosto",
+            amount: 450.00,
+            dueDate: "2024-08-10",
+            status: "paid"
+        },
+        {
+            id: "inv-2",
+            studentId: "student-2",
+            parentUserId: "user-pai-2",
+            description: "Mensalidade Agosto",
+            amount: 420.00,
+            dueDate: "2024-08-10",
+            status: "pending"
+        },
+        {
+            id: "inv-3",
+            studentId: "student-3",
+            parentUserId: "user-pai-3",
+            description: "Mensalidade Agosto",
+            amount: 480.00,
+            dueDate: "2024-08-05",
+            status: "overdue"
+        }
     ],
     expenses: [
-        // Mês Atual (Agosto 2024) - Lucrativo
-        { id: "exp-aug-1", description: "Salários de Motoristas e Monitores", amount: 2100.00, date: "2024-08-05", category: "Salários" },
-        { id: "exp-aug-2", description: "Abastecimento da frota", amount: 650.00, date: "2024-08-02", category: "Combustível" },
-        { id: "exp-aug-3", description: "Manutenção corretiva - Sprinter", amount: 320.00, date: "2024-08-06", category: "Manutenção" },
-        
-        // Mês Anterior (Julho 2024) - Lucrativo
-        { id: "exp-jul-1", description: "Salários de Motoristas e Monitores", amount: 2100.00, date: "2024-07-05", category: "Salários" },
-        { id: "exp-jul-2", description: "Abastecimento da frota", amount: 850.50, date: "2024-07-15", category: "Combustível" },
-        { id: "exp-jul-3", description: "Impostos e Taxas Municipais", amount: 400.00, date: "2024-07-20", category: "Impostos" },
-        { id: "exp-jul-4", description: "Compra de material de limpeza para os veículos", amount: 89.90, date: "2024-07-28", category: "Outros" },
-  
-        // Meses Anteriores (Histórico) - Lucrativo
-        { id: "exp-jun-1", description: "Salários", amount: 2000.00, date: "2024-06-05", category: "Salários" },
-        { id: "exp-jun-2", description: "Combustível", amount: 800.00, date: "2024-06-15", category: "Combustível" },
-        { id: "exp-jun-3", description: "Seguro da Frota (Parcela)", amount: 550.00, date: "2024-06-18", category: "Impostos" },
-        { id: "exp-mai-1", description: "Salários", amount: 2000.00, date: "2024-05-05", category: "Salários" },
-        { id: "exp-mai-2", description: "Combustível", amount: 950.00, date: "2024-05-15", category: "Combustível" },
-        { id: "exp-mai-3", description: "Manutenção Preventiva - Frota", amount: 1100.00, date: "2024-05-20", category: "Manutenção" },
-        { id: "exp-apr-1", description: "Salários", amount: 1950.00, date: "2024-04-05", category: "Salários" },
-        { id: "exp-apr-2", description: "Combustível", amount: 980.00, date: "2024-04-15", category: "Combustível" },
-        { id: "exp-apr-3", description: "Troca de Pneus - Master", amount: 1500.00, date: "2024-04-22", category: "Manutenção" },
-        { id: "exp-mar-1", description: "Salários", amount: 1950.00, date: "2024-03-05", category: "Salários" },
-        { id: "exp-mar-2", description: "Combustível", amount: 850.00, date: "2024-03-15", category: "Combustível" },
-    ],
-    messages: [
-        { id: "msg-1", senderId: "user-pai-1", recipientId: "user-admin-1", text: "Bom dia! O Lucas já está esperando.", timestamp: "2024-07-30T08:00:00Z" },
-        { id: "msg-2", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Bom dia! Chego em 5 minutos.", timestamp: "2024-07-30T08:01:00Z" },
-        { id: "msg-3", senderId: "user-pai-2", recipientId: "user-admin-1", text: "A Beatriz vai se atrasar um pouco hoje.", timestamp: "2024-07-30T08:05:00Z" },
-        { id: "msg-4", senderId: "user-admin-1", recipientId: "user-pai-3", text: "Olá Carla, notamos que a fatura deste mês está pendente. Algum problema?", timestamp: "2024-07-29T14:00:00Z" },
-        { id: "msg-5", senderId: "user-pai-3", recipientId: "user-admin-1", text: "Ah, olá! Vou verificar e efetuar o pagamento hoje mesmo. Obrigada por avisar!", timestamp: "2024-07-29T14:02:00Z" },
-        { id: "msg-6", senderId: "user-admin-1", recipientId: "user-motorista-2", text: "Mariana, por favor, verifique o pneu do veículo 2 antes de sair.", timestamp: "2024-07-30T07:30:00Z" },
-        { id: "msg-7", senderId: "user-motorista-2", recipientId: "user-admin-1", text: "Ciente. Pneu verificado, tudo ok.", timestamp: "2024-07-30T07:35:00Z" }
+        { id: "exp-1", description: "Abastecimento Sprinter", amount: 350.00, date: "2024-08-01", category: "Combustível" },
+        { id: "exp-2", description: "Troca de Óleo Renault", amount: 450.00, date: "2024-08-02", category: "Manutenção" }
     ],
     predefined_messages: [
-        { id: "pm-1", text: "Estou a 5 minutos.", for: "driver" },
-        { id: "pm-2", text: "Cheguei no local.", for: "driver" },
-        { id: "pm-3", text: "Trânsito intenso, pode haver um pequeno atraso.", for: "driver" },
-        { id: "pm-4", text: "O aluno(a) já está pronto(a).", for: "parent" },
-        { id: "pm-5", text: "Meu filho(a) não irá hoje.", for: "parent" },
-        { id: "pm-6", text: "Obrigado(a)!", for: "all" },
-        { id: "pm-7", text: "Ajudarei no embarque.", for: "monitor" },
-        { id: "pm-8", text: "Todos a bordo e seguros.", for: "monitor" },
-        { id: "pm-9", text: "Por favor, confirme o recebimento.", for: "gestor" },
-        { id: "pm-10", text: "A rota foi alterada. Verifique o novo plano.", for: "gestor" },
+        { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
+        { id: "pm-2", text: "O aluno já foi entregue na escola.", for: "monitor" },
+        { id: "pm-3", text: "Pagamento recebido, obrigado.", for: "gestor" }
     ],
     authorized_pickups: [
-        { id: "ap-1", studentId: "student-1", parentUserId: "user-pai-1", name: "Maria Pereira (Avó)", cpf: "123.123.123-12", phone: "1198888-1234" },
-        { id: "ap-2", studentId: "student-1", parentUserId: "user-pai-1", name: "José Pereira (Avô)", cpf: "321.321.321-21", phone: "1198888-4321" },
-        { id: "ap-3", studentId: "student-2", parentUserId: "user-pai-2", name: "Ricardo Costa (Tio)", cpf: "111.222.333-44", phone: "1197777-1234" }
+        { id: "auth-1", studentId: "student-1", parentUserId: "user-pai-1", name: "Avó Maria", cpf: "999.888.777-66", phone: "11911112222" }
     ],
     trip_requests: [
-        { id: "tr-1", studentId: "student-1", schoolId: "school-2", parentUserId: "user-pai-1", date: "2024-08-15", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "O aluno precisa ir a uma consulta médica e voltará para a escola.", createdAt: "2024-07-30T10:00:00Z" },
-        { id: "tr-2", studentId: "student-1", schoolId: "school-2", parentUserId: "user-pai-1", date: "2024-08-12", type: "volta", shift: "manha", status: "aprovada", reason: "", createdAt: "2024-07-29T11:30:00Z", amount: 25.00 },
-        { id: "tr-3", studentId: "student-2", schoolId: "school-2", parentUserId: "user-pai-2", date: "2024-08-14", type: "ida", shift: "manha", status: "rejeitada", reason: "", createdAt: "2024-07-28T15:00:00Z" },
-        { id: "tr-4", studentId: "student-5", schoolId: "school-2", parentUserId: "user-pai-3", date: "2024-08-16", type: "volta", shift: "manha", status: "aguardando_aprovacao_pai", reason: "Sairá mais cedo para um compromisso.", createdAt: "2024-07-31T09:00:00Z", amount: 30.00 },
-        { id: "tr-5", studentId: "student-7", schoolId: "school-2", parentUserId: "user-pai-4", date: "2024-08-20", type: "ida_e_volta", shift: "manha", status: "pendente", reason: "Participará de uma feira de ciências.", createdAt: "2024-07-31T11:00:00Z" }
+        {
+            id: "tr-1",
+            studentId: "student-1",
+            schoolId: "school-1",
+            parentUserId: "user-pai-1",
+            date: "2024-08-15",
+            type: "ida",
+            shift: "manha",
+            status: "pendente",
+            createdAt: new Date().toISOString()
+        }
     ],
     contract_templates: [
         {
-            id: "ctpl-1",
-            name: "Contrato Padrão",
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO {{ano_letivo}}\n\nCLÁUSULA PRIMEIRA - PARTES\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: {{responsavel_nome}}, portador(a) do CPF nº {{responsavel_cpf}}.\n\nCLÁUSULA SEGUNDA - OBJETO\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) {{aluno_nome}}, a ser transportado(a) do endereço residencial ({{aluno_endereco}}) para a instituição de ensino ({{escola_nome}}) e vice-versa.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ {{valor_mensalidade}}, com vencimento no 5º (quinto) dia útil de cada mês.\nO pagamento pode ser realizado para:\nBanco: {{banco}}, Agência: {{agencia}}, Conta: {{conta}}\n\nCLÁUSULA QUARTA - OBRIGAÇÕES\nAs partes se comprometem a cumprir com as obrigações de zelo, segurança e pontualidade.\n\nE, por estarem justos e contratados, assinam o presente.\n\nSão Paulo, {{data_geracao}}.\n",
-            createdAt: "2024-07-01T10:00:00Z"
-        },
-        {
-            id: "ctpl-2",
-            name: "Contrato Completo",
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO {{ano_letivo}}\n\nPelo presente instrumento particular, de um lado:\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\n\nDe outro lado:\n\nCONTRATANTE: {{responsavel_nome}}, portador(a) do CPF nº {{responsavel_cpf}}, residente e domiciliado(a) em {{aluno_endereco}}.\n\nFica justo e contratado o seguinte:\n\nCLÁUSULA PRIMEIRA - DO OBJETO\n1.1. O presente contrato tem por objeto a prestação de serviços de transporte escolar para o(a) aluno(a) {{aluno_nome}}, do endereço do(a) CONTRATANTE até a instituição de ensino {{escola_nome}} e seu retorno.\n\nCLÁUSULA SEGUNDA - DO VALOR E DO PAGAMENTO\n2.1. O valor da mensalidade pelos serviços prestados será de R$ {{valor_mensalidade}}, a ser pago todo dia 10 de cada mês.\n2.2. O pagamento deverá ser realizado através de depósito ou transferência bancária para a conta abaixo:\n   - Banco: {{banco}}\n   - Agência: {{agencia}}\n   - Conta: {{conta}}\n2.3. Em caso de atraso no pagamento, incidirá multa de 2% (dois por cento) sobre o valor da mensalidade, acrescida de juros de mora de 1% (um por cento) ao mês.\n\nCLÁUSULA TERCEIRA - DO PERÍODO E DAS FÉRIAS\n3.1. O presente contrato tem a duração do ano letivo de {{ano_letivo}}.\n3.2. A prestação de serviços será interrompida durante os períodos de férias escolares e recessos oficiais. No entanto, para garantia da vaga e manutenção do equilíbrio econômico-financeiro do contrato, a cobrança das mensalidades ocorrerá normalmente nos 12 (doze) meses do ano, incluindo os meses de férias.\n\nCLÁUSULA QUARTA - DAS OBRIGAÇÕES\n4.1. Compete à CONTRATADA:\n   a) Prestar os serviços com zelo e segurança.\n   b) Manter os veículos em conformidade com as normas legais.\n   c) Informar sobre eventuais atrasos.\n\n4.2. Compete ao(à) CONTRATANTE:\n   a) Efetuar os pagamentos pontualmente.\n   b) Garantir que o(a) aluno(a) esteja no local de embarque no horário estipulado.\n\nE, por estarem de acordo, assinam o presente.\n\nSão Paulo, {{data_geracao}}.\n",
-            createdAt: "2024-07-02T11:00:00Z"
+            id: "tpl-1",
+            name: "Contrato Padrão 2024",
+            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}, CPF: {{responsavel_cpf}}.\nALUNO: {{aluno_nome}}.\nESCOLA: {{escola_nome}}.\nVALOR: R$ {{valor_mensalidade}} mensais.\n\nData de geração: {{data_geracao}}.\nAno Letivo: {{ano_letivo}}.",
+            createdAt: new Date().toISOString()
         }
     ],
     contracts: [
         {
-            id: "ctr-1",
-            templateId: "ctpl-1",
-            studentId: "student-1",
-            parentUserId: "user-pai-1",
-            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCLÁUSULA PRIMEIRA - PARTES\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: Ana Pereira, portador(a) do CPF nº 111.222.333-44.\n\nCLÁUSULA SEGUNDA - OBJETO\n\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) Lucas Pereira, a ser transportado(a) do endereço residencial (Rua das Acácias, 10) para a instituição de ensino (Colégio Vanguarda) e vice-versa, durante o período letivo de 2024.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\n\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ 450,00, com vencimento no 5º (quinto) dia útil de cada mês.\n\nCLÁUSULA QUARTA - OBRIGAÇÕES DA CONTRATADA\n\n- Cumprir os horários estabelecidos.\n- Manter o veículo em perfeitas condições de segurança e higiene.\n- Comunicar aos responsáveis qualquer imprevisto.\n\nCLÁUSULA QUINTA - OBRIGAÇÕES DO(A) CONTRATANTE\n\n- Efetuar o pagamento da mensalidade pontualmente.\n- Aguardar com o(a) aluno(a) no local de embarque no horário combinado.\n- Manter os dados cadastrais atualizados.\n\nE, por estarem justos e contratados, assinam o presente instrumento.\n\nSão Paulo, 14 de julho de 2024.\n",
-            status: "accepted",
-            acceptedAt: "2024-07-15T10:00:00Z",
-            createdAt: "2024-07-14T09:00:00Z"
-        },
-        {
-            id: "ctr-2",
-            templateId: "ctpl-1",
-            studentId: "student-2",
-            parentUserId: "user-pai-2",
-            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCLÁUSULA PRIMEIRA - PARTES\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\nCONTRATANTE: João Costa, portador(a) do CPF nº 444.555.666-77.\n\nCLÁUSULA SEGUNDA - OBJETO\n\nConstitui objeto do presente contrato a prestação de serviços de transporte escolar para o aluno(a) Beatriz Costa, a ser transportado(a) do endereço residencial (Avenida das Oliveiras, 20) para a instituição de ensino (Colégio Vanguarda) e vice-versa, durante o período letivo de 2024.\n\nCLÁUSULA TERCEIRA - VALOR E PAGAMENTO\n\nPelo serviço prestado, o(a) CONTRATANTE pagará à CONTRATADA o valor mensal de R$ 480,50, com vencimento no 5º (quinto) dia útil de cada mês.\n\nCLÁUSULA QUARTA - OBRIGAÇÕES DA CONTRATADA\n\n- Cumprir os horários estabelecidos.\n- Manter o veículo em perfeitas condições de segurança e higiene.\n- Comunicar aos responsáveis qualquer imprevisto.\n\nCLÁUSULA QUINTA - OBRIGAÇÕES DO(A) CONTRATANTE\n\n- Efetuar o pagamento da mensalidade pontualmente.\n- Aguardar com o(a) aluno(a) no local de embarque no horário combinado.\n- Manter os dados cadastrais atualizados.\n\nE, por estarem de acordo, assinam o presente.\n\nSão Paulo, 01 de agosto de 2024.\n",
-            status: "pending_acceptance",
-            acceptedAt: null,
-            createdAt: "2024-08-01T11:00:00Z"
-        },
-        {
-            id: "ctr-3",
-            templateId: "ctpl-2",
-            studentId: "student-5",
+            id: "ct-1",
+            templateId: "tpl-1",
+            studentId: "student-3",
             parentUserId: "user-pai-3",
-            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO 2024\n\nPelo presente instrumento particular, de um lado:\n\nCONTRATADA: Guardian Transporte Escolar LTDA, CNPJ 00.000.000/0001-00.\n\nDe outro lado:\n\nCONTRATANTE: Carla Dias, portador(a) do CPF nº 222.333.444-55, residente e domiciliado(a) em Rua E, 50.\n\nFica justo e contratado o seguinte:\n\nCLÁUSULA PRIMEIRA - DO OBJETO\n1.1. O presente contrato tem por objeto a prestação de serviços de transporte escolar para o(a) aluno(a) Gabriel Dias, do endereço do(a) CONTRATANTE até a instituição de ensino Colégio Vanguarda e seu retorno.\n\nCLÁUSULA SEGUNDA - DO VALOR E DO PAGAMENTO\n2.1. O valor da mensalidade pelos serviços prestados será de R$ 450,00, a ser pago todo dia 10 de cada mês.\n2.2. O pagamento deverá ser realizado através de depósito ou transferência bancária para a conta abaixo:\n   - Banco: Banco Digital Guardian\n   - Agência: 0001\n   - Conta: 12345-6\n2.3. Em caso de atraso no pagamento, incidirá multa de 2% (dois por cento) sobre o valor da mensalidade, acrescida de juros de mora de 1% (um por cento) ao mês.\n\nCLÁUSULA TERCEIRA - DO PERÍODO E DAS FÉRIAS\n3.1. O presente contrato tem a duração do ano letivo de 2024.\n3.2. A prestação de serviços será interrompida durante os períodos de férias escolares e recessos oficiais. No entanto, para garantia da vaga e manutenção do equilíbrio econômico-financeiro do contrato, a cobrança das mensalidades ocorrerá normalmente nos 12 (doze) meses do ano, incluindo os meses de férias.\n\nCLÁUSULA QUARTA - DAS OBRIGAÇÕES\n4.1. Compete à CONTRATADA:\n   a) Prestar os serviços com zelo e segurança.\n   b) Manter os veículos em conformidade com as normas legais.\n   c) Informar sobre eventuais atrasos.\n\n4.2. Compete ao(à) CONTRATANTE:\n   a) Efetuar os pagamentos pontualmente.\n   b) Garantir que o(a) aluno(a) esteja no local de embarque no horário estipulado.\n\nE, por estarem de acordo, assinam o presente.\n\nSão Paulo, 03 de agosto de 2024.\n",
+            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: Carla Dias, CPF: 333.444.555-66.\nALUNO: Gabriel Dias.\nESCOLA: Colégio Vanguarda.\nVALOR: R$ 480,00 mensais.",
             status: "pending_acceptance",
-            acceptedAt: null,
-            createdAt: "2024-08-03T09:00:00Z"
+            createdAt: new Date().toISOString()
+        }
+    ],
+    pending_registrations: [
+        {
+            id: "reg-1",
+            parentName: "Roberto Silva",
+            studentName: "Davi Silva",
+            email: "roberto.silva@email.com",
+            phone: "11955551111",
+            schoolId: "school-1",
+            status: "pending_approval",
+            createdAt: new Date().toISOString(),
+            documentData: {
+                cpf: "123.456.789-01",
+                rg: "12.345.678-0"
+            }
         }
     ]
 };

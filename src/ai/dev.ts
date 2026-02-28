@@ -1,4 +1,3 @@
-
 'use server';
 import { config } from 'dotenv';
 config();
@@ -10,3 +9,4 @@ import '@/ai/flows/generate-monthly-invoices.ts';
 import '@/ai/flows/geocode-address.ts';
 import '@/ai/flows/routing-geoapify.ts';
 import '@/ai/flows/validate-api-keys.ts';
+import '@/ai/flows/extract-document-data.ts';

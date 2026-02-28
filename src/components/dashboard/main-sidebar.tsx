@@ -1,4 +1,3 @@
-
 "use client";
 
 import Link from "next/link";
@@ -32,11 +31,14 @@ import {
   FileText,
   Milestone,
   BarChart3,
+  UserPlus,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { DriverRouteInfoCard } from "./driver-route-info-card";
+import { useMockCollection } from "@/hooks/use-mock-data";
+import { useMemo } from "react";
 
 const operationalLinks = [
   { href: "/dashboard/overview", label: "Painel Financeiro", icon: LayoutGrid },
@@ -66,6 +68,9 @@ const registrationLinks = [
 export function MainSidebar() {
   const pathname = usePathname();
   const isActive = (href: string) => pathname === href;
+  
+  const { data: pendingRegs } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
+  const pendingCount = useMemo(() => pendingRegs?.length || 0, [pendingRegs]);
 
   return (
     <Sidebar collapsible="icon">
@@ -100,6 +105,27 @@ export function MainSidebar() {
               </SidebarMenuButton>
             </SidebarMenuItem>
           ))}
+          
+          <SidebarMenuItem>
+            <SidebarMenuButton
+                asChild
+                variant="ghost"
+                isActive={isActive('/dashboard/management/pending-registrations')}
+                tooltip="Novas Solicitações"
+            >
+                <Link href="/dashboard/management/pending-registrations" className="flex justify-between w-full">
+                    <div className="flex items-center gap-2">
+                        <UserPlus className="h-4 w-4" />
+                        <span className="group-data-[collapsible=icon]:hidden">Solicitações</span>
+                    </div>
+                    {pendingCount > 0 && (
+                        <span className="bg-primary text-primary-foreground text-[10px] font-bold px-1.5 py-0.5 rounded-full group-data-[collapsible=icon]:hidden">
+                            {pendingCount}
+                        </span>
+                    )}
+                </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
         </SidebarMenu>
         
         <p className="px-4 text-xs text-muted-foreground mt-3 mb-2 group-data-[collapsible=icon]:hidden">
