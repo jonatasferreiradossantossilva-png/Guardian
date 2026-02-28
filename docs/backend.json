@@ -272,7 +272,9 @@
             "aguardando",
             "a_bordo",
             "desembarcado",
-            "ausente"
+            "ausente_ida",
+            "ausente_volta",
+            "ausente_dia_todo"
           ]
         },
         "shift": {

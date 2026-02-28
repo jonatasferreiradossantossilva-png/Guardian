@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -63,7 +64,7 @@ import { ReportIncidentForm } from '@/components/dashboard/report-incident-form'
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
-type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
+type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente_ida' | 'ausente_volta' | 'ausente_dia_todo';
 
 interface Student {
   id: string;
@@ -105,7 +106,9 @@ const statusText: Record<StudentStatus, string> = {
   aguardando: 'Aguardando',
   a_bordo: 'A Bordo',
   desembarcado: 'Desembarcado',
-  ausente: 'Ausente',
+  ausente_ida: 'Ausente (Ida)',
+  ausente_volta: 'Ausente (Volta)',
+  ausente_dia_todo: 'Ausente (Dia Todo)',
 };
 
 // --- Sub-components ---
@@ -146,7 +149,7 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
                 <CheckCircle className="mr-2 h-5 w-5" /> Desembarcou
             </Button>
         )}
-        <Button size="lg" variant="destructive" onClick={() => onStatusChange(student.id, 'ausente')}>
+        <Button size="lg" variant="destructive" onClick={() => onStatusChange(student.id, direction === 'ida' ? 'ausente_ida' : 'ausente_volta')}>
           <XCircle className="mr-2 h-5 w-5" /> Ausente
         </Button>
       </CardContent>
@@ -289,7 +292,7 @@ const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], for
 
 const FixedBottomBar = ({ onPause, onResume, onEnd, status, onReportIncident }: { onPause: () => void, onResume: () => void, onEnd: () => void, status: string, onReportIncident: () => void }) => (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-3 z-50">
-        <div className="mx-auto max-w-lg">
+        <div className="mx-auto max-lg">
             <div className="grid grid-cols-4 gap-2">
                 <Button asChild variant="outline" className="flex flex-col h-auto py-2 items-center justify-center gap-1 px-1">
                     <Link href="/driver/messages">
@@ -401,7 +404,7 @@ function StudentChecklistRow({ student, onStatusChange }: { student: Student; on
             ) : (
                 <div className="flex gap-2">
                     <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => onStatusChange(student.id, 'a_bordo')}><Check className="h-4 w-4"/></Button>
-                    <Button size="sm" variant="destructive" onClick={() => onStatusChange(student.id, 'ausente')}><X className="h-4 w-4"/></Button>
+                    <Button size="sm" variant="destructive" onClick={() => onStatusChange(student.id, 'ausente_volta')}><X className="h-4 w-4"/></Button>
                 </div>
             )}
         </div>
@@ -602,6 +605,11 @@ export default function DriverRoutePlanPage() {
             const student = studentMap.get(id);
             if (student && student.active !== false) {
                  const isCompatibleShift = student.shift === 'Integral' || student.shift === shift;
+                 
+                 // Smart Filtering based on Granular Absence
+                 if (direction === 'ida' && (student.status === 'ausente_ida' || student.status === 'ausente_dia_todo')) return null;
+                 if (direction === 'volta' && (student.status === 'ausente_volta' || student.status === 'ausente_dia_todo')) return null;
+
                  if (isCompatibleShift) {
                     return { id, type: 'student', data: student as Student };
                  }
@@ -614,7 +622,7 @@ export default function DriverRoutePlanPage() {
         }
         return null;
     }).filter((s): s is Stop => s !== null);
-  }, [route?.studentIds, allStudents, schools, shift]);
+  }, [route?.studentIds, allStudents, schools, shift, direction]);
 
   const { activeStop, upcomingStops } = useMemo(() => {
     if (!orderedStops) {
@@ -843,7 +851,7 @@ export default function DriverRoutePlanPage() {
             setActiveRouteId(route.id);
 
             studentsToInclude.forEach(student => {
-                if (student.status !== 'ausente') {
+                if (!student.status.startsWith('ausente')) {
                     updateDoc('students', student.id, { status: 'aguardando' });
                 }
             });
@@ -929,12 +937,15 @@ export default function DriverRoutePlanPage() {
       
       allStudents.forEach(student => {
           if (route?.studentIds.includes(student.id)) {
-            updateDoc('students', student.id, { status: 'aguardando' });
+            // Only reset non-absent students
+            if (!student.status.startsWith('ausente')) {
+                updateDoc('students', student.id, { status: 'aguardando' });
+            }
           }
       });
       toast({
           title: "Rota Finalizada!",
-          description: "Bom descanso! Os status dos alunos foram reiniciados.",
+          description: "Bom descanso!",
       });
   }, [driverId, allStudents, route?.studentIds, updateDoc, toast]);
 
@@ -959,7 +970,7 @@ export default function DriverRoutePlanPage() {
 
    const handleUndoLastAction = () => {
        if (!lastProcessedStudent) return;
-       const previousStatus = direction === 'ida' ? 'aguardando' : 'a_bordo';
+       const previousStatus = 'aguardando';
        updateDoc('students', lastProcessedStudent.id, { status: previousStatus });
        toast({
            title: "Ação desfeita",

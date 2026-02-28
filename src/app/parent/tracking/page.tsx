@@ -11,7 +11,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -19,13 +19,25 @@ import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { RoutePolyline } from "@/components/shared/route-polyline";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 
 // Types matching mock data
 interface Student {
   id: string;
   name: string;
-  status: "aguardando" | "a_bordo" | "desembarcado" | "ausente";
+  status: "aguardando" | "a_bordo" | "desembarcado" | "ausente_ida" | "ausente_volta" | "ausente_dia_todo";
   routeId?: string;
   schoolId: string;
   latitude: number;
@@ -63,7 +75,9 @@ const statusText: Record<Student["status"], string> = {
   aguardando: "Confirmado / Aguardando",
   a_bordo: "A bordo da van",
   desembarcado: "Desembarcou em segurança",
-  ausente: "Ausente hoje",
+  ausente_ida: "Ausente na Ida (Manhã)",
+  ausente_volta: "Ausente na Volta (Tarde)",
+  ausente_dia_todo: "Ausente o Dia Todo",
 };
 
 const statusBadgeVariant: Record<
@@ -73,7 +87,9 @@ const statusBadgeVariant: Record<
   a_bordo: "default",
   aguardando: "secondary",
   desembarcado: "outline",
-  ausente: "destructive",
+  ausente_ida: "destructive",
+  ausente_volta: "destructive",
+  ausente_dia_todo: "destructive",
 };
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -157,6 +173,10 @@ export default function ParentTrackingPage() {
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
+  
+  // Absence State
+  const [isAbsenceDialogOpen, setIsAbsenceDialogOpen] = useState(false);
+  const [selectedAbsenceType, setSelectedAbsenceType] = useState<"ausente_ida" | "ausente_volta" | "ausente_dia_todo">("ausente_dia_todo");
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
@@ -182,12 +202,13 @@ export default function ParentTrackingPage() {
   
   const handleCommunicateAbsence = useCallback(async () => {
     if (!student) return;
-    updateDoc('students', student.id, { status: 'ausente' });
+    updateDoc('students', student.id, { status: selectedAbsenceType });
+    setIsAbsenceDialogOpen(false);
     toast({
       title: "Ausência comunicada",
-      description: "O motorista e a gestão foram notificados.",
+      description: `O motorista foi notificado: ${statusText[selectedAbsenceType]}.`,
     });
-  }, [student, updateDoc, toast]);
+  }, [student, selectedAbsenceType, updateDoc, toast]);
 
   const handleConfirmPresence = () => {
     if (!student) return;
@@ -241,6 +262,7 @@ export default function ParentTrackingPage() {
 
   const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading || isDriverLoading;
   const studentStatus = student?.status || 'aguardando';
+  const isAbsent = studentStatus.startsWith('ausente');
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
@@ -294,19 +316,19 @@ export default function ParentTrackingPage() {
                                     <CardDescription className="mt-1">Acompanhe a viagem em tempo real.</CardDescription>
                                 </div>
                             </div>
-                            <Badge variant={statusBadgeVariant[studentStatus]} className="mt-1 h-fit">{statusText[studentStatus]}</Badge>
+                            <Badge variant={statusBadgeVariant[studentStatus]} className="mt-1 h-fit text-center max-w-[120px]">{statusText[studentStatus]}</Badge>
                         </div>
                     </CardHeader>
                     <CardContent>
-                        {studentStatus === 'ausente' ? (
+                        {isAbsent ? (
                             <div className="space-y-3 text-center">
-                                <p className="text-sm text-muted-foreground">Você comunicou que {student.name} não precisará de transporte hoje.</p>
+                                <p className="text-sm text-muted-foreground">Você comunicou a ausência: <b>{statusText[studentStatus]}</b>.</p>
                                 <Button
                                     variant="secondary"
                                     className="w-full"
                                     onClick={handleConfirmPresence}
                                 >
-                                    <CheckCircle className="mr-2 h-4 w-4" /> Desfazer Ausência
+                                    <CheckCircle className="mr-2 h-4 w-4" /> Cancelar Ausência e Confirmar Presença
                                 </Button>
                             </div>
                         ) : (
@@ -317,10 +339,10 @@ export default function ParentTrackingPage() {
                                 <Button
                                     variant="destructive"
                                     className="w-full"
-                                    onClick={handleCommunicateAbsence}
+                                    onClick={() => setIsAbsenceDialogOpen(true)}
                                     disabled={student.active === false || studentStatus !== 'aguardando'}
                                 >
-                                    <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje
+                                    <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência
                                 </Button>
                             </div>
                         )}
@@ -434,6 +456,40 @@ export default function ParentTrackingPage() {
           </Tabs>
         )}
       </div>
+
+      {/* Absence Selection Dialog */}
+      <AlertDialog open={isAbsenceDialogOpen} onOpenChange={setIsAbsenceDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Comunicar Ausência</AlertDialogTitle>
+            <AlertDialogDescription>
+              Selecione o período em que {student?.name} não utilizará o transporte hoje. Esta informação otimizará a rota do motorista.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <div className="py-4">
+            <RadioGroup value={selectedAbsenceType} onValueChange={(v) => setSelectedAbsenceType(v as any)} className="space-y-3">
+              <div className="flex items-center space-x-3 p-3 rounded-md border cursor-pointer hover:bg-secondary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                <RadioGroupItem value="ausente_ida" id="r-ida" />
+                <Label htmlFor="r-ida" className="flex-1 cursor-pointer font-medium">Faltará apenas na IDA (Escola)</Label>
+              </div>
+              <div className="flex items-center space-x-3 p-3 rounded-md border cursor-pointer hover:bg-secondary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                <RadioGroupItem value="ausente_volta" id="r-volta" />
+                <Label htmlFor="r-volta" className="flex-1 cursor-pointer font-medium">Faltará apenas na VOLTA (Casa)</Label>
+              </div>
+              <div className="flex items-center space-x-3 p-3 rounded-md border cursor-pointer hover:bg-secondary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                <RadioGroupItem value="ausente_dia_todo" id="r-dia" />
+                <Label htmlFor="r-dia" className="flex-1 cursor-pointer font-medium">Faltará o DIA TODO</Label>
+              </div>
+            </RadioGroup>
+          </div>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCommunicateAbsence} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Confirmar Ausência
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

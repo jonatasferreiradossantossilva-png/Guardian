@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect, memo, useCallback } from 'react';
@@ -42,7 +41,7 @@ import { useToast } from '@/hooks/use-toast';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
-type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente';
+type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente_ida' | 'ausente_volta' | 'ausente_dia_todo';
 interface Student {
   id: string;
   name: string;
@@ -59,7 +58,9 @@ const statusText: Record<StudentStatus, string> = {
   aguardando: 'Aguardando',
   a_bordo: 'A Bordo',
   desembarcado: 'Desembarcado',
-  ausente: 'Ausente',
+  ausente_ida: 'Ausente na Ida',
+  ausente_volta: 'Ausente na Volta',
+  ausente_dia_todo: 'Ausente Hoje',
 };
 
 const statusBadgeVariant: Record<
@@ -69,14 +70,18 @@ const statusBadgeVariant: Record<
   a_bordo: 'default',
   aguardando: 'secondary',
   desembarcado: 'outline',
-  ausente: 'destructive',
+  ausente_ida: 'destructive',
+  ausente_volta: 'destructive',
+  ausente_dia_todo: 'destructive',
 };
 
 const statusIconMap: Record<Student['status'], React.ReactNode> = {
   aguardando: <Circle className="h-5 w-5 text-muted-foreground/30" />,
   a_bordo: <CheckCircle className="h-5 w-5 text-primary" />,
   desembarcado: <CheckCircle className="h-5 w-5 text-green-500" />,
-  ausente: <XCircle className="h-5 w-5 text-destructive/80" />,
+  ausente_ida: <XCircle className="h-5 w-5 text-destructive/80" />,
+  ausente_volta: <XCircle className="h-5 w-5 text-destructive/80" />,
+  ausente_dia_todo: <XCircle className="h-5 w-5 text-destructive/80" />,
 };
 
 interface StudentCardProps {
@@ -86,7 +91,7 @@ interface StudentCardProps {
 }
 
 const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: StudentCardProps) => {
-  const isFinished = student.status === 'desembarcado' || student.status === 'ausente';
+  const isFinished = student.status === 'desembarcado' || student.status.startsWith('ausente');
 
   return (
     <Card className={cn("transition-opacity", isFinished && "opacity-60")}>
@@ -120,7 +125,7 @@ const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: St
                 <Button size="sm" className="bg-green-600 hover:bg-green-700 flex-1" onClick={() => onStatusChange(student.id, 'a_bordo')}>
                     <CheckCircle className="mr-2 h-4 w-4" /> Embarcar
                 </Button>
-                <Button size="sm" variant="destructive" className="flex-1" onClick={() => onStatusChange(student.id, 'ausente')}>
+                <Button size="sm" variant="destructive" className="flex-1" onClick={() => onStatusChange(student.id, 'ausente_ida')}>
                     <XCircle className="mr-2 h-4 w-4" /> Ausente
                 </Button>
                 </>
@@ -135,7 +140,7 @@ const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: St
                     </Button>
                 </>
             )}
-            {(student.status === 'desembarcado' || student.status === 'ausente') && (
+            {isFinished && (
                  <>
                     <Badge variant={statusBadgeVariant[student.status]} className="w-full justify-center py-1.5 text-sm flex-1">
                     {statusText[student.status]}
