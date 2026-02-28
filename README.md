@@ -9,7 +9,8 @@ O sistema opera em três camadas integradas:
 ### 1. Camada de Decisão (IA Generativa)
 - **Motor:** Google Gemini 1.5 Flash via Genkit.
 - **Função:** Atua como um especialista em logística. Recebe os pontos de embarque/desembarque e decide a **ordem lógica** das paradas baseando-se em regras de negócio (ex: coletar todos os alunos antes de descarregar nas escolas).
-- **Resiliência:** Possui mecanismos de fallback que retornam a rota padrão do gestor caso a IA esteja temporariamente indisponível.
+- **Auto-Cura (Otimização Contínua):** O sistema re-otimiza a rota automaticamente a cada parada concluída, ajustando-se em tempo real a imprevistos de trânsito ou atrasos.
+- **Resiliência:** Possui mecanismos de fallback que retornam a rota padrão do gestor caso a IA esteja temporariamente indisponível ou offline.
 
 ### 2. Camada de Geometria (Roteirização Híbrida)
 - **Motor:** Geoapify (OpenStreetMap).
@@ -18,7 +19,7 @@ O sistema opera em três camadas integradas:
 
 ### 3. Camada de Sincronização (Real-time DB)
 - **Motor:** Firebase Firestore + Offline Persistence.
-- **Estratégia Custo Zero:** A rota é calculada uma única vez. O traçado resultante (Polyline) é salvo no banco. Pais e gestores realizam apenas a leitura desse dado estático, eliminando milhares de chamadas redundantes a APIs de mapas pagas.
+- **Estratégia Custo Zero:** A rota é calculada uma única vez (ou a cada re-otimização). O traçado resultante (Polyline) é salvo no banco. Pais e gestores realizam apenas a leitura desse dado estático, eliminando milhares de chamadas redundantes a APIs de mapas pagas.
 
 ## 🔒 Política de Privacidade de Rotas
 A segurança das crianças é nossa prioridade. O sistema aplica filtros de visualização granulares:
@@ -36,6 +37,10 @@ A segurança das crianças é nossa prioridade. O sistema aplica filtros de visu
 1.  **Localização Real:** Captura a posição GPS exata da van no momento da saída.
 2.  **Re-otimização Real-time:** A IA recalcula a sequência partindo da posição atual da van (Modo Flexível).
 3.  **Ativação de Rastreamento:** O sistema inicia a simulação de movimento (jittering) para visualização dos pais.
+
+### Operação em Tempo Real (Auto-Cura)
+1.  **Check-in Dinâmico:** A cada aluno embarcado ou escola visitada, o sistema avalia a conexão.
+2.  **Re-calculo Transparente:** Se online, a IA sugere novos caminhos para as paradas restantes, mantendo a van sempre no trajeto mais rápido sem que o motorista precise intervir.
 
 ---
 *Guardian - A jornada do seu filho, protegida em tempo real.*

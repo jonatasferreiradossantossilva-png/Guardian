@@ -37,6 +37,7 @@ import {
   X,
   Sparkles,
   AlertOctagon,
+  RefreshCw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -471,6 +472,7 @@ export default function DriverRoutePlanPage() {
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [isStarting, setIsStarting] = useState(false);
+  const [isReoptimizing, setIsReoptimizing] = useState(false);
   const isOnline = useOnlineStatus();
 
   // State for school selection dialog
@@ -666,6 +668,82 @@ export default function DriverRoutePlanPage() {
   }, [orderedStops, driverProfile?.status, direction]);
   
 
+  /**
+   * Continuous Optimization Logic
+   * Recalculates the remaining route if online.
+   */
+  const handleContinuousOptimization = useCallback(async () => {
+    if (!isOnline || !route || !driverId) return;
+    
+    // Check if there are at least 2 stops left to re-optimize
+    const pendingStops = orderedStops.filter(stop => {
+        if (stop.type === 'student') {
+            return stop.data.status === 'aguardando' || (direction === 'volta' && stop.data.status === 'a_bordo');
+        }
+        return true; // Keep schools for consideration
+    });
+
+    if (pendingStops.length < 2) return;
+
+    setIsReoptimizing(true);
+    try {
+        const finishedIds = orderedStops
+            .filter(stop => {
+                if (stop.type === 'student') return stop.data.status !== 'aguardando' && stop.data.status !== 'a_bordo';
+                return false; // Schools are re-evaluated
+            })
+            .map(s => s.id);
+
+        const studentsToOptimize = pendingStops.filter(s => s.type === 'student').map(s => s.data as Student);
+        const schoolsToOptimize = Array.from(new Set(studentsToOptimize.map(s => s.schoolId)))
+            .map(id => schoolsMap.get(id))
+            .filter(Boolean) as SchoolData[];
+
+        const formatAddr = (e: Student | SchoolData) => `${e.street || ''}, ${e.number || ''}, ${e.city || ''}`;
+
+        const optimization = await optimizeSchoolVanRoute({
+            students: studentsToOptimize.map(s => ({ id: s.id, name: s.name, address: formatAddr(s), schoolId: s.schoolId })),
+            schools: schoolsToOptimize.map(s => ({ id: s.id, name: s.name, address: formatAddr(s) })),
+            startAddress: (driverLocation?.latitude && driverLocation?.longitude) ? `${driverLocation.latitude},${driverLocation.longitude}` : undefined,
+            optimizationMode: 'flexible',
+            direction: direction
+        });
+
+        const newlyOptimizedIds = optimization.optimizedStops.map(os => os.id);
+        const finalSequence = [...finishedIds, ...newlyOptimizedIds];
+
+        // Update Geometry
+        const allStopPoints = finalSequence.map(id => {
+            const ent = studentsMap.get(id) || schoolsMap.get(id);
+            return ent ? { lat: ent.latitude, lng: ent.longitude } : null;
+        }).filter((w): w is {lat: number, lng: number} => w !== null && Number.isFinite(w.lat) && Number.isFinite(w.lng));
+
+        if (driverLocation) {
+            allStopPoints.unshift({ lat: driverLocation.latitude, lng: driverLocation.longitude });
+        }
+
+        let newPolyline = route.polyline;
+        if (allStopPoints.length >= 2) {
+            const routing = await routingGeoapify({ waypoints: allStopPoints });
+            newPolyline = routing.polyline;
+        }
+
+        updateDoc('routes', route.id, { 
+            studentIds: finalSequence,
+            polyline: newPolyline,
+            lastOptimizedAt: new Date().toISOString()
+        });
+
+        toast({ title: "Rota Auto-Ajustada", description: "Sequência otimizada com base na sua posição atual.", variant: "default" });
+
+    } catch (error) {
+        console.warn("Continuous optimization failed (silent):", error);
+    } finally {
+        setIsReoptimizing(false);
+    }
+  }, [isOnline, route, driverId, orderedStops, direction, schoolsMap, studentsMap, driverLocation, updateDoc, toast]);
+
+
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     const student = (orderedStops.find(s => s.id === studentId)?.data as Student);
     if (student) setLastProcessedStudent(student); 
@@ -675,7 +753,12 @@ export default function DriverRoutePlanPage() {
         title: 'Status Atualizado',
         description: `${student?.name || 'O aluno'} foi marcado(a) como ${statusText[newStatus]}.`,
     });
-  }, [updateDoc, orderedStops, toast]);
+
+    // Trigger continuous optimization after a processed stop
+    if (newStatus !== 'aguardando') {
+        setTimeout(handleContinuousOptimization, 1000);
+    }
+  }, [updateDoc, orderedStops, toast, handleContinuousOptimization]);
   
   const handleDropOff = useCallback((schoolId: string) => {
     const studentsToDropOff = orderedStops
@@ -692,7 +775,10 @@ export default function DriverRoutePlanPage() {
     });
 
     toast({ title: "Alunos desembarcados!", description: `${studentsToDropOff.length} alunos foram marcados como desembarcados.` });
-}, [orderedStops, updateDoc, toast]);
+    
+    // Trigger continuous optimization
+    setTimeout(handleContinuousOptimization, 1000);
+}, [orderedStops, updateDoc, toast, handleContinuousOptimization]);
 
     const handleStartRoute = useCallback(async (baseStops: Stop[]) => {
         if (!driverId || !route) return;
@@ -738,7 +824,6 @@ export default function DriverRoutePlanPage() {
             }).filter((s): s is Stop => s !== null);
 
             // 3. Obter o traçado visual (Polyline) via Geoapify (Custo Zero)
-            // Garantir que as coordenadas são números válidos antes de enviar
             const waypoints = optimizedStops
                 .map(s => ({ lat: s.data.latitude, lng: s.data.longitude }))
                 .filter(w => typeof w.lat === 'number' && Number.isFinite(w.lat) && typeof w.lng === 'number' && Number.isFinite(w.lng));
@@ -913,7 +998,10 @@ export default function DriverRoutePlanPage() {
         setCurrentView('route');
         toast({ title: `Embarque concluído em ${checklistSchool?.name}!` });
         setChecklistSchool(null);
-    }, [checklistSchool, toast]);
+        
+        // Trigger continuous optimization
+        setTimeout(handleContinuousOptimization, 1000);
+    }, [checklistSchool, toast, handleContinuousOptimization]);
     
     const handleScanSuccess = useCallback((scannedId: string) => {
         const student = (allStudents || []).find(s => s.id === scannedId);
@@ -1138,9 +1226,17 @@ export default function DriverRoutePlanPage() {
                 </div>
                 
                 <TabsContent value="plan" className="mt-4 p-4">
-                    <div className="text-center mb-4">
-                        <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
-                        <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
+                    <div className="flex justify-between items-start mb-4">
+                        <div className="flex-1">
+                            <h1 className="text-2xl font-bold tracking-tight">{route?.name}</h1>
+                            <p className="text-muted-foreground mt-1">{shift} - {direction === 'ida' ? 'Ida' : 'Volta'}</p>
+                        </div>
+                        {isReoptimizing && (
+                            <Badge variant="outline" className="animate-pulse bg-primary/10 text-primary border-primary/20">
+                                <RefreshCw className="mr-1.5 h-3 w-3 animate-spin" />
+                                Ajustando...
+                            </Badge>
+                        )}
                     </div>
 
                     <div className="max-w-md mx-auto space-y-4">
