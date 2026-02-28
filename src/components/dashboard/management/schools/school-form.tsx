@@ -23,7 +23,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
 import { Loader2, MapPin, CheckCircle2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -57,6 +57,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { addDoc, updateDoc } = useMockData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isGeocoding, setIsGeocoding] = useState(false);
+  const lastGeocodedAddress = useRef('');
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -76,43 +77,42 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     },
   });
 
-  const lat = form.watch('latitude');
-  const lng = form.watch('longitude');
-  const hasGps = !!(lat && lng);
+  const { street, number, neighborhood, city, state, zipCode, latitude, longitude } = form.watch();
+  const hasGps = !!(latitude && longitude);
 
-  const handleGeocode = async () => {
-    const { street, number, neighborhood, city, state } = form.getValues();
-    if (!street || !city) {
-      toast({
-        title: "Endereço incompleto",
-        description: "Preencha a rua e a cidade para localizar a escola.",
-        variant: "destructive"
-      });
-      return;
-    }
+  const handleGeocode = useCallback(async () => {
+    const currentValues = form.getValues();
+    const fullAddress = `${currentValues.street || ''}, ${currentValues.number || ''}, ${currentValues.neighborhood || ''}, ${currentValues.city || ''} - ${currentValues.state || ''}`;
+    
+    if (!currentValues.street || !currentValues.city || fullAddress === lastGeocodedAddress.current) return;
 
     setIsGeocoding(true);
     try {
-      const fullAddress = `${street}, ${number || ''}, ${neighborhood || ''}, ${city} - ${state || ''}`;
       const result = await geocodeAddress({ address: fullAddress });
       form.setValue('latitude', result.latitude);
       form.setValue('longitude', result.longitude);
+      lastGeocodedAddress.current = fullAddress;
       toast({
-        title: "Localização da Escola encontrada!",
-        description: "Coordenadas GPS atualizadas."
+        title: "Localização da Escola atualizada!",
+        description: "Coordenadas GPS sincronizadas automaticamente."
       });
     } catch (error) {
-      console.error(error);
-      toast({
-        title: "Erro ao localizar escola",
-        variant: "destructive"
-      });
+      console.error("Auto-geocode failed:", error);
     } finally {
       setIsGeocoding(false);
     }
-  };
+  }, [form, toast]);
 
-  const zipCode = form.watch('zipCode');
+  // Auto-geocode effect
+  useEffect(() => {
+    if (!street || !city || !number) return;
+
+    const timer = setTimeout(() => {
+      handleGeocode();
+    }, 1500);
+
+    return () => clearTimeout(timer);
+  }, [street, number, city, handleGeocode]);
 
   useEffect(() => {
     if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
@@ -231,7 +231,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                       type="button" 
                       variant={hasGps ? "outline" : "secondary"} 
                       className={cn("w-full transition-all", hasGps && "border-green-500/50 text-green-600")} 
-                      onClick={handleGeocode} 
+                      onClick={() => handleGeocode()} 
                       disabled={isGeocoding}
                     >
                         {isGeocoding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : hasGps ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <MapPin className="mr-2 h-4 w-4" />}
