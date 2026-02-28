@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw } from 'lucide-react';
+import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -14,6 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Button } from '@/components/ui/button';
 import { OnboardingGuide } from '@/components/dashboard/onboarding-guide';
 import { validateGeoapifyApi, type ValidateApiOutput } from '@/ai/flows/validate-api-keys';
+import { useToast } from '@/hooks/use-toast';
 
 // --- Mobile Home Screen Component ---
 function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
@@ -86,6 +87,8 @@ const monthNames = [
 function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
   const { data: allInvoices } = useMockCollection('invoices', undefined);
   const { data: allExpenses } = useMockCollection('expenses', undefined);
+  const { data: vehicles } = useMockCollection('vehicles');
+  const { toast } = useToast();
 
   const [selectedYear, setSelectedYear] = useState<string>('latest');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
@@ -109,6 +112,26 @@ function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
   useEffect(() => {
     handleValidateApis();
   }, []);
+
+  // Fleet Health Proactive Alarms
+  const urgentMaintenance = useMemo(() => {
+    if (!vehicles) return [];
+    return vehicles.filter(v => {
+        const kmSinceLast = (v.currentOdometer || 0) - (v.lastMaintenanceOdometer || 0);
+        const remaining = (v.maintenanceInterval || 10000) - kmSinceLast;
+        return remaining < 1000 && v.active;
+    });
+  }, [vehicles]);
+
+  useEffect(() => {
+    if (urgentMaintenance.length > 0) {
+        toast({
+            title: "🚨 Alerta de Frota",
+            description: `${urgentMaintenance.length} veículo(s) precisam de manutenção urgente baseada no uso real.`,
+            variant: "destructive"
+        });
+    }
+  }, [urgentMaintenance.length, toast]);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -163,7 +186,29 @@ function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
         </div>
       </div>
 
-      {/* API Diagnostics - VISÍVEL PARA VOCÊ AGORA */}
+      {/* Fleet Health Banner */}
+      {urgentMaintenance.length > 0 && (
+          <Card className="border-destructive/50 bg-destructive/5 animate-in slide-in-from-top duration-500">
+            <CardHeader className="py-4 flex flex-row items-center justify-between space-y-0">
+                <div className="flex items-center gap-3">
+                    <div className="bg-destructive text-destructive-foreground p-2 rounded-full">
+                        <AlertTriangle className="h-5 w-5" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-base font-bold">Atenção: Manutenção Preventiva Urgente</CardTitle>
+                        <p className="text-sm text-muted-foreground">
+                            {urgentMaintenance.length} van(s) atingiram o limite de quilometragem segura para rodar.
+                        </p>
+                    </div>
+                </div>
+                <Button asChild variant="outline" size="sm" className="border-destructive/20 hover:bg-destructive/10 text-destructive">
+                    <Link href="/dashboard/performance">Ver Veículos e Agendar</Link>
+                </Button>
+            </CardHeader>
+          </Card>
+      )}
+
+      {/* API Diagnostics */}
       <Card className="border-primary/20 bg-primary/5">
         <CardHeader className="py-3">
             <CardTitle className="text-sm font-medium flex items-center justify-between">

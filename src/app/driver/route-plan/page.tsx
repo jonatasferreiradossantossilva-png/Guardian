@@ -42,7 +42,7 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
-import { useMockCollection, useMockData, useMockNestedDoc } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData, useMockNestedDoc, useMockDoc } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -504,25 +504,35 @@ export default function DriverRoutePlanPage() {
   const driverId = driverProfile?.id;
   
   const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
+  const { data: vehicle } = useMockDoc('vehicles', driverProfile?.vehicleId);
 
-  // --- Real-time Movement Simulation ---
+  // --- Real-time Movement & Odometer Simulation ---
   useEffect(() => {
-    if (driverProfile?.status !== 'em_rota' || !driverId || !driverLocation) return;
+    if (driverProfile?.status !== 'em_rota' || !driverId || !driverLocation || !vehicle) return;
 
     const interval = setInterval(() => {
         // Simula uma pequena variação de posição para o pai ver movimento
-        const jitterLat = (Math.random() - 0.5) * 0.0002;
-        const jitterLng = (Math.random() - 0.5) * 0.0002;
+        const jitterLat = (Math.random() - 0.5) * 0.0004; // Aumento leve para simular mais deslocamento
+        const jitterLng = (Math.random() - 0.5) * 0.0004;
         
+        // 1. Atualizar Localização
         setDoc(`locations/${driverId}`, {
             latitude: driverLocation.latitude + jitterLat,
             longitude: driverLocation.longitude + jitterLng,
             timestamp: new Date().toISOString()
         });
+
+        // 2. Simular Incremento de Odômetro (Preditiva)
+        // Adicionamos aprox 0.1km a cada 10s (~36km/h)
+        const kmIncrement = 0.1;
+        updateDoc('vehicles', vehicle.id, {
+            currentOdometer: (vehicle.currentOdometer || 0) + kmIncrement
+        });
+
     }, 10000); // Atualiza a cada 10 segundos
 
     return () => clearInterval(interval);
-  }, [driverProfile?.status, driverId, driverLocation, setDoc]);
+  }, [driverProfile?.status, driverId, driverLocation, vehicle, setDoc, updateDoc]);
 
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
