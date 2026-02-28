@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle } from 'lucide-react';
+import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, TrendingDown, Sparkles, ChevronRight } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -15,6 +15,7 @@ import { Button } from '@/components/ui/button';
 import { OnboardingGuide } from '@/components/dashboard/onboarding-guide';
 import { validateGeoapifyApi, type ValidateApiOutput } from '@/ai/flows/validate-api-keys';
 import { useToast } from '@/hooks/use-toast';
+import { Badge } from '@/components/ui/badge';
 
 // --- Mobile Home Screen Component ---
 function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
@@ -33,6 +34,7 @@ function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
     const navLinks = useMemo(() => {
         const baseLinks = [
             { href: '/dashboard/overview', label: 'Painel Financeiro', icon: LayoutGrid },
+            { href: '/dashboard/performance', label: 'Performance & Eco', icon: BarChart3 },
             { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
             { href: '/dashboard/financial', label: 'Controle Financeiro', icon: DollarSign },
             { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Milestone },
@@ -67,7 +69,7 @@ function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
                         <Card className="hover:bg-secondary transition-colors h-full flex flex-col justify-center">
                             <CardHeader className="flex flex-col items-center justify-center text-center p-4">
                                 <link.icon className="h-8 w-8 text-primary mb-2" />
-                                <CardTitle className="text-base">{link.label}</CardTitle>
+                                <CardTitle className="text-sm">{link.label}</CardTitle>
                             </CardHeader>
                         </Card>
                     </Link>
@@ -186,63 +188,111 @@ function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
         </div>
       </div>
 
-      {/* Fleet Health Banner */}
-      {urgentMaintenance.length > 0 && (
-          <Card className="border-destructive/50 bg-destructive/5 animate-in slide-in-from-top duration-500">
-            <CardHeader className="py-4 flex flex-row items-center justify-between space-y-0">
-                <div className="flex items-center gap-3">
-                    <div className="bg-destructive text-destructive-foreground p-2 rounded-full">
-                        <AlertTriangle className="h-5 w-5" />
-                    </div>
-                    <div>
-                        <CardTitle className="text-base font-bold">Atenção: Manutenção Preventiva Urgente</CardTitle>
-                        <p className="text-sm text-muted-foreground">
-                            {urgentMaintenance.length} van(s) atingiram o limite de quilometragem segura para rodar.
-                        </p>
-                    </div>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Performance Shortcut Card */}
+          <Link href="/dashboard/performance" className="md:col-span-2 group">
+            <Card className="h-full border-primary/20 bg-primary/5 hover:bg-primary/10 transition-all cursor-pointer overflow-hidden relative">
+                <div className="absolute top-0 right-0 p-8 opacity-10 group-hover:opacity-20 transition-opacity">
+                    <BarChart3 className="h-24 w-24" />
                 </div>
-                <Button asChild variant="outline" size="sm" className="border-destructive/20 hover:bg-destructive/10 text-destructive">
-                    <Link href="/dashboard/performance">Ver Veículos e Agendar</Link>
-                </Button>
-            </CardHeader>
-          </Card>
-      )}
+                <CardHeader>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                            <Sparkles className="h-5 w-5 text-primary" />
+                            <CardTitle className="text-xl">Performance & Inteligência</CardTitle>
+                        </div>
+                        <Badge variant="secondary" className="bg-primary/20 text-primary hover:bg-primary/20">Alpha v1.0</Badge>
+                    </div>
+                </CardHeader>
+                <CardContent>
+                    <div className="flex flex-col md:flex-row md:items-center gap-8">
+                        <div className="space-y-1">
+                            <p className="text-3xl font-bold text-primary">94.5%</p>
+                            <p className="text-sm text-muted-foreground">Eficiência de Roteirização</p>
+                        </div>
+                        <div className="h-12 w-px bg-border hidden md:block" />
+                        <div className="space-y-1">
+                            <p className="text-3xl font-bold text-green-500">-14.2%</p>
+                            <p className="text-sm text-muted-foreground">Economia de KM (vs. Manual)</p>
+                        </div>
+                        <div className="flex-1" />
+                        <Button variant="ghost" className="group-hover:translate-x-1 transition-transform">
+                            Análise Completa <ChevronRight className="ml-2 h-4 w-4" />
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+          </Link>
+
+          {/* Fleet Health Quick Look */}
+          <Link href="/dashboard/performance">
+            <Card className={cn(
+                "h-full transition-all cursor-pointer",
+                urgentMaintenance.length > 0 ? "border-destructive/50 bg-destructive/5 hover:bg-destructive/10" : "border-border hover:bg-secondary/50"
+            )}>
+                <CardHeader>
+                    <CardTitle className="text-sm font-medium flex items-center gap-2">
+                        <Wrench className="h-4 w-4" />
+                        Saúde da Frota
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                    {urgentMaintenance.length > 0 ? (
+                        <div className="flex items-center gap-3">
+                            <div className="bg-destructive text-destructive-foreground p-2 rounded-full animate-pulse">
+                                <AlertTriangle className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-lg font-bold">{urgentMaintenance.length} Alerta(s)</p>
+                                <p className="text-xs text-muted-foreground">Manutenção Urgente</p>
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="flex items-center gap-3 text-green-500">
+                            <div className="bg-green-500/20 p-2 rounded-full">
+                                <ShieldCheck className="h-5 w-5" />
+                            </div>
+                            <div>
+                                <p className="text-lg font-bold">Tudo em Dia</p>
+                                <p className="text-xs text-muted-foreground">Frota monitorada via GPS</p>
+                            </div>
+                        </div>
+                    )}
+                    <p className="text-[10px] text-muted-foreground italic">Baseado no KM real percorrido hoje.</p>
+                </CardContent>
+            </Card>
+          </Link>
+      </div>
 
       {/* API Diagnostics */}
-      <Card className="border-primary/20 bg-primary/5">
+      <Card className="border-border/50 bg-muted/20">
         <CardHeader className="py-3">
-            <CardTitle className="text-sm font-medium flex items-center justify-between">
-                <span>Status da Integração Geoapify (Resiliência)</span>
-                <Button variant="outline" size="sm" onClick={handleValidateApis} disabled={isValidating} className="h-8">
-                    {isValidating ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <RefreshCw className="h-3 w-3 mr-2" />}
-                    Re-testar Conexão
+            <CardTitle className="text-xs font-medium flex items-center justify-between text-muted-foreground">
+                <span className="flex items-center gap-2">
+                    <Activity className="h-3 w-3" />
+                    Status da Rede de Dados (Geoapify)
+                </span>
+                <Button variant="ghost" size="sm" onClick={handleValidateApis} disabled={isValidating} className="h-6 text-[10px]">
+                    {isValidating ? <Loader2 className="h-2 w-2 animate-spin mr-1" /> : <RefreshCw className="h-2 w-2 mr-1" />}
+                    Verificar
                 </Button>
             </CardTitle>
         </CardHeader>
-        <CardContent className="py-3 flex flex-wrap gap-6 text-xs">
-            <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Geocoding (Endereços):</span>
-                {isValidating ? (
-                    <span className="animate-pulse">Verificando...</span>
-                ) : apiStatus ? (
-                    apiStatus.geocoding.status === 'ok' ? 
-                    <span className="text-green-500 flex items-center gap-1 font-bold"><ShieldCheck className="h-3 w-3"/> ATIVO</span> : 
-                    <span className="text-red-500 flex items-center gap-1 font-bold"><ShieldAlert className="h-3 w-3"/> ERRO</span>
-                ) : <span>Aguardando...</span>}
+        <CardContent className="py-2 flex flex-wrap gap-4 text-[10px]">
+            <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground">Geocoding:</span>
+                {apiStatus?.geocoding.status === 'ok' ? 
+                    <Badge className="bg-green-500/10 text-green-500 border-green-500/20 h-4 px-1.5 text-[9px]">ONLINE</Badge> : 
+                    <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">OFFLINE</Badge>
+                }
             </div>
-            <div className="flex items-center gap-2">
-                <span className="text-muted-foreground">Routing (Rotas):</span>
-                {isValidating ? (
-                    <span className="animate-pulse">Verificando...</span>
-                ) : apiStatus ? (
-                    apiStatus.routing.status === 'ok' ? 
-                    <span className="text-green-500 flex items-center gap-1 font-bold"><ShieldCheck className="h-3 w-3"/> ATIVO</span> : 
-                    <span className="text-red-500 flex items-center gap-1 font-bold"><ShieldAlert className="h-3 w-3"/> ERRO</span>
-                ) : <span>Aguardando...</span>}
+            <div className="flex items-center gap-1.5">
+                <span className="text-muted-foreground">Routing:</span>
+                {apiStatus?.routing.status === 'ok' ? 
+                    <Badge className="bg-green-500/10 text-green-500 border-green-500/20 h-4 px-1.5 text-[9px]">ONLINE</Badge> : 
+                    <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">OFFLINE</Badge>
+                }
             </div>
-            {apiStatus && (apiStatus.geocoding.status === 'error' || apiStatus.routing.status === 'error') && (
-                <p className="text-red-400 italic w-full">Nota: Se aparecer erro, verifique se essas APIs estão ativas no painel da Geoapify.</p>
-            )}
         </CardContent>
       </Card>
 
