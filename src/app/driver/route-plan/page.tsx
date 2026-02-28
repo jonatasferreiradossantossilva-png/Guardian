@@ -286,7 +286,7 @@ const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], for
   );
 };
 
-const FixedBottomBar = ({ onPause, onResume, onEnd, status, onReportIncident }) => (
+const FixedBottomBar = ({ onPause, onResume, onEnd, status, onReportIncident }: { onPause: () => void, onResume: () => void, onEnd: () => void, status: string, onReportIncident: () => void }) => (
     <div className="fixed bottom-0 left-0 right-0 bg-background/95 backdrop-blur-sm border-t p-3 z-50">
         <div className="mx-auto max-w-lg">
             <div className="grid grid-cols-4 gap-2">
@@ -1029,7 +1029,7 @@ export default function DriverRoutePlanPage() {
               </div>
             </CardContent>
             <CardFooter>
-               <Button size="lg" className="w-full" onClick={handleInitiateStart} disabled={!selectedRouteIdForStart || !isOnline || isStarting}>
+               <Button size="lg" className="w-full" onClick={handleInitiateStart} disabled={!selectedRouteIdForStart || isStarting}>
                   {isStarting ? (
                       <>
                         <Loader2 className="mr-2 h-5 w-5 animate-spin" />
