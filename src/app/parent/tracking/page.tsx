@@ -10,7 +10,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight, Sparkles, BellRing } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -51,6 +51,7 @@ interface Student {
 interface Parent {
     id: string;
     userId: string;
+    name: string;
 }
 interface Route {
   id: string;
@@ -216,6 +217,10 @@ export default function ParentTrackingPage() {
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   
+  // Arrival Alert State
+  const [showProximityAlert, setShowProximityAlert] = useState(false);
+  const [lastNotifiedDistance, setLastNotifiedDistance] = useState(Infinity);
+
   // Absence State
   const [isAbsenceDialogOpen, setIsAbsenceDialogOpen] = useState(false);
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<"ausente_ida" | "ausente_volta" | "ausente_dia_todo">("ausente_dia_todo");
@@ -242,6 +247,34 @@ export default function ParentTrackingPage() {
   
   const { data: school } = useMockDoc('schools', student?.schoolId);
   
+  // --- Smart Proximity Alert Logic (Zero Cost) ---
+  useEffect(() => {
+    if (!student || !displayLocation) return;
+
+    const studentCoords = { lat: student.latitude, lng: student.longitude };
+    const busCoords = { lat: displayLocation.latitude, lng: displayLocation.longitude };
+    const currentDistance = haversineDistance(busCoords, studentCoords);
+
+    const journeyDirection = (route?.direction as 'ida' | 'volta') || 'ida';
+    const isWaitingPickup = journeyDirection === 'ida' && student.status === 'aguardando';
+    const isComingHome = journeyDirection === 'volta' && student.status === 'a_bordo';
+
+    // Se estiver a menos de 500m e em um estado que justifique o alerta
+    if (currentDistance < 0.5 && (isWaitingPickup || isComingHome)) {
+        if (!showProximityAlert) {
+            setShowProximityAlert(true);
+            toast({
+                title: "🚌 Van se aproximando!",
+                description: "A van entrou num raio de 500m da sua residência.",
+                variant: "default"
+            });
+        }
+    } else {
+        setShowProximityAlert(false);
+    }
+  }, [displayLocation, student, route?.direction, showProximityAlert, toast]);
+
+
   const handleCommunicateAbsence = useCallback(async () => {
     if (!student) return;
     updateDoc('students', student.id, { status: selectedAbsenceType });
@@ -368,6 +401,25 @@ export default function ParentTrackingPage() {
             </TabsList>
             <TabsContent value="status" className="mt-4">
               <div className="flex flex-col gap-6">
+                 
+                 {/* Arrival Alert Banner */}
+                 {showProximityAlert && (
+                    <Card className="bg-primary border-primary animate-pulse shadow-lg ring-4 ring-primary/20">
+                        <CardContent className="p-4 flex items-center justify-between text-primary-foreground">
+                            <div className="flex items-center gap-3">
+                                <div className="bg-white/20 p-2 rounded-full">
+                                    <BellRing className="h-6 w-6" />
+                                </div>
+                                <div>
+                                    <p className="font-bold text-lg">A van está quase chegando!</p>
+                                    <p className="text-sm opacity-90">Distância menor que 500 metros.</p>
+                                </div>
+                            </div>
+                            <Sparkles className="h-8 w-8 opacity-50" />
+                        </CardContent>
+                    </Card>
+                 )}
+
                  <Card className={cn(
                      "border-2 transition-all shadow-xl overflow-hidden",
                      journeyDirection === 'ida' ? "border-primary/20" : "border-orange-500/20"
@@ -440,8 +492,8 @@ export default function ParentTrackingPage() {
                                 <span>Meu QR Code</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs" onClick={handleShareTrip}>
-                            <Share2 className="h-6 w-6 text-primary" />
+                        <Button variant="outline" className={cn("flex flex-col h-auto py-4 gap-2 justify-center text-xs transition-colors", showProximityAlert && "bg-primary/10 border-primary text-primary")} onClick={handleShareTrip}>
+                            <Share2 className="h-6 w-6" />
                             <span>Aproximação</span>
                         </Button>
                         <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs">
