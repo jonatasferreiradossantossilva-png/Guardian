@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -796,7 +795,7 @@ export default function DriverRoutePlanPage() {
                 schoolId: s.schoolId
             }));
 
-            const schoolInput = schoolToInclude.map(s => ({
+            const schoolInput = schoolsToInclude.map(s => ({
                 id: s.id,
                 name: s.name,
                 address: formatAddr(s)
