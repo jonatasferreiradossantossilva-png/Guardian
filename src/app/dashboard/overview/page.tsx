@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -6,6 +7,10 @@ import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-char
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { ShieldCheck, ShieldAlert, Loader2, RefreshCw } from 'lucide-react';
+import { validateGeoapifyApi, type ValidateApiOutput } from '@/ai/flows/validate-api-keys';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -19,10 +24,26 @@ export default function DashboardOverviewPage() {
   const [selectedYear, setSelectedYear] = useState<string>('latest');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [isClient, setIsClient] = useState(false);
+  
+  // API Validation State
+  const [apiStatus, setApiStatus] = useState<ValidateApiOutput | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  const handleValidateApis = async () => {
+    setIsValidating(true);
+    try {
+      const result = await validateGeoapifyApi();
+      setApiStatus(result);
+    } catch (error) {
+      console.error("Erro ao validar APIs:", error);
+    } finally {
+      setIsValidating(false);
+    }
+  };
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -43,7 +64,7 @@ export default function DashboardOverviewPage() {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Visão Geral</h1>
-          <p className="text-muted-foreground">Visão geral da saúde financeira da sua operação.</p>
+          <p className="text-muted-foreground">Saúde financeira e operacional da sua frota.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Select value={selectedYear} onValueChange={setSelectedYear}>
@@ -72,6 +93,40 @@ export default function DashboardOverviewPage() {
             </Select>
         </div>
       </div>
+
+      {/* API Diagnostics (Visible only for you/developers) */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium flex items-center justify-between">
+                <span>Diagnóstico de Integração (Geoapify)</span>
+                <Button variant="ghost" size="sm" onClick={handleValidateApis} disabled={isValidating} className="h-8">
+                    {isValidating ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <RefreshCw className="h-3 w-3 mr-2" />}
+                    Testar Conexão
+                </Button>
+            </CardTitle>
+        </CardHeader>
+        <CardContent className="py-3 flex gap-6 text-xs">
+            <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Geocoding:</span>
+                {apiStatus ? (
+                    apiStatus.geocoding.status === 'ok' ? 
+                    <span className="text-green-500 flex items-center gap-1 font-semibold"><ShieldCheck className="h-3 w-3"/> Ativo</span> : 
+                    <span className="text-red-500 flex items-center gap-1 font-semibold"><ShieldAlert className="h-3 w-3"/> Erro</span>
+                ) : <span className="text-muted-foreground italic">Aguardando teste...</span>}
+            </div>
+            <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Routing:</span>
+                {apiStatus ? (
+                    apiStatus.routing.status === 'ok' ? 
+                    <span className="text-green-500 flex items-center gap-1 font-semibold"><ShieldCheck className="h-3 w-3"/> Ativo</span> : 
+                    <span className="text-red-500 flex items-center gap-1 font-semibold"><ShieldAlert className="h-3 w-3"/> Erro</span>
+                ) : <span className="text-muted-foreground italic">Aguardando teste...</span>}
+            </div>
+            {apiStatus && (apiStatus.geocoding.status === 'error' || apiStatus.routing.status === 'error') && (
+                <p className="text-red-400 italic">Verifique se as APIs estão habilitadas no console Geoapify.</p>
+            )}
+        </CardContent>
+      </Card>
 
       <OverviewCards filters={filters} />
 
