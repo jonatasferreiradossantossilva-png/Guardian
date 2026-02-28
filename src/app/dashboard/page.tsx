@@ -4,8 +4,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle } from '@/components/ui/card';
-import { LayoutGrid, Sparkles, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -13,18 +13,16 @@ import { useMockCollection } from '@/hooks/use-mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { OnboardingGuide } from '@/components/dashboard/onboarding-guide';
+import { validateGeoapifyApi, type ValidateApiOutput } from '@/ai/flows/validate-api-keys';
 
 // --- Mobile Home Screen Component ---
 function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
     const [mockUserId, setMockUserId] = useState<string | null>(null);
 
     useEffect(() => {
-        // This ensures the component has mounted on the client
-        // before trying to access sessionStorage.
         setMockUserId(sessionStorage.getItem('mockUserId'));
     }, []);
 
-    // Check if the current gestor is also a driver
     const driverFilter = useMemo(() => (
         mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined
     ), [mockUserId]);
@@ -56,11 +54,11 @@ function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
         <div className="p-4">
             <h1 className="text-3xl font-bold tracking-tight mb-2">Menu Principal</h1>
             <p className="text-muted-foreground mb-6 text-sm">
-                Estes são os atalhos para as principais funcionalidades. Para ver todas as opções, acesse o menu no canto superior.
+                Atalhos rápidos para sua operação.
             </p>
             <Button variant="outline" className="w-full mb-6" onClick={onOpenGuide}>
                 <HelpCircle className="mr-2 h-4 w-4" />
-                Ver Guia de Configuração
+                Guia de Configuração
             </Button>
             <div className="grid grid-cols-2 gap-4">
                 {navLinks.map((link) => (
@@ -91,6 +89,26 @@ function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
 
   const [selectedYear, setSelectedYear] = useState<string>('latest');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
+  
+  // API Validation State
+  const [apiStatus, setApiStatus] = useState<ValidateApiOutput | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
+
+  const handleValidateApis = async () => {
+    setIsValidating(true);
+    try {
+      const result = await validateGeoapifyApi();
+      setApiStatus(result);
+    } catch (error) {
+      console.error("Erro ao validar APIs:", error);
+    } finally {
+      setIsValidating(false);
+    }
+  };
+
+  useEffect(() => {
+    handleValidateApis();
+  }, []);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
@@ -111,7 +129,7 @@ function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">Visão geral da saúde financeira da sua operação.</p>
+          <p className="text-muted-foreground">Visão geral da sua operação.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button variant="outline" onClick={onOpenGuide}>
@@ -145,6 +163,44 @@ function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
         </div>
       </div>
 
+      {/* API Diagnostics - VISÍVEL PARA VOCÊ AGORA */}
+      <Card className="border-primary/20 bg-primary/5">
+        <CardHeader className="py-3">
+            <CardTitle className="text-sm font-medium flex items-center justify-between">
+                <span>Status da Integração Geoapify (Resiliência)</span>
+                <Button variant="outline" size="sm" onClick={handleValidateApis} disabled={isValidating} className="h-8">
+                    {isValidating ? <Loader2 className="h-3 w-3 animate-spin mr-2" /> : <RefreshCw className="h-3 w-3 mr-2" />}
+                    Re-testar Conexão
+                </Button>
+            </CardTitle>
+        </CardHeader>
+        <CardContent className="py-3 flex flex-wrap gap-6 text-xs">
+            <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Geocoding (Endereços):</span>
+                {isValidating ? (
+                    <span className="animate-pulse">Verificando...</span>
+                ) : apiStatus ? (
+                    apiStatus.geocoding.status === 'ok' ? 
+                    <span className="text-green-500 flex items-center gap-1 font-bold"><ShieldCheck className="h-3 w-3"/> ATIVO</span> : 
+                    <span className="text-red-500 flex items-center gap-1 font-bold"><ShieldAlert className="h-3 w-3"/> ERRO</span>
+                ) : <span>Aguardando...</span>}
+            </div>
+            <div className="flex items-center gap-2">
+                <span className="text-muted-foreground">Routing (Rotas):</span>
+                {isValidating ? (
+                    <span className="animate-pulse">Verificando...</span>
+                ) : apiStatus ? (
+                    apiStatus.routing.status === 'ok' ? 
+                    <span className="text-green-500 flex items-center gap-1 font-bold"><ShieldCheck className="h-3 w-3"/> ATIVO</span> : 
+                    <span className="text-red-500 flex items-center gap-1 font-bold"><ShieldAlert className="h-3 w-3"/> ERRO</span>
+                ) : <span>Aguardando...</span>}
+            </div>
+            {apiStatus && (apiStatus.geocoding.status === 'error' || apiStatus.routing.status === 'error') && (
+                <p className="text-red-400 italic w-full">Nota: Se aparecer erro, verifique se essas APIs estão ativas no painel da Geoapify.</p>
+            )}
+        </CardContent>
+      </Card>
+
       <OverviewCards filters={filters} />
 
       <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
@@ -167,7 +223,6 @@ export default function DashboardPage() {
     }, []);
 
     if (!isClient) {
-        // Render a placeholder or null on the server to avoid hydration mismatch
         return null; 
     }
 
