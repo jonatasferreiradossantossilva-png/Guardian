@@ -3,10 +3,11 @@
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, LineChart, Line, AreaChart, Area } from 'recharts';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLegend, ChartLegendContent } from '@/components/ui/chart';
-import { Sparkles, TrendingDown, Clock, Leaf, Zap, ShieldCheck, ArrowDownRight, Gauge } from 'lucide-react';
+import { Sparkles, TrendingDown, Clock, Leaf, Zap, ShieldCheck, ArrowDownRight, Gauge, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
+import { useMockCollection } from '@/hooks/use-mock-data';
 
 const ecoData = [
   { day: 'Seg', planejado: 42, real: 38 },
@@ -29,6 +30,29 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function PerformancePage() {
+  const { data: vehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
+  
+  const maintenanceAlerts = useMemo(() => {
+    if (!vehicles) return [];
+    
+    return vehicles
+      .filter(v => v.active)
+      .map(v => {
+        const kmSinceLast = (v.currentOdometer || 0) - (v.lastMaintenanceOdometer || 0);
+        const remaining = (v.maintenanceInterval || 10000) - kmSinceLast;
+        
+        return {
+            id: v.id,
+            model: v.model,
+            plate: v.licensePlate,
+            remaining,
+            isUrgent: remaining < 1000
+        };
+      })
+      .sort((a, b) => a.remaining - b.remaining)
+      .slice(0, 3);
+  }, [vehicles]);
+
   const totalSavings = useMemo(() => "R$ 1.240,00", []);
 
   return (
@@ -150,21 +174,29 @@ export default function PerformancePage() {
                     <Gauge className="h-5 w-5 text-muted-foreground" />
                     Manutenção Predictiva (Baseada no KM Real)
                 </CardTitle>
+                <CardDescription>Alertas gerados automaticamente pelo uso dinâmico da frota.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-md border border-destructive/20 bg-destructive/5">
-                    <div className="flex items-center gap-3 text-sm">
-                        <Badge variant="destructive">Urgente</Badge>
-                        <span>Sprinter BRA2E19: Troca de óleo em 450km</span>
-                    </div>
-                    <ArrowDownRight className="h-4 w-4 text-destructive" />
-                </div>
-                <div className="flex items-center justify-between p-3 rounded-md border border-muted bg-muted/20">
-                    <div className="flex items-center gap-3 text-sm">
-                        <Badge variant="secondary">Agendado</Badge>
-                        <span>Master ABC1D23: Revisão em 15 dias</span>
-                    </div>
-                </div>
+                {areVehiclesLoading ? (
+                    <div className="flex items-center justify-center py-10"><Loader2 className="animate-spin" /></div>
+                ) : maintenanceAlerts.length > 0 ? (
+                    maintenanceAlerts.map((alert) => (
+                        <div key={alert.id} className={cn(
+                            "flex items-center justify-between p-3 rounded-md border",
+                            alert.isUrgent ? "border-destructive/20 bg-destructive/5" : "border-muted bg-muted/20"
+                        )}>
+                            <div className="flex items-center gap-3 text-sm">
+                                <Badge variant={alert.isUrgent ? "destructive" : "secondary"}>
+                                    {alert.isUrgent ? "Urgente" : "Em breve"}
+                                </Badge>
+                                <span>{alert.model} ({alert.plate}): Revisão em {alert.remaining}km</span>
+                            </div>
+                            {alert.isUrgent && <ArrowDownRight className="h-4 w-4 text-destructive" />}
+                        </div>
+                    ))
+                ) : (
+                    <p className="text-sm text-muted-foreground text-center py-6">Nenhum veículo com manutenção próxima.</p>
+                )}
             </CardContent>
          </Card>
       </div>

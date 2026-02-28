@@ -464,6 +464,18 @@
         "active": {
           "type": "boolean",
           "description": "Indicates if the vehicle is in operation."
+        },
+        "currentOdometer": {
+          "type": "number",
+          "description": "Quilometragem total atual do veículo capturada via GPS."
+        },
+        "lastMaintenanceOdometer": {
+          "type": "number",
+          "description": "Quilometragem em que a última revisão completa foi realizada."
+        },
+        "maintenanceInterval": {
+          "type": "number",
+          "description": "Intervalo sugerido de quilômetros entre revisões (ex: 10000)."
         }
       },
       "required": [

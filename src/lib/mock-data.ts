@@ -176,13 +176,13 @@ export const initialMockData = {
         { id: "parent-12", userId: "user-pai-12", name: "Rafael Gomes", email: "rafael.gomes@email.com", phone: "11999996666", active: true, cpf: "676.787.898-90", street: "Rua Américo Brasiliense", number: "2000", neighborhood: "Chácara Santo Antônio", city: "São Paulo", state: "SP" },
     ],
     vehicles: [
-        { id: "vehicle-1", model: "Mercedes-Benz Sprinter", licensePlate: "BRA2E19", capacity: 15, active: true },
-        { id: "vehicle-2", model: "Renault Master", licensePlate: "ABC1D23", capacity: 12, active: true },
-        { id: "vehicle-3", model: "Fiat Ducato", licensePlate: "XYZ7W89", capacity: 18, active: true },
-        { id: "vehicle-4", model: "Iveco Daily", licensePlate: "QWE4R56", capacity: 20, active: false },
-        { id: "vehicle-5", model: "Ford Transit", licensePlate: "TYU7I89", capacity: 16, active: true },
-        { id: "vehicle-6", model: "Citroën Jumper", licensePlate: "JKL5M67", capacity: 15, active: true },
-        { id: "vehicle-7", model: "Peugeot Boxer", licensePlate: "GHI8J90", capacity: 18, active: false },
+        { id: "vehicle-1", model: "Mercedes-Benz Sprinter", licensePlate: "BRA2E19", capacity: 15, active: true, currentOdometer: 45200, lastMaintenanceOdometer: 35650, maintenanceInterval: 10000 },
+        { id: "vehicle-2", model: "Renault Master", licensePlate: "ABC1D23", capacity: 12, active: true, currentOdometer: 28400, lastMaintenanceOdometer: 20000, maintenanceInterval: 10000 },
+        { id: "vehicle-3", model: "Fiat Ducato", licensePlate: "XYZ7W89", capacity: 18, active: true, currentOdometer: 15000, lastMaintenanceOdometer: 5000, maintenanceInterval: 10000 },
+        { id: "vehicle-4", model: "Iveco Daily", licensePlate: "QWE4R56", capacity: 20, active: false, currentOdometer: 89000, lastMaintenanceOdometer: 85000, maintenanceInterval: 10000 },
+        { id: "vehicle-5", model: "Ford Transit", licensePlate: "TYU7I89", capacity: 16, active: true, currentOdometer: 12300, lastMaintenanceOdometer: 10000, maintenanceInterval: 10000 },
+        { id: "vehicle-6", model: "Citroën Jumper", licensePlate: "JKL5M67", capacity: 15, active: true, currentOdometer: 5600, lastMaintenanceOdometer: 0, maintenanceInterval: 10000 },
+        { id: "vehicle-7", model: "Peugeot Boxer", licensePlate: "GHI8J90", capacity: 18, active: false, currentOdometer: 102000, lastMaintenanceOdometer: 90000, maintenanceInterval: 10000 },
     ],
     drivers: [
         {
