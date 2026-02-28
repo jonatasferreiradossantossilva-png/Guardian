@@ -4,8 +4,8 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
-import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
-import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, TrendingDown, Sparkles, ChevronRight } from 'lucide-react';
+import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/components/ui/card';
+import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, TrendingDown, Sparkles, ChevronRight, UserPlus, Share2, Activity } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -18,7 +18,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 
 // --- Mobile Home Screen Component ---
-function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
+function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => void, onShareRegistration: () => void }) {
     const [mockUserId, setMockUserId] = useState<string | null>(null);
 
     useEffect(() => {
@@ -54,15 +54,29 @@ function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
     }, [isDriver]);
 
     return (
-        <div className="p-4">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">Menu Principal</h1>
-            <p className="text-muted-foreground mb-6 text-sm">
-                Atalhos rápidos para sua operação.
-            </p>
-            <Button variant="outline" className="w-full mb-6" onClick={onOpenGuide}>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                Guia de Configuração
-            </Button>
+        <div className="p-4 space-y-6">
+            <div>
+                <h1 className="text-3xl font-bold tracking-tight mb-2">Menu Principal</h1>
+                <p className="text-muted-foreground text-sm">
+                    Atalhos rápidos para sua operação.
+                </p>
+            </div>
+
+            <Card className="bg-primary/5 border-primary/20">
+                <CardHeader className="p-4 pb-2">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                        <UserPlus className="h-4 w-4 text-primary" />
+                        Novos Clientes
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="p-4 pt-0">
+                    <p className="text-xs text-muted-foreground mb-3">Envie o link de cadastro para novos pais via WhatsApp.</p>
+                    <Button size="sm" className="w-full" onClick={onShareRegistration}>
+                        <Share2 className="mr-2 h-4 w-4" /> Convidar Pais
+                    </Button>
+                </CardContent>
+            </Card>
+
             <div className="grid grid-cols-2 gap-4">
                 {navLinks.map((link) => (
                     <Link href={link.href} key={link.href} passHref>
@@ -75,6 +89,11 @@ function MobileHome({ onOpenGuide }: { onOpenGuide: () => void }) {
                     </Link>
                 ))}
             </div>
+
+            <Button variant="outline" className="w-full" onClick={onOpenGuide}>
+                <HelpCircle className="mr-2 h-4 w-4" />
+                Guia de Configuração
+            </Button>
         </div>
     );
 }
@@ -86,7 +105,7 @@ const monthNames = [
   "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
 ];
 
-function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
+function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => void, onShareRegistration: () => void }) {
   const { data: allInvoices } = useMockCollection('invoices', undefined);
   const { data: allExpenses } = useMockCollection('expenses', undefined);
   const { data: vehicles } = useMockCollection('vehicles');
@@ -224,8 +243,35 @@ function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
             </Card>
           </Link>
 
+          {/* Onboarding / Sales Tool Card */}
+          <Card className="h-full border-dashed border-primary/40 bg-secondary/20 relative overflow-hidden flex flex-col">
+                <CardHeader>
+                    <CardTitle className="text-base flex items-center gap-2">
+                        <UserPlus className="h-5 w-5 text-primary" />
+                        Vendas & Onboarding
+                    </CardTitle>
+                    <CardDescription className="text-xs">Envie o link de cadastro automático para novos pais.</CardDescription>
+                </CardHeader>
+                <CardContent className="flex-1 flex flex-col justify-center items-center text-center p-6 space-y-4">
+                    <div className="bg-primary/10 p-4 rounded-full border-2 border-primary/20">
+                        <Share2 className="h-8 w-8 text-primary" />
+                    </div>
+                    <div className="space-y-1">
+                        <p className="text-sm font-semibold">Onboarding Híbrido</p>
+                        <p className="text-[10px] text-muted-foreground">O pai tira foto do documento e a IA faz o cadastro.</p>
+                    </div>
+                </CardContent>
+                <CardFooter className="p-4 border-t bg-background/50">
+                    <Button size="sm" className="w-full" onClick={onShareRegistration}>
+                        <Share2 className="mr-2 h-4 w-4" /> Compartilhar Convite
+                    </Button>
+                </CardFooter>
+          </Card>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           {/* Fleet Health Quick Look */}
-          <Link href="/dashboard/performance">
+          <Link href="/dashboard/performance" className="md:col-span-1">
             <Card className={cn(
                 "h-full transition-all cursor-pointer",
                 urgentMaintenance.length > 0 ? "border-destructive/50 bg-destructive/5 hover:bg-destructive/10" : "border-border hover:bg-secondary/50"
@@ -262,39 +308,39 @@ function DesktopDashboard({ onOpenGuide }: { onOpenGuide: () => void }) {
                 </CardContent>
             </Card>
           </Link>
-      </div>
 
-      {/* API Diagnostics */}
-      <Card className="border-border/50 bg-muted/20">
-        <CardHeader className="py-3">
-            <CardTitle className="text-xs font-medium flex items-center justify-between text-muted-foreground">
-                <span className="flex items-center gap-2">
-                    <Activity className="h-3 w-3" />
-                    Status da Rede de Dados (Geoapify)
-                </span>
-                <Button variant="ghost" size="sm" onClick={handleValidateApis} disabled={isValidating} className="h-6 text-[10px]">
-                    {isValidating ? <Loader2 className="h-2 w-2 animate-spin mr-1" /> : <RefreshCw className="h-2 w-2 mr-1" />}
-                    Verificar
-                </Button>
-            </CardTitle>
-        </CardHeader>
-        <CardContent className="py-2 flex flex-wrap gap-4 text-[10px]">
-            <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground">Geocoding:</span>
-                {apiStatus?.geocoding.status === 'ok' ? 
-                    <Badge className="bg-green-500/10 text-green-500 border-green-500/20 h-4 px-1.5 text-[9px]">ONLINE</Badge> : 
-                    <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">OFFLINE</Badge>
-                }
-            </div>
-            <div className="flex items-center gap-1.5">
-                <span className="text-muted-foreground">Routing:</span>
-                {apiStatus?.routing.status === 'ok' ? 
-                    <Badge className="bg-green-500/10 text-green-500 border-green-500/20 h-4 px-1.5 text-[9px]">ONLINE</Badge> : 
-                    <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">OFFLINE</Badge>
-                }
-            </div>
-        </CardContent>
-      </Card>
+          {/* API Diagnostics */}
+          <Card className="border-border/50 bg-muted/20 md:col-span-2">
+            <CardHeader className="py-3 px-4">
+                <CardTitle className="text-xs font-medium flex items-center justify-between text-muted-foreground">
+                    <span className="flex items-center gap-2">
+                        <Activity className="h-3 w-3" />
+                        Status da Rede de Dados (Geoapify)
+                    </span>
+                    <Button variant="ghost" size="sm" onClick={handleValidateApis} disabled={isValidating} className="h-6 text-[10px]">
+                        {isValidating ? <Loader2 className="h-2 w-2 animate-spin mr-1" /> : <RefreshCw className="h-2 w-2 mr-1" />}
+                        Verificar
+                    </Button>
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="py-2 px-4 flex flex-wrap gap-4 text-[10px]">
+                <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground">Geocoding:</span>
+                    {apiStatus?.geocoding.status === 'ok' ? 
+                        <Badge className="bg-green-500/10 text-green-500 border-green-500/20 h-4 px-1.5 text-[9px]">ONLINE</Badge> : 
+                        <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">OFFLINE</Badge>
+                    }
+                </div>
+                <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground">Routing:</span>
+                    {apiStatus?.routing.status === 'ok' ? 
+                        <Badge className="bg-green-500/10 text-green-500 border-green-500/20 h-4 px-1.5 text-[9px]">ONLINE</Badge> : 
+                        <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">OFFLINE</Badge>
+                    }
+                </div>
+            </CardContent>
+          </Card>
+      </div>
 
       <OverviewCards filters={filters} />
 
@@ -312,6 +358,7 @@ export default function DashboardPage() {
     const isMobile = useIsMobile();
     const [isClient, setIsClient] = useState(false);
     const [showOnboarding, setShowOnboarding] = useState(false);
+    const { toast } = useToast();
 
     useEffect(() => {
         setIsClient(true);
@@ -323,9 +370,38 @@ export default function DashboardPage() {
 
     const handleOpenGuide = () => setShowOnboarding(true);
 
+    const handleShareRegistration = () => {
+        const registrationLink = `${window.location.origin}/register`;
+        const shareText = `Olá! Para agilizar seu cadastro no Guardian, clique no link abaixo e use nossa ferramenta de leitura automática de documentos:\n\n${registrationLink}`;
+        
+        // Use standard Web Share API if available, otherwise fallback to WhatsApp and Copy
+        if (navigator.share) {
+            navigator.share({
+                title: 'Convite Guardian',
+                text: shareText,
+                url: registrationLink
+            }).catch(() => {
+                // Fallback handled by toast/ui
+            });
+        } else {
+            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+            window.open(whatsappUrl, '_blank');
+            
+            // Also copy to clipboard for convenience
+            navigator.clipboard.writeText(shareText);
+            toast({
+                title: "Link Copiado!",
+                description: "A mensagem de convite foi copiada e o WhatsApp aberto."
+            });
+        }
+    };
+
     return (
         <>
-            {isMobile ? <MobileHome onOpenGuide={handleOpenGuide} /> : <DesktopDashboard onOpenGuide={handleOpenGuide} />}
+            {isMobile ? 
+                <MobileHome onOpenGuide={handleOpenGuide} onShareRegistration={handleShareRegistration} /> : 
+                <DesktopDashboard onOpenGuide={handleOpenGuide} onShareRegistration={handleShareRegistration} />
+            }
             <OnboardingGuide isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
         </>
     );

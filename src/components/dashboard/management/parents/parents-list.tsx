@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, UserPlus } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -97,6 +97,27 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     setSelectedParent(null);
   };
   
+  const handleShareInvite = () => {
+    const registrationLink = `${window.location.origin}/register`;
+    const shareText = `Olá! Para agilizar seu cadastro no Guardian, clique no link abaixo e use nossa ferramenta de leitura automática de documentos:\n\n${registrationLink}`;
+    
+    if (navigator.share) {
+        navigator.share({
+            title: 'Convite Guardian',
+            text: shareText,
+            url: registrationLink
+        }).catch(console.error);
+    } else {
+        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+        window.open(whatsappUrl, '_blank');
+        navigator.clipboard.writeText(shareText);
+        toast({
+            title: "Convite pronto!",
+            description: "Link copiado e WhatsApp aberto para envio."
+        });
+    }
+  };
+
   const formatAddress = (parent: Parent) => {
     if (!parent.street) return 'N/A';
     return `${parent.street}, ${parent.number} - ${parent.city}, ${parent.state}`;
@@ -105,22 +126,27 @@ export function ParentsList({ initialParents }: ParentsListProps) {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
           Gerenciamento de Pais e Responsáveis
         </h1>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button onClick={() => {
-              setSelectedParent(null);
-              setIsFormOpen(true);
-            }}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Adicionar Responsável
+        <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" onClick={handleShareInvite} className="flex-1 sm:flex-none">
+                <Share2 className="mr-2 h-4 w-4" /> Convidar Pais
             </Button>
-          </DialogTrigger>
-          <ParentForm parent={selectedParent || undefined} onFormSubmit={handleFormSubmit} />
-        </Dialog>
+            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+                <DialogTrigger asChild>
+                    <Button className="flex-1 sm:flex-none" onClick={() => {
+                        setSelectedParent(null);
+                        setIsFormOpen(true);
+                    }}>
+                    <PlusCircle className="mr-2 h-4 w-4" />
+                    Novo Responsável
+                    </Button>
+                </DialogTrigger>
+                <ParentForm parent={selectedParent || undefined} onFormSubmit={handleFormSubmit} />
+            </Dialog>
+        </div>
       </div>
       <Card>
         <CardHeader>
