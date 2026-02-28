@@ -1,18 +1,7 @@
 
-
-
-
-
-
-
-
-
-
-
-
 "use client";
 
-import { useMemo, useState, useEffect, useRef, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   useMockCollection,
@@ -20,15 +9,16 @@ import {
   useMockData,
   useMockNestedDoc,
 } from "@/hooks/use-mock-data";
-import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, Siren, Users, DollarSign, School, CheckCircle, IdCard, Route, Bell, Circle, XCircle, Activity, Share2, FileText, LocateFixed, QrCode } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { RoutePolyline } from "@/components/shared/route-polyline";
 
 
 // Types matching mock data
@@ -55,6 +45,7 @@ interface Route {
   id: string;
   driverId: string;
   studentIds: string[];
+  polyline?: string;
 }
 interface LocationUpdate {
   latitude: number;
@@ -66,29 +57,12 @@ interface School {
     name: string;
     latitude: number;
     longitude: number;
-    street?: string;
-    number?: string;
-    neighborhood?: string;
-    city?: string;
-    state?: string;
-}
-interface Driver {
-    id: string;
-    status: 'inativo' | 'em_rota' | 'pausa';
-    latitude?: number;
-    longitude?: number;
-    street?: string;
-    number?: string;
-    neighborhood?: string;
-    city?: string;
-    state?: string;
-    vehicleId?: string;
 }
 
 const statusText: Record<Student["status"], string> = {
   aguardando: "Confirmado / Aguardando",
   a_bordo: "A bordo da van",
-  desembarcou: "Desembarcou em segurança",
+  desembarcado: "Desembarcou em segurança",
   ausente: "Ausente hoje",
 };
 
@@ -98,16 +72,16 @@ const statusBadgeVariant: Record<
 > = {
   a_bordo: "default",
   aguardando: "secondary",
-  desembarcou: "outline",
+  desembarcado: "outline",
   ausente: "destructive",
 };
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
 
 // Haversine formula to calculate distance between two lat/lng points in KM
-function haversineDistance(coords1, coords2) {
+function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: number, lng: number}) {
   if (!coords1 || !coords2) return Infinity;
-  const toRad = (x) => (x * Math.PI) / 180;
+  const toRad = (x: number) => (x * Math.PI) / 180;
   const R = 6371; // Earth radius in km
 
   const dLat = toRad(coords2.lat - coords1.lat);
@@ -124,7 +98,7 @@ function haversineDistance(coords1, coords2) {
 }
 
 
-function ParentRouteMap({ busLocation, student, school, toast, recenterTrigger }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, toast: (options: any) => void, recenterTrigger: number }) {
+function ParentRouteMap({ busLocation, student, school, routePolyline, recenterTrigger }: { busLocation: LocationUpdate | null, student: Student | null, school: School | null, routePolyline?: string, recenterTrigger: number }) {
   const map = useMap();
 
   useEffect(() => {
@@ -148,6 +122,7 @@ function ParentRouteMap({ busLocation, student, school, toast, recenterTrigger }
 
   return (
     <>
+      {routePolyline && <RoutePolyline geoJsonPath={routePolyline} />}
       {busLocation && (
         <AdvancedMarker position={{ lat: busLocation.latitude, lng: busLocation.longitude }} title="Posição da Van">
           <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff">
@@ -184,9 +159,8 @@ export default function ParentTrackingPage() {
   const [recenterTrigger, setRecenterTrigger] = useState(0);
 
   useEffect(() => {
-    // For this prototype, we get the logged-in user's ID from session storage.
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || "user-pai-1"); // Default to a known parent for direct page access
+    setMockUserId(storedUserId || "user-pai-1");
   }, []);
 
   const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", mockUserId ? [
@@ -208,8 +182,6 @@ export default function ParentTrackingPage() {
   
   const handleCommunicateAbsence = useCallback(async () => {
     if (!student) return;
-
-    // Immediately update the UI for the parent
     updateDoc('students', student.id, { status: 'ausente' });
     toast({
       title: "Ausência comunicada",
@@ -240,8 +212,6 @@ export default function ParentTrackingPage() {
     const busCoords = { lat: displayLocation.latitude, lng: displayLocation.longitude };
 
     const distance = haversineDistance(busCoords, studentCoords);
-
-    // Assume average speed of 25km/h in a city for ETA calculation.
     const avgSpeedKmH = 25;
     const timeHours = distance / avgSpeedKmH;
     const timeMinutes = Math.round(timeHours * 60);
@@ -251,7 +221,6 @@ export default function ParentTrackingPage() {
     const etaString = arrivalTime.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
 
     const studentName = student.name;
-    // In a real app, this would be a dynamic, shareable link to this page.
     const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${busCoords.lat},${busCoords.lng}&destination=${studentCoords.lat},${studentCoords.lng}`;
 
     let message;
@@ -262,7 +231,6 @@ export default function ParentTrackingPage() {
     }
     
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(message)}`;
-
     window.open(whatsappUrl, '_blank');
 
     toast({
@@ -295,7 +263,6 @@ export default function ParentTrackingPage() {
              <CardTitle>Conta de Responsável não encontrada</CardTitle>
              <CardContent className="mt-2 text-muted-foreground">
                 <p>Não foi possível encontrar uma conta de responsável associada a este login.</p>
-                <p className="text-xs mt-2">(Modo de apresentação: usando ID de pai "user-pai-1".)</p>
              </CardContent>
           </Card>
         ) : !student ? (
@@ -395,7 +362,7 @@ export default function ParentTrackingPage() {
                         </Button>
                         <Button asChild variant="outline" className="w-full justify-start">
                             <Link href="/parent/requests">
-                                <Route className="mr-2 h-4 w-4" /> Viagens Avulsas
+                                <RouteIcon className="mr-2 h-4 w-4" /> Viagens Avulsas
                             </Link>
                         </Button>
                     </CardContent>
@@ -445,7 +412,7 @@ export default function ParentTrackingPage() {
                                 busLocation={displayLocation}
                                 student={student}
                                 school={school}
-                                toast={toast}
+                                routePolyline={route?.polyline}
                                 recenterTrigger={recenterTrigger}
                            />
                            {!displayLocation && !isLocationLoading && (
@@ -466,9 +433,3 @@ export default function ParentTrackingPage() {
     </div>
   );
 }
-
-    
-
-    
-
-    

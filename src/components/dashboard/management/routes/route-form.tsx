@@ -25,21 +25,12 @@ import { useMockData } from '@/hooks/use-mock-data';
 import { Users, AlertCircle, X, PlusCircle, School, Info, ArrowUp, ArrowDown, Sparkles, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
 import { Badge } from '@/components/ui/badge';
 import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
+import { routingGeoapify } from '@/ai/flows/routing-geoapify';
 
 
 type Driver = { id: string; name: string; vehicleId?: string; latitude?: number; longitude?: number; };
@@ -47,7 +38,7 @@ type Student = { id: string; name: string; shift: string; active?: boolean; scho
 type Monitor = { id: string; name: string };
 type Vehicle = { id: string; model: string; capacity: number; };
 type SchoolData = { id: string; name: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; latitude?: number; longitude?: number; };
-type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; lastOptimizedAt?: string; };
+type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; lastOptimizedAt?: string; polyline?: string; };
 type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string };
 
 
@@ -85,6 +76,7 @@ export function RouteForm({
   const [driverId, setDriverId] = useState(route?.driverId || '');
   const [monitorId, setMonitorId] = useState(route?.monitorId || '');
   const [shift, setShift] = useState<'Manhã' | 'Tarde' | ''>(route?.shift || '');
+  const [polyline, setPolyline] = useState(route?.polyline || '');
 
   const [selectedSchoolIds, setSelectedSchoolIds] = useState<string[]>([]);
   
@@ -95,7 +87,7 @@ export function RouteForm({
   const [isOptimized, setIsOptimized] = useState(false);
   
   const [isInitializing, setIsInitializing] = useState(true);
-  const prevSchoolIdsRef = useRef<string[]>();
+  const prevSchoolIdsRef = useRef<string[]>([]);
 
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
@@ -193,6 +185,7 @@ export function RouteForm({
             newStops.splice(to, 0, movedItem);
             return newStops;
         });
+        setIsOptimized(false);
     };
 
   const addStop = (stop: Stop) => {
@@ -352,16 +345,15 @@ export function RouteForm({
             address: formatAddress(s)
         }));
 
-        const input = {
+        // 1. Otimizar a sequência usando IA (Genkit)
+        const result = await optimizeSchoolVanRoute({
             students: studentInput,
             schools: schoolsInput,
             startAddress: (driver.latitude && driver.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
             vehicleCapacity: vehicleCapacity,
             optimizationMode: 'safe' as 'safe',
             direction: 'ida' as 'ida',
-        };
-
-        const result = await optimizeSchoolVanRoute(input);
+        });
         
         const newOptimizedStops = result.optimizedStops.map(stop => {
             const student = studentsMap.get(stop.id);
@@ -373,19 +365,33 @@ export function RouteForm({
             return null;
         }).filter(Boolean) as Stop[];
         
+        // 2. Buscar o traçado visual (Polyline) usando Geoapify (Plano B/Custo Zero)
+        const waypoints = newOptimizedStops.map(stop => {
+            const entity = stop.type === 'student' ? studentsMap.get(stop.id) : schoolsMap.get(stop.id);
+            if (entity?.latitude && entity?.longitude) {
+                return { lat: entity.latitude, lng: entity.longitude };
+            }
+            return null;
+        }).filter(Boolean) as { lat: number, lng: number }[];
+
+        if (waypoints.length >= 2) {
+            const routingResult = await routingGeoapify({ waypoints });
+            setPolyline(routingResult.polyline);
+        }
+
         setStops(newOptimizedStops);
         setIsOptimized(true);
 
         toast({
             title: "Ordem da rota otimizada!",
-            description: "A IA sugeriu uma nova sequência para as paradas. Você pode fazer ajustes manuais se necessário.",
+            description: "A IA sugeriu uma nova sequência e o traçado visual foi gerado.",
         });
 
     } catch (error) {
         console.error("Failed to optimize route order:", error);
         toast({
             title: "Erro na Otimização",
-            description: "Não foi possível obter uma sugestão da IA. Tente novamente.",
+            description: "Não foi possível obter uma sugestão completa. Tente novamente.",
             variant: "destructive",
         });
     } finally {
@@ -409,6 +415,7 @@ export function RouteForm({
         monitorId: monitorId === 'none' ? '' : monitorId,
         studentIds: stops.map(s => s.id), 
         shift,
+        polyline,
     };
     
     if (isOptimized) {
@@ -609,7 +616,7 @@ export function RouteForm({
             {isCapacityExceeded && (
                 <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
                     <AlertCircle className="h-4 w-4" />
-                    Capacidade de ${vehicleCapacity} alunos excedida!
+                    Capacidade de {vehicleCapacity} alunos excedida!
                 </div>
             )}
 

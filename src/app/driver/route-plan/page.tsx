@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -54,6 +53,7 @@ import { useOnlineStatus } from '@/hooks/use-online-status';
 import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
+import { RoutePolyline } from '@/components/shared/route-polyline';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -314,7 +314,7 @@ const FixedBottomBar = ({ onPause, onResume, onEnd, status }) => (
     </div>
 );
 
-function RouteMap({ driverLocation, stops, toast, recenterTrigger }: { driverLocation: any, stops: Stop[], toast: any, recenterTrigger: number }) {
+function RouteMap({ driverLocation, stops, routePolyline, toast, recenterTrigger }: { driverLocation: any, stops: Stop[], routePolyline?: string, toast: any, recenterTrigger: number }) {
     const map = useMap();
 
     useEffect(() => {
@@ -332,6 +332,7 @@ function RouteMap({ driverLocation, stops, toast, recenterTrigger }: { driverLoc
 
     return (
         <>
+            {routePolyline && <RoutePolyline geoJsonPath={routePolyline} />}
             {driverLocation && (
                 <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição" zIndex={10}>
                      <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff">
@@ -682,7 +683,7 @@ export default function DriverRoutePlanPage() {
         updateDoc('drivers', driverId, { status: 'em_rota' });
         toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
 
-    }, [driverId, route, updateDoc, toast, isOnline, direction, selectedDirection, drivers, schoolsMap]);
+    }, [driverId, route, updateDoc, toast]);
 
     const handleInitiateStart = () => {
         if (!route) return;
@@ -821,7 +822,7 @@ export default function DriverRoutePlanPage() {
         setCurrentView('route');
         toast({ title: `Embarque concluído em ${checklistSchool?.name}!` });
         setChecklistSchool(null);
-    }, [checklistSchool, isOnline, orderedStops, toast, drivers, driverLocation, updateDoc, route, schoolsMap]);
+    }, [checklistSchool, toast]);
     
     const handleScanSuccess = useCallback((scannedId: string) => {
         const student = (allStudents || []).find(s => s.id === scannedId);
@@ -1138,6 +1139,7 @@ export default function DriverRoutePlanPage() {
                                         <RouteMap 
                                             driverLocation={driverLocation}
                                             stops={orderedStops}
+                                            routePolyline={route?.polyline}
                                             toast={toast}
                                             recenterTrigger={recenterTrigger}
                                         />
@@ -1173,24 +1175,3 @@ export default function DriverRoutePlanPage() {
         </div>
     );
 }
-
-    
-
-
-
-
-
-
-
-    
-
-    
-
-
-
-
-    
-
-    
-
-    
