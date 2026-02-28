@@ -1,6 +1,6 @@
 'use client';
 
-import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, HandHeart, Bus, Sparkles, Newspaper, Mail, Building, GitMerge, Gauge, HeartPulse, MapPinned, Activity, TrendingDown } from 'lucide-react';
+import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, Bus, Sparkles, Newspaper, Mail, Building, GitMerge, Gauge, HeartPulse, MapPinned, Activity, TrendingDown } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -88,7 +88,7 @@ export default function PresentationPage() {
                         <div className="space-y-6">
                             <div className="bg-primary/5 p-4 rounded-lg border-l-4 border-primary">
                                 <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><Gauge className="text-primary"/> Manutenção Preditiva</h3>
-                                <p className="text-sm text-muted-foreground">O sistema monitora o odômetro via GPS em tempo real. Alertas de revisão são gerados pelo <strong>uso real</strong>, não por datas arbitrárias, reduzindo quebras em rota.</p>
+                                <p className="text-sm text-muted-foreground">O sistema monitora o odômetro via GPS em tempo real. Alertas de revisão são gerados pelo <strong>uso real</strong>, não por das arbitrárias, reduzindo quebras em rota.</p>
                             </div>
                              <div className="bg-destructive/5 p-4 rounded-lg border-l-4 border-destructive">
                                 <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><HeartPulse className="text-destructive"/> Alertas Médicos Críticos</h3>
