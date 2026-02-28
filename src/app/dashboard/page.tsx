@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
-import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, TrendingDown, Sparkles, ChevronRight, UserPlus, Share2, Activity } from 'lucide-react';
+import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, TrendingDown, Sparkles, ChevronRight, UserPlus, Share2, Activity, ExternalLink } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -70,10 +70,17 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                    <p className="text-xs text-muted-foreground mb-3">Envie o link de cadastro para novos pais via WhatsApp.</p>
-                    <Button size="sm" className="w-full" onClick={onShareRegistration}>
-                        <Share2 className="mr-2 h-4 w-4" /> Convidar Pais
-                    </Button>
+                    <p className="text-xs text-muted-foreground mb-3">Envie o link de cadastro para novos pais ou teste a página.</p>
+                    <div className="flex flex-col gap-2">
+                        <Button size="sm" className="w-full" onClick={onShareRegistration}>
+                            <Share2 className="mr-2 h-4 w-4" /> Compartilhar Convite
+                        </Button>
+                        <Button size="sm" variant="outline" className="w-full" asChild>
+                            <Link href="/register">
+                                <ExternalLink className="mr-2 h-4 w-4" /> Abrir Página de Cadastro
+                            </Link>
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
 
@@ -261,9 +268,14 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
                         <p className="text-[10px] text-muted-foreground">O pai tira foto do documento e a IA faz o cadastro.</p>
                     </div>
                 </CardContent>
-                <CardFooter className="p-4 border-t bg-background/50">
+                <CardFooter className="p-4 border-t bg-background/50 flex flex-col gap-2">
                     <Button size="sm" className="w-full" onClick={onShareRegistration}>
                         <Share2 className="mr-2 h-4 w-4" /> Compartilhar Convite
+                    </Button>
+                    <Button size="sm" variant="ghost" className="w-full text-[10px]" asChild>
+                        <Link href="/register">
+                            <ExternalLink className="mr-1.5 h-3 w-3" /> Testar Página de Cadastro
+                        </Link>
                     </Button>
                 </CardFooter>
           </Card>
@@ -375,7 +387,7 @@ export default function DashboardPage() {
         const shareText = `Olá! Para agilizar seu cadastro no Guardian, clique no link abaixo e use nossa ferramenta de leitura automática de documentos:\n\n${registrationLink}`;
         
         try {
-            // Passo 1: SEMPRE copiar para o clipboard (mais confiável)
+            // Passo 1: Copiar para o clipboard primeiro (sempre funciona)
             await navigator.clipboard.writeText(shareText);
             
             // Passo 2: Tentar compartilhar via API nativa (se mobile)
@@ -386,27 +398,26 @@ export default function DashboardPage() {
                         text: shareText,
                         url: registrationLink
                     });
-                    return; // Se funcionou, paramos aqui
+                    return; 
                 } catch (shareError) {
-                    // Erro no share nativo (ex: cancelado pelo usuário)
                     console.warn("Share nativo ignorado ou falhou:", shareError);
                 }
             }
 
-            // Passo 3: Fallback para WhatsApp
-            const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+            // Passo 3: Abrir WhatsApp como fallback
+            const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
             window.open(whatsappUrl, '_blank');
             
             toast({
                 title: "Link Copiado!",
-                description: "A mensagem foi copiada e o WhatsApp aberto."
+                description: "A mensagem foi copiada para sua área de transferência."
             });
 
         } catch (err) {
             console.error("Falha ao compartilhar:", err);
             toast({
                 title: "Erro ao compartilhar",
-                description: "Não foi possível copiar o link. Tente novamente.",
+                description: "Não foi possível copiar o link automaticamente.",
                 variant: "destructive"
             });
         }

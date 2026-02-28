@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, UserPlus } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, UserPlus, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -37,6 +37,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import Link from 'next/link';
 
 
 type Parent = {
@@ -102,7 +103,6 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     const shareText = `Olá! Para agilizar seu cadastro no Guardian, clique no link abaixo e use nossa ferramenta de leitura automática de documentos:\n\n${registrationLink}`;
     
     try {
-        // Copia primeiro para garantir
         await navigator.clipboard.writeText(shareText);
 
         if (navigator.share) {
@@ -118,16 +118,17 @@ export function ParentsList({ initialParents }: ParentsListProps) {
             }
         }
 
-        const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(shareText)}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
         window.open(whatsappUrl, '_blank');
         
         toast({
             title: "Convite pronto!",
-            description: "Link copiado e WhatsApp aberto para envio."
+            description: "Link copiado. Se o WhatsApp não abriu, você pode colar a mensagem manualmente."
         });
     } catch (err) {
         toast({
             title: "Erro ao compartilhar",
+            description: "Copie o link manualmente: " + registrationLink,
             variant: "destructive"
         });
     }
@@ -146,6 +147,11 @@ export function ParentsList({ initialParents }: ParentsListProps) {
           Gerenciamento de Pais e Responsáveis
         </h1>
         <div className="flex gap-2 w-full sm:w-auto">
+            <Button variant="outline" size="sm" asChild className="hidden md:flex">
+                <Link href="/register">
+                    <ExternalLink className="mr-2 h-4 w-4" /> Testar Cadastro
+                </Link>
+            </Button>
             <Button variant="outline" onClick={handleShareInvite} className="flex-1 sm:flex-none">
                 <Share2 className="mr-2 h-4 w-4" /> Convidar Pais
             </Button>
