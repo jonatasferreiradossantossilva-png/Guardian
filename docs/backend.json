@@ -286,6 +286,10 @@
             "Integral"
           ]
         },
+        "medicalNote": {
+          "type": "string",
+          "description": "Informações críticas de saúde (alergias, cuidados especiais)."
+        },
         "street": {
           "type": "string",
           "description": "Nome da rua."
@@ -824,6 +828,7 @@
         "latitude": {
           "type": "number",
           "description": "The driver's current latitude."
+"
         },
         "longitude": {
           "type": "number",

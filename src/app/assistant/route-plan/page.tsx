@@ -27,6 +27,7 @@ import {
   QrCode,
   RotateCcw,
   Users,
+  HeartPulse,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -49,6 +50,7 @@ interface Student {
   status: StudentStatus;
   shift: Shift;
   schoolId: string;
+  medicalNote?: string;
   street?: string;
   number?: string;
   neighborhood?: string;
@@ -93,6 +95,7 @@ interface StudentCardProps {
 
 const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: StudentCardProps) => {
   const isFinished = student.status === 'desembarcado' || student.status.startsWith('ausente');
+  const { toast } = useToast();
 
   return (
     <Card className={cn("transition-opacity", isFinished && "opacity-60")}>
@@ -104,6 +107,13 @@ const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: St
                     <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
                     {student.name}
                     </span>
+                    {student.medicalNote && (
+                        <Badge variant="destructive" className="h-5 w-5 p-0 flex items-center justify-center animate-pulse cursor-help" title="Alerta Médico" onClick={() => {
+                            toast({ title: `Cuidados: ${student.name}`, description: student.medicalNote });
+                        }}>
+                            <HeartPulse className="h-3 w-3" />
+                        </Badge>
+                    )}
                     <Badge variant="outline" className="font-normal">{student.shift}</Badge>
                     <Button
                         variant="ghost"

@@ -39,6 +39,7 @@ import {
   Sparkles,
   AlertOctagon,
   RefreshCw,
+  HeartPulse,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -74,6 +75,7 @@ interface Student {
   latitude: number;
   longitude: number;
   schoolId: string;
+  medicalNote?: string;
   street?: string;
   number?: string;
   neighborhood?: string;
@@ -114,6 +116,7 @@ const statusText: Record<StudentStatus, string> = {
 // --- Sub-components ---
 
 const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedModal, direction, onShareRoute, onScanQrCode, details }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, onNavigate: (data: any) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onShareRoute: () => void, onScanQrCode: () => void, details: string }) => {
+  const { toast } = useToast();
   if (!student) return null;
 
   const isGoing = direction === 'ida';
@@ -121,7 +124,20 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
   return (
     <Card className="w-full shadow-lg border-primary/20">
       <CardHeader>
-        <CardDescription>Próxima Parada</CardDescription>
+        <div className="flex justify-between items-start">
+            <CardDescription>Próxima Parada</CardDescription>
+            {student.medicalNote && (
+                <Badge variant="destructive" className="animate-pulse flex gap-1" onClick={() => {
+                    toast({
+                        title: "🚨 ALERTA MÉDICO",
+                        description: student.medicalNote,
+                        duration: 8000
+                    });
+                }}>
+                    <HeartPulse className="h-3 w-3" /> CUIDADO ESPECIAL
+                </Badge>
+            )}
+        </div>
         <CardTitle className="flex items-start gap-3 text-2xl">
             <Avatar className="h-12 w-12 flex-shrink-0">
                 <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
@@ -175,78 +191,6 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
   );
 };
 
-const NextStopSchoolCard = ({ school, onDropOff, onNavigate, onShareRoute }: { school: SchoolData, onDropOff: (id: string) => void, onNavigate: (data: any) => void, onShareRoute: () => void }) => {
-  return (
-    <Card className="w-full shadow-lg border-primary/20">
-      <CardHeader>
-        <CardDescription>Próxima Parada (Destino)</CardDescription>
-        <CardTitle className="flex items-start gap-3 text-2xl">
-          <div className="flex items-center justify-center h-12 w-12 flex-shrink-0 bg-secondary rounded-lg">
-            <School className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <div className="flex-grow">
-            <span>{school.name}</span>
-          </div>
-        </CardTitle>
-        <p className="text-sm text-muted-foreground pt-1">
-          {school.street ? `${school.street}, ${school.number}` : 'Endereço não disponível'}
-        </p>
-      </CardHeader>
-      <CardContent>
-        <Button size="lg" className="w-full bg-blue-600 hover:bg-blue-700" onClick={() => onDropOff(school.id)}>
-          <Bus className="mr-2 h-5 w-5" /> Desembarcar Alunos
-        </Button>
-      </CardContent>
-      <CardFooter className="grid grid-cols-2 gap-2">
-        <Button variant="outline" className="h-auto py-3" onClick={() => onNavigate(school)}>
-          <Navigation className="mr-2 h-5 w-5" />
-          <span>Navegar</span>
-        </Button>
-        <Button variant="outline" className="h-auto py-3" onClick={onShareRoute}>
-          <Share2 className="mr-2 h-5 w-5"/>
-          <span>Localização</span>
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-};
-
-const NextStopSchoolPickupCard = ({ school, onPickup, onNavigate, onShareRoute }: { school: SchoolData, onPickup: (id: string) => void, onNavigate: (data: any) => void, onShareRoute: () => void }) => {
-  return (
-    <Card className="w-full shadow-lg border-primary/20">
-      <CardHeader>
-        <CardDescription>Próxima Parada (Embarque)</CardDescription>
-        <CardTitle className="flex items-start gap-3 text-2xl">
-          <div className="flex items-center justify-center h-12 w-12 flex-shrink-0 bg-secondary rounded-lg">
-            <School className="h-6 w-6 text-muted-foreground" />
-          </div>
-          <div className="flex-grow">
-            <span>{school.name}</span>
-          </div>
-        </CardTitle>
-        <p className="text-sm text-muted-foreground pt-1">
-          {school.street ? `${school.street}, ${school.number}` : 'Endereço não disponível'}
-        </p>
-      </CardHeader>
-      <CardContent>
-        <Button size="lg" className="w-full bg-green-600 hover:bg-green-700" onClick={() => onPickup(school.id)}>
-          <Users className="mr-2 h-5 w-5" /> Realizar Embarque
-        </Button>
-      </CardContent>
-      <CardFooter className="grid grid-cols-2 gap-2">
-        <Button variant="outline" className="h-auto py-3" onClick={() => onNavigate(school)}>
-          <Navigation className="mr-2 h-5 w-5" />
-          <span>Navegar</span>
-        </Button>
-        <Button variant="outline" className="h-auto py-3" onClick={onShareRoute}>
-          <Share2 className="mr-2 h-5 w-5"/>
-          <span>Localização</span>
-        </Button>
-      </CardFooter>
-    </Card>
-  );
-};
-
 const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], formatStudentDetails: (student: Student) => string }) => {
   if (!stops || stops.length === 0) {
     return <p className="text-center text-muted-foreground text-sm py-4">Nenhuma parada futura.</p>;
@@ -263,18 +207,25 @@ const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], for
               return (
                 <li key={`${stop.id}-${index}`} className="flex items-center gap-3 p-2 rounded-md bg-secondary/50">
                     <div className="flex-shrink-0 w-5 text-center text-xs font-mono text-muted-foreground">{index + 2}.</div>
-                     <Avatar className="h-8 w-8">
-                        {isStudent ? (
-                            <>
-                                <AvatarImage src={`https://picsum.photos/seed/student-${item.id}/40/40`} alt={item.name} />
-                                <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
-                            </>
-                        ) : (
-                            <div className="flex items-center justify-center h-full w-full bg-background rounded-full">
-                              <School className="h-4 w-4 text-muted-foreground" />
+                     <div className="relative">
+                        <Avatar className="h-8 w-8">
+                            {isStudent ? (
+                                <>
+                                    <AvatarImage src={`https://picsum.photos/seed/student-${item.id}/40/40`} alt={item.name} />
+                                    <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
+                                </>
+                            ) : (
+                                <div className="flex items-center justify-center h-full w-full bg-background rounded-full">
+                                <School className="h-4 w-4 text-muted-foreground" />
+                                </div>
+                            )}
+                        </Avatar>
+                        {isStudent && (item as Student).medicalNote && (
+                            <div className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 border border-background">
+                                <HeartPulse className="h-2.5 w-2.5" />
                             </div>
                         )}
-                    </Avatar>
+                    </div>
                     <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium truncate">{item.name}</p>
                         <p className="text-xs text-muted-foreground truncate">
@@ -367,7 +318,7 @@ function RouteMap({ driverLocation, stops, routePolyline, toast, recenterTrigger
                  return (
                     <AdvancedMarker key={stop.id} position={{ lat: item.latitude, lng: item.longitude }} title={item.name}>
                         {isStudent ? (
-                            <Pin background={'#3b82f6'} borderColor={'#fff'}>
+                            <Pin background={ (item as Student).medicalNote ? '#dc2626' : '#3b82f6'} borderColor={'#fff'}>
                                 <Avatar className="h-6 w-6">
                                     <AvatarImage src={`https://picsum.photos/seed/student-${item.id}/40/40`} alt={item.name} />
                                     <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
@@ -387,13 +338,23 @@ function RouteMap({ driverLocation, stops, routePolyline, toast, recenterTrigger
 
 function StudentChecklistRow({ student, onStatusChange }: { student: Student; onStatusChange: (studentId: string, status: StudentStatus) => void; }) {
     const isProcessed = student.status !== 'aguardando';
+    const { toast } = useToast();
 
     return (
         <div className={cn("p-3 flex items-center gap-3 rounded-md transition-colors", isProcessed ? "bg-secondary" : "bg-background")}>
-            <Avatar>
-                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
-                <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-            </Avatar>
+            <div className="relative">
+                <Avatar>
+                    <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
+                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
+                </Avatar>
+                {student.medicalNote && (
+                    <div className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-1 border-2 border-background cursor-pointer" onClick={() => {
+                        toast({ title: `Atenção: ${student.name}`, description: student.medicalNote, duration: 6000 });
+                    }}>
+                        <HeartPulse className="h-3 w-3" />
+                    </div>
+                )}
+            </div>
             <div className="flex-1">
                 <p className={cn("font-medium", isProcessed && "text-muted-foreground line-through")}>{student.name}</p>
             </div>
@@ -404,7 +365,7 @@ function StudentChecklistRow({ student, onStatusChange }: { student: Student; on
             ) : (
                 <div className="flex gap-2">
                     <Button size="sm" className="bg-green-600 hover:bg-green-700" onClick={() => onStatusChange(student.id, 'a_bordo')}><Check className="h-4 w-4"/></Button>
-                    <Button size="sm" variant="destructive" onClick={() => onStatusChange(student.id, 'ausente_volta')}><X className="h-4 w-4"/></Button>
+                    <Button size="sm" variant="destructive" onClick={() => onStatusChange(student.id, direction === 'ida' ? 'ausente_ida' : 'ausente_volta')}><X className="h-4 w-4"/></Button>
                 </div>
             )}
         </div>
@@ -512,7 +473,7 @@ export default function DriverRoutePlanPage() {
 
     const interval = setInterval(() => {
         // Simula uma pequena variação de posição para o pai ver movimento
-        const jitterLat = (Math.random() - 0.5) * 0.0004; // Aumento leve para simular mais deslocamento
+        const jitterLat = (Math.random() - 0.5) * 0.0004; 
         const jitterLng = (Math.random() - 0.5) * 0.0004;
         
         // 1. Atualizar Localização
@@ -523,13 +484,12 @@ export default function DriverRoutePlanPage() {
         });
 
         // 2. Simular Incremento de Odômetro (Preditiva)
-        // Adicionamos aprox 0.1km a cada 10s (~36km/h)
         const kmIncrement = 0.1;
         updateDoc('vehicles', vehicle.id, {
             currentOdometer: (vehicle.currentOdometer || 0) + kmIncrement
         });
 
-    }, 10000); // Atualiza a cada 10 segundos
+    }, 10000); 
 
     return () => clearInterval(interval);
   }, [driverProfile?.status, driverId, driverLocation, vehicle, setDoc, updateDoc]);
@@ -616,7 +576,6 @@ export default function DriverRoutePlanPage() {
             if (student && student.active !== false) {
                  const isCompatibleShift = student.shift === 'Integral' || student.shift === shift;
                  
-                 // Smart Filtering based on Granular Absence
                  if (direction === 'ida' && (student.status === 'ausente_ida' || student.status === 'ausente_dia_todo')) return null;
                  if (direction === 'volta' && (student.status === 'ausente_volta' || student.status === 'ausente_dia_todo')) return null;
 
@@ -682,19 +641,14 @@ export default function DriverRoutePlanPage() {
   }, [orderedStops, driverProfile?.status, direction]);
   
 
-  /**
-   * Continuous Optimization Logic
-   * Recalculates the remaining route if online.
-   */
   const handleContinuousOptimization = useCallback(async () => {
     if (!isOnline || !route || !driverId) return;
     
-    // Check if there are at least 2 stops left to re-optimize
     const pendingStops = orderedStops.filter(stop => {
         if (stop.type === 'student') {
             return stop.data.status === 'aguardando' || (direction === 'volta' && stop.data.status === 'a_bordo');
         }
-        return true; // Keep schools for consideration
+        return true; 
     });
 
     if (pendingStops.length < 2) return;
@@ -704,7 +658,7 @@ export default function DriverRoutePlanPage() {
         const finishedIds = orderedStops
             .filter(stop => {
                 if (stop.type === 'student') return stop.data.status !== 'aguardando' && stop.data.status !== 'a_bordo';
-                return false; // Schools are re-evaluated
+                return false; 
             })
             .map(s => s.id);
 
@@ -726,7 +680,6 @@ export default function DriverRoutePlanPage() {
         const newlyOptimizedIds = optimization.optimizedStops.map(os => os.id);
         const finalSequence = [...finishedIds, ...newlyOptimizedIds];
 
-        // Update Geometry
         const allStopPoints = finalSequence.map(id => {
             const ent = studentsMap.get(id) || schoolsMap.get(id);
             return ent ? { lat: ent.latitude, lng: ent.longitude } : null;
@@ -768,7 +721,6 @@ export default function DriverRoutePlanPage() {
         description: `${student?.name || 'O aluno'} foi marcado(a) como ${statusText[newStatus]}.`,
     });
 
-    // Trigger continuous optimization after a processed stop
     if (newStatus !== 'aguardando') {
         setTimeout(handleContinuousOptimization, 1000);
     }
@@ -790,7 +742,6 @@ export default function DriverRoutePlanPage() {
 
     toast({ title: "Alunos desembarcados!", description: `${studentsToDropOff.length} alunos foram marcados como desembarcados.` });
     
-    // Trigger continuous optimization
     setTimeout(handleContinuousOptimization, 1000);
 }, [orderedStops, updateDoc, toast, handleContinuousOptimization]);
 
@@ -819,7 +770,6 @@ export default function DriverRoutePlanPage() {
                 address: formatAddr(s)
             }));
 
-            // 1. Otimizar sequência via IA (Custo Zero com Geoapify Logic)
             const optimization = await optimizeSchoolVanRoute({
                 students: studentInput,
                 schools: schoolInput,
@@ -828,7 +778,6 @@ export default function DriverRoutePlanPage() {
                 direction: direction
             });
 
-            // 2. Traduzir IDs da IA para nosso formato de Stop
             const optimizedStops: Stop[] = (optimization.optimizedStops || []).map(os => {
                 const student = studentsMap.get(os.id);
                 const school = schoolsMap.get(os.id);
@@ -837,7 +786,6 @@ export default function DriverRoutePlanPage() {
                 return null;
             }).filter((s): s is Stop => s !== null);
 
-            // 3. Obter o traçado visual (Polyline) via Geoapify (Custo Zero)
             const waypoints = optimizedStops
                 .map(s => ({ lat: s.data.latitude, lng: s.data.longitude }))
                 .filter(w => typeof w.lat === 'number' && Number.isFinite(w.lat) && typeof w.lng === 'number' && Number.isFinite(w.lng));
@@ -948,7 +896,6 @@ export default function DriverRoutePlanPage() {
       
       allStudents.forEach(student => {
           if (route?.studentIds.includes(student.id)) {
-            // Only reset non-absent students
             if (!student.status.startsWith('ausente')) {
                 updateDoc('students', student.id, { status: 'aguardando' });
             }
@@ -1015,7 +962,6 @@ export default function DriverRoutePlanPage() {
     const handleCompleteBoarding = useCallback(async () => {
         if (!checklistSchool) return;
 
-        // Marcar automaticamente todos os alunos "aguardando" desta escola como "a_bordo"
         const studentsToAutoBoard = orderedStops.filter(stop => 
             stop.type === 'student' && 
             (stop.data as Student).schoolId === checklistSchool.id && 
@@ -1035,7 +981,6 @@ export default function DriverRoutePlanPage() {
         });
         setChecklistSchool(null);
         
-        // Trigger continuous optimization
         setTimeout(handleContinuousOptimization, 1000);
     }, [checklistSchool, orderedStops, updateDoc, toast, handleContinuousOptimization]);
     

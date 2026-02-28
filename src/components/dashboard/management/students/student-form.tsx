@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,10 +32,11 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Copy, Info, Loader2, MapPin } from 'lucide-react';
+import { Copy, Info, Loader2, MapPin, HeartPulse } from 'lucide-react';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
+import { Textarea } from '@/components/ui/textarea';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -44,6 +46,7 @@ const formSchema = z.object({
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
   shift: z.enum(['Manhã', 'Tarde', 'Integral'], { required_error: 'Selecione um turno.' }),
   monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
+  medicalNote: z.string().optional(),
   zipCode: z.string().optional(),
   street: z.string().optional(),
   number: z.string().optional(),
@@ -99,6 +102,7 @@ export function StudentForm({
       parentId: '',
       shift: 'Manhã',
       monthlyFee: undefined,
+      medicalNote: '',
       zipCode: '',
       street: '',
       number: '',
@@ -114,7 +118,6 @@ export function StudentForm({
 
   const zipCode = form.watch('zipCode');
   const parentId = form.watch('parentId');
-  const shift = form.watch('shift');
 
   const handleGeocode = async () => {
     const { street, number, neighborhood, city, state } = form.getValues();
@@ -312,20 +315,32 @@ export function StudentForm({
                     </Button>
                 </div>
              </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                 <FormField
-                    control={form.control} name="city"
-                    render={({ field }) => (
-                        <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="São Paulo" {...field} /></FormControl><FormMessage /></FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control} name="state"
-                    render={({ field }) => (
-                        <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="SP" {...field} /></FormControl><FormMessage /></FormItem>
-                    )}
-                />
-             </div>
+          </div>
+
+          <div className="border-t pt-4 mt-4 bg-destructive/5 p-4 rounded-lg">
+             <p className="text-sm font-bold flex items-center gap-2 mb-3 text-destructive">
+                <HeartPulse className="h-4 w-4" /> Alertas Médicos e Cuidados Especiais
+             </p>
+             <FormField
+                control={form.control}
+                name="medicalNote"
+                render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="text-xs">Informações de Saúde (Alergias, Remédios, etc.)</FormLabel>
+                        <FormControl>
+                            <Textarea 
+                                placeholder="Ex: Alérgico a amendoim. Levar bombinha de asma em caso de falta de ar." 
+                                {...field} 
+                                className="bg-background"
+                            />
+                        </FormControl>
+                        <FormDescription className="text-[10px]">
+                            Este alerta ficará visível para o motorista e monitor durante o embarque.
+                        </FormDescription>
+                        <FormMessage />
+                    </FormItem>
+                )}
+            />
           </div>
           
            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
