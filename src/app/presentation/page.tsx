@@ -1,5 +1,4 @@
 
-
 'use client';
 
 import { BarChart, Briefcase, CheckCircle, DollarSign, Gem, Lightbulb, Milestone, Rocket, Target, User, Users, Wallet, XCircle, FileImage, ShieldCheck, HandHeart, Bus, Sparkles, Newspaper, Mail, Building, GitMerge } from 'lucide-react';
@@ -205,6 +204,7 @@ export default function PresentationPage() {
                         <div className="row-start-2 col-start-3 p-4 border-b border-dashed border-border flex flex-col justify-end items-end text-right">
                              <div className="p-4 rounded-lg bg-primary/20 border-2 border-primary">
                                 <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
+                                <h4 className="font-bold text-primary flex items-center justify-end gap-2"><ShieldCheck/> Guardian</h4>
                                 <p className="text-sm text-foreground">Plataforma B2B que integra operações, finanças e comunicação. Valor para a empresa e para os pais.</p>
                             </div>
                         </div>
@@ -368,7 +368,3 @@ export default function PresentationPage() {
         </main>
     );
 }
-
-    
-
-    
