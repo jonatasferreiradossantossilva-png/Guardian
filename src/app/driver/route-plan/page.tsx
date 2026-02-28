@@ -36,6 +36,7 @@ import {
   Users,
   Check,
   X,
+  Sparkles,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
@@ -54,6 +55,8 @@ import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { RoutePolyline } from '@/components/shared/route-polyline';
+import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
+import { routingGeoapify } from '@/ai/flows/routing-geoapify';
 
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
@@ -455,6 +458,7 @@ export default function DriverRoutePlanPage() {
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
   const [lastProcessedStudent, setLastProcessedStudent] = useState<Student | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
+  const [isStarting, setIsStarting] = useState(false);
   const isOnline = useOnlineStatus();
 
   // State for school selection dialog
@@ -660,30 +664,89 @@ export default function DriverRoutePlanPage() {
     toast({ title: "Alunos desembarcados!", description: `${studentsToDropOff.length} alunos foram marcados como desembarcados.` });
 }, [orderedStops, updateDoc, toast]);
 
-    const handleStartRoute = useCallback((finalStops: Stop[]) => {
+    const handleStartRoute = useCallback(async (baseStops: Stop[]) => {
         if (!driverId || !route) return;
+        setIsStarting(true);
 
-        const finalStopIds = finalStops.map(s => s.id);
-        
-        if (JSON.stringify(finalStopIds) !== JSON.stringify(route.studentIds)) {
+        try {
+            const studentsToInclude = baseStops.filter(s => s.type === 'student').map(s => s.data as Student);
+            const schoolsToInclude = Array.from(new Set(studentsToInclude.map(s => s.schoolId)))
+                .map(id => schoolsMap.get(id))
+                .filter(Boolean) as SchoolData[];
+
+            const formatAddr = (e: Student | SchoolData) => `${e.street || ''}, ${e.number || ''}, ${e.city || ''}`;
+
+            const studentInput = studentsToInclude.map(s => ({
+                id: s.id,
+                name: s.name,
+                address: formatAddr(s),
+                schoolId: s.schoolId
+            }));
+
+            const schoolInput = schoolsToInclude.map(s => ({
+                id: s.id,
+                name: s.name,
+                address: formatAddr(s)
+            }));
+
+            // 1. Otimizar sequência via IA (Custo Zero com Geoapify Logic)
+            const optimization = await optimizeSchoolVanRoute({
+                students: studentInput,
+                schools: schoolInput,
+                startAddress: (driverLocation?.latitude && driverLocation?.longitude) ? `${driverLocation.latitude},${driverLocation.longitude}` : undefined,
+                optimizationMode: 'flexible',
+                direction: direction
+            });
+
+            // 2. Traduzir IDs da IA para nosso formato de Stop
+            const optimizedStops: Stop[] = optimization.optimizedStops.map(os => {
+                const student = studentsMap.get(os.id);
+                const school = schoolsMap.get(os.id);
+                if (student) return { id: student.id, type: 'student', data: student };
+                if (school) return { id: school.id, type: 'school', data: school };
+                return null;
+            }).filter((s): s is Stop => s !== null);
+
+            // 3. Obter o traçado visual (Polyline) via Geoapify (Custo Zero)
+            const waypoints = optimizedStops.map(s => ({ lat: s.data.latitude, lng: s.data.longitude }));
+            if (driverLocation) waypoints.unshift({ lat: driverLocation.latitude, lng: driverLocation.longitude });
+
+            const routing = await routingGeoapify({ waypoints });
+
+            // 4. Salvar tudo no Firestore e Sessão
+            const finalStopIds = optimizedStops.map(s => s.id);
+            updateDoc('routes', route.id, { 
+                studentIds: finalStopIds,
+                polyline: routing.polyline,
+                lastOptimizedAt: new Date().toISOString()
+            });
+
+            sessionStorage.setItem('activeRouteId', route.id);
+            setActiveRouteId(route.id);
+
+            studentsToInclude.forEach(student => {
+                if (student.status !== 'ausente') {
+                    updateDoc('students', student.id, { status: 'aguardando' });
+                }
+            });
+
+            updateDoc('drivers', driverId, { status: 'em_rota' });
+            toast({ title: "Inteligência Ativada!", description: "Sua rota foi otimizada para sua posição atual." });
+
+        } catch (error) {
+            console.error("Erro ao iniciar rota dinâmica:", error);
+            // Fallback para início manual simples em caso de falha de rede
+            const finalStopIds = baseStops.map(s => s.id);
             updateDoc('routes', route.id, { studentIds: finalStopIds });
+            sessionStorage.setItem('activeRouteId', route.id);
+            setActiveRouteId(route.id);
+            updateDoc('drivers', driverId, { status: 'em_rota' });
+            toast({ title: "Viagem Iniciada", description: "Não foi possível otimizar agora, seguindo plano padrão." });
+        } finally {
+            setIsStarting(false);
         }
-        
-        sessionStorage.setItem('activeRouteId', route.id);
-        setActiveRouteId(route.id);
 
-        const studentsOnThisRoute = finalStops.filter(s => s.type === 'student').map(s => s.data as Student);
-
-        studentsOnThisRoute.forEach(student => {
-            if (student.status !== 'ausente') {
-                updateDoc('students', student.id, { status: 'aguardando' });
-            }
-        });
-
-        updateDoc('drivers', driverId, { status: 'em_rota' });
-        toast({ title: "Viagem Iniciada!", description: "Boa viagem!" });
-
-    }, [driverId, route, updateDoc, toast]);
+    }, [driverId, route, driverLocation, direction, schoolsMap, studentsMap, updateDoc, toast]);
 
     const handleInitiateStart = () => {
         if (!route) return;
@@ -938,9 +1001,18 @@ export default function DriverRoutePlanPage() {
               </div>
             </CardContent>
             <CardFooter>
-               <Button size="lg" className="w-full" onClick={handleInitiateStart} disabled={!selectedRouteIdForStart || !isOnline}>
-                  <Play className="mr-2 h-5 w-5"/>
-                  Iniciar Viagem
+               <Button size="lg" className="w-full" onClick={handleInitiateStart} disabled={!selectedRouteIdForStart || !isOnline || isStarting}>
+                  {isStarting ? (
+                      <>
+                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                        Otimizando Rota...
+                      </>
+                  ) : (
+                      <>
+                        <Sparkles className="mr-2 h-5 w-5 text-primary"/>
+                        Iniciar Viagem Inteligente
+                      </>
+                  )}
               </Button>
             </CardFooter>
           </Card>
@@ -967,8 +1039,8 @@ export default function DriverRoutePlanPage() {
               </div>
               <AlertDialogFooter>
                   <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                  <AlertDialogAction onClick={handleConfirmSchoolAndStart}>
-                      Confirmar e Iniciar
+                  <AlertDialogAction onClick={handleConfirmSchoolAndStart} disabled={isStarting}>
+                      {isStarting ? "Preparando..." : "Confirmar e Iniciar"}
                   </AlertDialogAction>
               </AlertDialogFooter>
           </AlertDialogContent>
