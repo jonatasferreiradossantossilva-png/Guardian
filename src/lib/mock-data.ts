@@ -1,5 +1,4 @@
 
-
 // @ts-nocheck
 // This file contains mock data for the presentation mode.
 
@@ -62,8 +61,8 @@ export const initialMockData = {
             name: "Escola Aprender Mais",
             cnpj: "11.222.333/0001-44",
             active: true,
-            latitude: -23.60,
-            longitude: -46.70,
+            latitude: -23.6000,
+            longitude: -46.7000,
             street: "Rua do Conhecimento",
             number: "456",
             neighborhood: "Morumbi",
@@ -264,7 +263,7 @@ export const initialMockData = {
             state: "SP",
             zipCode: "03309-000",
             latitude: -23.5422,
-            longitude: -46.574
+            longitude: -46.5740
         },
         {
             id: "driver-5",
@@ -284,31 +283,51 @@ export const initialMockData = {
             state: "SP",
             zipCode: "02011-000",
             latitude: -23.5042,
-            longitude: -46.626
+            longitude: -46.6260
         },
-        { id: "driver-6", userId: "user-motorista-6", name: "Paulo Lima", status: "em_rota", active: true, vehicleId: "vehicle-6", cpf: "666.777.888-99" },
-        { id: "driver-7", userId: "user-motorista-7", name: "Cristina Borges", status: "inativo", active: true, vehicleId: "vehicle-7", cpf: "777.888.999-00" },
+        {
+            id: "driver-6",
+            userId: "user-motorista-6",
+            name: "Paulo Lima",
+            status: "em_rota",
+            active: true,
+            vehicleId: "vehicle-6",
+            cpf: "666.777.888-99",
+            latitude: -23.5550,
+            longitude: -46.6650
+        },
+        {
+            id: "driver-7",
+            userId: "user-motorista-7",
+            name: "Cristina Borges",
+            status: "inativo",
+            active: true,
+            vehicleId: "vehicle-7",
+            cpf: "777.888.999-00",
+            latitude: -23.5750,
+            longitude: -46.6850
+        },
     ],
     students: [
-        { id: "student-1", name: "Lucas Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.545, longitude: -46.638, street: "Rua A", number: "10", neighborhood: "Bela Vista", city: "São Paulo", state: "SP", zipCode: "01311-000", monthlyFee: 450.00, serie: "3º Ano A", turma: "Sala 5" },
-        { id: "student-2", name: "Beatriz Costa", schoolId: "school-2", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.555, longitude: -46.640, street: "Rua B", number: "20", neighborhood: "Consolação", city: "São Paulo", state: "SP", zipCode: "01220-010", monthlyFee: 480.50, serie: "4º Ano C", turma: "Sala 8" },
-        { id: "student-3", name: "Fernando Lima", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.560, longitude: -46.630, street: "Rua C", number: "30", neighborhood: "Liberdade", city: "São Paulo", state: "SP", zipCode: "01504-001", monthlyFee: 420.00 },
-        { id: "student-4", name: "Sofia Martins", schoolId: "school-2", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.565, longitude: -46.650, street: "Rua D", number: "40", neighborhood: "Aclimação", city: "São Paulo", state: "SP", zipCode: "01529-000", monthlyFee: 500.00 },
-        { id: "student-5", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.570, longitude: -46.660, street: "Rua E", number: "50", neighborhood: "Paraíso", city: "São Paulo", state: "SP", zipCode: "04004-040", monthlyFee: 450.00 },
-        { id: "student-6", name: "Isabela Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.575, longitude: -46.665, street: "Rua F", number: "60", neighborhood: "Vila Mariana", city: "São Paulo", state: "SP", zipCode: "04011-060", monthlyFee: 450.00 },
-        { id: "student-7", name: "Davi Ribeiro", schoolId: "school-2", parentId: "parent-4", shift: "Manhã", status: "aguardando", active: true, latitude: -23.580, longitude: -46.670, street: "Rua G", number: "70", neighborhood: "Ibirapuera", city: "São Paulo", state: "SP", zipCode: "04094-050", monthlyFee: 510.00 },
-        { id: "student-8", name: "Laura Ribeiro", schoolId: "school-2", parentId: "parent-4", shift: "Manhã", status: "aguardando", active: true, latitude: -23.585, longitude: -46.675, street: "Rua H", number: "80", neighborhood: "Campo Belo", city: "São Paulo", state: "SP", zipCode: "04609-001", monthlyFee: 510.00 },
-        { id: "student-9", name: "Mateus Oliveira", schoolId: "school-3", parentId: "parent-5", shift: "Manhã", status: "aguardando", active: true, latitude: -23.61, longitude: -46.72, street: "Rua I", number: "90", neighborhood: "Vila Andrade", city: "São Paulo", state: "SP", zipCode: "05726-140", monthlyFee: 550.00 },
-        { id: "student-10", name: "Alice Martins", schoolId: "school-3", parentId: "parent-6", shift: "Tarde", status: "aguardando", active: true, latitude: -23.62, longitude: -46.73, street: "Rua J", number: "100", neighborhood: "Panamby", city: "São Paulo", state: "SP", zipCode: "05707-430", monthlyFee: 550.00 },
-        { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", shift: "Manhã", status: "aguardando", active: true, latitude: -23.558, longitude: -46.662, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP", monthlyFee: 430.00 },
-        { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", shift: "Manhã", status: "aguardando", active: true, latitude: -23.559, longitude: -46.663, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP", monthlyFee: 490.00 },
-        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", shift: "Manhã", status: "aguardando", active: true, latitude: -23.565, longitude: -46.668, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
-        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", shift: "Tarde", status: "aguardando", active: true, latitude: -23.570, longitude: -46.678, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
-        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", shift: "Tarde", status: "aguardando", active: true, latitude: -23.630, longitude: -46.700, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
-        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", shift: "Tarde", status: "aguardando", active: false, latitude: -23.635, longitude: -46.705, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
-        { id: "student-17", name: "Theo Integral", schoolId: "school-1", parentId: "parent-1", shift: "Integral", status: "aguardando", active: true, latitude: -23.552, longitude: -46.642, street: "Rua do Teste", number: "123", neighborhood: "Centro", city: "São Paulo", state: "SP", zipCode: "01002-000", monthlyFee: 800.00 },
-        { id: "student-18", name: "Heitor Mendes", schoolId: "school-1", parentId: "parent-10", shift: "Manhã", status: "aguardando", active: true, latitude: -23.548, longitude: -46.648, street: "Rua Avanhandava", number: "100", city: "São Paulo", state: "SP", monthlyFee: 440.00 },
-        { id: "student-19", name: "Clara Ferreira", schoolId: "school-1", parentId: "parent-11", shift: "Manhã", status: "aguardando", active: true, latitude: -23.542, longitude: -46.645, street: "Rua Martinho Prado", number: "250", city: "São Paulo", state: "SP", monthlyFee: 440.00 },
+        { id: "student-1", name: "Lucas Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5450, longitude: -46.6380, street: "Rua A", number: "10", neighborhood: "Bela Vista", city: "São Paulo", state: "SP", zipCode: "01311-000", monthlyFee: 450.00, serie: "3º Ano A", turma: "Sala 5" },
+        { id: "student-2", name: "Beatriz Costa", schoolId: "school-2", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5550, longitude: -46.6400, street: "Rua B", number: "20", neighborhood: "Consolação", city: "São Paulo", state: "SP", zipCode: "01220-010", monthlyFee: 480.50, serie: "4º Ano C", turma: "Sala 8" },
+        { id: "student-3", name: "Fernando Lima", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6300, street: "Rua C", number: "30", neighborhood: "Liberdade", city: "São Paulo", state: "SP", zipCode: "01504-001", monthlyFee: 420.00 },
+        { id: "student-4", name: "Sofia Martins", schoolId: "school-2", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6500, street: "Rua D", number: "40", neighborhood: "Aclimação", city: "São Paulo", state: "SP", zipCode: "01529-000", monthlyFee: 500.00 },
+        { id: "student-5", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6600, street: "Rua E", number: "50", neighborhood: "Paraíso", city: "São Paulo", state: "SP", zipCode: "04004-040", monthlyFee: 450.00 },
+        { id: "student-6", name: "Isabela Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5750, longitude: -46.6650, street: "Rua F", number: "60", neighborhood: "Vila Mariana", city: "São Paulo", state: "SP", zipCode: "04011-060", monthlyFee: 450.00 },
+        { id: "student-7", name: "Davi Ribeiro", schoolId: "school-2", parentId: "parent-4", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5800, longitude: -46.6700, street: "Rua G", number: "70", neighborhood: "Ibirapuera", city: "São Paulo", state: "SP", zipCode: "04094-050", monthlyFee: 510.00 },
+        { id: "student-8", name: "Laura Ribeiro", schoolId: "school-2", parentId: "parent-4", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5850, longitude: -46.6750, street: "Rua H", number: "80", neighborhood: "Campo Belo", city: "São Paulo", state: "SP", zipCode: "04609-001", monthlyFee: 510.00 },
+        { id: "student-9", name: "Mateus Oliveira", schoolId: "school-3", parentId: "parent-5", shift: "Manhã", status: "aguardando", active: true, latitude: -23.6100, longitude: -46.7200, street: "Rua I", number: "90", neighborhood: "Vila Andrade", city: "São Paulo", state: "SP", zipCode: "05726-140", monthlyFee: 550.00 },
+        { id: "student-10", name: "Alice Martins", schoolId: "school-3", parentId: "parent-6", shift: "Tarde", status: "aguardando", active: true, latitude: -23.6200, longitude: -46.7300, street: "Rua J", number: "100", neighborhood: "Panamby", city: "São Paulo", state: "SP", zipCode: "05707-430", monthlyFee: 550.00 },
+        { id: "student-11", name: "Helena Andrade", schoolId: "school-1", parentId: "parent-7", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6620, street: "Rua Peixoto Gomide", number: "1800", city: "São Paulo", state: "SP", monthlyFee: 430.00 },
+        { id: "student-12", name: "Miguel Barros", schoolId: "school-2", parentId: "parent-8", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5590, longitude: -46.6630, street: "Rua Frei Caneca", number: "700", city: "São Paulo", state: "SP", monthlyFee: 490.00 },
+        { id: "student-13", name: "Arthur Rocha", schoolId: "school-1", parentId: "parent-9", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6680, street: "Rua Haddock Lobo", number: "1400", city: "São Paulo", state: "SP", monthlyFee: 465.00 },
+        { id: "student-14", name: "Valentina Mendes", schoolId: "school-2", parentId: "parent-10", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6780, street: "Rua Amauri", number: "300", city: "São Paulo", state: "SP", monthlyFee: 525.00 },
+        { id: "student-15", name: "Bernardo Ferreira", schoolId: "school-3", parentId: "parent-11", shift: "Tarde", status: "aguardando", active: true, latitude: -23.6300, longitude: -46.7000, street: "Rua Laguna", number: "500", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
+        { id: "student-16", name: "Manuela Gomes", schoolId: "school-3", parentId: "parent-12", shift: "Tarde", status: "aguardando", active: false, latitude: -23.6350, longitude: -46.7050, street: "Rua Amleto Farro", number: "200", city: "São Paulo", state: "SP", monthlyFee: 580.00 },
+        { id: "student-17", name: "Theo Integral", schoolId: "school-1", parentId: "parent-1", shift: "Integral", status: "aguardando", active: true, latitude: -23.5520, longitude: -46.6420, street: "Rua do Teste", number: "123", neighborhood: "Centro", city: "São Paulo", state: "SP", zipCode: "01002-000", monthlyFee: 800.00 },
+        { id: "student-18", name: "Heitor Mendes", schoolId: "school-1", parentId: "parent-10", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5480, longitude: -46.6480, street: "Rua Avanhandava", number: "100", city: "São Paulo", state: "SP", monthlyFee: 440.00 },
+        { id: "student-19", name: "Clara Ferreira", schoolId: "school-1", parentId: "parent-11", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5420, longitude: -46.6450, street: "Rua Martinho Prado", number: "250", city: "São Paulo", state: "SP", monthlyFee: 440.00 },
     ],
     routes: [
         {
@@ -342,12 +361,12 @@ export const initialMockData = {
     ],
     locations: {
       "driver-1": { latitude: -23.55052, longitude: -46.633308, timestamp: new Date().toISOString() },
-      "driver-2": { latitude: -23.58, longitude: -46.68, timestamp: new Date().toISOString() },
-      "driver-3": { latitude: -23.57, longitude: -46.69, timestamp: new Date().toISOString() },
-      "driver-4": { latitude: -23.59, longitude: -46.67, timestamp: new Date().toISOString() },
-      "driver-5": { latitude: -23.60, longitude: -46.71, timestamp: new Date().toISOString() },
-      "driver-6": { latitude: -23.555, longitude: -46.665, timestamp: new Date().toISOString() },
-      "driver-7": { latitude: -23.575, longitude: -46.685, timestamp: new Date().toISOString() },
+      "driver-2": { latitude: -23.5800, longitude: -46.6800, timestamp: new Date().toISOString() },
+      "driver-3": { latitude: -23.5700, longitude: -46.6900, timestamp: new Date().toISOString() },
+      "driver-4": { latitude: -23.5900, longitude: -46.6700, timestamp: new Date().toISOString() },
+      "driver-5": { latitude: -23.6000, longitude: -46.7100, timestamp: new Date().toISOString() },
+      "driver-6": { latitude: -23.5550, longitude: -46.6650, timestamp: new Date().toISOString() },
+      "driver-7": { latitude: -23.5750, longitude: -46.6850, timestamp: new Date().toISOString() },
     },
     incidents: [
       {
@@ -549,26 +568,3 @@ export const initialMockData = {
         }
     ]
 };
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-
-  
-
-
-
-
-
-
-
-
