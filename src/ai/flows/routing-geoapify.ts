@@ -29,14 +29,25 @@ export type RoutingGeoapifyOutput = z.infer<typeof RoutingGeoapifyOutputSchema>;
  * Função auxiliar para buscar um trecho da rota
  */
 async function fetchRouteChunk(waypoints: {lat: number, lng: number}[], mode: string, apiKey: string) {
-    const waypointsStr = waypoints.map(w => `${w.lat},${w.lng}`).join('|');
+    // Validar se todos os pontos são números válidos e finitos antes de enviar
+    const validWaypoints = waypoints.filter(w => 
+        typeof w.lat === 'number' && Number.isFinite(w.lat) && 
+        typeof w.lng === 'number' && Number.isFinite(w.lng)
+    );
+
+    if (validWaypoints.length < 2) {
+        throw new Error('Número insuficiente de coordenadas válidas para traçar a rota.');
+    }
+
+    const waypointsStr = validWaypoints.map(w => `${w.lat.toFixed(6)},${w.lng.toFixed(6)}`).join('|');
     const url = `https://api.geoapify.com/v1/routing?waypoints=${encodeURIComponent(waypointsStr)}&mode=${mode}&apiKey=${apiKey}`;
 
     const response = await fetch(url);
     if (!response.ok) {
-      const errorText = await response.text();
-      console.error(`Erro Geoapify (${response.status}): ${errorText}`);
-      throw new Error(`Geoapify Routing falhou: ${response.statusText}`);
+      const errorBody = await response.json().catch(() => ({ message: response.statusText }));
+      const errorMessage = errorBody.message || response.statusText;
+      console.error(`Erro detalhado Geoapify (${response.status}):`, errorBody);
+      throw new Error(`Geoapify Routing falhou (${response.status}): ${errorMessage}`);
     }
 
     const data = await response.json();
@@ -57,12 +68,20 @@ export const routingGeoapify = ai.defineFlow(
     const apiKey = process.env.GEOAPIFY_API_KEY;
     if (!apiKey) throw new Error('GEOAPIFY_API_KEY não configurada.');
 
+    // Limpeza inicial de segurança nos inputs
+    const cleanedWaypoints = waypoints.filter(w => 
+        Number.isFinite(w.lat) && Number.isFinite(w.lng)
+    );
+
+    if (cleanedWaypoints.length < 2) {
+        throw new Error('Dados de GPS insuficientes para gerar a rota.');
+    }
+
     // O plano gratuito da Geoapify permite no máximo 5 waypoints por chamada.
-    // Para rotas maiores, dividimos em pedaços (chunks) e mesclamos os resultados.
     const MAX_POINTS = 5;
     
-    if (waypoints.length <= MAX_POINTS) {
-        const route = await fetchRouteChunk(waypoints, mode, apiKey);
+    if (cleanedWaypoints.length <= MAX_POINTS) {
+        const route = await fetchRouteChunk(cleanedWaypoints, mode, apiKey);
         return {
             polyline: JSON.stringify(route.geometry),
             distanceKm: route.properties.distance / 1000,
@@ -75,8 +94,8 @@ export const routingGeoapify = ai.defineFlow(
     let totalDistance = 0;
     let totalTime = 0;
 
-    for (let i = 0; i < waypoints.length - 1; i += (MAX_POINTS - 1)) {
-        const chunk = waypoints.slice(i, i + MAX_POINTS);
+    for (let i = 0; i < cleanedWaypoints.length - 1; i += (MAX_POINTS - 1)) {
+        const chunk = cleanedWaypoints.slice(i, i + MAX_POINTS);
         if (chunk.length < 2) break;
 
         try {
@@ -94,8 +113,9 @@ export const routingGeoapify = ai.defineFlow(
             totalTime += route.properties.time;
         } catch (e) {
             console.error("Falha ao processar chunk de rota:", e);
-            // Se um chunk falhar, continuamos para tentar obter o restante ou paramos
-            if (combinedCoordinates.length === 0) throw e;
+            // Se um chunk falhar e já temos dados, paramos por aqui para não quebrar tudo
+            if (combinedCoordinates.length > 0) break;
+            throw e;
         }
     }
 

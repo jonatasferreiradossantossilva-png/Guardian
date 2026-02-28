@@ -738,11 +738,14 @@ export default function DriverRoutePlanPage() {
             }).filter((s): s is Stop => s !== null);
 
             // 3. Obter o traçado visual (Polyline) via Geoapify (Custo Zero)
+            // Garantir que as coordenadas são números válidos antes de enviar
             const waypoints = optimizedStops
                 .map(s => ({ lat: s.data.latitude, lng: s.data.longitude }))
-                .filter(w => typeof w.lat === 'number' && typeof w.lng === 'number');
+                .filter(w => typeof w.lat === 'number' && Number.isFinite(w.lat) && typeof w.lng === 'number' && Number.isFinite(w.lng));
                 
-            if (driverLocation) waypoints.unshift({ lat: driverLocation.latitude, lng: driverLocation.longitude });
+            if (driverLocation && Number.isFinite(driverLocation.latitude) && Number.isFinite(driverLocation.longitude)) {
+                waypoints.unshift({ lat: driverLocation.latitude, lng: driverLocation.longitude });
+            }
 
             if (waypoints.length >= 2) {
                 const routing = await routingGeoapify({ waypoints });
