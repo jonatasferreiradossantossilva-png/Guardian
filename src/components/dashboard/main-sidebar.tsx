@@ -31,6 +31,7 @@ import {
   LayoutGrid,
   FileText,
   Milestone,
+  BarChart3,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -39,6 +40,7 @@ import { DriverRouteInfoCard } from "./driver-route-info-card";
 
 const operationalLinks = [
   { href: "/dashboard/overview", label: "Painel Financeiro", icon: LayoutGrid },
+  { href: "/dashboard/performance", label: "Performance & Eco", icon: BarChart3 },
   { href: "/dashboard/messages", label: "Mensagens", icon: MessageSquare },
   { href: "/dashboard/financial", label: "Controle Financeiro", icon: DollarSign },
   { href: "/dashboard/management/trip-requests", label: "Viagens Extras", icon: Milestone },
