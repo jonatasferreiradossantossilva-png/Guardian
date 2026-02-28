@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import Link from 'next/link';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from '@/components/ui/card';
-import { LayoutGrid, MessageSquare, DollarSign, Milestone, ClipboardCheck, Car, HelpCircle, ShieldCheck, ShieldAlert, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, TrendingDown, Sparkles, ChevronRight, UserPlus, Share2, Activity, ExternalLink } from 'lucide-react';
+import { LayoutGrid, MessageSquare, DollarSign, Milestone, Car, HelpCircle, ShieldCheck, Loader2, RefreshCw, Wrench, AlertTriangle, BarChart3, ChevronRight, UserPlus, Share2, Activity, ExternalLink, Play, BookOpen } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -62,25 +62,19 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 </p>
             </div>
 
+            {/* Invertido: Guia agora no topo */}
             <Card className="bg-primary/5 border-primary/20">
                 <CardHeader className="p-4 pb-2">
                     <CardTitle className="text-sm flex items-center gap-2">
-                        <UserPlus className="h-4 w-4 text-primary" />
-                        Novos Clientes
+                        <HelpCircle className="h-4 w-4 text-primary" />
+                        Configuração da Frota
                     </CardTitle>
                 </CardHeader>
                 <CardContent className="p-4 pt-0">
-                    <p className="text-xs text-muted-foreground mb-3">Envie o link de cadastro para novos pais ou teste a página.</p>
-                    <div className="flex flex-col gap-2">
-                        <Button size="sm" className="w-full" onClick={onShareRegistration}>
-                            <Share2 className="mr-2 h-4 w-4" /> Compartilhar Convite
-                        </Button>
-                        <Button size="sm" variant="outline" className="w-full" asChild>
-                            <Link href="/register">
-                                <ExternalLink className="mr-2 h-4 w-4" /> Abrir Página de Cadastro
-                            </Link>
-                        </Button>
-                    </div>
+                    <p className="text-xs text-muted-foreground mb-3">Aprenda a configurar escolas, motoristas e rotas passo a passo.</p>
+                    <Button size="sm" className="w-full" onClick={onOpenGuide}>
+                        <Play className="mr-2 h-4 w-4" /> Iniciar Guia de Início
+                    </Button>
                 </CardContent>
             </Card>
 
@@ -97,10 +91,18 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 ))}
             </div>
 
-            <Button variant="outline" className="w-full" onClick={onOpenGuide}>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                Guia de Configuração
-            </Button>
+            {/* Invertido: Novo Cadastro agora embaixo */}
+            <div className="space-y-2">
+                <Button variant="outline" className="w-full h-12" onClick={onShareRegistration}>
+                    <UserPlus className="mr-2 h-5 w-5 text-primary" />
+                    Convidar Novos Pais
+                </Button>
+                <Button variant="ghost" className="w-full text-xs text-muted-foreground" asChild>
+                    <Link href="/register">
+                        <ExternalLink className="mr-1.5 h-3 w-3" /> Testar Página de Cadastro
+                    </Link>
+                </Button>
+            </div>
         </div>
     );
 }
@@ -183,9 +185,10 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
           <p className="text-muted-foreground">Visão geral da sua operação.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button variant="outline" onClick={onOpenGuide}>
-                <HelpCircle className="mr-2 h-4 w-4" />
-                Guia de Configuração
+            {/* Invertido: Botão de cadastro agora no cabeçalho */}
+            <Button variant="outline" onClick={onShareRegistration}>
+                <UserPlus className="mr-2 h-4 w-4" />
+                Convidar Pais
             </Button>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
                 <SelectTrigger className="w-full sm:w-[120px]">
@@ -250,32 +253,27 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
             </Card>
           </Link>
 
-          {/* Onboarding / Sales Tool Card */}
+          {/* Invertido: Card do Guia de Início Rápido agora no lugar das vendas */}
           <Card className="h-full border-dashed border-primary/40 bg-secondary/20 relative overflow-hidden flex flex-col">
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                        <UserPlus className="h-5 w-5 text-primary" />
-                        Vendas & Onboarding
+                        <HelpCircle className="h-5 w-5 text-primary" />
+                        Configuração Inicial
                     </CardTitle>
-                    <CardDescription className="text-xs">Envie o link de cadastro automático para novos pais.</CardDescription>
+                    <CardDescription className="text-xs">Siga o roteiro para deixar sua frota 100% ativa.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-center items-center text-center p-6 space-y-4">
                     <div className="bg-primary/10 p-4 rounded-full border-2 border-primary/20">
-                        <Share2 className="h-8 w-8 text-primary" />
+                        <BookOpen className="h-8 w-8 text-primary" />
                     </div>
                     <div className="space-y-1">
-                        <p className="text-sm font-semibold">Onboarding Híbrido</p>
-                        <p className="text-[10px] text-muted-foreground">O pai tira foto do documento e a IA faz o cadastro.</p>
+                        <p className="text-sm font-semibold">Guia de Implementação</p>
+                        <p className="text-[10px] text-muted-foreground">Cadastre escolas, motoristas e valide o GPS dos alunos.</p>
                     </div>
                 </CardContent>
                 <CardFooter className="p-4 border-t bg-background/50 flex flex-col gap-2">
-                    <Button size="sm" className="w-full" onClick={onShareRegistration}>
-                        <Share2 className="mr-2 h-4 w-4" /> Compartilhar Convite
-                    </Button>
-                    <Button size="sm" variant="ghost" className="w-full text-[10px]" asChild>
-                        <Link href="/register">
-                            <ExternalLink className="mr-1.5 h-3 w-3" /> Testar Página de Cadastro
-                        </Link>
+                    <Button size="sm" className="w-full" onClick={onOpenGuide}>
+                        <Play className="mr-2 h-4 w-4" /> Iniciar Guia Interativo
                     </Button>
                 </CardFooter>
           </Card>
