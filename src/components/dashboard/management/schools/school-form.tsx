@@ -23,12 +23,11 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Loader2, MapPin, CheckCircle2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
-import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -56,8 +55,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const lastGeocodedAddress = useRef('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -77,42 +75,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     },
   });
 
-  const { street, number, neighborhood, city, state, zipCode, latitude, longitude } = form.watch();
-  const hasGps = !!(latitude && longitude);
-
-  const handleGeocode = useCallback(async () => {
-    const currentValues = form.getValues();
-    const fullAddress = `${currentValues.street || ''}, ${currentValues.number || ''}, ${currentValues.neighborhood || ''}, ${currentValues.city || ''} - ${currentValues.state || ''}`;
-    
-    if (!currentValues.street || !currentValues.city || fullAddress === lastGeocodedAddress.current) return;
-
-    setIsGeocoding(true);
-    try {
-      const result = await geocodeAddress({ address: fullAddress });
-      form.setValue('latitude', result.latitude);
-      form.setValue('longitude', result.longitude);
-      lastGeocodedAddress.current = fullAddress;
-      toast({
-        title: "Localização da Escola atualizada!",
-        description: "Coordenadas GPS sincronizadas automaticamente."
-      });
-    } catch (error) {
-      console.error("Auto-geocode failed:", error);
-    } finally {
-      setIsGeocoding(false);
-    }
-  }, [form, toast]);
-
-  // Auto-geocode effect
-  useEffect(() => {
-    if (!street || !city || !number) return;
-
-    const timer = setTimeout(() => {
-      handleGeocode();
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [street, number, city, handleGeocode]);
+  const { zipCode } = form.watch();
 
   useEffect(() => {
     if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
@@ -160,15 +123,39 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     }
   }, [school, form]);
 
-  const onSubmit = (data: SchoolFormValues) => {
-    if (school) {
-      updateDoc('schools', school.id, data);
-      toast({ title: 'Escola atualizada!' });
-    } else {
-      addDoc('schools', data);
-      toast({ title: 'Escola adicionada!' });
+  const onSubmit = async (data: SchoolFormValues) => {
+    setIsSaving(true);
+    try {
+        let finalLat = data.latitude;
+        let finalLng = data.longitude;
+
+        // Busca GPS de forma invisível se tiver endereço completo
+        if (data.street && data.city && (!finalLat || !finalLng)) {
+            const fullAddress = `${data.street}, ${data.number || ''}, ${data.neighborhood || ''}, ${data.city} - ${data.state || ''}`;
+            try {
+                const geoResult = await geocodeAddress({ address: fullAddress });
+                finalLat = geoResult.latitude;
+                finalLng = geoResult.longitude;
+            } catch (e) {
+                console.warn("Geocodificação automática falhou no salvamento:", e);
+            }
+        }
+
+        const schoolData = { ...data, latitude: finalLat, longitude: finalLng };
+
+        if (school) {
+            updateDoc('schools', school.id, schoolData);
+            toast({ title: 'Escola atualizada!' });
+        } else {
+            addDoc('schools', schoolData);
+            toast({ title: 'Escola adicionada!' });
+        }
+        onFormSubmit();
+    } catch (error) {
+        toast({ title: "Erro ao salvar", variant: "destructive" });
+    } finally {
+        setIsSaving(false);
     }
-    onFormSubmit();
   };
 
   return (
@@ -226,18 +213,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                         <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
-                 <div className="col-span-2 flex items-end">
-                    <Button 
-                      type="button" 
-                      variant={hasGps ? "outline" : "secondary"} 
-                      className={cn("w-full transition-all", hasGps && "border-green-500/50 text-green-600")} 
-                      onClick={() => handleGeocode()} 
-                      disabled={isGeocoding}
-                    >
-                        {isGeocoding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : hasGps ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <MapPin className="mr-2 h-4 w-4" />}
-                        {hasGps ? "Localização Validada" : "Validar GPS da Escola"}
-                    </Button>
-                </div>
+                 <FormField
+                    control={form.control} name="neighborhood"
+                    render={({ field }) => (
+                        <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Centro" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}
+                />
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                  <FormField
@@ -254,22 +235,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 />
              </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-            <FormField
-              control={form.control}
-              name="latitude"
-              render={({ field }) => (
-                <FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="longitude"
-              render={({ field }) => (
-                <FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''}/></FormControl><FormMessage /></FormItem>
-              )}
-            />
-          </div>
            <FormField
             control={form.control}
             name="active"
@@ -281,8 +246,10 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             )}
           />
           <DialogFooter className="pt-4">
-            <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-            <Button type="submit">Salvar</Button>
+            <DialogClose asChild><Button type="button" variant="outline" disabled={isSaving}>Cancelar</Button></DialogClose>
+            <Button type="submit" disabled={isSaving}>
+                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Escola"}
+            </Button>
           </DialogFooter>
         </form>
       </Form>

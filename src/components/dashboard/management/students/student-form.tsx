@@ -31,14 +31,12 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Copy, Info, Loader2, MapPin, HeartPulse, CheckCircle2 } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Copy, Loader2, HeartPulse } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Textarea } from '@/components/ui/textarea';
-import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -92,8 +90,7 @@ export function StudentForm({
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
-  const [isGeocoding, setIsGeocoding] = useState(false);
-  const lastGeocodedAddress = useRef('');
+  const [isSaving, setIsSaving] = useState(false);
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(formSchema),
@@ -119,44 +116,7 @@ export function StudentForm({
     },
   });
 
-  const { street, number, neighborhood, city, state, zipCode, parentId, latitude, longitude } = form.watch();
-  const hasGps = !!(latitude && longitude);
-
-  const handleGeocode = useCallback(async () => {
-    const currentValues = form.getValues();
-    const fullAddress = `${currentValues.street || ''}, ${currentValues.number || ''}, ${currentValues.neighborhood || ''}, ${currentValues.city || ''} - ${currentValues.state || ''}`;
-    
-    // Evitar chamadas duplicadas para o mesmo endereço ou endereços vazios
-    if (!currentValues.street || !currentValues.city || fullAddress === lastGeocodedAddress.current) return;
-
-    setIsGeocoding(true);
-    try {
-      const result = await geocodeAddress({ address: fullAddress });
-      form.setValue('latitude', result.latitude);
-      form.setValue('longitude', result.longitude);
-      lastGeocodedAddress.current = fullAddress;
-      
-      toast({
-        title: "Localização atualizada!",
-        description: "Coordenadas GPS capturadas automaticamente para este endereço."
-      });
-    } catch (error) {
-      console.error("Auto-geocode failed:", error);
-    } finally {
-      setIsGeocoding(false);
-    }
-  }, [form, toast]);
-
-  // Efeito para Geocodificação Automática (Debounce de 1.5 segundos)
-  useEffect(() => {
-    if (!street || !city || !number) return;
-
-    const timer = setTimeout(() => {
-      handleGeocode();
-    }, 1500);
-
-    return () => clearTimeout(timer);
-  }, [street, number, city, handleGeocode]);
+  const { zipCode, parentId } = form.watch();
 
   useEffect(() => {
     if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
@@ -211,15 +171,39 @@ export function StudentForm({
     }
   };
 
-  const onSubmit = (data: StudentFormValues) => {
-    if (student) {
-      updateDoc('students', student.id, data);
-      toast({ title: 'Aluno atualizado!' });
-    } else {
-      addDoc('students', { ...data, status: 'aguardando' });
-      toast({ title: 'Aluno adicionado!' });
+  const onSubmit = async (data: StudentFormValues) => {
+    setIsSaving(true);
+    try {
+        let finalLat = data.latitude;
+        let finalLng = data.longitude;
+
+        // Se tiver endereço mas não tiver GPS, busca agora de forma invisível
+        if (data.street && data.city && (!finalLat || !finalLng)) {
+            const fullAddress = `${data.street}, ${data.number || ''}, ${data.neighborhood || ''}, ${data.city} - ${data.state || ''}`;
+            try {
+                const geoResult = await geocodeAddress({ address: fullAddress });
+                finalLat = geoResult.latitude;
+                finalLng = geoResult.longitude;
+            } catch (e) {
+                console.warn("Falha na geocodificação automática no salvamento:", e);
+            }
+        }
+
+        const studentData = { ...data, latitude: finalLat, longitude: finalLng };
+
+        if (student) {
+            updateDoc('students', student.id, studentData);
+            toast({ title: 'Aluno atualizado!' });
+        } else {
+            addDoc('students', { ...studentData, status: 'aguardando' });
+            toast({ title: 'Aluno adicionado!' });
+        }
+        onFormSubmit();
+    } catch (error) {
+        toast({ title: "Erro ao salvar", description: "Ocorreu um problema inesperado.", variant: "destructive" });
+    } finally {
+        setIsSaving(false);
     }
-    onFormSubmit();
   };
 
   return (
@@ -297,7 +281,7 @@ export function StudentForm({
                     )}
                 />
              </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                  <FormField
                     control={form.control} name="number"
                     render={({ field }) => (
@@ -310,18 +294,6 @@ export function StudentForm({
                         <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Centro" {...field} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
-                <div className="flex items-end">
-                    <Button 
-                      type="button" 
-                      variant={hasGps ? "outline" : "secondary"} 
-                      className={cn("w-full transition-all", hasGps && "border-green-500/50 text-green-600")} 
-                      onClick={() => handleGeocode()} 
-                      disabled={isGeocoding}
-                    >
-                        {isGeocoding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : hasGps ? <CheckCircle2 className="mr-2 h-4 w-4" /> : <MapPin className="mr-2 h-4 w-4" />}
-                        {hasGps ? "GPS Validado" : "Validar GPS"}
-                    </Button>
-                </div>
              </div>
           </div>
 
@@ -348,31 +320,6 @@ export function StudentForm({
                         <FormMessage />
                     </FormItem>
                 )}
-            />
-          </div>
-          
-           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-            <FormField
-              control={form.control}
-              name="latitude"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Latitude</FormLabel>
-                  <FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} /></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="longitude"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Longitude</FormLabel>
-                  <FormControl><Input type="number" step="any" {...field} value={field.value ?? ''}/></FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
             />
           </div>
 
@@ -443,8 +390,10 @@ export function StudentForm({
           />
 
           <DialogFooter className="pt-4">
-            <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-            <Button type="submit">Salvar</Button>
+            <DialogClose asChild><Button type="button" variant="outline" disabled={isSaving}>Cancelar</Button></DialogClose>
+            <Button type="submit" disabled={isSaving}>
+                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Aluno"}
+            </Button>
           </DialogFooter>
         </form>
       </Form>
