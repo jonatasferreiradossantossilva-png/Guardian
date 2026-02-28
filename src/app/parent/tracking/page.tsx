@@ -16,7 +16,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/avatar";
 import { RoutePolyline } from "@/components/shared/route-polyline";
 import {
   AlertDialog,
@@ -219,7 +219,6 @@ export default function ParentTrackingPage() {
   
   // Arrival Alert State
   const [showProximityAlert, setShowProximityAlert] = useState(false);
-  const [lastNotifiedDistance, setLastNotifiedDistance] = useState(Infinity);
 
   // Absence State
   const [isAbsenceDialogOpen, setIsAbsenceDialogOpen] = useState(false);
@@ -259,13 +258,13 @@ export default function ParentTrackingPage() {
     const isWaitingPickup = journeyDirection === 'ida' && student.status === 'aguardando';
     const isComingHome = journeyDirection === 'volta' && student.status === 'a_bordo';
 
-    // Se estiver a menos de 500m e em um estado que justifique o alerta
-    if (currentDistance < 0.5 && (isWaitingPickup || isComingHome)) {
+    // Se estiver a menos de 800m e em um estado que justifique o alerta
+    if (currentDistance < 0.8 && (isWaitingPickup || isComingHome)) {
         if (!showProximityAlert) {
             setShowProximityAlert(true);
             toast({
                 title: "🚌 Van se aproximando!",
-                description: "A van entrou num raio de 500m da sua residência.",
+                description: "A van entrou num raio de 800m da sua residência.",
                 variant: "default"
             });
         }
@@ -412,7 +411,7 @@ export default function ParentTrackingPage() {
                                 </div>
                                 <div>
                                     <p className="font-bold text-lg">A van está quase chegando!</p>
-                                    <p className="text-sm opacity-90">Distância menor que 500 metros.</p>
+                                    <p className="text-sm opacity-90">Distância menor que 800 metros.</p>
                                 </div>
                             </div>
                             <Sparkles className="h-8 w-8 opacity-50" />
