@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,8 +24,9 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Loader2 } from 'lucide-react';
+import { Loader2, MapPin } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
+import { geocodeAddress } from '@/ai/flows/geocode-address';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -54,6 +54,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [isGeocoding, setIsGeocoding] = useState(false);
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -73,6 +74,38 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     },
   });
 
+  const handleGeocode = async () => {
+    const { street, number, neighborhood, city, state } = form.getValues();
+    if (!street || !city) {
+      toast({
+        title: "Endereço incompleto",
+        description: "Preencha a rua e a cidade para localizar a escola.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    setIsGeocoding(true);
+    try {
+      const fullAddress = `${street}, ${number || ''}, ${neighborhood || ''}, ${city} - ${state || ''}`;
+      const result = await geocodeAddress({ address: fullAddress });
+      form.setValue('latitude', result.latitude);
+      form.setValue('longitude', result.longitude);
+      toast({
+        title: "Localização da Escola encontrada!",
+        description: "Coordenadas GPS atualizadas."
+      });
+    } catch (error) {
+      console.error(error);
+      toast({
+        title: "Erro ao localizar escola",
+        variant: "destructive"
+      });
+    } finally {
+      setIsGeocoding(false);
+    }
+  };
+
   const zipCode = form.watch('zipCode');
 
   useEffect(() => {
@@ -88,32 +121,17 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             form.setValue('neighborhood', data.bairro);
             form.setValue('city', data.localidade);
             form.setValue('state', data.uf);
-            toast({
-              title: 'Endereço preenchido!',
-              description: 'Os dados de endereço foram carregados automaticamente.',
-            });
             form.setFocus('number');
-          } else {
-             toast({
-              title: 'CEP não encontrado',
-              description: 'Verifique o CEP e tente novamente.',
-              variant: 'destructive',
-            });
           }
         } catch (error) {
-          console.error('Failed to fetch CEP:', error);
-          toast({
-            title: 'Erro de Rede',
-            description: 'Não foi possível conectar ao serviço de CEP.',
-            variant: 'destructive',
-          });
+          console.error(error);
         } finally {
           setIsFetchingCep(false);
         }
       };
       fetchAddress();
     }
-  }, [zipCode, form, toast]);
+  }, [zipCode, form]);
 
   useEffect(() => {
     if (school) {
@@ -139,16 +157,10 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const onSubmit = (data: SchoolFormValues) => {
     if (school) {
       updateDoc('schools', school.id, data);
-      toast({
-        title: 'Escola atualizada!',
-        description: `Os dados da escola ${data.name} foram atualizados.`,
-      });
+      toast({ title: 'Escola atualizada!' });
     } else {
       addDoc('schools', data);
-      toast({
-        title: 'Escola adicionada!',
-        description: `A escola ${data.name} foi adicionada ao sistema.`,
-      });
+      toast({ title: 'Escola adicionada!' });
     }
     onFormSubmit();
   };
@@ -157,11 +169,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl">
       <DialogHeader>
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>
-          {school
-            ? 'Altere as informações da escola abaixo.'
-            : 'Preencha as informações da nova escola.'}
-        </DialogDescription>
+        <DialogDescription>Preencha as informações da escola abaixo.</DialogDescription>
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
@@ -171,22 +179,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nome da Escola</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: Colégio Saber" {...field} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-           <FormField
-            control={form.control}
-            name="cnpj"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>CNPJ (Opcional)</FormLabel>
-                <FormControl>
-                  <Input placeholder="00.000.000/0001-00" {...field} />
-                </FormControl>
+                <FormControl><Input placeholder="Ex: Colégio Saber" {...field} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -198,13 +191,11 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     control={form.control} name="zipCode"
                     render={({ field }) => (
                         <FormItem className="md:col-span-1">
-                        <FormLabel>CEP (Opcional)</FormLabel>
+                        <FormLabel>CEP</FormLabel>
                         <FormControl>
                           <div className="relative">
                             <Input placeholder="00000-000" {...field} />
-                            {isFetchingCep && (
-                              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                            )}
+                            {isFetchingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
                           </div>
                         </FormControl>
                         <FormMessage />
@@ -226,53 +217,27 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                  <FormField
                     control={form.control} name="number"
                     render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Número (Opcional)</FormLabel>
-                        <FormControl><Input placeholder="123" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
+                        <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
-                 <FormField
-                    control={form.control} name="complement"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Complemento (Opcional)</FormLabel>
-                        <FormControl><Input placeholder="Apto 4B" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control} name="neighborhood"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Bairro (Opcional)</FormLabel>
-                        <FormControl><Input placeholder="Centro" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
+                 <div className="col-span-2 flex items-end">
+                    <Button type="button" variant="secondary" className="w-full" onClick={handleGeocode} disabled={isGeocoding}>
+                        {isGeocoding ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <MapPin className="mr-2 h-4 w-4" />}
+                        Validar GPS da Escola
+                    </Button>
+                </div>
              </div>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                  <FormField
                     control={form.control} name="city"
                     render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Cidade (Opcional)</FormLabel>
-                        <FormControl><Input placeholder="São Paulo" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
+                        <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="São Paulo" {...field} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
                  <FormField
                     control={form.control} name="state"
                     render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Estado (UF) (Opcional)</FormLabel>
-                        <FormControl><Input placeholder="SP" {...field} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
+                        <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="SP" {...field} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
              </div>
@@ -282,26 +247,14 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
               control={form.control}
               name="latitude"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Latitude (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="any" placeholder="-23.55052" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <FormItem><FormLabel>Latitude</FormLabel><FormControl><Input type="number" step="any" {...field} /></FormControl><FormMessage /></FormItem>
               )}
             />
             <FormField
               control={form.control}
               name="longitude"
               render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Longitude (Opcional)</FormLabel>
-                  <FormControl>
-                    <Input type="number" step="any" placeholder="-46.633308" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
+                <FormItem><FormLabel>Longitude</FormLabel><FormControl><Input type="number" step="any" {...field} /></FormControl><FormMessage /></FormItem>
               )}
             />
           </div>
@@ -310,24 +263,13 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             name="active"
             render={({ field }) => (
               <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                <div className="space-y-0.5">
-                  <FormLabel>Escola Ativa</FormLabel>
-                </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
+                <div className="space-y-0.5"><FormLabel>Escola Ativa</FormLabel></div>
+                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
               </FormItem>
             )}
           />
           <DialogFooter className="pt-4">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancelar
-              </Button>
-            </DialogClose>
+            <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
             <Button type="submit">Salvar</Button>
           </DialogFooter>
         </form>
