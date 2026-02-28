@@ -11,7 +11,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -248,7 +248,7 @@ export default function ParentTrackingPage() {
         <div className="flex justify-end items-center mb-6">
           <div className="flex items-center gap-2">
             <Link href="/" passHref>
-              <Button variant="outline">Voltar ao Login</Button>
+              <Button variant="outline">Sair</Button>
             </Link>
           </div>
         </div>
@@ -372,10 +372,10 @@ export default function ParentTrackingPage() {
             <TabsContent value="map" className="mt-4">
                <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground">
                     <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Van</span></div>
-                    <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Aluno</span></div>
+                    <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>Meu Filho</span></div>
                     <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
                 </div>
-              <Card className="h-[75vh]">
+              <Card className="h-[70vh]">
                 <CardContent className="p-0 h-full relative">
                   <div className="absolute inset-0 bg-secondary flex items-center justify-center overflow-hidden rounded-lg">
                     <Button
@@ -426,6 +426,10 @@ export default function ParentTrackingPage() {
                   </div>
                 </CardContent>
               </Card>
+              <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground justify-center">
+                  <ShieldCheck className="h-4 w-4 text-green-500" />
+                  <span>Por segurança, você vê apenas o trajeto da van e a localização do seu filho.</span>
+              </div>
             </TabsContent>
           </Tabs>
         )}
