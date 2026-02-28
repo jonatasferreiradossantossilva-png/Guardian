@@ -258,7 +258,7 @@ export default function ParentTrackingPage() {
     const isWaitingPickup = journeyDirection === 'ida' && student.status === 'aguardando';
     const isComingHome = journeyDirection === 'volta' && student.status === 'a_bordo';
 
-    // Se estiver a menos de 800m e em um estado que justifique o alerta
+    // Alerta de Proximidade em 800 metros
     if (currentDistance < 0.8 && (isWaitingPickup || isComingHome)) {
         if (!showProximityAlert) {
             setShowProximityAlert(true);
@@ -478,6 +478,22 @@ export default function ParentTrackingPage() {
                             </div>
                         )}
                     </CardContent>
+                    
+                    {/* Botão de WhatsApp de Aproximação - Agora no rodapé para contextualizar com o status */}
+                    <CardFooter className="pt-0 justify-center pb-6">
+                        <Button 
+                            variant="outline" 
+                            size="sm" 
+                            className={cn(
+                                "text-xs gap-2 transition-colors border-green-500/20 hover:bg-green-500/10 hover:text-green-600",
+                                showProximityAlert && "bg-green-500/10 border-green-500 text-green-600 animate-pulse"
+                            )} 
+                            onClick={handleShareTrip}
+                        >
+                            <Share2 className="h-4 w-4" />
+                            <span>Compartilhar Aproximação (WhatsApp)</span>
+                        </Button>
+                    </CardFooter>
                 </Card>
 
                  <Card>
@@ -491,9 +507,11 @@ export default function ParentTrackingPage() {
                                 <span>Meu QR Code</span>
                             </Link>
                         </Button>
-                        <Button variant="outline" className={cn("flex flex-col h-auto py-4 gap-2 justify-center text-xs transition-colors", showProximityAlert && "bg-primary/10 border-primary text-primary")} onClick={handleShareTrip}>
-                            <Share2 className="h-6 w-6" />
-                            <span>Aproximação</span>
+                        <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs">
+                            <Link href="/parent/requests">
+                                <RouteIcon className="h-6 w-6 text-primary" />
+                                <span>Viagens Avulsas</span>
+                            </Link>
                         </Button>
                         <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs">
                             <Link href="/parent/messages">
@@ -520,13 +538,6 @@ export default function ParentTrackingPage() {
                             </Link>
                         </Button>
                     </CardContent>
-                    <CardFooter className="pt-0 justify-center">
-                         <Button asChild variant="link" className="text-xs text-muted-foreground">
-                            <Link href="/parent/requests" className="flex items-center gap-1">
-                                <RouteIcon className="h-3 w-3" /> Viagens Avulsas <ChevronRight className="h-3 w-3"/>
-                            </Link>
-                        </Button>
-                    </CardFooter>
                 </Card>
               </div>
             </TabsContent>
