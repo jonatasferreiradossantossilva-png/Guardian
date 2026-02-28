@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -8,6 +7,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLe
 import { Sparkles, TrendingDown, Clock, Leaf, Zap, ShieldCheck, ArrowDownRight, Gauge, Loader2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection } from '@/hooks/use-mock-data';
+import { cn } from '@/lib/utils';
 
 const ecoData = [
   { day: 'Seg', planejado: 42, real: 38 },
