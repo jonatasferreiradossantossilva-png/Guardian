@@ -191,6 +191,74 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
   );
 };
 
+const NextStopSchoolCard = ({ school, onDropOff, onNavigate, onShareRoute }: { school: SchoolData, onDropOff: (id: string) => void, onNavigate: (data: any) => void, onShareRoute: () => void }) => {
+  return (
+    <Card className="w-full shadow-lg border-destructive/20">
+      <CardHeader>
+        <CardDescription>Parada na Escola (Desembarque)</CardDescription>
+        <CardTitle className="flex items-center gap-3 text-2xl">
+            <div className="flex items-center justify-center h-12 w-12 rounded-full bg-destructive/10 text-destructive">
+                <School className="h-6 w-6" />
+            </div>
+            <span>{school.name}</span>
+        </CardTitle>
+        <p className="text-sm text-muted-foreground pt-1">
+          {school.street ? `${school.street}, ${school.number}` : 'Endereço não disponível'}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Button size="lg" className="w-full bg-destructive hover:bg-destructive/90" onClick={() => onDropOff(school.id)}>
+            <Bus className="mr-2 h-5 w-5" /> Desembarcar Alunos
+        </Button>
+      </CardContent>
+       <CardFooter className="grid grid-cols-2 gap-2">
+           <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={() => onNavigate(school)}>
+              <Navigation className="h-5 w-5" />
+              <span>Navegar</span>
+            </Button>
+            <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={onShareRoute}>
+                <Share2 className="h-5 w-5"/>
+                <span>Localização</span>
+            </Button>
+       </CardFooter>
+    </Card>
+  );
+};
+
+const NextStopSchoolPickupCard = ({ school, onPickup, onNavigate, onShareRoute }: { school: SchoolData, onPickup: (id: string) => void, onNavigate: (data: any) => void, onShareRoute: () => void }) => {
+  return (
+    <Card className="w-full shadow-lg border-primary/20">
+      <CardHeader>
+        <CardDescription>Parada na Escola (Embarque)</CardDescription>
+        <CardTitle className="flex items-center gap-3 text-2xl">
+            <div className="flex items-center justify-center h-12 w-12 rounded-full bg-primary/10 text-primary">
+                <School className="h-6 w-6" />
+            </div>
+            <span>{school.name}</span>
+        </CardTitle>
+        <p className="text-sm text-muted-foreground pt-1">
+          {school.street ? `${school.street}, ${school.number}` : 'Endereço não disponível'}
+        </p>
+      </CardHeader>
+      <CardContent>
+        <Button size="lg" className="w-full" onClick={() => onPickup(school.id)}>
+            <Users className="mr-2 h-5 w-5" /> Abrir Checklist de Embarque
+        </Button>
+      </CardContent>
+       <CardFooter className="grid grid-cols-2 gap-2">
+           <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={() => onNavigate(school)}>
+              <Navigation className="h-5 w-5" />
+              <span>Navegar</span>
+            </Button>
+            <Button variant="outline" className="flex flex-col h-auto py-2 justify-center gap-1 text-xs" onClick={onShareRoute}>
+                <Share2 className="h-5 w-5"/>
+                <span>Localização</span>
+            </Button>
+       </CardFooter>
+    </Card>
+  );
+};
+
 const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], formatStudentDetails: (student: Student) => string }) => {
   if (!stops || stops.length === 0) {
     return <p className="text-center text-muted-foreground text-sm py-4">Nenhuma parada futura.</p>;
@@ -336,7 +404,7 @@ function RouteMap({ driverLocation, stops, routePolyline, toast, recenterTrigger
     );
 }
 
-function StudentChecklistRow({ student, onStatusChange }: { student: Student; onStatusChange: (studentId: string, status: StudentStatus) => void; }) {
+function StudentChecklistRow({ student, onStatusChange, direction }: { student: Student; onStatusChange: (studentId: string, status: StudentStatus) => void; direction: 'ida' | 'volta' }) {
     const isProcessed = student.status !== 'aguardando';
     const { toast } = useToast();
 
@@ -377,13 +445,15 @@ function BoardingChecklist({
   students,
   onStatusChange,
   onComplete,
-  onScanQrCode
+  onScanQrCode,
+  direction
 }: {
   school: SchoolData;
   students: Student[];
   onStatusChange: (studentId: string, status: StudentStatus) => void;
   onComplete: () => void;
   onScanQrCode: () => void;
+  direction: 'ida' | 'volta';
 }) {
     return (
         <div className="p-4 max-w-md mx-auto">
@@ -399,7 +469,7 @@ function BoardingChecklist({
                     </Button>
                     <div className="space-y-2 max-h-[50vh] overflow-y-auto p-1">
                         {students.map(student => (
-                            <StudentChecklistRow key={student.id} student={student} onStatusChange={onStatusChange} />
+                            <StudentChecklistRow key={student.id} student={student} onStatusChange={onStatusChange} direction={direction} />
                         ))}
                     </div>
                 </CardContent>
@@ -1178,6 +1248,7 @@ export default function DriverRoutePlanPage() {
                     onStatusChange={handleStatusChange}
                     onComplete={handleCompleteBoarding}
                     onScanQrCode={() => setIsScannerOpen(true)}
+                    direction={direction}
                 />
                  <QrScannerModal
                     isOpen={isScannerOpen}
