@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, UserPlus, ExternalLink } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, Search, ExternalLink } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -37,6 +37,8 @@ import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 import Link from 'next/link';
 
 
@@ -60,6 +62,8 @@ interface ParentsListProps {
   initialParents: Parent[];
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export function ParentsList({ initialParents }: ParentsListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
@@ -68,8 +72,35 @@ export function ParentsList({ initialParents }: ParentsListProps) {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
   
+  // Search and Pagination
+  const [searchQuery, setSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
+
   const { data: liveParents, isLoading } = useMockCollection('parents');
   const parents = liveParents ?? initialParents;
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
+  // 1. Filter
+  const filteredParentsList = useMemo(() => {
+    if (!parents) return [];
+    return parents.filter(p => 
+        p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        p.phone.includes(searchQuery)
+    );
+  }, [parents, searchQuery]);
+
+  // 2. Paginate
+  const paginatedParents = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredParentsList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredParentsList, currentPage]);
+
+  const totalPages = Math.ceil(filteredParentsList.length / ITEMS_PER_PAGE);
+
 
   const handleEdit = (parent: Parent) => {
     setSelectedParent(parent);
@@ -169,6 +200,17 @@ export function ParentsList({ initialParents }: ParentsListProps) {
             </Dialog>
         </div>
       </div>
+
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input 
+            placeholder="Buscar por nome, e-mail ou telefone..." 
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+        />
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Lista de Responsáveis</CardTitle>
@@ -194,8 +236,8 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                     </TableCell>
                   </TableRow>
                 )}
-                {!isLoading && parents && parents.length > 0 ? (
-                  parents.map((parent) => (
+                {!isLoading && paginatedParents && paginatedParents.length > 0 ? (
+                  paginatedParents.map((parent) => (
                     <TableRow key={parent.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -243,7 +285,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                   !isLoading && (
                     <TableRow>
                       <TableCell colSpan={5} className="text-center h-24">
-                        Nenhum responsável cadastrado.
+                        {searchQuery ? "Nenhum responsável encontrado." : "Nenhum responsável cadastrado."}
                       </TableCell>
                     </TableRow>
                   )
@@ -254,9 +296,9 @@ export function ParentsList({ initialParents }: ParentsListProps) {
           {/* Mobile View */}
           <div className="md:hidden">
             {isLoading && <p className="text-center py-10">Carregando...</p>}
-            {!isLoading && parents && parents.length > 0 ? (
+            {!isLoading && paginatedParents && paginatedParents.length > 0 ? (
               <div className="space-y-4">
-                {parents.map((parent) => (
+                {paginatedParents.map((parent) => (
                   <Card key={parent.id} className="overflow-hidden">
                     <div className="p-4">
                         <div className="flex items-center justify-between">
@@ -300,9 +342,17 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                 ))}
               </div>
             ) : (
-              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum responsável cadastrado.</p>
+              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum responsável encontrado.</p>
             )}
           </div>
+
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredParentsList.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
         </CardContent>
       </Card>
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>

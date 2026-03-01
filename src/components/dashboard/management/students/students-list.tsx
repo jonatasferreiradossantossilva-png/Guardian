@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Search } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -37,6 +37,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { PaginationControls } from "@/components/ui/pagination-controls";
 
 
 type Student = {
@@ -64,6 +66,8 @@ interface StudentsListProps {
   initialParents: Parent[];
 }
 
+const ITEMS_PER_PAGE = 10;
+
 export function StudentsList({ initialStudents, initialSchools, initialParents }: StudentsListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
@@ -71,6 +75,10 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
+  
+  // Search and Pagination State
+  const [searchQuery, setSearchSearchQuery] = useState("");
+  const [currentPage, setCurrentPage] = useState(1);
 
   // Use live data from hooks for reactivity, falling back to initial data.
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
@@ -82,6 +90,11 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
   const parents = liveParents ?? initialParents;
   const isLoading = areStudentsLoading || areSchoolsLoading || areParentsLoading;
   
+  // Reset page when search changes
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchQuery]);
+
   // Memoized maps for quick lookups
   const schoolsMap = useMemo(() => {
     if (!schools) return new Map();
@@ -92,6 +105,24 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
     if (!parents) return new Map();
     return new Map(parents.map(p => [p.id, p.name]));
   }, [parents]);
+
+  // 1. Filter
+  const filteredStudentsList = useMemo(() => {
+    if (!students) return [];
+    return students.filter(s => 
+        s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        schoolsMap.get(s.schoolId)?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        parentsMap.get(s.parentId)?.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  }, [students, searchQuery, schoolsMap, parentsMap]);
+
+  // 2. Paginate
+  const paginatedStudents = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredStudentsList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredStudentsList, currentPage]);
+
+  const totalPages = Math.ceil(filteredStudentsList.length / ITEMS_PER_PAGE);
 
 
   const handleEdit = (student: Student) => {
@@ -121,18 +152,13 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
     setSelectedStudent(null);
   };
 
-  const formatAddress = (student: Student) => {
-    if (!student.street) return 'N/A';
-    return `${student.street}, ${student.number} - ${student.city}, ${student.state}`;
-  }
-  
   const formatSerieTurma = (student: Student) => {
       return [student.serie, student.turma].filter(Boolean).join(' / ') || 'N/A';
   }
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
           Gerenciamento de Alunos
         </h1>
@@ -141,7 +167,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                 <Button onClick={() => {
                     setSelectedStudent(null);
                     setIsFormOpen(true);
-                }}>
+                }} className="w-full md:w-auto">
                   <PlusCircle className="mr-2 h-4 w-4" />
                   Adicionar Aluno
                 </Button>
@@ -154,6 +180,17 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
             />
         </Dialog>
       </div>
+
+      <div className="relative mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+        <Input 
+            placeholder="Buscar por nome do aluno, escola ou responsável..." 
+            className="pl-10"
+            value={searchQuery}
+            onChange={(e) => setSearchSearchQuery(e.target.value)}
+        />
+      </div>
+
       <Card>
         <CardHeader>
           <CardTitle>Lista de Alunos</CardTitle>
@@ -182,8 +219,8 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                     </TableCell>
                   </TableRow>
                 )}
-                {!isLoading && students && students.length > 0 ? (
-                  students.map((student) => (
+                {!isLoading && paginatedStudents && paginatedStudents.length > 0 ? (
+                  paginatedStudents.map((student) => (
                     <TableRow key={student.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -215,7 +252,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                   !isLoading && (
                     <TableRow>
                       <TableCell colSpan={8} className="text-center h-24">
-                        Nenhum aluno cadastrado.
+                        {searchQuery ? "Nenhum aluno encontrado para sua busca." : "Nenhum aluno cadastrado."}
                       </TableCell>
                     </TableRow>
                   )
@@ -226,9 +263,9 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
           {/* Mobile View */}
            <div className="md:hidden">
             {isLoading && <p className="text-center py-10">Carregando...</p>}
-            {!isLoading && students && students.length > 0 ? (
+            {!isLoading && paginatedStudents && paginatedStudents.length > 0 ? (
               <div className="space-y-4">
-                {students.map((student) => (
+                {paginatedStudents.map((student) => (
                   <Card key={student.id} className="overflow-hidden">
                     <div className="p-4">
                         <div className="flex items-start justify-between">
@@ -277,9 +314,17 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                 ))}
               </div>
             ) : (
-              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum aluno cadastrado.</p>
+              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum aluno encontrado.</p>
             )}
           </div>
+
+          <PaginationControls
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            totalItems={filteredStudentsList.length}
+            itemsPerPage={ITEMS_PER_PAGE}
+          />
         </CardContent>
       </Card>
 

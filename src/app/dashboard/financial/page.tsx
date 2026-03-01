@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -39,6 +39,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { ExpenseForm } from '@/components/dashboard/financial/expense-form';
 import { generateMonthlyInvoices } from '@/ai/flows/generate-monthly-invoices';
+import { PaginationControls } from '@/components/ui/pagination-controls';
 
 type Invoice = {
   id: string;
@@ -57,6 +58,8 @@ type Expense = {
   date: string;
   category: 'Combustível' | 'Manutenção' | 'Salários' | 'Impostos' | 'Outros';
 }
+
+const ITEMS_PER_PAGE = 10;
 
 const statusVariantMap: Record<Invoice['status'], 'secondary' | 'default' | 'destructive' | 'outline'> = {
   pending: 'secondary',
@@ -149,6 +152,8 @@ function RevenuesTab() {
   const [isReminderAlertOpen, setIsReminderAlertOpen] = useState(false);
   const [reminders, setReminders] = useState<{ parentName: string; studentName: string }[]>([]);
 
+  // State for pagination
+  const [currentPage, setCurrentPage] = useState(1);
 
   // State for filters
   const [selectedStudentId, setSelectedStudentId] = useState<string>('all');
@@ -161,6 +166,11 @@ function RevenuesTab() {
 
   const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
   const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
+
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedStudentId, selectedMonth, selectedStatus]);
 
   const availableMonths = useMemo(() => {
     if (!invoices) return [];
@@ -205,7 +215,7 @@ function RevenuesTab() {
       }, JSON.parse(JSON.stringify(initialStats)));
   }, [filteredInvoicesForSummary]);
 
-  const finalInvoiceList = useMemo(() => {
+  const finalFilteredList = useMemo(() => {
       let list = filteredInvoicesForSummary || [];
       if (selectedStatus !== 'all') {
         list = list.filter(inv => inv.status === selectedStatus);
@@ -224,6 +234,14 @@ function RevenuesTab() {
         return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
       });
   }, [filteredInvoicesForSummary, selectedStatus]);
+
+  // Apply pagination to the filtered/sorted list
+  const paginatedInvoices = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return finalFilteredList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [finalFilteredList, currentPage]);
+
+  const totalPages = Math.ceil(finalFilteredList.length / ITEMS_PER_PAGE);
 
 
   const handleGenerateInvoices = async () => {
@@ -403,7 +421,7 @@ function RevenuesTab() {
             </CardHeader>
             <CardContent>
                 {isLoading && <div className="text-center p-8">Carregando faturas...</div>}
-                {!isLoading && finalInvoiceList.length > 0 ? (
+                {!isLoading && paginatedInvoices.length > 0 ? (
                     <>
                         <div className="hidden md:block">
                             <Table>
@@ -419,7 +437,7 @@ function RevenuesTab() {
                                 </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                {finalInvoiceList.map((invoice) => (
+                                {paginatedInvoices.map((invoice) => (
                                     <TableRow key={invoice.id}>
                                         <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
                                         <TableCell>{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</TableCell>
@@ -461,7 +479,7 @@ function RevenuesTab() {
                             </Table>
                         </div>
                         <div className="md:hidden space-y-4">
-                            {finalInvoiceList.map((invoice) => (
+                            {paginatedInvoices.map((invoice) => (
                                 <Card key={invoice.id} className="p-4">
                                     <div className="flex justify-between items-start">
                                         <div>
@@ -515,6 +533,13 @@ function RevenuesTab() {
                                 </Card>
                             ))}
                         </div>
+                        <PaginationControls
+                            currentPage={currentPage}
+                            totalPages={totalPages}
+                            onPageChange={setCurrentPage}
+                            totalItems={finalFilteredList.length}
+                            itemsPerPage={ITEMS_PER_PAGE}
+                        />
                     </>
                 ) : (
                     !isLoading && <div className="h-24 text-center content-center text-muted-foreground">Nenhuma fatura encontrada para os filtros selecionados.</div>
@@ -556,9 +581,15 @@ function ExpensesTab() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
+  // State for pagination & filters
+  const [currentPage, setCurrentPage] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
 
   const { data: expenses, isLoading } = useMockCollection('expenses');
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [selectedMonth]);
 
   const availableMonths = useMemo(() => {
     if (!expenses) return [];
@@ -569,7 +600,7 @@ function ExpensesTab() {
     return Array.from(months).sort().reverse();
   }, [expenses]);
 
-  const filteredExpenses = useMemo(() => {
+  const filteredExpensesList = useMemo(() => {
     if (!expenses) return [];
     let filtered = expenses;
     if (selectedMonth !== 'all') {
@@ -578,7 +609,15 @@ function ExpensesTab() {
     return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
   }, [expenses, selectedMonth]);
 
-  const totalSpent = useMemo(() => filteredExpenses.reduce((acc, exp) => acc + exp.amount, 0), [filteredExpenses]);
+  const totalSpent = useMemo(() => filteredExpensesList.reduce((acc, exp) => acc + exp.amount, 0), [filteredExpensesList]);
+
+  // Paginated View
+  const paginatedExpenses = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    return filteredExpensesList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [filteredExpensesList, currentPage]);
+
+  const totalPages = Math.ceil(filteredExpensesList.length / ITEMS_PER_PAGE);
 
   const handleEdit = (expense: Expense) => {
     setSelectedExpense(expense);
@@ -652,7 +691,7 @@ function ExpensesTab() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">R$ {totalSpent.toFixed(2).replace('.',',')}</div>
-                    <p className="text-xs text-muted-foreground">{filteredExpenses.length} lançamento(s) no período</p>
+                    <p className="text-xs text-muted-foreground">{filteredExpensesList.length} lançamento(s) no período</p>
                 </CardContent>
             </Card>
         </div>
@@ -664,7 +703,7 @@ function ExpensesTab() {
             </CardHeader>
             <CardContent>
                  {isLoading && <div className="text-center p-8">Carregando despesas...</div>}
-                    {!isLoading && filteredExpenses.length > 0 ? (
+                    {!isLoading && paginatedExpenses.length > 0 ? (
                         <>
                             <div className="hidden md:block">
                                 <Table>
@@ -678,7 +717,7 @@ function ExpensesTab() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                    {filteredExpenses.map((expense) => (
+                                    {paginatedExpenses.map((expense) => (
                                         <TableRow key={expense.id}>
                                             <TableCell>{expense.date.split('-').reverse().join('/')}</TableCell>
                                             <TableCell className="font-medium">{expense.description}</TableCell>
@@ -700,7 +739,7 @@ function ExpensesTab() {
                                 </Table>
                             </div>
                             <div className="md:hidden space-y-4">
-                                {filteredExpenses.map((expense) => (
+                                {paginatedExpenses.map((expense) => (
                                     <Card key={expense.id} className="p-4">
                                         <div className="flex justify-between items-start">
                                             <p className="font-medium pr-4">{expense.description}</p>
@@ -721,6 +760,13 @@ function ExpensesTab() {
                                     </Card>
                                 ))}
                             </div>
+                            <PaginationControls
+                                currentPage={currentPage}
+                                totalPages={totalPages}
+                                onPageChange={setCurrentPage}
+                                totalItems={filteredExpensesList.length}
+                                itemsPerPage={ITEMS_PER_PAGE}
+                            />
                         </>
                     ) : (
                          !isLoading && <div className="h-24 text-center content-center text-muted-foreground">Nenhuma despesa encontrada para os filtros selecionados.</div>
