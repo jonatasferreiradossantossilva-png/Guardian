@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Shield, Car, Users, ClipboardCheck } from "lucide-react";
 import { useAuth, initiateAnonymousSignIn } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -41,7 +41,12 @@ export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [isMounted, setIsMounted] = useState(false);
   const auth = useAuth();
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -85,6 +90,18 @@ export function LoginForm() {
       default:
         router.push("/dashboard");
     }
+  }
+
+  if (!isMounted) {
+    return (
+      <Card className="w-full max-w-sm border-secondary shadow-lg shadow-primary/10">
+        <CardHeader className="h-8" />
+        <CardContent className="h-64 flex items-center justify-center">
+          <Loader2 className="animate-spin h-8 w-8 text-primary/20" />
+        </CardContent>
+        <CardFooter className="h-8" />
+      </Card>
+    );
   }
 
   return (
