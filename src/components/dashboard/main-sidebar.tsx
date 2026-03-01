@@ -1,3 +1,4 @@
+
 "use client";
 
 import Link from "next/link";
@@ -32,6 +33,7 @@ import {
   Milestone,
   BarChart3,
   UserPlus,
+  Megaphone,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -62,6 +64,7 @@ const registrationLinks = [
   },
   { href: "/dashboard/management/predefined-messages", label: "Mensagens Predefinidas", icon: MessageCircle },
   { href: "/dashboard/management/contract-templates", label: "Modelos de Contrato", icon: FileText },
+  { href: "/dashboard/management/announcements", label: "Mural de Avisos", icon: Megaphone },
 ];
 
 

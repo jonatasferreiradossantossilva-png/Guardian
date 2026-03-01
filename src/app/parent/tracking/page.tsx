@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect, useCallback } from "react";
@@ -10,7 +11,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight, Sparkles, BellRing } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight, Sparkles, BellRing, Megaphone } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -245,7 +246,13 @@ export default function ParentTrackingPage() {
   const { data: displayLocation, isLoading: isLocationLoading } = useMockNestedDoc(route?.driverId ? `locations/${route.driverId}`: null);
   
   const { data: school } = useMockDoc('schools', student?.schoolId);
+  const { data: announcements } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
   
+  const latestAnnouncement = useMemo(() => {
+      if (!announcements || announcements.length === 0) return null;
+      return announcements.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+  }, [announcements]);
+
   // --- Smart Proximity Alert Logic (Zero Cost) ---
   useEffect(() => {
     if (!student || !displayLocation) return;
@@ -379,6 +386,26 @@ export default function ParentTrackingPage() {
         journeyDirection === 'ida' ? "bg-background" : "bg-orange-50/10 dark:bg-orange-950/10"
     )}>
       <div className="max-w-4xl mx-auto">
+        
+        {/* Mural de Avisos Shortcut */}
+        {latestAnnouncement && (
+            <Link href="/parent/mural" className="block mb-4">
+                <div className={cn(
+                    "p-3 rounded-lg flex items-center justify-between gap-3 border-2 animate-in fade-in slide-in-from-top-4 duration-500",
+                    latestAnnouncement.priority === 'high' ? "bg-destructive/10 border-destructive text-destructive" : "bg-primary/10 border-primary/20 text-primary"
+                )}>
+                    <div className="flex items-center gap-3 overflow-hidden">
+                        <Megaphone className="h-5 w-5 shrink-0" />
+                        <div className="min-w-0">
+                            <p className="font-bold text-sm truncate">{latestAnnouncement.title}</p>
+                            <p className="text-xs opacity-80 truncate">{latestAnnouncement.content}</p>
+                        </div>
+                    </div>
+                    <ChevronRight className="h-4 w-4 shrink-0" />
+                </div>
+            </Link>
+        )}
+
         <div className="flex justify-end items-center mb-6">
           <div className="flex items-center gap-2">
             <Link href="/" passHref>

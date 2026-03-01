@@ -255,7 +255,7 @@ export const initialMockData = {
         { id: "pm-3", text: "Pagamento recebido, obrigado.", for: "gestor" }
     ],
     authorized_pickups: [
-        { id: "auth-1", studentId: "student-1", parentUserId: "user-pai-1", name: "Avó Maria", cpf: "999.888.777-66", phone: "11911112222" }
+        { id: "auth-1", studentId: "student-1", parentUserId: "user-pai-1", name: "Avó Maria", cpf: "999.888.777-66", phone: "11911112222", photoUrl: "https://picsum.photos/seed/avo-maria/200/200" }
     ],
     trip_requests: [
         {
@@ -303,6 +303,16 @@ export const initialMockData = {
                 cpf: "123.456.789-01",
                 rg: "12.345.678-0"
             }
+        }
+    ],
+    announcements: [
+        {
+            id: "ann-1",
+            title: "Manutenção Preventiva - Van 01",
+            content: "Prezados pais, informamos que a Van 01 passará por manutenção amanhã. O trajeto será realizado pela Van Reserva 05 (Sprinter Branca). Os horários permanecem os mesmos.",
+            createdAt: new Date().toISOString(),
+            priority: "high",
+            target: "all"
         }
     ]
 };

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,13 +23,16 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
+import { Camera, Loader2, User } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   cpf: z.string().min(11, { message: 'O CPF é obrigatório.' }),
   phone: z.string().optional(),
+  photoUrl: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -43,6 +47,8 @@ interface AuthorizedPersonFormProps {
 export function AuthorizedPersonForm({ person, studentId, parentUserId, onFormSubmit }: AuthorizedPersonFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isUploading, setIsUploading] = useState(false);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -50,6 +56,7 @@ export function AuthorizedPersonForm({ person, studentId, parentUserId, onFormSu
       name: '',
       cpf: '',
       phone: '',
+      photoUrl: '',
     },
   });
 
@@ -59,11 +66,26 @@ export function AuthorizedPersonForm({ person, studentId, parentUserId, onFormSu
         name: person.name || '',
         cpf: person.cpf || '',
         phone: person.phone || '',
+        photoUrl: person.photoUrl || '',
       });
     } else {
       form.reset(form.defaultValues);
     }
   }, [person, form]);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        form.setValue('photoUrl', reader.result as string);
+        setIsUploading(false);
+        toast({ title: "Foto capturada!", description: "A identificação visual foi salva." });
+    };
+    reader.readAsDataURL(file);
+  };
 
   const onSubmit = (data: FormValues) => {
     if (person) {
@@ -82,16 +104,40 @@ export function AuthorizedPersonForm({ person, studentId, parentUserId, onFormSu
     onFormSubmit();
   };
 
+  const currentPhoto = form.watch('photoUrl');
+
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
         <DialogTitle>{person ? 'Editar Pessoa Autorizada' : 'Adicionar Pessoa Autorizada'}</DialogTitle>
         <DialogDescription>
-          Preencha as informações da pessoa de confiança.
+          Para maior segurança, inclua uma foto da pessoa que irá retirar o aluno.
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
+          
+          <div className="flex flex-col items-center gap-4 py-2">
+            <div className="relative group">
+                <Avatar className="h-24 w-24 border-2 border-primary/20">
+                    <AvatarImage src={currentPhoto} style={{ objectFit: 'cover' }} />
+                    <AvatarFallback className="bg-secondary text-primary"><User className="h-10 w-10" /></AvatarFallback>
+                </Avatar>
+                <button 
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                    <Camera className="text-white h-6 w-6" />
+                </button>
+            </div>
+            <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                {isUploading ? <Loader2 className="animate-spin mr-2 h-4 w-4"/> : <Camera className="mr-2 h-4 w-4" />}
+                {currentPhoto ? 'Trocar Foto de Identificação' : 'Tirar Foto do Autorizado'}
+            </Button>
+            <input type="file" accept="image/*" capture="environment" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
+          </div>
+
           <FormField
             control={form.control}
             name="name"

@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo } from 'react';
@@ -19,7 +20,8 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { useMockCollection } from '@/hooks/use-mock-data';
-import { Loader2, UserX } from 'lucide-react';
+import { Loader2, UserX, ShieldCheck } from 'lucide-react';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface AuthorizedContactsModalProps {
   studentId: string;
@@ -44,50 +46,50 @@ export function AuthorizedContactsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-lg">
+      <DialogContent className="sm:max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Pessoas Autorizadas para Retirada</DialogTitle>
+          <DialogTitle className="flex items-center gap-2">
+            <ShieldCheck className="text-primary" />
+            Identificação Visual para Retirada
+          </DialogTitle>
           <DialogDescription>
-            Contatos de confiança autorizados para retirar {studentName}.
+            Confirme o rosto da pessoa autorizada antes de liberar {studentName}.
           </DialogDescription>
         </DialogHeader>
-        <div className="my-4 min-h-[150px]">
+        <div className="my-4 min-h-[200px]">
           {isLoading ? (
             <div className="flex items-center justify-center h-full">
               <Loader2 className="animate-spin text-primary" />
             </div>
           ) : studentAuthorizedContacts.length > 0 ? (
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Nome</TableHead>
-                  <TableHead>CPF</TableHead>
-                  <TableHead>Telefone</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {studentAuthorizedContacts.map((person) => (
-                  <TableRow key={person.id}>
-                    <TableCell>{person.name}</TableCell>
-                    <TableCell>{person.cpf}</TableCell>
-                    <TableCell>{person.phone || 'N/A'}</TableCell>
-                  </TableRow>
+                    <div key={person.id} className="flex items-center gap-4 p-4 rounded-lg border bg-secondary/20">
+                        <Avatar className="h-20 w-24 w-20 rounded-lg">
+                            <AvatarImage src={person.photoUrl} style={{ objectFit: 'cover' }} />
+                            <AvatarFallback className="rounded-lg">IMG</AvatarFallback>
+                        </Avatar>
+                        <div className="flex-1 min-w-0">
+                            <p className="font-bold text-base truncate">{person.name}</p>
+                            <p className="text-xs text-muted-foreground">CPF: {person.cpf}</p>
+                            <p className="text-xs text-muted-foreground mt-1">Tel: {person.phone || 'N/A'}</p>
+                        </div>
+                    </div>
                 ))}
-              </TableBody>
-            </Table>
+            </div>
           ) : (
-            <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full p-6 border rounded-md">
-              <UserX className="h-10 w-10 mb-2" />
-              <p className="font-semibold">Nenhum contato autorizado</p>
+            <div className="flex flex-col items-center justify-center text-center text-muted-foreground h-full p-10 border-2 border-dashed rounded-md">
+              <UserX className="h-12 w-12 mb-4 opacity-20" />
+              <p className="font-semibold text-lg">Sem identificação por foto</p>
               <p className="text-sm">
-                Apenas o responsável principal pode retirar este aluno.
+                Apenas o responsável principal possui autorização no sistema.
               </p>
             </div>
           )}
         </div>
         <DialogFooter>
-          <Button onClick={onClose} variant="outline">
-            Fechar
+          <Button onClick={onClose} variant="outline" className="w-full sm:w-auto">
+            Entendido, fechar
           </Button>
         </DialogFooter>
       </DialogContent>
