@@ -11,7 +11,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight, Sparkles, BellRing, Megaphone } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight, Sparkles, BellRing, Megaphone, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -493,6 +493,12 @@ export default function ParentTrackingPage() {
                             )}>
                                 {journeyStatusLabel}
                             </h3>
+                            {!isAbsent && (
+                                <p className="text-[10px] text-muted-foreground mt-1 flex items-center justify-center gap-1">
+                                    <CheckCircle className="h-3 w-3 text-green-500" />
+                                    Presença confirmada automaticamente. Avise apenas se o aluno faltar.
+                                </p>
+                            )}
                         </div>
 
                         {!isAbsent && <JourneyTimeline status={studentStatus} direction={journeyDirection} />}
@@ -515,7 +521,7 @@ export default function ParentTrackingPage() {
                                     onClick={() => setIsAbsenceDialogOpen(true)}
                                     disabled={student.active === false || (studentStatus !== 'aguardando' && journeyDirection === 'ida')}
                                 >
-                                    <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência
+                                    <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje
                                 </Button>
                             </div>
                         )}
@@ -659,9 +665,12 @@ export default function ParentTrackingPage() {
       <AlertDialog open={isAbsenceDialogOpen} onOpenChange={setIsAbsenceDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Comunicar Ausência</AlertDialogTitle>
+            <AlertDialogTitle className="flex items-center gap-2">
+                <Info className="h-5 w-5 text-primary" />
+                Informar Falta
+            </AlertDialogTitle>
             <AlertDialogDescription>
-              Selecione o período em que {student?.name} não utilizará o transporte hoje. Esta informação otimizará a rota do motorista.
+              A presença está confirmada por padrão. Utilize esta opção <strong>apenas se o aluno não for utilizar o transporte hoje</strong> para que o motorista possa otimizar o tempo da rota.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <div className="py-4">
@@ -681,9 +690,9 @@ export default function ParentTrackingPage() {
             </RadioGroup>
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Cancelar</AlertDialogCancel>
+            <AlertDialogCancel>Voltar (Aluno vai na Van)</AlertDialogCancel>
             <AlertDialogAction onClick={handleCommunicateAbsence} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Confirmar Ausência
+              Confirmar Falta
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
