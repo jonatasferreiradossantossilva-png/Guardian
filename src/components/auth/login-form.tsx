@@ -15,7 +15,6 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
 import { useState } from "react";
 import { Loader2, Shield, Car, Users, ClipboardCheck } from "lucide-react";
@@ -23,6 +22,7 @@ import { useAuth, initiateAnonymousSignIn } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { cn } from "@/lib/utils";
 
 const formSchema = z.object({
   email: z.string().optional(),
@@ -32,12 +32,11 @@ const formSchema = z.object({
   }),
 });
 
-// Map profiles to mock user IDs for this prototype
 const profileToMockIdMap = {
     'gestor': 'user-admin-1',
-    'motorista': 'user-motorista-4', // Juliano Castro, driver of the optimized route
-    'pai': 'user-pai-3', // Changed to Carla Dias for contract acceptance simulation
-    'monitor': 'user-monitor-1' // Default monitor for demo
+    'motorista': 'user-motorista-4',
+    'pai': 'user-pai-3',
+    'monitor': 'user-monitor-1'
 };
 
 export function LoginForm() {
@@ -57,13 +56,9 @@ export function LoginForm() {
     setIsLoading(true);
 
     const mockUserId = profileToMockIdMap[values.profile];
-
-    // For this prototype, we store the selected mock user ID in session storage
-    // to simulate a real user login for each role.
     sessionStorage.setItem('mockUserId', mockUserId);
 
     if (auth) {
-      // Non-blocking anonymous sign-in. The onAuthStateChanged listener will handle the rest.
       initiateAnonymousSignIn(auth);
     } else {
         console.error("Auth service not available");
@@ -76,7 +71,6 @@ export function LoginForm() {
         description: `Redirecionando para o painel de ${values.profile}.`
     });
 
-    // Redirect immediately. The protected pages will handle the auth state.
     switch (values.profile) {
       case "gestor":
         router.push("/dashboard");
@@ -111,30 +105,57 @@ export function LoginForm() {
                     <RadioGroup
                       onValueChange={field.onChange}
                       value={field.value}
-                      className="grid grid-cols-2 gap-4"
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-3"
                     >
-                      <div className="flex items-center space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                      <div 
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md border p-2.5 cursor-pointer hover:bg-accent/50 transition-colors",
+                          field.value === "gestor" ? "border-primary bg-primary/5" : "border-border"
+                        )}
+                        onClick={() => field.onChange("gestor")}
+                      >
                         <RadioGroupItem value="gestor" id="gestor" />
-                        <Label htmlFor="gestor" className="font-normal flex items-center gap-2 cursor-pointer flex-1">
-                          <Shield className="h-4 w-4"/> Gestor
+                        <Label htmlFor="gestor" className="font-normal flex items-center gap-1.5 cursor-pointer flex-1 text-xs sm:text-sm">
+                          <Shield className="h-4 w-4 shrink-0 text-primary"/> Gestor
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+
+                      <div 
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md border p-2.5 cursor-pointer hover:bg-accent/50 transition-colors",
+                          field.value === "motorista" ? "border-primary bg-primary/5" : "border-border"
+                        )}
+                        onClick={() => field.onChange("motorista")}
+                      >
                         <RadioGroupItem value="motorista" id="motorista" />
-                        <Label htmlFor="motorista" className="font-normal flex items-center gap-2 cursor-pointer flex-1">
-                          <Car className="h-4 w-4"/> Motorista
+                        <Label htmlFor="motorista" className="font-normal flex items-center gap-1.5 cursor-pointer flex-1 text-xs sm:text-sm">
+                          <Car className="h-4 w-4 shrink-0 text-primary"/> Motorista
                         </Label>
                       </div>
-                      <div className="flex items-center space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+
+                      <div 
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md border p-2.5 cursor-pointer hover:bg-accent/50 transition-colors",
+                          field.value === "pai" ? "border-primary bg-primary/5" : "border-border"
+                        )}
+                        onClick={() => field.onChange("pai")}
+                      >
                         <RadioGroupItem value="pai" id="pai" />
-                        <Label htmlFor="pai" className="font-normal flex items-center gap-2 cursor-pointer flex-1">
-                          <Users className="h-4 w-4"/> Pais
+                        <Label htmlFor="pai" className="font-normal flex items-center gap-1.5 cursor-pointer flex-1 text-xs sm:text-sm">
+                          <Users className="h-4 w-4 shrink-0 text-primary"/> Pais
                         </Label>
                       </div>
-                       <div className="flex items-center space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+
+                      <div 
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md border p-2.5 cursor-pointer hover:bg-accent/50 transition-colors",
+                          field.value === "monitor" ? "border-primary bg-primary/5" : "border-border"
+                        )}
+                        onClick={() => field.onChange("monitor")}
+                      >
                         <RadioGroupItem value="monitor" id="monitor" />
-                        <Label htmlFor="monitor" className="font-normal flex items-center gap-2 cursor-pointer flex-1">
-                           <ClipboardCheck className="h-4 w-4"/> Monitor
+                        <Label htmlFor="monitor" className="font-normal flex items-center gap-1.5 cursor-pointer flex-1 text-xs sm:text-sm">
+                           <ClipboardCheck className="h-4 w-4 shrink-0 text-primary"/> Monitor
                         </Label>
                       </div>
                     </RadioGroup>
