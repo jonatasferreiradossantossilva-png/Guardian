@@ -26,6 +26,8 @@ import {
   Gauge,
   HeartPulse,
   MapPinned,
+  TrendingDown,
+  ExternalLink,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -35,7 +37,7 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 max-w-screen-2xl items-center justify-between">
+        <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4">
           <Link href="/login" className="flex items-center gap-2 font-bold">
             <Rocket className="h-6 w-6 text-primary" />
             <span>Guardian</span>
@@ -50,12 +52,6 @@ export default function LandingPage() {
             <Button variant="ghost" asChild>
               <Link href="#diferenciais">Diferenciais</Link>
             </Button>
-             <Button variant="ghost" asChild>
-              <Link href="#analise">Análise</Link>
-            </Button>
-             <Button variant="ghost" asChild>
-              <Link href="#mercado">Mercado</Link>
-            </Button>
             <Button asChild>
               <Link href="/">Entrar</Link>
             </Button>
@@ -69,7 +65,7 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="w-full py-20 md:py-32 lg:py-40 bg-secondary/50">
-          <div className="container mx-auto text-center">
+          <div className="container mx-auto text-center px-4">
             <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
               A jornada do seu filho, <span className="text-primary">protegida e otimizada.</span>
             </h1>
@@ -78,7 +74,7 @@ export default function LandingPage() {
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>
-                <Link href="#cta">Agendar uma Demonstração</Link>
+                <Link href="/">Agendar uma Demonstração</Link>
               </Button>
               <Button size="lg" variant="outline" asChild>
                 <Link href="/presentation">Ver Pitch Deck</Link>
@@ -89,7 +85,7 @@ export default function LandingPage() {
 
         {/* The Problem Section */}
         <section id="problema" className="w-full py-20 md:py-28">
-            <div className="container mx-auto">
+            <div className="container mx-auto px-4">
                 <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Sua Operação Está Vazando Dinheiro e Segurança</h2>
                 <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg">
                     Troque o "achismo" por dados reais. Nós monitoramos cada quilômetro e cada alerta de saúde para garantir uma operação lucrativa e segura.
@@ -117,9 +113,65 @@ export default function LandingPage() {
             </div>
         </section>
 
+        {/* Comparison Section (The Differentiator) */}
+        <section className="w-full py-20 bg-primary/5">
+            <div className="container mx-auto px-4">
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div>
+                        <Badge className="mb-4">Diferencial de Mercado</Badge>
+                        <h2 className="text-3xl font-bold mb-6">Por que o Guardian é único?</h2>
+                        <div className="space-y-6">
+                            <div className="flex gap-4">
+                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><TrendingDown className="text-primary"/></div>
+                                <div>
+                                    <h4 className="font-bold">Prova de Lucratividade</h4>
+                                    <p className="text-sm text-muted-foreground">Enquanto outros apps são apenas custo, nós mostramos o ROI através do comparativo KM Planejado vs. KM Real.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><Sparkles className="text-primary"/></div>
+                                <div>
+                                    <h4 className="font-bold">Onboarding Expresso com IA</h4>
+                                    <p className="text-sm text-muted-foreground">Cadastre um novo aluno em 2 minutos via foto de documento. Menos burocracia, mais vendas.</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-4">
+                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><ShieldCheck className="text-primary"/></div>
+                                <div>
+                                    <h4 className="font-bold">Segurança de Camada Militar</h4>
+                                    <p className="text-sm text-muted-foreground">Geocodificação automática e invisível que garante que a van nunca se perca ou siga para o lugar errado.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <Card className="border-primary/20 shadow-2xl overflow-hidden">
+                        <CardHeader className="bg-secondary/50">
+                            <CardTitle className="text-lg">Dashboard de Performance</CardTitle>
+                            <CardDescription>Visualização real do motorista Juliano Castro</CardDescription>
+                        </CardHeader>
+                        <CardContent className="p-6 space-y-6">
+                            <div className="flex items-center justify-between border-b pb-4">
+                                <div>
+                                    <p className="text-2xl font-bold text-green-500">-14.2%</p>
+                                    <p className="text-xs text-muted-foreground">Economia de Combustível</p>
+                                </div>
+                                <div className="text-right">
+                                    <p className="text-2xl font-bold text-primary">94.5%</p>
+                                    <p className="text-xs text-muted-foreground">Adesão à Rota</p>
+                                </div>
+                            </div>
+                            <div className="bg-muted rounded-md h-32 flex items-center justify-center italic text-xs text-muted-foreground text-center px-8">
+                                "A IA detectou desvio recorrente na Rua Augusta. Sugestão: Alterar ordem de coleta para evitar obras."
+                            </div>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
+        </section>
+
         {/* Features Section */}
-        <section id="features" className="w-full py-20 md:py-28 bg-secondary/50">
-          <div className="container mx-auto">
+        <section id="features" className="w-full py-20 md:py-28">
+          <div className="container mx-auto px-4">
             <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">
               Inteligência Completa em Todas as Pontas
             </h2>
@@ -132,7 +184,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden border">
-                     <Image src="https://picsum.photos/seed/analytics-ui/600/400" alt="Dashboard ROI" fill objectFit="cover" data-ai-hint="dashboard data" />
+                     <Image src="https://picsum.photos/seed/analytics-ui/600/400" alt="Dashboard ROI" fill style={{ objectFit: 'cover' }} data-ai-hint="dashboard data" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Activity} title="Analytics Planejado vs. Real" description="Veja exatamente onde sua van economizou (ou desperdiçou) quilometragem em relação ao planejado pela IA." />
@@ -150,7 +202,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                   <div className="relative aspect-video rounded-md overflow-hidden border">
-                     <Image src="https://picsum.photos/seed/crew-app/600/400" alt="App Equipe" fill objectFit="cover" data-ai-hint="mobile app interface" />
+                     <Image src="https://picsum.photos/seed/crew-app/600/400" alt="App Equipe" fill style={{ objectFit: 'cover' }} data-ai-hint="mobile app interface" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={HeartPulse} title="Alertas Médicos no Embarque" description="Identificação visual imediata de alunos com alergias ou necessidades especiais durante o check-in." />
@@ -168,7 +220,7 @@ export default function LandingPage() {
                 </CardHeader>
                 <CardContent className="flex flex-col flex-1 justify-between space-y-4">
                    <div className="relative aspect-video rounded-md overflow-hidden border">
-                     <Image src="https://picsum.photos/seed/parent-app/600/400" alt="App Pais" fill objectFit="cover" data-ai-hint="tracking app" />
+                     <Image src="https://picsum.photos/seed/parent-app/600/400" alt="App Pais" fill style={{ objectFit: 'cover' }} data-ai-hint="tracking app" />
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Map} title="Tracking de Alta Precisão" description="Acompanhe a van no mapa com atualizações fluidas e previsão de chegada inteligente." />
@@ -181,39 +233,9 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Differentiators Section */}
-        <section id="diferenciais" className="w-full py-20 md:py-28">
-          <div className="container mx-auto">
-            <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Por que somos diferentes?</h2>
-            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-3">
-                <div className="flex flex-col items-center text-center p-6 bg-secondary/30 rounded-lg border">
-                     <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
-                        <Activity className="h-8 w-8" />
-                    </div>
-                    <h3 className="mt-4 text-xl font-semibold">Foco no Custo/KM</h3>
-                    <p className="mt-2 text-muted-foreground">Única plataforma que confronta o planejado com o real, gerando insights diretos de economia de combustível para o dono da frota.</p>
-                </div>
-                <div className="flex flex-col items-center text-center p-6 bg-secondary/30 rounded-lg border">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
-                        <Gauge className="h-8 w-8" />
-                    </div>
-                    <h3 className="mt-4 text-xl font-semibold">Telemetria de Frota</h3>
-                    <p className="mt-2 text-muted-foreground">Manutenção preditiva integrada. O sistema avisa quando a van precisa parar, protegendo seu maior patrimônio.</p>
-                </div>
-                <div className="flex flex-col items-center text-center p-6 bg-secondary/30 rounded-lg border">
-                    <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20">
-                        <MapPinned className="h-8 w-8" />
-                    </div>
-                    <h3 className="mt-4 text-xl font-semibold">Cadastro Inteligente</h3>
-                    <p className="mt-2 text-muted-foreground">Geocodificação invisível e automática. Sem erros de endereço, sem rotas quebradas. A IA cuida dos dados para você.</p>
-                </div>
-            </div>
-          </div>
-        </section>
-
         {/* CTA Section */}
         <section id="cta" className="w-full py-20 md:py-28 bg-primary/5">
-            <div className="container mx-auto text-center">
+            <div className="container mx-auto text-center px-4">
                  <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">Leve sua frota para a era dos dados</h2>
                  <p className="mt-4 max-w-xl mx-auto text-muted-foreground md:text-lg mb-8">
                     Agende uma demonstração e veja como a nossa inteligência operacional pode transformar seus custos em lucro.
@@ -229,7 +251,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t">
+      <footer className="w-full border-t px-4">
         <div className="container mx-auto py-6 flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground gap-4">
           <p>&copy; {new Date().getFullYear()} Guardian. Todos os direitos reservados.</p>
           <div className="flex items-center gap-2">
@@ -243,7 +265,7 @@ export default function LandingPage() {
 }
 
 const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-  <div className="flex items-start gap-4">
+  <div className="flex items-start gap-4 text-left">
     <Icon className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
     <div>
         <h4 className="font-semibold text-foreground">{title}</h4>
