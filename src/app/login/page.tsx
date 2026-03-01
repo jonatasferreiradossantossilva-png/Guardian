@@ -1,6 +1,6 @@
-
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
 import {
   CheckCircle,
   Users,
@@ -188,7 +188,7 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Activity} title="Analytics Planejado vs. Real" description="Veja exatamente onde sua van economizou (ou desperdiçou) quilometragem em relação ao planejado pela IA." />
-                    <FeatureItem icon={Gauge} title="Telemetria de Manutenção" description="Monitoramento automático do odômetro para revisões preventivas baseadas no uso real, não em datas fixas." />
+                    <FeatureItem icon={Gauge} title="Telemetria de Manutenção" description="Monitoramento automático do odômetro para revisões preventivas baseadas no uso real, não em das fixas." />
                     <FeatureItem icon={DollarSign} title="Faturamento Automatizado" description="Geração de faturas e lembretes inteligentes via WhatsApp com base na presença confirmada no app." />
                   </div>
                 </CardContent>
