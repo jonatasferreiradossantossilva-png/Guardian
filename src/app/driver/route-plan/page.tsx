@@ -538,18 +538,25 @@ export default function DriverRoutePlanPage() {
   const { data: vehicle } = useMockDoc('vehicles', driverProfile?.vehicleId);
 
   // --- Real-time Movement & Odometer Simulation ---
+  // FIXED: Optimized simulation effect using a ref to prevent unnecessary interval resets and loops
+  const locRef = useRef(driverLocation);
+  useEffect(() => { locRef.current = driverLocation; }, [driverLocation]);
+
   useEffect(() => {
-    if (driverProfile?.status !== 'em_rota' || !driverId || !driverLocation || !vehicle) return;
+    if (driverProfile?.status !== 'em_rota' || !driverId || !vehicle) return;
 
     const interval = setInterval(() => {
+        const currentLoc = locRef.current;
+        if (!currentLoc) return;
+
         // Simula uma pequena variação de posição para o pai ver movimento
         const jitterLat = (Math.random() - 0.5) * 0.0004; 
         const jitterLng = (Math.random() - 0.5) * 0.0004;
         
         // 1. Atualizar Localização
         setDoc(`locations/${driverId}`, {
-            latitude: driverLocation.latitude + jitterLat,
-            longitude: driverLocation.longitude + jitterLng,
+            latitude: currentLoc.latitude + jitterLat,
+            longitude: currentLoc.longitude + jitterLng,
             timestamp: new Date().toISOString()
         });
 
@@ -562,7 +569,7 @@ export default function DriverRoutePlanPage() {
     }, 10000); 
 
     return () => clearInterval(interval);
-  }, [driverProfile?.status, driverId, driverLocation, vehicle, setDoc, updateDoc]);
+  }, [driverProfile?.status, driverId, vehicle?.id, setDoc, updateDoc]);
 
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection(
@@ -877,7 +884,7 @@ export default function DriverRoutePlanPage() {
             } else {
                 updateDoc('routes', route.id, { 
                     studentIds: optimizedStops.map(s => s.id), 
-                    direction: direction,
+                    direction: direction, 
                     plannedDistanceKm: optimization.estimatedDistanceKm
                 });
             }

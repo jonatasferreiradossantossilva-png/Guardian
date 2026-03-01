@@ -1,5 +1,4 @@
 
-
 // @ts-nocheck
 'use client';
 
@@ -41,8 +40,8 @@ export function MockDataProvider({ children }) {
             return doc[field] === value;
           }
           if (op === 'in') {
-            // Ensure value is an array before calling .includes
-            return Array.isArray(value) && value.includes(doc.id);
+            // FIXED: Now correctly uses the field parameter instead of hardcoded doc.id
+            return Array.isArray(value) && value.includes(doc[field]);
           }
           return true;
         });
@@ -190,4 +189,3 @@ export const deleteDocumentNonBlocking = (docRef) => {
 export const setDocumentNonBlocking = (docRef, data) => {
     // This is a placeholder for API compatibility.
 };
-

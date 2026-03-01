@@ -30,9 +30,18 @@ export default function PerformancePage() {
     // Agrupar por data
     const grouped = history.reduce((acc, trip) => {
         const date = trip.date;
-        if (!acc[date]) acc[date] = { day: date.split('-').reverse().slice(0,2).reverse().join('/'), planejado: 0, real: 0 };
-        acc[date].planejado += trip.plannedKm;
-        acc[date].real += trip.actualKm;
+        if (!date) return acc; // Defensive check
+
+        // FIXED: Safe date parsing to avoid crash if format is unexpected
+        const dateParts = date.split('-');
+        let displayDay = date;
+        if (dateParts.length >= 2) {
+            displayDay = `${dateParts[dateParts.length - 1]}/${dateParts[dateParts.length - 2]}`;
+        }
+
+        if (!acc[date]) acc[date] = { day: displayDay, planejado: 0, real: 0 };
+        acc[date].planejado += Number(trip.plannedKm || 0);
+        acc[date].real += Number(trip.actualKm || 0);
         return acc;
     }, {} as Record<string, any>);
 
@@ -43,9 +52,10 @@ export default function PerformancePage() {
   const driverPerformance = useMemo(() => {
     if (!history) return [];
     const drivers = history.reduce((acc, trip) => {
-        if (!acc[trip.driverName]) acc[trip.driverName] = { name: trip.driverName, savings: 0, count: 0, score: 0 };
-        acc[trip.driverName].savings += trip.savingsKm;
-        acc[trip.driverName].count += 1;
+        const driverName = trip.driverName || 'Desconhecido';
+        if (!acc[driverName]) acc[driverName] = { name: driverName, savings: 0, count: 0, score: 0 };
+        acc[driverName].savings += Number(trip.savingsKm || 0);
+        acc[driverName].count += 1;
         return acc;
     }, {} as Record<string, any>);
 
@@ -53,7 +63,7 @@ export default function PerformancePage() {
         .map(d => ({
             ...d,
             score: Math.min(100, 80 + (d.savings / d.count) * 5),
-            savingsPct: ((d.savings / (d.savings + 50)) * 100).toFixed(0) + '%',
+            savingsPct: ((d.savings / (d.savings + 50 + 0.001)) * 100).toFixed(0) + '%',
             status: d.score > 90 ? 'Excelente' : d.score > 80 ? 'Bom' : 'Média'
         }))
         .sort((a,b) => b.savings - a.savings);
@@ -61,10 +71,10 @@ export default function PerformancePage() {
 
   const stats = useMemo(() => {
       if (!history) return { totalFuelSaved: 0, totalKmSaved: 0, efficiency: 0 };
-      const fuel = history.reduce((sum, t) => sum + t.fuelSaved, 0);
-      const km = history.reduce((sum, t) => sum + t.savingsKm, 0);
-      const totalReal = history.reduce((sum, t) => sum + t.actualKm, 0);
-      const efficiency = totalReal > 0 ? (km / (totalReal + km)) * 100 : 0;
+      const fuel = history.reduce((sum, t) => sum + Number(t.fuelSaved || 0), 0);
+      const km = history.reduce((sum, t) => sum + Number(t.savingsKm || 0), 0);
+      const totalReal = history.reduce((sum, t) => sum + Number(t.actualKm || 0), 0);
+      const efficiency = (totalReal + km) > 0 ? (km / (totalReal + km)) * 100 : 0;
       return { totalFuelSaved: fuel, totalKmSaved: km, efficiency };
   }, [history]);
 
