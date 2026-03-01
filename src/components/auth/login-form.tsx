@@ -22,6 +22,7 @@ import { Loader2, Shield, Car, Users, ClipboardCheck } from "lucide-react";
 import { useAuth, initiateAnonymousSignIn } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
 
 const formSchema = z.object({
   email: z.string().optional(),
@@ -109,41 +110,33 @@ export function LoginForm() {
                   <FormControl>
                     <RadioGroup
                       onValueChange={field.onChange}
-                      defaultValue={field.value}
+                      value={field.value}
                       className="grid grid-cols-2 gap-4"
                     >
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="gestor" />
-                        </FormControl>
-                        <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
-                          <Shield/> Gestor
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="motorista" />
-                        </FormControl>
-                        <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
-                          <Car/> Motorista
-                        </FormLabel>
-                      </FormItem>
-                      <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="pai" />
-                        </FormControl>
-                        <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
-                          <Users/> Pais
-                        </FormLabel>
-                      </FormItem>
-                       <FormItem className="flex items-center space-x-3 space-y-0">
-                        <FormControl>
-                          <RadioGroupItem value="monitor" />
-                        </FormControl>
-                        <FormLabel className="font-normal flex items-center gap-2 cursor-pointer">
-                           <ClipboardCheck/> Monitor
-                        </FormLabel>
-                      </FormItem>
+                      <div className="flex items-center space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <RadioGroupItem value="gestor" id="gestor" />
+                        <Label htmlFor="gestor" className="font-normal flex items-center gap-2 cursor-pointer flex-1">
+                          <Shield className="h-4 w-4"/> Gestor
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <RadioGroupItem value="motorista" id="motorista" />
+                        <Label htmlFor="motorista" className="font-normal flex items-center gap-2 cursor-pointer flex-1">
+                          <Car className="h-4 w-4"/> Motorista
+                        </Label>
+                      </div>
+                      <div className="flex items-center space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <RadioGroupItem value="pai" id="pai" />
+                        <Label htmlFor="pai" className="font-normal flex items-center gap-2 cursor-pointer flex-1">
+                          <Users className="h-4 w-4"/> Pais
+                        </Label>
+                      </div>
+                       <div className="flex items-center space-x-3 rounded-md border p-3 cursor-pointer hover:bg-accent/50 transition-colors has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
+                        <RadioGroupItem value="monitor" id="monitor" />
+                        <Label htmlFor="monitor" className="font-normal flex items-center gap-2 cursor-pointer flex-1">
+                           <ClipboardCheck className="h-4 w-4"/> Monitor
+                        </Label>
+                      </div>
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />
