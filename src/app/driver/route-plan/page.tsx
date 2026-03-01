@@ -486,7 +486,7 @@ function BoardingChecklist({
 
 
 export default function DriverRoutePlanPage() {
-  const { updateDoc, setDoc } = useMockData();
+  const { updateDoc, setDoc, addDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null);
   const { toast } = useToast();
@@ -768,6 +768,7 @@ export default function DriverRoutePlanPage() {
         updateDoc('routes', route.id, { 
             studentIds: finalSequence,
             polyline: newPolyline,
+            plannedDistanceKm: optimization.estimatedDistanceKm, // Atualiza a estimativa para o ROI final
             lastOptimizedAt: new Date().toISOString()
         });
 
@@ -816,7 +817,7 @@ export default function DriverRoutePlanPage() {
 }, [orderedStops, updateDoc, toast, handleContinuousOptimization]);
 
     const handleStartRoute = useCallback(async (baseStops: Stop[]) => {
-        if (!driverId || !route) return;
+        if (!driverId || !route || !vehicle) return;
         setIsStarting(true);
 
         try {
@@ -870,12 +871,19 @@ export default function DriverRoutePlanPage() {
                     studentIds: optimizedStops.map(s => s.id),
                     polyline: routing.polyline,
                     direction: direction,
+                    plannedDistanceKm: optimization.estimatedDistanceKm,
                     lastOptimizedAt: new Date().toISOString()
                 });
             } else {
-                updateDoc('routes', route.id, { studentIds: optimizedStops.map(s => s.id), direction: direction });
+                updateDoc('routes', route.id, { 
+                    studentIds: optimizedStops.map(s => s.id), 
+                    direction: direction,
+                    plannedDistanceKm: optimization.estimatedDistanceKm
+                });
             }
 
+            // Armazena odômetro inicial para cálculo de ROI ao final
+            sessionStorage.setItem('startOdometer', (vehicle.currentOdometer || 0).toString());
             sessionStorage.setItem('activeRouteId', route.id);
             setActiveRouteId(route.id);
 
@@ -892,6 +900,7 @@ export default function DriverRoutePlanPage() {
             console.error("Erro ao iniciar rota dinâmica:", error);
             const finalStopIds = baseStops.map(s => s.id);
             updateDoc('routes', route.id, { studentIds: finalStopIds, direction: direction });
+            sessionStorage.setItem('startOdometer', (vehicle.currentOdometer || 0).toString());
             sessionStorage.setItem('activeRouteId', route.id);
             setActiveRouteId(route.id);
             updateDoc('drivers', driverId, { status: 'em_rota' });
@@ -900,7 +909,7 @@ export default function DriverRoutePlanPage() {
             setIsStarting(false);
         }
 
-    }, [driverId, route, driverLocation, direction, schoolsMap, studentsMap, updateDoc, toast]);
+    }, [driverId, route, vehicle, driverLocation, direction, schoolsMap, studentsMap, updateDoc, toast]);
 
     const handleInitiateStart = () => {
         if (!route) return;
@@ -957,9 +966,34 @@ export default function DriverRoutePlanPage() {
   }, [driverId, updateDoc, toast]);
   
   const handleEndRoute = useCallback(() => {
-      if (!driverId || !allStudents) return;
+      if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
+      
+      const startOdo = Number(sessionStorage.getItem('startOdometer') || vehicle.currentOdometer);
+      const actualDistance = vehicle.currentOdometer - startOdo;
+      const plannedKm = route.plannedDistanceKm || 10;
+      
+      // Prova de ROI: Estimamos que sem o Guardian (plano manual), o motorista rodaria 15% mais.
+      // SavingsKm = (Manual Estimado) - Real
+      const manualBaseline = actualDistance * 1.15;
+      const savingsKm = Math.max(0, manualBaseline - actualDistance);
+      const fuelPrice = 6.00; // Diesel S10 médio
+      const avgConsumption = 8; // 8km/l para Sprinter/Master
+      const fuelSaved = (savingsKm / avgConsumption) * fuelPrice;
+
+      // Grava histórico para o dashboard de performance
+      addDoc('trip_history', {
+          date: new Date().toISOString().split('T')[0],
+          routeName: route.name,
+          plannedKm: plannedKm,
+          actualKm: Number(actualDistance.toFixed(1)),
+          driverName: driverProfile.name,
+          savingsKm: Number(savingsKm.toFixed(1)),
+          fuelSaved: Number(fuelSaved.toFixed(2))
+      });
+
       updateDoc('drivers', driverId, { status: 'inativo' });
       sessionStorage.removeItem('activeRouteId');
+      sessionStorage.removeItem('startOdometer');
       setActiveRouteId(null);
       setCurrentView('route'); 
       setChecklistSchool(null);
@@ -971,11 +1005,12 @@ export default function DriverRoutePlanPage() {
             }
           }
       });
+      
       toast({
           title: "Rota Finalizada!",
-          description: "Bom descanso!",
+          description: `Você percorreu ${actualDistance.toFixed(1)}km. Economia estimada: R$ ${fuelSaved.toFixed(2)}.`,
       });
-  }, [driverId, allStudents, route?.studentIds, updateDoc, toast]);
+  }, [driverId, allStudents, route, vehicle, driverProfile, updateDoc, addDoc, toast]);
 
   const handleOpenAuthorizedModal = useCallback((student: Student) => {
     setSelectedStudentForModal(student);

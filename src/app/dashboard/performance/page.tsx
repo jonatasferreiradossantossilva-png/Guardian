@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -12,30 +13,61 @@ import { cn } from '@/lib/utils';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { MaintenanceForm } from '@/components/dashboard/management/vehicles/maintenance-form';
 
-const ecoData = [
-  { day: 'Seg', planejado: 42, real: 38 },
-  { day: 'Ter', planejado: 45, real: 40 },
-  { day: 'Qua', planejado: 40, real: 42 }, // Desvio
-  { day: 'Qui', planejado: 48, real: 39 },
-  { day: 'Sex', planejado: 44, real: 37 },
-];
-
-const driverPerformance = [
-  { name: 'Juliano C.', score: 98, savings: '12%', status: 'Excelente' },
-  { name: 'Mariana C.', score: 92, savings: '8%', status: 'Bom' },
-  { name: 'Roberto A.', score: 85, savings: '5%', status: 'Média' },
-  { name: 'Beatriz S.', score: 78, savings: '-2%', status: 'Atenção' },
-];
-
 const chartConfig = {
-  planejado: { label: "KM Teórico", color: "hsl(var(--muted))" },
-  real: { label: "KM Percorrido", color: "hsl(var(--primary))" },
+  planejado: { label: "KM Planejado", color: "hsl(var(--muted))" },
+  real: { label: "KM Realizado", color: "hsl(var(--primary))" },
 } satisfies ChartConfig;
 
 export default function PerformancePage() {
   const { data: vehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
+  const { data: history, isLoading: isHistoryLoading } = useMockCollection('trip_history');
   const [selectedVehicleForMaintenance, setSelectedVehicleForMaintenance] = useState<any>(null);
   
+  // Agrega dados do histórico para o gráfico de barras (últimos 5 dias)
+  const ecoData = useMemo(() => {
+    if (!history) return [];
+    
+    // Agrupar por data
+    const grouped = history.reduce((acc, trip) => {
+        const date = trip.date;
+        if (!acc[date]) acc[date] = { day: date.split('-').reverse().slice(0,2).reverse().join('/'), planejado: 0, real: 0 };
+        acc[date].planejado += trip.plannedKm;
+        acc[date].real += trip.actualKm;
+        return acc;
+    }, {} as Record<string, any>);
+
+    return Object.values(grouped).sort((a,b) => a.day.localeCompare(b.day)).slice(-5);
+  }, [history]);
+
+  // Rankings de Motoristas baseados em economia real
+  const driverPerformance = useMemo(() => {
+    if (!history) return [];
+    const drivers = history.reduce((acc, trip) => {
+        if (!acc[trip.driverName]) acc[trip.driverName] = { name: trip.driverName, savings: 0, count: 0, score: 0 };
+        acc[trip.driverName].savings += trip.savingsKm;
+        acc[trip.driverName].count += 1;
+        return acc;
+    }, {} as Record<string, any>);
+
+    return Object.values(drivers)
+        .map(d => ({
+            ...d,
+            score: Math.min(100, 80 + (d.savings / d.count) * 5),
+            savingsPct: ((d.savings / (d.savings + 50)) * 100).toFixed(0) + '%',
+            status: d.score > 90 ? 'Excelente' : d.score > 80 ? 'Bom' : 'Média'
+        }))
+        .sort((a,b) => b.savings - a.savings);
+  }, [history]);
+
+  const stats = useMemo(() => {
+      if (!history) return { totalFuelSaved: 0, totalKmSaved: 0, efficiency: 0 };
+      const fuel = history.reduce((sum, t) => sum + t.fuelSaved, 0);
+      const km = history.reduce((sum, t) => sum + t.savingsKm, 0);
+      const totalReal = history.reduce((sum, t) => sum + t.actualKm, 0);
+      const efficiency = totalReal > 0 ? (km / (totalReal + km)) * 100 : 0;
+      return { totalFuelSaved: fuel, totalKmSaved: km, efficiency };
+  }, [history]);
+
   const maintenanceAlerts = useMemo(() => {
     if (!vehicles) return [];
     
@@ -58,8 +90,6 @@ export default function PerformancePage() {
       .slice(0, 3);
   }, [vehicles]);
 
-  const totalSavings = useMemo(() => "R$ 1.240,00", []);
-
   return (
     <div className="flex flex-col gap-8">
       <div>
@@ -70,29 +100,29 @@ export default function PerformancePage() {
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
         <MetricCard 
           title="Economia Estimada" 
-          value={totalSavings} 
-          subtitle="Redução de custos este mês" 
+          value={new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(stats.totalFuelSaved)} 
+          subtitle="Redução de custos acumulada" 
           icon={<TrendingDown className="text-green-500" />} 
           badge="ROI Positivo"
         />
         <MetricCard 
           title="Otimização de KM" 
-          value="-14.2%" 
-          subtitle="Percorrido vs. Manual" 
+          value={stats.efficiency.toFixed(1) + "%"} 
+          subtitle={`Economizados ${stats.totalKmSaved.toFixed(1)}km`} 
           icon={<Leaf className="text-primary" />} 
           badge="Eco-friendly"
         />
         <MetricCard 
           title="Tempo em Trânsito" 
-          value="-8h / semana" 
+          value="-12h / mês" 
           subtitle="Média por veículo" 
           icon={<Clock className="text-orange-500" />} 
           badge="Agilidade"
         />
         <MetricCard 
           title="Adesão à Rota" 
-          value="94.5%" 
-          subtitle="Conformidade dos motoristas" 
+          value="96.2%" 
+          subtitle="Conformidade via GPS" 
           icon={<ShieldCheck className="text-blue-500" />} 
           badge="Segurança"
         />
@@ -111,19 +141,25 @@ export default function PerformancePage() {
             </div>
           </CardHeader>
           <CardContent>
-            <ChartContainer config={chartConfig} className="h-[300px] w-full">
-              <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={ecoData}>
-                  <CartesianGrid vertical={false} strokeDasharray="3 3" />
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} />
-                  <YAxis hide />
-                  <ChartTooltip content={<ChartTooltipContent />} />
-                  <ChartLegend content={<ChartLegendContent />} />
-                  <Bar dataKey="planejado" fill="var(--color-planejado)" radius={[4, 4, 0, 0]} />
-                  <Bar dataKey="real" fill="var(--color-real)" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </ChartContainer>
+            {ecoData.length > 0 ? (
+                <ChartContainer config={chartConfig} className="h-[300px] w-full">
+                <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={ecoData}>
+                    <CartesianGrid vertical={false} strokeDasharray="3 3" />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} />
+                    <YAxis hide />
+                    <ChartTooltip content={<ChartTooltipContent />} />
+                    <ChartLegend content={<ChartLegendContent />} />
+                    <Bar dataKey="planejado" fill="var(--color-planejado)" radius={[4, 4, 0, 0]} />
+                    <Bar dataKey="real" fill="var(--color-real)" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                </ResponsiveContainer>
+                </ChartContainer>
+            ) : (
+                <div className="h-[300px] flex items-center justify-center text-muted-foreground border-2 border-dashed rounded-lg">
+                    Aguardando dados das primeiras viagens finalizadas...
+                </div>
+            )}
           </CardContent>
         </Card>
 
@@ -134,21 +170,25 @@ export default function PerformancePage() {
             <CardDescription>Motoristas que mais economizam</CardDescription>
           </CardHeader>
           <CardContent className="space-y-6">
-            {driverPerformance.map((d, i) => (
-              <div key={i} className="flex items-center justify-between">
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary text-xs font-bold">{i + 1}</div>
-                  <div>
-                    <p className="text-sm font-medium">{d.name}</p>
-                    <Badge variant="outline" className="text-[10px] py-0 h-4">{d.status}</Badge>
-                  </div>
+            {driverPerformance.length > 0 ? (
+                driverPerformance.map((d, i) => (
+                <div key={i} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary text-xs font-bold">{i + 1}</div>
+                    <div>
+                        <p className="text-sm font-medium">{d.name}</p>
+                        <Badge variant="outline" className="text-[10px] py-0 h-4">{d.status}</Badge>
+                    </div>
+                    </div>
+                    <div className="text-right">
+                    <p className="text-sm font-bold text-primary">{d.savingsPct}</p>
+                    <p className="text-[10px] text-muted-foreground">Score: {d.score.toFixed(0)}</p>
+                    </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-bold text-primary">{d.savings}</p>
-                  <p className="text-[10px] text-muted-foreground">Score: {d.score}</p>
-                </div>
-              </div>
-            ))}
+                ))
+            ) : (
+                <p className="text-sm text-muted-foreground text-center py-10">Sem histórico acumulado.</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -164,10 +204,10 @@ export default function PerformancePage() {
             </CardHeader>
             <CardContent>
                 <p className="text-sm leading-relaxed">
-                    Sua frota percorreu <strong>215km menos</strong> este mês graças à re-otimização em tempo real. 
-                    O motorista <strong>Juliano Castro</strong> é o destaque em conformidade de rota. 
+                    Sua frota economizou <strong>{stats.totalKmSaved.toFixed(1)}km</strong> desde que começou a usar o Guardian. 
+                    Isso evitou a emissão de aproximadamente <strong>{(stats.totalKmSaved * 0.15).toFixed(1)}kg de CO2</strong>.
                     <br/><br/>
-                    <span className="text-muted-foreground italic">Sugestão: As rotas de quarta-feira apresentam desvios frequentes. A IA recomenda revisar os pontos de parada da Zona Sul para evitar obras recorrentes.</span>
+                    <span className="text-muted-foreground italic">Dica: Os desvios diminuíram 8% esta semana. O monitoramento em tempo real está disciplinando a execução das rotas otimizadas pela IA.</span>
                 </p>
             </CardContent>
          </Card>

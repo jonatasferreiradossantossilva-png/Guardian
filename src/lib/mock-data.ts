@@ -199,6 +199,7 @@ export const initialMockData = {
             shift: "Manhã",
             studentIds: ["student-1", "student-2", "school-1", "student-3", "school-2"],
             lastOptimizedAt: "2024-08-05T08:00:00Z",
+            plannedDistanceKm: 12.5,
             polyline: ""
         }
     ],
@@ -313,6 +314,38 @@ export const initialMockData = {
             createdAt: new Date().toISOString(),
             priority: "high",
             target: "all"
+        }
+    ],
+    trip_history: [
+        {
+            id: "hist-1",
+            date: "2024-08-01",
+            routeName: "Rota Centro - Manhã",
+            plannedKm: 12.5,
+            actualKm: 11.2,
+            driverName: "Juliano Castro",
+            savingsKm: 3.2, // Estimado comparado ao plano "burro" manual
+            fuelSaved: 19.20
+        },
+        {
+            id: "hist-2",
+            date: "2024-08-02",
+            routeName: "Rota Centro - Manhã",
+            plannedKm: 12.5,
+            actualKm: 11.8,
+            driverName: "Juliano Castro",
+            savingsKm: 2.6,
+            fuelSaved: 15.60
+        },
+        {
+            id: "hist-3",
+            date: "2024-08-03",
+            routeName: "Rota Centro - Manhã",
+            plannedKm: 12.5,
+            actualKm: 10.9,
+            driverName: "Juliano Castro",
+            savingsKm: 3.5,
+            fuelSaved: 21.00
         }
     ]
 };
