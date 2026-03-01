@@ -263,85 +263,102 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
             </Table>
           </div>
           {/* Mobile View */}
-          <div className="md:hidden">
-            {isLoading && <p className="text-center py-10">Carregando...</p>}
+          <div className="md:hidden space-y-4">
+            {isLoading && <div className="flex justify-center py-10"><Clock className="animate-spin" /></div>}
             {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
-              <div className="space-y-4">
-                {sortedRequests.map((request) => {
-                  const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
-                  const parentInfo = parentDataMap.get(request.parentUserId);
-                  const parentName = parentInfo?.name || 'Responsável não encontrado';
-                  const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
-                   return (
-                      <Card key={request.id} className="overflow-hidden">
-                        <div className="p-4">
-                            <div className="flex items-start justify-between">
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                    <AvatarImage src={`https://picsum.photos/seed/student-${request.studentId}/100/100`} />
-                                    <AvatarFallback>{(studentName || '?')[0]}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                <p className="font-medium">{studentName}</p>
-                                <p className="text-xs text-muted-foreground">{parentName}</p>
-                                </div>
-                            </div>
-                            </div>
-                            <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                            <div className="col-span-2">
-                                <p className="text-muted-foreground text-xs">Tipo</p>
-                                <p className="font-medium">{typeMap[request.type]}</p>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground text-xs">Data</p>
-                                <p className="font-medium">{request.date.split('-').reverse().join('/')}</p>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground text-xs">Status</p>
-                                <Badge variant={statusVariantMap[request.status]} className="capitalize mt-1">{statusTextMap[request.status]}</Badge>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground text-xs">Escola</p>
-                                <p className="font-medium">{schoolName}</p>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground text-xs">Valor</p>
-                                <p className="font-medium">{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</p>
-                            </div>
-                            </div>
+              sortedRequests.map((request) => {
+                const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
+                const parentInfo = parentDataMap.get(request.parentUserId);
+                const parentName = parentInfo?.name || 'Responsável não encontrado';
+                const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
+
+                return (
+                  <Card key={request.id} className="overflow-hidden">
+                    <CardHeader className="pb-2">
+                      <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                          <Avatar className="h-10 w-10">
+                            <AvatarImage src={`https://picsum.photos/seed/student-${request.studentId}/100/100`} />
+                            <AvatarFallback>{(studentName || '?')[0]}</AvatarFallback>
+                          </Avatar>
+                          <div>
+                            <CardTitle className="text-base">{studentName}</CardTitle>
+                            <CardDescription className="text-xs">{parentName}</CardDescription>
+                          </div>
                         </div>
-                        {request.status === 'pendente' && (
-                             <CardFooter className="p-2 bg-secondary/50 border-t flex flex-col gap-2">
-                                <Button size="sm" className="w-full" onClick={() => setPriceDialogRequest(request)}>
-                                    <DollarSign className="mr-2 h-4 w-4" /> Atribuir Valor
-                                </Button>
-                                <div className="flex gap-2 w-full">
-                                    <Button size="sm" variant="outline" className="w-full" onClick={() => handleStatusChange(request.id, 'aprovada')}>
-                                        <Check className="mr-2 h-4 w-4" /> Aprovar
-                                    </Button>
-                                    <Button size="sm" variant="destructive" className="w-full" onClick={() => handleStatusChange(request.id, 'rejeitada')}>
-                                        <X className="mr-2 h-4 w-4" /> Rejeitar
-                                    </Button>
-                                </div>
-                            </CardFooter>
+                        <Badge variant={statusVariantMap[request.status]} className="text-[10px]">
+                          {statusTextMap[request.status]}
+                        </Badge>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="pb-4 pt-2">
+                      <div className="grid grid-cols-2 gap-y-3 text-sm">
+                        <div className="col-span-2 flex items-center gap-2 text-muted-foreground">
+                          <School className="h-3 w-3" />
+                          <span>{schoolName}</span>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground">Data</p>
+                          <p>{request.date.split('-').reverse().join('/')}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground">Tipo</p>
+                          <p>{request.type === 'ida_e_volta' ? 'Ida/Volta' : request.type === 'ida' ? 'Só Ida' : 'Só Volta'}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground">Turno</p>
+                          <p className="capitalize">{request.shift}</p>
+                        </div>
+                        <div>
+                          <p className="text-[10px] uppercase font-bold text-muted-foreground">Valor</p>
+                          <p className="font-bold text-primary">{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</p>
+                        </div>
+                        {request.reason && (
+                          <div className="col-span-2 p-2 bg-muted/50 rounded text-xs italic">
+                            "{request.reason}"
+                          </div>
                         )}
-                      </Card>
-                   )
-                })}
-              </div>
+                      </div>
+                    </CardContent>
+                    {(request.status === 'pendente' || request.status === 'aguardando_aprovacao_pai') && (
+                      <CardFooter className="p-2 bg-secondary/30 flex gap-2">
+                        {request.status === 'pendente' && (
+                          <>
+                            <Button size="sm" variant="outline" className="flex-1" onClick={() => setPriceDialogRequest(request)}>
+                              <DollarSign className="mr-1 h-3 w-3" /> Valor
+                            </Button>
+                            <Button size="sm" className="flex-1 bg-green-600 hover:bg-green-700" onClick={() => handleStatusChange(request.id, 'aprovada')}>
+                              <Check className="mr-1 h-3 w-3" /> Aprovar
+                            </Button>
+                            <Button size="sm" variant="destructive" className="flex-1" onClick={() => handleStatusChange(request.id, 'rejeitada')}>
+                              <X className="mr-1 h-3 w-3" />
+                            </Button>
+                          </>
+                        )}
+                        {request.status === 'aguardando_aprovacao_pai' && (
+                          <div className="w-full text-center py-1 text-xs text-muted-foreground italic flex items-center justify-center gap-2">
+                            <Clock className="h-3 w-3" /> Aguardando aceite do pai
+                          </div>
+                        )}
+                      </CardFooter>
+                    )}
+                  </Card>
+                )
+              })
             ) : (
-              !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma solicitação encontrada.</p>
+              !isLoading && <div className="text-center py-10 text-muted-foreground">Nenhuma solicitação pendente.</div>
             )}
           </div>
         </CardContent>
       </Card>
+      
       {/* Assign Price Dialog */}
       <Dialog open={!!priceDialogRequest} onOpenChange={() => setPriceDialogRequest(null)}>
-        <DialogContent>
+        <DialogContent className="sm:max-w-md">
             <DialogHeader>
-                <DialogTitle>Atribuir Valor à Viagem Avulsa</DialogTitle>
+                <DialogTitle>Atribuir Valor</DialogTitle>
                 <DialogDescription>
-                    Defina o custo para a solicitação de {studentsMap.get(priceDialogRequest?.studentId || '')} para o dia {priceDialogRequest?.date ? priceDialogRequest.date.split('-').reverse().join('/') : ''}. O responsável precisará aprovar este valor.
+                    Defina o custo para esta viagem extra.
                 </DialogDescription>
             </DialogHeader>
             <div className="py-4">
@@ -355,11 +372,11 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                     className="mt-2"
                 />
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2">
                 <DialogClose asChild>
-                    <Button type="button" variant="outline">Cancelar</Button>
+                    <Button type="button" variant="outline" className="flex-1">Cancelar</Button>
                 </DialogClose>
-                <Button type="button" onClick={handleSetPrice}>Salvar e Notificar Responsável</Button>
+                <Button type="button" onClick={handleSetPrice} className="flex-1">Salvar e Notificar</Button>
             </DialogFooter>
         </DialogContent>
       </Dialog>
