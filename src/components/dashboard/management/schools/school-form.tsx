@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -231,7 +230,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     (!selectedCity || !selectedUF) ? "opacity-30" : "text-primary opacity-100"
                 )}>
                     <Sparkles className="h-4 w-4" />
-                    Buscar Escola na Base Guardian (Custo Zero)
+                    Buscar Escola na Base Guardian
                 </Label>
                 <div className="flex gap-2">
                     <div className="relative flex-1">
