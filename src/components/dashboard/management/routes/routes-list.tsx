@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Sparkles, Users, AlertTriangle, Car, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Sparkles, Users, AlertTriangle, Car, Edit, Trash2, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -71,13 +71,13 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
 
+  const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedRoute, setSelectedRoute] = useState<Route | null>(null);
-  const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
-    setIsClient(true);
+    setMounted(true);
   }, []);
   
   const { data: liveRoutes, isLoading: areRoutesLoading } = useMockCollection('routes');
@@ -135,6 +135,14 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
   
   const getStudentCount = (studentIds: string[] = []) => {
       return studentIds.filter(id => id.startsWith('student-')).length;
+  }
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
@@ -202,7 +210,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                       <TableCell>
                           {route.lastOptimizedAt ? (
                               <span className="text-sm text-muted-foreground">
-                                  {isClient ? formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR }) : '...'}
+                                  {formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR })}
                               </span>
                           ) : (
                               <Badge variant="secondary">Não otimizada</Badge>
@@ -311,7 +319,3 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     </div>
   );
 }
-
-  
-
-    

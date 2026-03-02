@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -60,10 +60,15 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
   
+  const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedSchool, setSelectedSchool] = useState<School | null>(null);
   
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { data: liveSchools, isLoading } = useMockCollection('schools');
   const schools = liveSchools ?? initialSchools;
 
@@ -97,6 +102,14 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
   const formatAddress = (school: School) => {
     if (!school.street) return 'N/A';
     return `${school.street}, ${school.number} - ${school.city}, ${school.state}`;
+  }
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (
