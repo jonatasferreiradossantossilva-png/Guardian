@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -56,7 +55,7 @@ export default function PendingRegistrationsPage() {
         let longitude = 0;
         if (address.street && address.city) {
             try {
-                const fullAddress = `${address.street}, ${address.number || ''}, ${address.neighborhood || ''}, ${address.city} - ${address.state || ''}`;
+                const fullAddress = `${address.street}, ${address.number || ''}, ${address.complement || ''}, ${address.neighborhood || ''}, ${address.city} - ${address.state || ''}`;
                 const geoResult = await geocodeAddress({ address: fullAddress });
                 latitude = geoResult.latitude;
                 longitude = geoResult.longitude;
@@ -90,6 +89,8 @@ export default function PendingRegistrationsPage() {
             latitude,
             longitude,
             monthlyFee: Number(approvedMonthlyFee),
+            serie: reg.studentSerie,
+            turma: reg.studentTurma,
             active: true
         });
 
@@ -238,6 +239,7 @@ export default function PendingRegistrationsPage() {
                                 </p>
                                 <div className="space-y-3">
                                     <Detail label="Rua" value={`${selectedReg.address?.street}, ${selectedReg.address?.number}`} />
+                                    {selectedReg.address?.complement && <Detail label="Complemento" value={selectedReg.address.complement} />}
                                     <Detail label="Bairro/Cidade" value={`${selectedReg.address?.neighborhood} - ${selectedReg.address?.city}`} />
                                     <Detail label="CEP" value={selectedReg.address?.zipCode} />
                                 </div>
@@ -249,6 +251,10 @@ export default function PendingRegistrationsPage() {
                                 <div className="space-y-3">
                                     <Detail label="Nome" value={selectedReg.studentName} />
                                     <Detail label="Escola" value={schoolsMap.get(selectedReg.schoolId)} />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Detail label="Série" value={selectedReg.studentSerie} />
+                                        <Detail label="Turma" value={selectedReg.studentTurma} />
+                                    </div>
                                 </div>
                             </div>
 

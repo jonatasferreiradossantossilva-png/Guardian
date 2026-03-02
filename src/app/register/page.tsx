@@ -16,6 +16,24 @@ import Image from 'next/image';
 
 type Step = 'welcome' | 'scan' | 'confirm' | 'success';
 
+const SERIE_OPTIONS = [
+    "Berçário / Maternal",
+    "Pré I / Pré II",
+    "1º Ano Fundamental",
+    "2º Ano Fundamental",
+    "3º Ano Fundamental",
+    "4º Ano Fundamental",
+    "5º Ano Fundamental",
+    "6º Ano Fundamental",
+    "7º Ano Fundamental",
+    "8º Ano Fundamental",
+    "9º Ano Fundamental",
+    "1º Ano Médio",
+    "2º Ano Médio",
+    "3º Ano Médio",
+    "Outro"
+];
+
 export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -38,6 +56,7 @@ export default function PublicRegistrationPage() {
   const [zipCode, setZipCode] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');
+  const [complement, setComplement] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
@@ -117,6 +136,7 @@ export default function PublicRegistrationPage() {
             zipCode,
             street,
             number,
+            complement,
             neighborhood,
             city,
             state
@@ -297,19 +317,23 @@ export default function PublicRegistrationPage() {
                                     <Input placeholder="Ex: 123" value={number} onChange={e => setNumber(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
+                                    <Label>Complemento</Label>
+                                    <Input placeholder="Ex: Apto 42" value={complement} onChange={e => setComplement(e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
                                     <Label>Bairro</Label>
                                     <Input placeholder="Bairro" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
                                 </div>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Cidade</Label>
                                     <Input placeholder="Cidade" value={city} readOnly className="bg-muted/50" />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Estado (UF)</Label>
-                                    <Input placeholder="UF" value={state} readOnly className="bg-muted/50" />
-                                </div>
+                            </div>
+                            <div className="space-y-2">
+                                <Label>Estado (UF)</Label>
+                                <Input placeholder="UF" value={state} readOnly className="bg-muted/50" />
                             </div>
                         </div>
                     </div>
@@ -333,13 +357,18 @@ export default function PublicRegistrationPage() {
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Série/Ano</Label>
-                                    <Input placeholder="Ex: 5º Ano" value={studentSerie} onChange={e => setStudentSerie(e.target.value)} />
+                                    <Select onValueChange={setStudentSerie} value={studentSerie}>
+                                        <SelectTrigger><SelectValue placeholder="Selecione a série..." /></SelectTrigger>
+                                        <SelectContent>
+                                            {SERIE_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Turma/Sala</Label>
+                                    <Label>Turma/Sala (Opcional)</Label>
                                     <Input placeholder="Ex: Sala 102" value={studentTurma} onChange={e => setStudentTurma(e.target.value)} />
                                 </div>
                             </div>

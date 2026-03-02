@@ -37,6 +37,24 @@ import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Textarea } from '@/components/ui/textarea';
 
+const SERIE_OPTIONS = [
+    "Berçário / Maternal",
+    "Pré I / Pré II",
+    "1º Ano Fundamental",
+    "2º Ano Fundamental",
+    "3º Ano Fundamental",
+    "4º Ano Fundamental",
+    "5º Ano Fundamental",
+    "6º Ano Fundamental",
+    "7º Ano Fundamental",
+    "8º Ano Fundamental",
+    "9º Ano Fundamental",
+    "1º Ano Médio",
+    "2º Ano Médio",
+    "3º Ano Médio",
+    "Outro"
+];
+
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   latitude: z.coerce.number().optional(),
@@ -178,7 +196,7 @@ export function StudentForm({
 
         // Se tiver endereço mas não tiver GPS, busca agora de forma invisível
         if (data.street && data.city && (!finalLat || !finalLng)) {
-            const fullAddress = `${data.street}, ${data.number || ''}, ${data.neighborhood || ''}, ${data.city} - ${data.state || ''}`;
+            const fullAddress = `${data.street}, ${data.number || ''}, ${data.complement || ''}, ${data.neighborhood || ''}, ${data.city} - ${data.state || ''}`;
             try {
                 const geoResult = await geocodeAddress({ address: fullAddress });
                 finalLat = geoResult.latitude;
@@ -253,7 +271,14 @@ export function StudentForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Série/Ano</FormLabel>
-                  <FormControl><Input placeholder="Ex: 5º Ano Fundamental" {...field} /></FormControl>
+                  <Select onValueChange={field.onChange} value={field.value}>
+                    <FormControl>
+                      <SelectTrigger><SelectValue placeholder="Selecione a série..." /></SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                        {SERIE_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}
@@ -305,11 +330,17 @@ export function StudentForm({
                     )}
                 />
              </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
                  <FormField
                     control={form.control} name="number"
                     render={({ field }) => (
                         <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} /></FormControl><FormMessage /></FormItem>
+                    )}
+                />
+                 <FormField
+                    control={form.control} name="complement"
+                    render={({ field }) => (
+                        <FormItem><FormLabel>Complemento</FormLabel><FormControl><Input placeholder="Apto 4B" {...field} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
                  <FormField
