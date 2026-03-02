@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -32,12 +31,13 @@ export default function PublicRegistrationPage() {
   const [phone, setPhone] = useState('');
   const [studentName, setStudentName] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
+  const [studentSerie, setStudentSerie] = useState('');
+  const [studentTurma, setStudentTurma] = useState('');
   
   // Address states
   const [zipCode, setZipCode] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');
-  const [complement, setComplement] = useState('');
   const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
@@ -109,13 +109,14 @@ export default function PublicRegistrationPage() {
         phone,
         studentName,
         schoolId: selectedSchoolId,
+        studentSerie,
+        studentTurma,
         status: 'pending_approval',
         createdAt: new Date().toISOString(),
         address: {
             zipCode,
             street,
             number,
-            complement,
             neighborhood,
             city,
             state
@@ -296,18 +297,18 @@ export default function PublicRegistrationPage() {
                                     <Input placeholder="Ex: 123" value={number} onChange={e => setNumber(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Complemento</Label>
-                                    <Input placeholder="Apto, Bloco..." value={complement} onChange={e => setComplement(e.target.value)} />
+                                    <Label>Bairro</Label>
+                                    <Input placeholder="Bairro" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Bairro</Label>
-                                    <Input placeholder="Bairro" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
                                     <Label>Cidade</Label>
                                     <Input placeholder="Cidade" value={city} readOnly className="bg-muted/50" />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Estado (UF)</Label>
+                                    <Input placeholder="UF" value={state} readOnly className="bg-muted/50" />
                                 </div>
                             </div>
                         </div>
@@ -331,6 +332,16 @@ export default function PublicRegistrationPage() {
                                         {schools?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Série/Ano</Label>
+                                    <Input placeholder="Ex: 5º Ano" value={studentSerie} onChange={e => setStudentSerie(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Turma/Sala</Label>
+                                    <Input placeholder="Ex: Sala 102" value={studentTurma} onChange={e => setStudentTurma(e.target.value)} />
+                                </div>
                             </div>
                         </div>
                     </div>

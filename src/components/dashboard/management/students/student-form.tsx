@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -246,6 +245,31 @@ export function StudentForm({
               </FormItem>
             )}
           />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <FormField
+              control={form.control}
+              name="serie"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Série/Ano</FormLabel>
+                  <FormControl><Input placeholder="Ex: 5º Ano Fundamental" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="turma"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Turma/Sala</FormLabel>
+                  <FormControl><Input placeholder="Ex: Sala 102 - Turma B" {...field} /></FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
 
           <div className="border-t pt-4 mt-4">
              <div className="flex justify-between items-center mb-2">
