@@ -10,6 +10,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 
 type Step = 'welcome' | 'scan' | 'confirm' | 'success';
@@ -118,12 +119,12 @@ export default function PublicRegistrationPage() {
                     <p className="text-[10px] text-muted-foreground leading-tight">Seus dados estão protegidos por criptografia e serão usados exclusivamente para a formalização do contrato de transporte.</p>
                 </div>
             </CardContent>
-            <CardFooter>
+            <CardHeader>
               <Button className="w-full h-12 text-lg" onClick={() => setStep('scan')}>
                 Começar Cadastro
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </CardFooter>
+            </CardHeader>
           </Card>
         )}
 
