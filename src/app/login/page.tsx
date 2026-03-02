@@ -1,3 +1,4 @@
+
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -28,6 +29,8 @@ import {
   MapPinned,
   TrendingDown,
   ExternalLink,
+  Database,
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -70,7 +73,7 @@ export default function LandingPage() {
               A jornada do seu filho, <span className="text-primary">protegida e otimizada.</span>
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground md:text-xl">
-              Somos a primeira plataforma de inteligência operacional para transporte escolar que prova o ROI através de telemetria e IA. Reduza custos, aumente a segurança e tenha o controle total da sua frota.
+              A primeira plataforma de inteligência operacional com Big Data de escolas. Reduza custos, aumente a segurança e tenha o controle total da sua frota com setup instantâneo.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>
@@ -122,24 +125,24 @@ export default function LandingPage() {
                         <h2 className="text-3xl font-bold mb-6">Por que o Guardian é único?</h2>
                         <div className="space-y-6">
                             <div className="flex gap-4">
-                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><TrendingDown className="text-primary"/></div>
+                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><Database className="text-primary"/></div>
                                 <div>
-                                    <h4 className="font-bold">Prova de Lucratividade</h4>
-                                    <p className="text-sm text-muted-foreground">Enquanto outros apps são apenas custo, nós mostramos o ROI através do comparativo KM Planejado vs. KM Real.</p>
+                                    <h4 className="font-bold">Base Nacional de Escolas</h4>
+                                    <p className="text-sm text-muted-foreground">Possuímos uma base proprietária de escolas ativas. Cadastre instituições instantaneamente sem depender apenas de APIs pagas.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><Sparkles className="text-primary"/></div>
+                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><Zap className="text-primary"/></div>
                                 <div>
-                                    <h4 className="font-bold">Onboarding Expresso com IA</h4>
-                                    <p className="text-sm text-muted-foreground">Cadastre um novo aluno em 2 minutos via foto de documento. Menos burocracia, mais vendas.</p>
+                                    <h4 className="font-bold">Onboarding Expresso</h4>
+                                    <p className="text-sm text-muted-foreground">Cadastre novos alunos em 2 minutos via OCR de documentos e busca regionalizada inteligente. Menos burocracia, mais lucro.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
                                 <div className="bg-primary/10 p-3 rounded-lg h-fit"><ShieldCheck className="text-primary"/></div>
                                 <div>
-                                    <h4 className="font-bold">Segurança de Camada Militar</h4>
-                                    <p className="text-sm text-muted-foreground">Geocodificação automática e invisível que garante que a van nunca se perca ou siga para o lugar errado.</p>
+                                    <h4 className="font-bold">Soberania de Dados</h4>
+                                    <p className="text-sm text-muted-foreground">Geocodificação validada e GPS de alta precisão. Garantimos que a van nunca se perca ou siga para o portão errado.</p>
                                 </div>
                             </div>
                         </div>
@@ -147,7 +150,7 @@ export default function LandingPage() {
                     <Card className="border-primary/20 shadow-2xl overflow-hidden">
                         <CardHeader className="bg-secondary/50">
                             <CardTitle className="text-lg">Dashboard de Performance</CardTitle>
-                            <CardDescription>Visualização real do motorista Juliano Castro</CardDescription>
+                            <CardDescription>Visualização real da frota</CardDescription>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
                             <div className="flex items-center justify-between border-b pb-4">
@@ -187,9 +190,9 @@ export default function LandingPage() {
                      <Image src="https://picsum.photos/seed/analytics-ui/600/400" alt="Dashboard ROI" fill style={{ objectFit: 'cover' }} data-ai-hint="dashboard data" />
                   </div>
                   <div className="space-y-4 pt-4">
-                    <FeatureItem icon={Activity} title="Analytics Planejado vs. Real" description="Veja exatamente onde sua van economizou (ou desperdiçou) quilometragem em relação ao planejado pela IA." />
-                    <FeatureItem icon={Gauge} title="Telemetria de Manutenção" description="Monitoramento automático do odômetro para revisões preventivas baseadas no uso real, não em das fixas." />
-                    <FeatureItem icon={DollarSign} title="Faturamento Automatizado" description="Geração de faturas e lembretes inteligentes via WhatsApp com base na presença confirmada no app." />
+                    <FeatureItem icon={Activity} title="Analytics Planejado vs. Real" description="Veja exatamente onde sua van economizou quilometragem em relação ao planejado pela IA." />
+                    <FeatureItem icon={Database} title="Base Nacional de Escolas" description="Cadastro rápido de instituições através de nossa inteligência de dados regionalizada." />
+                    <FeatureItem icon={DollarSign} title="Faturamento Automatizado" description="Geração de faturas e lembretes inteligentes via WhatsApp com base na presença confirmada." />
                   </div>
                 </CardContent>
               </Card>
@@ -207,7 +210,7 @@ export default function LandingPage() {
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={HeartPulse} title="Alertas Médicos no Embarque" description="Identificação visual imediata de alunos com alergias ou necessidades especiais durante o check-in." />
                     <FeatureItem icon={QrCode} title="Check-in por Telemetria" description="Registro de embarque que valida a posição GPS da van com o endereço do aluno, garantindo conformidade." />
-                    <FeatureItem icon={ShieldCheck} title="Modo Offline Inteligente" description="Funcionamento total sem internet, com sincronização automática de dados de telemetria assim que houver sinal." />
+                    <FeatureItem icon={ShieldCheck} title="Modo Offline Inteligente" description="Funcionamento total sem internet, com sincronização automática de dados de telemetria." />
                   </div>
                 </CardContent>
               </Card>

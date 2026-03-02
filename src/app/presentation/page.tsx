@@ -29,7 +29,9 @@ import {
     Activity, 
     TrendingDown,
     ArrowDownRight,
-    Zap
+    Zap,
+    Database,
+    Search
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -71,7 +73,7 @@ export default function PresentationPage() {
                 </div>
                 <h1 className="text-5xl md:text-7xl font-bold tracking-tighter text-foreground uppercase italic">Guardian</h1>
                 <p className="mt-6 text-xl md:text-2xl text-muted-foreground max-w-3xl">
-                    Inteligência Operacional e Prova de ROI para o Transporte Escolar.
+                    Inteligência Operacional, Big Data e Prova de ROI para o Transporte Escolar.
                 </p>
                 <div className="mt-12 text-sm text-muted-foreground animate-pulse">
                     <p>Role para baixo para ver a apresentação</p>
@@ -110,45 +112,49 @@ export default function PresentationPage() {
                     <div className="space-y-4">
                         <h3 className="text-xl font-bold text-muted-foreground uppercase tracking-widest border-b pb-2">Apps de Rastreamento</h3>
                         <div className="space-y-3">
-                            <MarketComparisonItem isNegative icon={<XCircle className="text-red-500" />} text="Apenas mostram onde a van está." />
-                            <MarketComparisonItem isNegative icon={<XCircle className="text-red-500" />} text="Custos altos de API (Google Maps)." />
-                            <MarketComparisonItem isNegative icon={<XCircle className="text-red-500" />} text="Cadastro manual e lento." />
-                            <MarketComparisonItem isNegative icon={<XCircle className="text-red-500" />} text="Nenhum insight de economia." />
+                            <MarketComparisonItem isNegative icon={<XCircle className="text-red-500" />} text="Apenas rastreio passivo." />
+                            <MarketComparisonItem isNegative icon={<XCircle className="text-red-500" />} text="Dependência total de APIs caras (Google)." />
+                            <MarketComparisonItem isNegative icon={<XCircle className="text-red-500" />} text="Cadastro manual lento e propenso a erro." />
+                            <MarketComparisonItem isNegative icon={<XCircle className="text-red-500" />} text="Nenhum dado preditivo de manutenção." />
                         </div>
                     </div>
                     <div className="space-y-4">
                         <h3 className="text-xl font-bold text-primary uppercase tracking-widest border-b border-primary/30 pb-2">Guardian Intelligence</h3>
                         <div className="space-y-3">
-                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Provamos a economia de combustível (ROI)." />
-                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Custo de API zero via Roteirização Híbrida." />
-                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Onboarding com IA (OCR de documentos)." />
-                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Manutenção baseada em quilometragem real." />
+                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Provamos a economia real de combustível (ROI)." />
+                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Base Proprietária de 190k escolas (Custo Zero)." />
+                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Cadastro instantâneo via Busca Regionalizada." />
+                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Manutenção baseada em telemetria GPS real." />
                         </div>
                     </div>
                 </div>
             </Slide>
 
-            {/* Slide 4: Telemetry & Predictive Maintenance */}
+            {/* Slide 4: Big Data & Zero Friction */}
             <Slide>
-                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Activity className="inline-block text-primary h-12 w-12 mr-4" />Inteligência de Telemetria</h2>
+                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Database className="inline-block text-primary h-12 w-12 mr-4" />Big Data & Cadastro Zero Fricção</h2>
                  <div className="w-full bg-background/50 border border-primary/20 rounded-xl p-8 backdrop-blur-sm shadow-2xl">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
                         <div className="space-y-6">
                             <div className="bg-primary/5 p-4 rounded-lg border-l-4 border-primary">
-                                <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><Gauge className="text-primary"/> Manutenção Preditiva</h3>
-                                <p className="text-sm text-muted-foreground">O sistema monitora o odômetro via GPS em tempo real. Alertas de revisão são gerados pelo <strong>uso real</strong>, não por datas arbitrárias.</p>
+                                <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><Search className="text-primary"/> Busca Regionalizada</h3>
+                                <p className="text-sm text-muted-foreground">O gestor seleciona Cidade/Estado e o Guardian apresenta instantaneamente as escolas da nossa base. <strong>Endereço e GPS preenchidos em 1 clique.</strong></p>
                             </div>
-                             <div className="bg-destructive/5 p-4 rounded-lg border-l-4 border-destructive">
-                                <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><HeartPulse className="text-destructive"/> Alertas Médicos Críticos</h3>
-                                <p className="text-sm text-muted-foreground">Segurança humanizada: Sinalização visual pulsante para alunos com necessidades especiais ou alergias graves durante o embarque.</p>
+                             <div className="bg-blue-500/5 p-4 rounded-lg border-l-4 border-blue-500">
+                                <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><MapPinned className="text-blue-500"/> Precisão Operacional</h3>
+                                <p className="text-sm text-muted-foreground">Nossa base contém os portões de embarque validados. Menos chamadas para o suporte e rotas 100% confiáveis desde o primeiro dia.</p>
                             </div>
-                            <div className="bg-blue-500/5 p-4 rounded-lg border-l-4 border-blue-500">
-                                <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><MapPinned className="text-blue-500"/> Geocodificação Invisível</h3>
-                                <p className="text-sm text-muted-foreground">Cadastro sem esforço: A IA valida o endereço automaticamente, garantindo que a van nunca erre o caminho.</p>
+                            <div className="bg-purple-500/5 p-4 rounded-lg border-l-4 border-purple-500">
+                                <h3 className="text-xl font-bold flex items-center gap-2 mb-2"><Zap className="text-purple-500"/> OCR de Documentos</h3>
+                                <p className="text-sm text-muted-foreground">Cadastros de pais e alunos finalizados em segundos via Inteligência Artificial. <strong>Menos burocracia, mais escala comercial.</strong></p>
                             </div>
                         </div>
-                        <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-primary/20">
-                            <Image src="https://picsum.photos/seed/fleet-telemetry/800/800" fill style={{ objectFit: 'cover' }} alt="Telemetria Guardian" data-ai-hint="fleet monitoring" />
+                        <div className="relative aspect-square rounded-lg overflow-hidden border-2 border-primary/20 bg-muted/20 flex items-center justify-center p-8">
+                            <div className="text-center space-y-4">
+                                <Sparkles className="h-20 w-20 text-primary mx-auto animate-pulse" />
+                                <p className="text-lg font-bold">Base Guardian Nacional</p>
+                                <p className="text-sm text-muted-foreground">Infraestrutura preparada para suportar 190.000+ instituições com custo de processamento otimizado.</p>
+                            </div>
                         </div>
                     </div>
                  </div>
