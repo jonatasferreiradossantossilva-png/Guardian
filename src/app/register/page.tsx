@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays, Info, Search } from 'lucide-react';
+import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays, Info } from 'lucide-react';
 import { extractDocumentData, type ExtractDocumentDataOutput } from '@/ai/flows/extract-document-data';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -13,7 +13,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import Image from 'next/image';
-import { geocodeAddress } from '@/ai/flows/geocode-address';
 
 type Step = 'welcome' | 'scan' | 'confirm' | 'success';
 
@@ -41,10 +40,8 @@ export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractDocumentDataOutput | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const { addDoc } = useMockData();
   const { data: schools } = useMockCollection('schools');
@@ -69,38 +66,10 @@ export default function PublicRegistrationPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Garante que a cada mudança de passo, a tela role para o topo
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
-
-  const handleSmartSearch = async () => {
-    if (!searchQuery.trim()) return;
-    
-    setIsSearching(true);
-    try {
-        const result = await geocodeAddress({ address: searchQuery });
-        
-        if (result.street) setStreet(result.street);
-        if (result.number) setNumber(result.number);
-        if (result.zipCode) setZipCode(result.zipCode);
-        if (result.neighborhood) setNeighborhood(result.neighborhood);
-        if (result.city) setCity(result.city);
-        if (result.state) setState(result.state);
-
-        toast({
-            title: "Endereço localizado!",
-            description: "Campos preenchidos automaticamente.",
-        });
-    } catch (e) {
-        toast({
-            title: "Busca falhou",
-            description: "Não localizamos o endereço exato.",
-            variant: "destructive"
-        });
-    } finally {
-        setIsSearching(false);
-    }
-  };
 
   useEffect(() => {
     const cleanedCep = zipCode.replace(/\D/g, '');
@@ -115,7 +84,7 @@ export default function PublicRegistrationPage() {
             setNeighborhood(data.bairro || '');
             setCity(data.localidade || '');
             setState(data.uf || '');
-            toast({ title: "CEP localizado!", description: "Endereço atualizado." });
+            toast({ title: "CEP localizado!", description: "Endereço atualizado automaticamente." });
           } else {
             toast({ title: "CEP não encontrado", variant: "destructive" });
           }
@@ -155,8 +124,25 @@ export default function PublicRegistrationPage() {
   };
 
   const handleFinalSubmit = () => {
-    if (!extractedData?.name || !email || !phone || !studentName || !selectedSchoolId || !zipCode || !street || !number) {
-        toast({ title: "Campos obrigatórios", description: "Por favor, complete todos os dados marcados.", variant: "destructive" });
+    // Verificação rigorosa de todos os campos obrigatórios, incluindo endereço completo
+    if (
+        !extractedData?.name || 
+        !email || 
+        !phone || 
+        !studentName || 
+        !selectedSchoolId || 
+        !zipCode || 
+        !street || 
+        !number || 
+        !neighborhood || 
+        !city || 
+        !state
+    ) {
+        toast({ 
+            title: "Campos obrigatórios", 
+            description: "Por favor, preencha todos os campos do responsável, aluno e endereço completo.", 
+            variant: "destructive" 
+        });
         return;
     }
 
@@ -331,28 +317,9 @@ export default function PublicRegistrationPage() {
 
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta
+                            <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta (Obrigatório)
                         </p>
                         
-                        <div className="bg-primary/5 p-3 rounded-lg border border-primary/10 space-y-3 mb-4">
-                            <div className="flex items-center gap-2 text-primary font-semibold text-[10px] uppercase tracking-widest">
-                                <Sparkles className="h-3.5 w-3.5" />
-                                <span>Busca Rápida de Endereço</span>
-                            </div>
-                            <div className="flex gap-2">
-                                <Input 
-                                    placeholder="Ex: Rua Oscar Freire, 50, São Paulo" 
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                    onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
-                                    className="bg-background h-9 text-sm"
-                                />
-                                <Button size="sm" variant="secondary" onClick={handleSmartSearch} disabled={isSearching || !searchQuery.trim()}>
-                                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                                </Button>
-                            </div>
-                        </div>
-
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="space-y-2 sm:col-span-1">
