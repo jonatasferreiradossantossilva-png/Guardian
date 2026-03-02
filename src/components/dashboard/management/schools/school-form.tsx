@@ -81,6 +81,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const zipCode = form.watch('zipCode');
 
+  // Busca Inteligente (Nome + Endereço)
   const handleSmartSearch = async () => {
     if (!searchQuery.trim()) return;
     
@@ -119,6 +120,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     }
   };
 
+  // Busca por CEP (ViaCEP) - Agora mais agressiva e funcional
   useEffect(() => {
     const cleanedCep = zipCode?.replace(/\D/g, '');
     if (cleanedCep && cleanedCep.length === 8) {
