@@ -22,7 +22,7 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
 import { Loader2, Search, Sparkles, MapPin, CheckCircle2, Globe, Building2, Info } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
@@ -80,7 +80,8 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { data: knowledgeBase } = useMockCollection('school_knowledge_base');
   
   const [isFetchingCep, setIsFetchingCep] = useState(false);
-  const [isSearching, setIsSearching] = useState(false);
+  const [isSearchingGoogle, setIsSearchingGoogle] = useState(false);
+  const [isSearchingInternal, setIsSearchingInternal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchUF, setSearchUF] = useState('SP');
@@ -94,20 +95,21 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const zipCode = form.watch('zipCode');
 
-  // Busca Semântica (Fuzzy Match) via IA
-  const handleFuzzySearch = async (query: string) => {
-    setSearchQuery(query);
-    if (!query.trim() || query.length < 3 || !knowledgeBase) {
-        setAiSuggestions([]);
+  // Busca Semântica (Fuzzy Match) via IA em nossa base
+  const handleFuzzySearch = async () => {
+    if (!searchQuery.trim() || searchQuery.length < 3 || !knowledgeBase) {
+        toast({ title: "Digite pelo menos 3 letras", variant: "destructive" });
         return;
     }
 
-    const filteredKB = knowledgeBase.filter((s: any) => s.city === searchCity && s.state === searchUF);
+    setIsSearchingInternal(true);
+    setAiSuggestions([]);
     
-    // Simula debounce ou trigger manual para economizar chamadas
-    if (query.length % 3 === 0) {
+    try {
+        const filteredKB = knowledgeBase.filter((s: any) => s.city === searchCity && s.state === searchUF);
+        
         const result = await searchSchoolsInep({
-            query,
+            query: searchQuery,
             city: searchCity,
             state: searchUF,
             knowledgeBase: filteredKB
@@ -116,9 +118,18 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         const enrichedMatches = result.matches.map(match => {
             const fullData = knowledgeBase.find(kb => kb.id === match.id);
             return { ...fullData, score: match.score };
-        }).filter(m => m.score > 0.6);
+        }).filter(m => m.score > 0.5);
 
         setAiSuggestions(enrichedMatches);
+        
+        if (enrichedMatches.length === 0) {
+            toast({ title: "Nenhuma sugestão na base local", description: "Tente usar o botão do Google Maps." });
+        }
+    } catch (e) {
+        console.error(e);
+        toast({ title: "Erro na busca interna", variant: "destructive" });
+    } finally {
+        setIsSearchingInternal(false);
     }
   };
 
@@ -144,7 +155,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const handleGoogleSearch = async () => {
     if (!searchQuery.trim()) return;
     
-    setIsSearching(true);
+    setIsSearchingGoogle(true);
     setAiSuggestions([]);
     try {
         const fullSearchQuery = `${searchQuery}, ${searchCity}, ${searchUF}`;
@@ -160,7 +171,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         form.setValue('longitude', result.longitude, { shouldValidate: true, shouldDirty: true });
         
         if (!form.getValues('name')) {
-            form.setValue('name', searchQuery.trim(), { shouldValidate: true });
+            form.setValue('name', searchQuery.trim(), { shouldValidate: true, shouldDirty: true });
         }
         
         toast({
@@ -169,12 +180,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         });
     } catch (e) {
         toast({
-            title: "Busca sem resultados",
-            description: "Tente digitar o endereço completo da unidade.",
+            title: "Google não encontrou este local",
+            description: "Verifique o nome e tente novamente.",
             variant: "destructive"
         });
     } finally {
-        setIsSearching(false);
+        setIsSearchingGoogle(false);
     }
   };
 
@@ -270,7 +281,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Use os filtros e a busca inteligente (IA) para um cadastro preciso.</DialogDescription>
+        <DialogDescription>Use os filtros e a busca inteligente (IA) para preencher o endereço automaticamente.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
@@ -281,9 +292,9 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             <div className="flex items-center justify-between">
                 <div className="flex items-center gap-2 text-primary font-bold text-sm">
                     <Sparkles className="h-4 w-4" />
-                    <span>Inteligência Guardian (Base INEP)</span>
+                    <span>Ferramenta de Busca Guardian</span>
                 </div>
-                <Badge variant="outline" className="text-[10px] uppercase bg-background">Custo Zero</Badge>
+                <Badge variant="outline" className="text-[10px] uppercase bg-background">IA + Google</Badge>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
@@ -314,15 +325,19 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     <div className="relative flex-1">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input 
-                            placeholder="Nome da Escola (Fuzzy Search IA)..." 
+                            placeholder="Nome da Escola..." 
                             value={searchQuery}
-                            onChange={(e) => handleFuzzySearch(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleGoogleSearch()}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            onKeyPress={(e) => e.key === 'Enter' && handleFuzzySearch()}
                             className="bg-background pl-9"
                         />
                     </div>
-                    <Button variant="secondary" onClick={handleGoogleSearch} disabled={isSearching || !searchQuery.trim()}>
-                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                    <Button variant="secondary" onClick={handleFuzzySearch} disabled={isSearchingInternal || !searchQuery.trim()}>
+                        {isSearchingInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                        <span className="ml-2 hidden sm:inline">Pesquisar Base</span>
+                    </Button>
+                    <Button variant="outline" onClick={handleGoogleSearch} disabled={isSearchingGoogle || !searchQuery.trim()}>
+                        {isSearchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
                         <span className="ml-2 hidden sm:inline">Google</span>
                     </Button>
                 </div>
@@ -330,7 +345,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 {aiSuggestions.length > 0 && (
                     <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-xl overflow-hidden border-primary/30">
                         <p className="px-3 py-1.5 bg-secondary/50 text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2">
-                            <CheckCircle2 className="h-3 w-3 text-green-500" /> Correspondências Encontradas (IA)
+                            <CheckCircle2 className="h-3 w-3 text-green-500" /> Sugestões Encontradas na Comunidade
                         </p>
                         <div className="divide-y max-h-48 overflow-y-auto">
                             {aiSuggestions.map((item) => (
@@ -344,7 +359,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                                         <p className="text-sm font-bold group-hover:text-primary truncate">{item.name}</p>
                                         <p className="text-[10px] text-muted-foreground truncate">{item.neighborhood}, {item.city} - {item.state}</p>
                                     </div>
-                                    <Badge variant="secondary" className="text-[9px] h-4">Base Guardian</Badge>
+                                    <Badge variant="secondary" className="text-[9px] h-4">Custo Zero</Badge>
                                 </button>
                             ))}
                         </div>
@@ -353,7 +368,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             </div>
             <p className="text-[10px] text-muted-foreground italic leading-tight flex items-start gap-1.5">
                 <Info className="h-3 w-3 mt-0.5 shrink-0" />
-                <span>Digite o nome próximo e a IA encontrará o registro correto na base. Use o botão <strong>Google</strong> apenas se a escola não existir em nossa base interna.</span>
+                <span>Clique em <strong>Pesquisar Base</strong> para buscar no Guardian (Custo Zero). Use <strong>Google</strong> apenas se não encontrar resultados.</span>
             </p>
           </div>
 
