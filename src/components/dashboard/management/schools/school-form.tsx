@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -22,12 +23,13 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState, useCallback } from 'react';
-import { useMockData } from '@/hooks/use-mock-data';
-import { Loader2, Search, Sparkles, MapPin } from 'lucide-react';
+import { useEffect, useState, useCallback, useMemo } from 'react';
+import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
+import { Loader2, Search, Sparkles, MapPin, CheckCircle2, Globe } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -69,10 +71,13 @@ const defaultValues: SchoolFormValues = {
 export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
+  const { data: knowledgeBase } = useMockCollection('school_knowledge_base');
+  
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [localResults, setLocalResults] = useState<any[]>([]);
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -81,14 +86,49 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const zipCode = form.watch('zipCode');
 
-  const handleSmartSearch = async () => {
+  // Busca na Base de Conhecimento Interna
+  const handleLocalSearch = (query: string) => {
+    setSearchQuery(query);
+    if (!query.trim() || !knowledgeBase) {
+        setLocalResults([]);
+        return;
+    }
+    const filtered = knowledgeBase.filter((s: any) => 
+        s.name.toLowerCase().includes(query.toLowerCase()) ||
+        s.city.toLowerCase().includes(query.toLowerCase())
+    ).slice(0, 3);
+    setLocalResults(filtered);
+  };
+
+  const selectFromKnowledgeBase = (skbItem: any) => {
+    form.reset({
+        name: skbItem.name,
+        street: skbItem.street,
+        number: skbItem.number,
+        neighborhood: skbItem.neighborhood,
+        city: skbItem.city,
+        state: skbItem.state,
+        zipCode: skbItem.zipCode,
+        latitude: skbItem.latitude,
+        longitude: skbItem.longitude,
+        active: true
+    });
+    setLocalResults([]);
+    setSearchQuery(skbItem.name);
+    toast({
+        title: "Dados carregados da Base de Conhecimento!",
+        description: "Esta escola já foi verificada por outros gestores.",
+    });
+  };
+
+  const handleGoogleSearch = async () => {
     if (!searchQuery.trim()) return;
     
     setIsSearching(true);
+    setLocalResults([]);
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Atualização atômica e forçada para garantir visibilidade e validação
         form.setValue('street', result.street || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('number', result.number || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('zipCode', result.zipCode || '', { shouldValidate: true, shouldDirty: true });
@@ -104,13 +144,13 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         }
         
         toast({
-            title: "Localização encontrada!",
-            description: "Endereço e coordenadas preenchidos automaticamente via Google.",
+            title: "Localização encontrada via Google!",
+            description: "Endereço e coordenadas GPS preenchidos.",
         });
     } catch (e) {
         toast({
-            title: "Busca sem resultados",
-            description: "Tente digitar o nome da escola seguido da cidade.",
+            title: "Não encontramos no Google",
+            description: "Tente digitar o endereço completo ou CEP.",
             variant: "destructive"
         });
     } finally {
@@ -132,8 +172,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         form.setValue('city', data.localidade || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('state', data.uf || '', { shouldValidate: true, shouldDirty: true });
         toast({ title: "Endereço atualizado via CEP!" });
-      } else {
-        toast({ title: "CEP não encontrado", variant: "destructive" });
       }
     } catch (error) {
       console.error(error);
@@ -177,7 +215,24 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             toast({ title: 'Escola atualizada!' });
         } else {
             addDoc('schools', data);
-            toast({ title: 'Escola cadastrada com sucesso!' });
+            
+            // Alimentar a Base de Conhecimento se for um novo registro único
+            const existsInSKB = knowledgeBase?.some((s: any) => s.name.toLowerCase() === data.name.toLowerCase() && s.city === data.city);
+            if (!existsInSKB) {
+                addDoc('school_knowledge_base', {
+                    name: data.name,
+                    latitude: data.latitude,
+                    longitude: data.longitude,
+                    street: data.street,
+                    number: data.number,
+                    neighborhood: data.neighborhood,
+                    city: data.city,
+                    state: data.state,
+                    zipCode: data.zipCode
+                });
+            }
+            
+            toast({ title: 'Escola cadastrada e adicionada à base de conhecimento!' });
         }
         onFormSubmit();
     } catch (error) {
@@ -191,29 +246,58 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Preencha os dados abaixo. Use a busca inteligente para agilizar.</DialogDescription>
+        <DialogDescription>Use a base de conhecimento para economizar tempo e crédito de API.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
-          {/* Busca Inteligente Google - Agora integrada no Scroll */}
+          
+          {/* Busca Híbrida (Interna -> Google) */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
-                <span>Busca Inteligente via Google Maps</span>
+                <span>Busca Inteligente Guardian</span>
             </div>
-            <div className="flex gap-2">
-                <Input 
-                    placeholder="Ex: Colégio Bandeirantes, São Paulo" 
-                    value={searchQuery}
-                    onChange={(e) => setSearchQuery(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
-                    className="bg-background"
-                />
-                <Button variant="secondary" onClick={handleSmartSearch} disabled={isSearching || !searchQuery.trim()}>
-                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                </Button>
+            <div className="relative">
+                <div className="flex gap-2">
+                    <Input 
+                        placeholder="Nome da Escola ou Cidade..." 
+                        value={searchQuery}
+                        onChange={(e) => handleLocalSearch(e.target.value)}
+                        onKeyPress={(e) => e.key === 'Enter' && handleGoogleSearch()}
+                        className="bg-background"
+                    />
+                    <Button variant="secondary" onClick={handleGoogleSearch} disabled={isSearching || !searchQuery.trim()}>
+                        {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                        <span className="ml-2 hidden sm:inline">Google</span>
+                    </Button>
+                </div>
+
+                {/* Resultados da Base de Conhecimento Local */}
+                {localResults.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-lg overflow-hidden">
+                        <p className="px-3 py-1.5 bg-secondary/50 text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2">
+                            <CheckCircle2 className="h-3 w-3 text-green-500" /> Sugestões da Base Guardian (Custo Zero)
+                        </p>
+                        <div className="divide-y">
+                            {localResults.map((item) => (
+                                <button 
+                                    key={item.id}
+                                    type="button"
+                                    onClick={() => selectFromKnowledgeBase(item)}
+                                    className="w-full text-left px-3 py-2 hover:bg-secondary transition-colors group"
+                                >
+                                    <p className="text-sm font-bold group-hover:text-primary">{item.name}</p>
+                                    <p className="text-xs text-muted-foreground">{item.neighborhood}, {item.city} - {item.state}</p>
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
             </div>
+            <p className="text-[10px] text-muted-foreground italic leading-tight">
+                Se não encontrar nas sugestões, clique no botão **Google** para uma busca global.
+            </p>
           </div>
 
           <Form {...form}>
@@ -231,7 +315,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
               />
 
               <div className="border-t pt-4 mt-4">
-                <p className="text-sm font-bold mb-4 flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Endereço e Localização</p>
+                <p className="text-sm font-bold mb-4 flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Endereço Confirmado</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                         control={form.control} name="zipCode"

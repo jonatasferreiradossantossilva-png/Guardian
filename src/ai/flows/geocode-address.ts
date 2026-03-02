@@ -1,3 +1,4 @@
+
 'use server';
 /**
  * @fileOverview Fluxo para geocodificar endereços ou buscar locais usando a API do Google Maps.
@@ -74,7 +75,7 @@ export const geocodeAddress = ai.defineFlow(
           formattedAddress: result.formatted_address,
           street: getComponent(['route']),
           number: getComponent(['street_number']),
-          neighborhood: getComponent(['sublocality_level_1', 'sublocality', 'neighborhood']),
+          neighborhood: getComponent(['sublocality_level_1', 'sublocality', 'neighborhood', 'political']),
           city: getComponent(['administrative_area_level_2', 'locality']),
           state: getShortComponent(['administrative_area_level_1']),
           zipCode: getComponent(['postal_code']),

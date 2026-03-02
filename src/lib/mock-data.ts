@@ -46,6 +46,33 @@ export const initialMockData = {
             zipCode: "01305-000"
         }
     ],
+    // Base de conhecimento alimentada pela comunidade de gestores
+    school_knowledge_base: [
+        {
+            id: "skb-1",
+            name: "Colégio Bandeirantes",
+            latitude: -23.5842,
+            longitude: -46.6461,
+            street: "Rua Estela",
+            number: "268",
+            neighborhood: "Vila Mariana",
+            city: "São Paulo",
+            state: "SP",
+            zipCode: "04011-001"
+        },
+        {
+            id: "skb-2",
+            name: "Escola Mobile",
+            latitude: -23.5931,
+            longitude: -46.6725,
+            street: "Rua Diogo Jacome",
+            number: "818",
+            neighborhood: "Vila Nova Conceição",
+            city: "São Paulo",
+            state: "SP",
+            zipCode: "04512-001"
+        }
+    ],
     parents: [
         {
             id: "parent-1",
