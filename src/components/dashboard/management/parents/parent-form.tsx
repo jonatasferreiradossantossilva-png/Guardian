@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -98,10 +97,10 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
           if (!response.ok) throw new Error('Falha ao buscar CEP');
           const data = await response.json();
           if (!data.erro) {
-            form.setValue('street', data.logradouro);
-            form.setValue('neighborhood', data.bairro);
-            form.setValue('city', data.localidade);
-            form.setValue('state', data.uf);
+            form.setValue('street', data.logradouro || '');
+            form.setValue('neighborhood', data.bairro || '');
+            form.setValue('city', data.localidade || '');
+            form.setValue('state', data.uf || '');
             toast({
               title: 'Endereço preenchido!',
               description: 'Os dados de endereço foram carregados automaticamente.',
@@ -133,7 +132,19 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
   useEffect(() => {
     if (parent) {
       form.reset({
-        ...parent,
+        name: parent.name || '',
+        email: parent.email || '',
+        phone: parent.phone || '',
+        userId: parent.userId || '',
+        cpf: parent.cpf || '',
+        rg: parent.rg || '',
+        zipCode: parent.zipCode || '',
+        street: parent.street || '',
+        number: parent.number || '',
+        complement: parent.complement || '',
+        neighborhood: parent.neighborhood || '',
+        city: parent.city || '',
+        state: parent.state || '',
         preferredPaymentDay: parent.preferredPaymentDay,
         active: parent.active ?? true,
       });
@@ -183,7 +194,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
               <FormItem>
                 <FormLabel>Nome Completo</FormLabel>
                 <FormControl>
-                  <Input placeholder="Ex: Maria Souza" {...field} />
+                  <Input placeholder="Ex: Maria Souza" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>
@@ -197,7 +208,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: maria.souza@email.com" {...field} />
+                    <Input placeholder="Ex: maria.souza@email.com" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -210,7 +221,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                 <FormItem>
                   <FormLabel>Telefone</FormLabel>
                   <FormControl>
-                    <Input placeholder="Ex: (11) 98765-4321" {...field} />
+                    <Input placeholder="Ex: (11) 98765-4321" {...field} value={field.value ?? ''} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -225,7 +236,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     <FormItem>
                     <FormLabel>CPF (Opcional)</FormLabel>
                     <FormControl>
-                        <Input placeholder="000.000.000-00" {...field} />
+                        <Input placeholder="000.000.000-00" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -238,7 +249,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     <FormItem>
                     <FormLabel>RG (Opcional)</FormLabel>
                     <FormControl>
-                        <Input placeholder="00.000.000-0" {...field} />
+                        <Input placeholder="00.000.000-0" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
                     </FormItem>
@@ -283,7 +294,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                         <FormLabel>CEP</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Input placeholder="00000-000" {...field} />
+                            <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
                             {isFetchingCep && (
                               <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
                             )}
@@ -298,7 +309,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     render={({ field }) => (
                         <FormItem className="md:col-span-2">
                         <FormLabel>Rua</FormLabel>
-                        <FormControl><Input placeholder="Rua das Flores" {...field} /></FormControl>
+                        <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -310,7 +321,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Número</FormLabel>
-                        <FormControl><Input placeholder="123" {...field} /></FormControl>
+                        <FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -320,7 +331,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Complemento</FormLabel>
-                        <FormControl><Input placeholder="Apto 4B" {...field} /></FormControl>
+                        <FormControl><Input placeholder="Apto 4B" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -330,7 +341,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Bairro</FormLabel>
-                        <FormControl><Input placeholder="Centro" {...field} /></FormControl>
+                        <FormControl><Input placeholder="Centro" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -342,7 +353,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Cidade</FormLabel>
-                        <FormControl><Input placeholder="São Paulo" {...field} /></FormControl>
+                        <FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -352,7 +363,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel>Estado (UF)</FormLabel>
-                        <FormControl><Input placeholder="SP" {...field} /></FormControl>
+                        <FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -383,7 +394,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
               <FormItem className="pt-4">
                 <FormLabel>ID do Usuário (Firebase Auth)</FormLabel>
                 <FormControl>
-                  <Input placeholder="Cole o UID do usuário" {...field} />
+                  <Input placeholder="Cole o UID do usuário" {...field} value={field.value ?? ''} />
                 </FormControl>
                 <FormMessage />
               </FormItem>

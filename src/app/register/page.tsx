@@ -266,17 +266,17 @@ export default function PublicRegistrationPage() {
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label>Seu Nome Completo</Label>
-                            <Input value={extractedData.name || ''} onChange={e => setExtractedData({...extractedData, name: e.target.value})} placeholder="Como no documento" />
+                            <Input value={extractedData.name ?? ''} onChange={e => setExtractedData({...extractedData, name: e.target.value})} placeholder="Como no documento" />
                         </div>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>CPF</Label>
-                                <Input value={extractedData.cpf || ''} onChange={e => setExtractedData({...extractedData, cpf: e.target.value})} placeholder="000.000.000-00" />
+                                <Input value={extractedData.cpf ?? ''} onChange={e => setExtractedData({...extractedData, cpf: e.target.value})} placeholder="000.000.000-00" />
                             </div>
                             <div className="space-y-2">
                                 <Label>RG</Label>
-                                <Input value={extractedData.rg || ''} onChange={e => setExtractedData({...extractedData, rg: e.target.value})} placeholder="00.000.000-0" />
+                                <Input value={extractedData.rg ?? ''} onChange={e => setExtractedData({...extractedData, rg: e.target.value})} placeholder="00.000.000-0" />
                             </div>
                         </div>
 

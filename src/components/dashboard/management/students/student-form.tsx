@@ -144,10 +144,10 @@ export function StudentForm({
           if (!response.ok) throw new Error('Falha ao buscar CEP');
           const data = await response.json();
           if (!data.erro) {
-            form.setValue('street', data.logradouro);
-            form.setValue('neighborhood', data.bairro);
-            form.setValue('city', data.localidade);
-            form.setValue('state', data.uf);
+            form.setValue('street', data.logradouro || '');
+            form.setValue('neighborhood', data.bairro || '');
+            form.setValue('city', data.localidade || '');
+            form.setValue('state', data.uf || '');
             form.setFocus('number');
           }
         } catch (error) {
@@ -164,9 +164,24 @@ export function StudentForm({
   useEffect(() => {
     if (student) {
       form.reset({
-        ...student,
+        name: student.name || '',
+        latitude: student.latitude,
+        longitude: student.longitude,
+        schoolId: student.schoolId || '',
+        parentId: student.parentId || '',
         shift: student.shift || 'Manhã',
+        monthlyFee: student.monthlyFee,
+        medicalNote: student.medicalNote || '',
+        zipCode: student.zipCode || '',
+        street: student.street || '',
+        number: student.number || '',
+        complement: student.complement || '',
+        neighborhood: student.neighborhood || '',
+        city: student.city || '',
+        state: student.state || '',
         active: student.active ?? true,
+        serie: student.serie || '',
+        turma: student.turma || '',
       });
     } else {
       form.reset(form.defaultValues);
@@ -194,7 +209,6 @@ export function StudentForm({
         let finalLat = data.latitude;
         let finalLng = data.longitude;
 
-        // Se tiver endereço mas não tiver GPS, busca agora de forma invisível
         if (data.street && data.city && (!finalLat || !finalLng)) {
             const fullAddress = `${data.street}, ${data.number || ''}, ${data.complement || ''}, ${data.neighborhood || ''}, ${data.city} - ${data.state || ''}`;
             try {
@@ -237,7 +251,7 @@ export function StudentForm({
             render={({ field }) => (
               <FormItem>
                 <FormLabel>Nome do Aluno</FormLabel>
-                <FormControl><Input placeholder="Ex: João da Silva" {...field} /></FormControl>
+                <FormControl><Input placeholder="Ex: João da Silva" {...field} value={field.value ?? ''} /></FormControl>
                 <FormMessage />
               </FormItem>
             )}
@@ -289,7 +303,7 @@ export function StudentForm({
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Turma/Sala</FormLabel>
-                  <FormControl><Input placeholder="Ex: Sala 102 - Turma B" {...field} /></FormControl>
+                  <FormControl><Input placeholder="Ex: Sala 102 - Turma B" {...field} value={field.value ?? ''} /></FormControl>
                   <FormMessage />
                 </FormItem>
               )}
@@ -311,7 +325,7 @@ export function StudentForm({
                         <FormLabel>CEP</FormLabel>
                         <FormControl>
                           <div className="relative">
-                            <Input placeholder="00000-000" {...field} />
+                            <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
                             {isFetchingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
                           </div>
                         </FormControl>
@@ -324,7 +338,7 @@ export function StudentForm({
                     render={({ field }) => (
                         <FormItem className="md:col-span-2">
                         <FormLabel>Rua</FormLabel>
-                        <FormControl><Input placeholder="Rua das Flores" {...field} /></FormControl>
+                        <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -334,19 +348,19 @@ export function StudentForm({
                  <FormField
                     control={form.control} name="number"
                     render={({ field }) => (
-                        <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
                  <FormField
                     control={form.control} name="complement"
                     render={({ field }) => (
-                        <FormItem><FormLabel>Complemento</FormLabel><FormControl><Input placeholder="Apto 4B" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Complemento</FormLabel><FormControl><Input placeholder="Apto 4B" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
                  <FormField
                     control={form.control} name="neighborhood"
                     render={({ field }) => (
-                        <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Centro" {...field} /></FormControl><FormMessage /></FormItem>
+                        <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Centro" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                     )}
                 />
              </div>
@@ -366,6 +380,7 @@ export function StudentForm({
                             <Textarea 
                                 placeholder="Ex: Alérgico a amendoim. Levar bombinha de asma em caso de falta de ar." 
                                 {...field} 
+                                value={field.value ?? ''}
                                 className="bg-background"
                             />
                         </FormControl>
@@ -426,7 +441,7 @@ export function StudentForm({
                 render={({ field }) => (
                     <FormItem>
                         <FormLabel>Mensalidade (R$)</FormLabel>
-                        <FormControl><Input type="number" step="any" placeholder="Ex: 450.00" {...field} /></FormControl>
+                        <FormControl><Input type="number" step="any" placeholder="Ex: 450.00" {...field} value={field.value ?? ''} /></FormControl>
                         <FormMessage />
                     </FormItem>
                 )}
