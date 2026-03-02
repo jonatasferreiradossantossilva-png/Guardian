@@ -62,7 +62,7 @@ export const geocodeAddress = ai.defineFlow(
             { lon: props.lon, lat: props.lat };
 
         // Mapeamento inteligente para o padrão brasileiro
-        // Prioriza postcode para o campo zipCode e housenumber para o número
+        // Prioriza postcode para o campo zipCode e suburb/district para bairro
         return {
           latitude: lat,
           longitude: lon,

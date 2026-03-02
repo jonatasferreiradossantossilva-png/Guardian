@@ -88,7 +88,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Atualização forçada para garantir que os campos apareçam na UI
+        // Atualização atômica de todos os campos de endereço
         form.setValue('street', result.street || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('number', result.number || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('zipCode', result.zipCode || '', { shouldValidate: true, shouldDirty: true });
@@ -105,12 +105,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         
         toast({
             title: "Localização encontrada!",
-            description: "Endereço e GPS preenchidos automaticamente.",
+            description: "Endereço e coordenadas GPS atualizados.",
         });
     } catch (e) {
         toast({
             title: "Busca sem resultados",
-            description: "Não conseguimos localizar este local no Geoapify.",
+            description: "Tente digitar o nome da escola seguido da cidade.",
             variant: "destructive"
         });
     } finally {
@@ -191,11 +191,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Use a busca inteligente para preencher endereço e coordenadas GPS automaticamente.</DialogDescription>
+        <DialogDescription>Use a busca inteligente para acelerar o preenchimento.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
+          {/* Barra de Busca Inteligente */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
@@ -203,7 +204,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             </div>
             <div className="flex gap-2">
                 <Input 
-                    placeholder="Ex: Colégio Objetivo, Av. Paulista, São Paulo" 
+                    placeholder="Ex: Colégio Anglo, Rua São José, Campinas" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
