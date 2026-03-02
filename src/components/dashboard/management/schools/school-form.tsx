@@ -78,7 +78,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const { zipCode } = form.watch();
 
-  // Busca Inteligente por Nome/Endereço
   const handleSmartSearch = async () => {
     if (!searchQuery.trim()) return;
     
@@ -86,23 +85,37 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Tenta extrair partes do endereço formatado (Rua, Número, Bairro, Cidade, Estado)
-        // O Geoapify retorna algo como "Rua Augusta, 500 - Consolação, São Paulo - SP, 01305-000, Brazil"
+        // Extração básica do endereço formatado
         const parts = result.formattedAddress.split(',');
         
-        form.setValue('street', parts[0]?.trim() || '');
-        form.setValue('city', result.formattedAddress.includes('São Paulo') ? 'São Paulo' : ''); // Simplificação para o protótipo
+        // Tenta preencher campos com base no resultado da API
+        if (parts[0]) form.setValue('street', parts[0].trim());
+        
+        // Tenta detectar cidade e estado no endereço formatado
+        if (result.formattedAddress.toLowerCase().includes('são paulo')) {
+            form.setValue('city', 'São Paulo');
+            form.setValue('state', 'SP');
+        }
+
         form.setValue('latitude', result.latitude);
         form.setValue('longitude', result.longitude);
         
+        // Se o nome da escola ainda estiver vazio, tenta extrair da busca
+        if (!form.getValues('name')) {
+            const firstPart = searchQuery.split(',')[0];
+            if (firstPart && firstPart.length > 3) {
+                form.setValue('name', firstPart.trim());
+            }
+        }
+        
         toast({
             title: "Localização encontrada!",
-            description: "Campos preenchidos com base na busca inteligente.",
+            description: "Campos preenchidos com base nos dados da escola, cidade e endereço.",
         });
     } catch (e) {
         toast({
             title: "Busca não concluída",
-            description: "Não conseguimos localizar esse endereço exato. Tente ser mais específico ou preencha manualmente.",
+            description: "Não conseguimos localizar esse local exato. Tente incluir o nome do colégio + cidade.",
             variant: "destructive"
         });
     } finally {
@@ -195,10 +208,9 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader>
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Preencha as informações da escola. Use a busca inteligente se não souber o CEP.</DialogDescription>
+        <DialogDescription>Preencha as informações da escola ou use a busca combinada para agilizar.</DialogDescription>
       </DialogHeader>
       
-      {/* Smart Search Field */}
       <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3 mb-2">
         <div className="flex items-center gap-2 text-primary font-semibold text-sm">
             <Sparkles className="h-4 w-4" />
@@ -216,7 +228,9 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
             </Button>
         </div>
-        <p className="text-[10px] text-muted-foreground italic">Digite o nome da escola e a rua para preencher o endereço automaticamente.</p>
+        <p className="text-[10px] text-muted-foreground italic leading-tight">
+            Dica: Combine <strong>Nome da Escola + Cidade + Rua</strong> para obter o resultado mais preciso possível.
+        </p>
       </div>
 
       <Form {...form}>

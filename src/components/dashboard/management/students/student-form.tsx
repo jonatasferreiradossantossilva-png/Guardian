@@ -150,18 +150,25 @@ export function StudentForm({
         const result = await geocodeAddress({ address: searchQuery });
         const parts = result.formattedAddress.split(',');
         
-        form.setValue('street', parts[0]?.trim() || '');
+        if (parts[0]) form.setValue('street', parts[0].trim());
+        
+        // Tenta detectar cidade e estado
+        if (result.formattedAddress.toLowerCase().includes('são paulo')) {
+            form.setValue('city', 'São Paulo');
+            form.setValue('state', 'SP');
+        }
+
         form.setValue('latitude', result.latitude);
         form.setValue('longitude', result.longitude);
         
         toast({
             title: "Endereço localizado!",
-            description: "Campos preenchidos via busca inteligente.",
+            description: "Campos preenchidos via busca combinada (Rua, Cidade, Bairro).",
         });
     } catch (e) {
         toast({
             title: "Busca falhou",
-            description: "Tente informar a rua e o bairro para melhores resultados.",
+            description: "Tente informar o endereço completo + bairro + cidade para melhores resultados.",
             variant: "destructive"
         });
     } finally {
@@ -277,7 +284,7 @@ export function StudentForm({
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{student ? 'Editar Aluno' : 'Adicionar Aluno'}</DialogTitle>
-        <DialogDescription>Preencha as informações do aluno abaixo.</DialogDescription>
+        <DialogDescription>Preencha as informações do aluno abaixo ou use a busca para endereços.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
@@ -290,7 +297,7 @@ export function StudentForm({
             </div>
             <div className="flex gap-2">
                 <Input 
-                    placeholder="Ex: Rua Oscar Freire, 50, Jardins, SP" 
+                    placeholder="Ex: Rua Oscar Freire, 50, Jardins, São Paulo" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
@@ -300,6 +307,9 @@ export function StudentForm({
                     {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 </Button>
             </div>
+            <p className="text-[10px] text-muted-foreground italic leading-tight">
+                Combine <strong>Endereço + Bairro + Cidade</strong> para garantir que o GPS seja calibrado corretamente.
+            </p>
           </div>
 
           <Form {...form}>

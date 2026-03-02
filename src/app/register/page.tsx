@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays, Info } from 'lucide-react';
+import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays, Info, Search } from 'lucide-react';
 import { extractDocumentData, type ExtractDocumentDataOutput } from '@/ai/flows/extract-document-data';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
 import Image from 'next/image';
+import { geocodeAddress } from '@/ai/flows/geocode-address';
 
 type Step = 'welcome' | 'scan' | 'confirm' | 'success';
 
@@ -40,8 +41,10 @@ export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractDocumentDataOutput | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const { toast } = useToast();
   const { addDoc } = useMockData();
   const { data: schools } = useMockCollection('schools');
@@ -66,10 +69,41 @@ export default function PublicRegistrationPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to top on step change - Resolvendo o requisito de iniciar no cabeçalho
+  // Auto-scroll to top on step change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
+
+  const handleSmartSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    try {
+        const result = await geocodeAddress({ address: searchQuery });
+        const parts = result.formattedAddress.split(',');
+        
+        if (parts[0]) setStreet(parts[0].trim());
+        
+        // Tenta detectar cidade e estado
+        if (result.formattedAddress.toLowerCase().includes('são paulo')) {
+            setCity('São Paulo');
+            setState('SP');
+        }
+
+        toast({
+            title: "Endereço localizado!",
+            description: "Campos preenchidos via busca inteligente.",
+        });
+    } catch (e) {
+        toast({
+            title: "Busca falhou",
+            description: "Tente informar a rua, bairro e cidade.",
+            variant: "destructive"
+        });
+    } finally {
+        setIsSearching(false);
+    }
+  };
 
   // Auto-fetch address from ViaCEP
   useEffect(() => {
@@ -306,6 +340,27 @@ export default function PublicRegistrationPage() {
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta
                         </p>
+                        
+                        {/* Smart Search Field for Parents */}
+                        <div className="bg-primary/5 p-3 rounded-lg border border-primary/10 space-y-3 mb-4">
+                            <div className="flex items-center gap-2 text-primary font-semibold text-[10px] uppercase tracking-widest">
+                                <Sparkles className="h-3.5 w-3.5" />
+                                <span>Busca Rápida de Endereço</span>
+                            </div>
+                            <div className="flex gap-2">
+                                <Input 
+                                    placeholder="Ex: Rua Oscar Freire, 50, São Paulo" 
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                    onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
+                                    className="bg-background h-9 text-sm"
+                                />
+                                <Button size="sm" variant="secondary" onClick={handleSmartSearch} disabled={isSearching || !searchQuery.trim()}>
+                                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                                </Button>
+                            </div>
+                        </div>
+
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="space-y-2 sm:col-span-1">
