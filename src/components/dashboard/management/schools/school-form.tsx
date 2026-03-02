@@ -198,7 +198,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
-          {/* Busca Inteligente integrada ao conteúdo */}
+          {/* Busca Inteligente integrada ao conteúdo para evitar cabeçalho fixo poluído */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />

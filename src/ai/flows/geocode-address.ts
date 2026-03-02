@@ -60,7 +60,7 @@ export const geocodeAddress = ai.defineFlow(
         const props = feature.properties;
 
         // Mapeamento inteligente para o padrão brasileiro do OpenStreetMap/Geoapify
-        // Prioriza postcode para o campo zipCode
+        // Prioriza postcode para o campo zipCode e housenumber para o número
         return {
           latitude: lat,
           longitude: lon,
