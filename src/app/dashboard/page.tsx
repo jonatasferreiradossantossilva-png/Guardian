@@ -37,6 +37,7 @@ import { OnboardingGuide } from '@/components/dashboard/onboarding-guide';
 import { validateGeoapifyApi, type ValidateApiOutput } from '@/ai/flows/validate-api-keys';
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 // --- Mobile Home Screen Component ---
 function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => void, onShareRegistration: () => void }) {

@@ -113,28 +113,22 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             s.state === searchUF
         );
 
-        if (cityFilter.length === 0) {
-            toast({ title: "Sem dados para esta cidade", description: "Tente usar a busca do Google." });
-            setIsSearchingInternal(false);
-            return;
-        }
-
         const result = await searchSchoolsInep({
             query: searchQuery,
             city: searchCity,
             state: searchUF,
-            knowledgeBase: cityFilter
+            knowledgeBase: cityFilter.length > 0 ? cityFilter : knowledgeBase // Fallback para toda base se não achar na cidade
         });
         
         const enrichedMatches = result.matches.map(match => {
-            const fullData = knowledgeBase.find(kb => kb.id === match.id);
+            const fullData = (knowledgeBase || []).find(kb => kb.id === match.id);
             return { ...fullData, score: match.score };
-        });
+        }).filter(Boolean);
 
         setAiSuggestions(enrichedMatches);
         
         if (enrichedMatches.length === 0) {
-            toast({ title: "Nenhuma sugestão encontrada", description: "Use a busca global do Google." });
+            toast({ title: "Nenhuma sugestão encontrada", description: "Tente usar a busca global do Google." });
         }
     } catch (e) {
         console.error(e);
@@ -190,11 +184,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   };
 
   useEffect(() => {
-    if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
+    const cleanedCep = zipCode?.replace(/\D/g, '');
+    if (cleanedCep && cleanedCep.length === 8) {
         const fetchAddress = async () => {
             setIsFetchingCep(true);
             try {
-                const res = await fetch(`https://viacep.com.br/ws/${zipCode.replace(/\D/g, '')}/json/`);
+                const res = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
                 const data = await res.json();
                 if (!data.erro) {
                     form.setValue('street', data.logradouro || '', { shouldValidate: true, shouldDirty: true });
@@ -268,7 +263,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
           
-          {/* Sessão de Busca Híbrida */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-4">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
