@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText } from 'lucide-react';
+import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
@@ -15,6 +15,8 @@ import { ptBR } from 'date-fns/locale';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function PendingRegistrationsPage() {
   const { data: registrations, isLoading } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
@@ -24,15 +26,25 @@ export default function PendingRegistrationsPage() {
 
   const [selectedReg, setSelectedReg] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [approvedMonthlyFee, setApprovedMonthlyFee] = useState<number>(450);
 
   const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
 
+  const handleOpenReview = (reg: any) => {
+      setSelectedReg(reg);
+      setApprovedMonthlyFee(450); // Valor padrão sugerido
+  };
+
   const handleApprove = async (reg: any) => {
+    if (!approvedMonthlyFee || approvedMonthlyFee <= 0) {
+        toast({ title: "Valor inválido", description: "Por favor, defina o valor da mensalidade.", variant: "destructive" });
+        return;
+    }
+
     setIsProcessing(true);
     try {
         const address = reg.address || {};
         
-        // 0. Tentar obter coordenadas GPS de forma invisível para o aluno
         let latitude = 0;
         let longitude = 0;
         if (address.street && address.city) {
@@ -46,7 +58,6 @@ export default function PendingRegistrationsPage() {
             }
         }
 
-        // 1. Criar o Pai com o endereço completo vindo do formulário
         const newParentId = `parent-${Date.now()}`;
         addDoc('parents', {
             id: newParentId,
@@ -56,11 +67,10 @@ export default function PendingRegistrationsPage() {
             phone: reg.phone,
             cpf: reg.documentData?.cpf,
             rg: reg.documentData?.rg,
-            ...address, // zipCode, street, number, complement, neighborhood, city, state
+            ...address,
             active: true
         });
 
-        // 2. Criar o Aluno sincronizando o endereço e as coordenadas GPS obtidas
         addDoc('students', {
             name: reg.studentName,
             schoolId: reg.schoolId,
@@ -70,15 +80,15 @@ export default function PendingRegistrationsPage() {
             ...address,
             latitude,
             longitude,
+            monthlyFee: Number(approvedMonthlyFee),
             active: true
         });
 
-        // 3. Marcar solicitação como aprovada
         updateDoc('pending_registrations', reg.id, { status: 'approved' });
 
         toast({ 
             title: "Solicitação Aprovada!", 
-            description: "Pai e Aluno integrados com sucesso. Endereço e GPS configurados automaticamente." 
+            description: `Pai e Aluno integrados. Mensalidade de R$ ${approvedMonthlyFee.toFixed(2)} configurada.` 
         });
         setSelectedReg(null);
     } catch (e) {
@@ -116,7 +126,6 @@ export default function PendingRegistrationsPage() {
             <div className="flex justify-center py-10"><Loader2 className="animate-spin" /></div>
           ) : registrations && registrations.length > 0 ? (
             <>
-              {/* Desktop View */}
               <div className="hidden md:block">
                 <div className="rounded-md border mx-6">
                   <Table>
@@ -139,7 +148,7 @@ export default function PendingRegistrationsPage() {
                             {formatDistanceToNow(new Date(reg.createdAt), { addSuffix: true, locale: ptBR })}
                           </TableCell>
                           <TableCell className="text-right">
-                            <Button variant="outline" size="sm" onClick={() => setSelectedReg(reg)}>
+                            <Button variant="outline" size="sm" onClick={() => handleOpenReview(reg)}>
                               <Eye className="mr-2 h-4 w-4" /> Revisar
                             </Button>
                           </TableCell>
@@ -150,7 +159,6 @@ export default function PendingRegistrationsPage() {
                 </div>
               </div>
 
-              {/* Mobile Card View */}
               <div className="md:hidden divide-y">
                 {registrations.map((reg) => (
                   <div key={reg.id} className="p-4 space-y-3">
@@ -167,7 +175,7 @@ export default function PendingRegistrationsPage() {
                       <School className="h-3 w-3" />
                       <span>{schoolsMap.get(reg.schoolId) || 'N/A'}</span>
                     </div>
-                    <Button variant="outline" className="w-full h-9 text-xs" onClick={() => setSelectedReg(reg)}>
+                    <Button variant="outline" className="w-full h-9 text-xs" onClick={() => handleOpenReview(reg)}>
                       <Eye className="mr-2 h-3.5 w-3.5" /> Revisar Dados da IA
                     </Button>
                   </div>
@@ -184,7 +192,6 @@ export default function PendingRegistrationsPage() {
         </CardContent>
       </Card>
 
-      {/* Detalhes da Solicitação */}
       <Dialog open={!!selectedReg} onOpenChange={() => setSelectedReg(null)}>
         {selectedReg && (
             <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden">
@@ -228,9 +235,27 @@ export default function PendingRegistrationsPage() {
                                     <Detail label="Escola" value={schoolsMap.get(selectedReg.schoolId)} />
                                 </div>
                             </div>
+
+                            <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
+                                  <DollarSign className="h-3 w-3" /> Configuração Financeira
+                                </p>
+                                <div className="space-y-2">
+                                    <Label htmlFor="rev-fee" className="text-xs">Valor da Mensalidade (R$)</Label>
+                                    <Input 
+                                        id="rev-fee"
+                                        type="number" 
+                                        value={approvedMonthlyFee} 
+                                        onChange={(e) => setApprovedMonthlyFee(Number(e.target.value))}
+                                        className="bg-background font-bold text-lg"
+                                    />
+                                    <p className="text-[10px] text-muted-foreground italic">Este valor será usado para gerar as faturas automáticas.</p>
+                                </div>
+                            </div>
+
                             <Alert variant="destructive" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
                                 <AlertTriangle className="h-4 w-4" />
-                                <AlertDescription className="text-[10px]">A aprovação irá sincronizar automaticamente os endereços e buscar a localização GPS.</AlertDescription>
+                                <AlertDescription className="text-[10px]">A aprovação irá sincronizar endereços e buscar a localização GPS automaticamente.</AlertDescription>
                             </Alert>
                         </div>
                     </div>

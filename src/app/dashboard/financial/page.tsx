@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, Loader2, Pencil, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt, BellRing } from 'lucide-react';
+import { FilePlus, Loader2, Pencil, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt, BellRing, AlertTriangle } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -151,11 +151,12 @@ function RevenuesTab() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReminderAlertOpen, setIsReminderAlertOpen] = useState(false);
   const [reminders, setReminders] = useState<{ parentName: string; studentName: string }[]>([]);
+  
+  // Validation State for Invoice Generation
+  const [isValidationAlertOpen, setIsValidationAlertOpen] = useState(false);
+  const [studentsWithMissingFees, setStudentsWithMissingFees] = useState<{ name: string }[]>([]);
 
-  // State for pagination
   const [currentPage, setCurrentPage] = useState(1);
-
-  // State for filters
   const [selectedStudentId, setSelectedStudentId] = useState<string>('all');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<Invoice['status'] | 'all'>('all');
@@ -167,7 +168,6 @@ function RevenuesTab() {
   const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
   const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
 
-  // Reset page when filters change
   useEffect(() => {
     setCurrentPage(1);
   }, [selectedStudentId, selectedMonth, selectedStatus]);
@@ -235,7 +235,6 @@ function RevenuesTab() {
       });
   }, [filteredInvoicesForSummary, selectedStatus]);
 
-  // Apply pagination to the filtered/sorted list
   const paginatedInvoices = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return finalFilteredList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -244,13 +243,27 @@ function RevenuesTab() {
   const totalPages = Math.ceil(finalFilteredList.length / ITEMS_PER_PAGE);
 
 
-  const handleGenerateInvoices = async () => {
+  const handleStartInvoiceGeneration = () => {
+    if (!students) return;
+
+    // Validate students with missing fees
+    const missing = students.filter(s => s.active !== false && (!s.monthlyFee || s.monthlyFee <= 0));
+    if (missing.length > 0) {
+        setStudentsWithMissingFees(missing);
+        setIsValidationAlertOpen(true);
+    } else {
+        executeInvoiceGeneration();
+    }
+  };
+
+  const executeInvoiceGeneration = async () => {
     if (!students || !parents || !invoices) {
-      toast({ title: 'Dados não carregados', description: 'Aguarde todos os dados financeiros carregarem.', variant: 'destructive' });
+      toast({ title: 'Dados não carregados', variant: 'destructive' });
       return;
     }
 
     setIsGenerating(true);
+    setIsValidationAlertOpen(false);
 
     try {
       const activeStudents = students.filter(s => s.active !== false);
@@ -263,21 +276,14 @@ function RevenuesTab() {
         });
         toast({
           title: 'Faturas Geradas!',
-          description: `${invoicesToCreate.length} nova(s) fatura(s) foram geradas para este mês.`
+          description: `${invoicesToCreate.length} nova(s) fatura(s) criadas com base nos valores individuais de cada aluno.`
         });
       } else {
-        toast({
-          title: 'Nenhuma fatura nova',
-          description: 'Todos os alunos ativos já possuem faturas para o mês corrente.'
-        });
+        toast({ title: 'Nenhuma fatura nova', description: 'Todos os alunos ativos já possuem faturas para este mês.' });
       }
     } catch (error) {
       console.error("Failed to generate invoices:", error);
-      toast({
-        title: 'Erro ao gerar faturas',
-        description: 'Ocorreu um erro ao comunicar com o serviço de geração de faturas.',
-        variant: 'destructive',
-      });
+      toast({ title: 'Erro ao gerar faturas', variant: 'destructive' });
     } finally {
       setIsGenerating(false);
     }
@@ -297,14 +303,14 @@ function RevenuesTab() {
   
   const handleSendReminders = () => {
     if (!invoices || !studentsMap.size || !parentUserToNameMap.size) {
-      toast({ title: 'Dados não carregados', description: 'Aguarde os dados de alunos e responsáveis carregarem.', variant: 'destructive'});
+      toast({ title: 'Dados não carregados', variant: 'destructive'});
       return;
     }
   
     const invoicesToRemind = invoices.filter(inv => inv.status === 'pending' || inv.status === 'overdue');
   
     if (invoicesToRemind.length === 0) {
-      toast({ title: 'Nenhuma pendência encontrada', description: 'Não há faturas pendentes ou vencidas para notificar.' });
+      toast({ title: 'Nenhuma pendência encontrada' });
       return;
     }
   
@@ -321,7 +327,7 @@ function RevenuesTab() {
     setIsReminderAlertOpen(false);
     toast({
         title: 'Simulação Concluída!',
-        description: `${reminders.length} lembrete(s) de pagamento seriam enviados para os responsáveis.`,
+        description: `${reminders.length} lembrete(s) de pagamento seriam enviados via WhatsApp.`,
     });
     setReminders([]);
   }
@@ -342,7 +348,7 @@ function RevenuesTab() {
                 <BellRing className="mr-2 h-4 w-4" />
                 Enviar Lembretes de Pagamento
             </Button>
-            <Button onClick={handleGenerateInvoices} disabled={isGenerating} className="w-full sm:w-auto">
+            <Button onClick={handleStartInvoiceGeneration} disabled={isGenerating} className="w-full sm:w-auto">
                 {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <FilePlus className="mr-2 h-4 w-4" />}
                 Gerar Faturas do Mês
             </Button>
@@ -546,6 +552,8 @@ function RevenuesTab() {
                 )}
             </CardContent>
         </Card>
+
+        {/* Reminders Alert Dialog */}
         <AlertDialog open={isReminderAlertOpen} onOpenChange={setIsReminderAlertOpen}>
           <AlertDialogContent>
               <AlertDialogHeader>
@@ -569,6 +577,35 @@ function RevenuesTab() {
               </AlertDialogFooter>
           </AlertDialogContent>
         </AlertDialog>
+
+        {/* Validation Alert Dialog for Invoice Generation */}
+        <AlertDialog open={isValidationAlertOpen} onOpenChange={setIsValidationAlertOpen}>
+          <AlertDialogContent className="border-destructive/20">
+              <AlertDialogHeader>
+                  <AlertDialogTitle className="flex items-center gap-2 text-destructive">
+                      <AlertTriangle className="h-5 w-5" />
+                      Atenção: Alunos com valor Zerado
+                  </AlertDialogTitle>
+                  <AlertDialogDescription>
+                      Os {studentsWithMissingFees.length} alunos listados abaixo estão ativos mas não possuem um valor de mensalidade configurado. Se você prosseguir, as faturas para eles não serão geradas ou terão valor R$ 0,00.
+                  </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="relative max-h-48 overflow-y-auto pr-2 bg-muted/20 rounded-md p-3">
+                  <div className="grid grid-cols-1 gap-2">
+                      {studentsWithMissingFees.map((s, i) => (
+                          <div key={i} className="text-sm font-medium p-2 border rounded bg-background flex items-center justify-between">
+                              {s.name}
+                              <Badge variant="outline" className="text-[10px] text-destructive border-destructive/20">R$ 0,00</Badge>
+                          </div>
+                      ))}
+                  </div>
+              </div>
+              <AlertDialogFooter className="mt-4 gap-2">
+                  <AlertDialogCancel onClick={() => setIsValidationAlertOpen(false)}>Cancelar e Corrigir</AlertDialogCancel>
+                  <AlertDialogAction onClick={executeInvoiceGeneration} className="bg-amber-600 hover:bg-amber-700">Prosseguir Assim Mesmo</AlertDialogAction>
+              </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
     </div>
   )
 }
@@ -581,7 +618,6 @@ function ExpensesTab() {
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedExpense, setSelectedExpense] = useState<Expense | null>(null);
 
-  // State for pagination & filters
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
 
@@ -611,7 +647,6 @@ function ExpensesTab() {
 
   const totalSpent = useMemo(() => filteredExpensesList.reduce((acc, exp) => acc + exp.amount, 0), [filteredExpensesList]);
 
-  // Paginated View
   const paginatedExpenses = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredExpensesList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
@@ -632,11 +667,7 @@ function ExpensesTab() {
   const confirmDelete = () => {
     if (!selectedExpense) return;
     deleteDoc('expenses', selectedExpense.id);
-    toast({
-        title: "Despesa deletada!",
-        description: `O registro de despesa foi removido.`,
-        variant: "destructive"
-    });
+    toast({ title: "Despesa deletada!", variant: "destructive" });
     setIsDeleteDialogOpen(false);
     setSelectedExpense(null);
   }
@@ -646,8 +677,6 @@ function ExpensesTab() {
     setSelectedExpense(null);
   };
   
-  const categories: Expense['category'][] = ['Combustível', 'Manutenção', 'Salários', 'Impostos', 'Outros'];
-
   return (
     <div className="space-y-6">
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -691,7 +720,7 @@ function ExpensesTab() {
                 </CardHeader>
                 <CardContent>
                     <div className="text-2xl font-bold">R$ {totalSpent.toFixed(2).replace('.',',')}</div>
-                    <p className="text-xs text-muted-foreground">{filteredExpensesList.length} lançamento(s) no período</p>
+                    <p className="text-xs text-muted-foreground">{filteredExpensesList.length} lançamento(s)</p>
                 </CardContent>
             </Card>
         </div>
@@ -769,7 +798,7 @@ function ExpensesTab() {
                             />
                         </>
                     ) : (
-                         !isLoading && <div className="h-24 text-center content-center text-muted-foreground">Nenhuma despesa encontrada para os filtros selecionados.</div>
+                         !isLoading && <div className="h-24 text-center content-center text-muted-foreground">Nenhuma despesa encontrada.</div>
                     )}
             </CardContent>
         </Card>
@@ -777,7 +806,7 @@ function ExpensesTab() {
             <AlertDialogContent>
                 <AlertDialogHeader>
                     <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
-                    <AlertDialogDescription>Esta ação não pode ser desfeita. Isso irá deletar permanentemente a despesa: <span className="font-bold">{selectedExpense?.description}</span>.</AlertDialogDescription>
+                    <AlertDialogDescription>Esta ação não pode ser desfeita. Deletar permanentemente a despesa: <span className="font-bold">{selectedExpense?.description}</span>.</AlertDialogDescription>
                 </AlertDialogHeader>
                 <AlertDialogFooter>
                     <AlertDialogCancel onClick={() => setSelectedExpense(null)}>Cancelar</AlertDialogCancel>
