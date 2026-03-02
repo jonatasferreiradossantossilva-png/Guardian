@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais para o protótipo do Guardian.
@@ -20,6 +21,7 @@ export const initialMockData = {
             id: "school-1",
             name: "Escola Primária do Saber",
             cnpj: "12.345.678/0001-99",
+            type: "public",
             active: true,
             latitude: -23.5505,
             longitude: -46.6333,
@@ -34,6 +36,7 @@ export const initialMockData = {
             id: "school-2",
             name: "Colégio Vanguarda",
             cnpj: "98.765.432/0001-11",
+            type: "private",
             active: true,
             latitude: -23.5515,
             longitude: -46.6355,
@@ -46,49 +49,29 @@ export const initialMockData = {
         }
     ],
     school_knowledge_base: [
-        {
-            id: "skb-1",
-            name: "Colégio Bandeirantes",
-            latitude: -23.5842,
-            longitude: -46.6461,
-            street: "Rua Estela",
-            number: "268",
-            neighborhood: "Vila Mariana",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "04011-001"
-        },
-        {
-            id: "skb-2",
-            name: "Escola Mobile",
-            latitude: -23.5931,
-            longitude: -46.6725,
-            street: "Rua Diogo Jacome",
-            number: "818",
-            neighborhood: "Vila Nova Conceição",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "04512-001"
-        },
-        // Escolas Carapicuíba - SP
-        { id: "skb-c-1", name: "ADVENTISTA DE CARAPICUIBA COLEGIO", zipCode: "06310-160", city: "Carapicuíba", state: "SP", latitude: -23.5225, longitude: -46.8355, neighborhood: "Centro" },
-        { id: "skb-c-2", name: "AGOSTINHO COLEGIO", zipCode: "06310-100", city: "Carapicuíba", state: "SP", latitude: -23.5235, longitude: -46.8345, neighborhood: "Centro" },
-        { id: "skb-c-3", name: "AMALIA TIBIRICA DE CARVALHO PROFESSORA EE", zipCode: "06386-430", city: "Carapicuíba", state: "SP", latitude: -23.5345, longitude: -46.8255, neighborhood: "Vila Dirce" },
-        { id: "skb-c-4", name: "ANA MARIA DE SOUZA PROFESSORA EMEF", zipCode: "06333-270", city: "Carapicuíba", state: "SP", latitude: -23.5412, longitude: -46.8123, neighborhood: "Ariston" },
-        { id: "skb-c-5", name: "ANDREI SAKHAROV EE", zipCode: "06327-270", city: "Carapicuíba", state: "SP", latitude: -23.5288, longitude: -46.8412, neighborhood: "Parque Jandaia" },
-        { id: "skb-c-6", name: "ANNA LAURA EMEI", zipCode: "06328-340", city: "Carapicuíba", state: "SP", latitude: -23.5299, longitude: -46.8455, neighborhood: "Cohab V" },
-        { id: "skb-c-7", name: "ANTONIO DE OLIVEIRA PROFESSOR EE", zipCode: "06321-610", city: "Carapicuíba", state: "SP", latitude: -23.5312, longitude: -46.8388, neighborhood: "Vila Cretti" },
-        { id: "skb-c-8", name: "BASILIO BADI EE", zipCode: "06325-000", city: "Carapicuíba", state: "SP", latitude: -23.5355, longitude: -46.8422, neighborhood: "Vila Menck" },
-        { id: "skb-c-9", name: "CAMINHO DO SABER COLEGIO", zipCode: "06321-110", city: "Carapicuíba", state: "SP", latitude: -23.5322, longitude: -46.8377, neighborhood: "Vila Cretti" },
-        { id: "skb-c-10", name: "CAROLINA MARIA DE JESUS PROFESSORA EMEF", zipCode: "06341-000", city: "Carapicuíba", state: "SP", latitude: -23.5455, longitude: -46.8211, neighborhood: "Pq. Santa Teresa" },
-        { id: "skb-c-11", name: "CHICO MENDES EMEF", zipCode: "06390-400", city: "Carapicuíba", state: "SP", latitude: -23.5511, longitude: -46.8155, neighborhood: "Vila Marcondes" },
-        { id: "skb-c-12", name: "DIVINO MESTRE COLEGIO", zipCode: "06315-000", city: "Carapicuíba", state: "SP", latitude: -23.5244, longitude: -46.8399, neighborhood: "Vila Caldas" },
-        { id: "skb-c-13", name: "ESCOLA DA VILA COLEGIO", zipCode: "06355-300", city: "Carapicuíba", state: "SP", latitude: -23.5611, longitude: -46.8288, neighborhood: "Aldeia de Carapicuiba" },
-        { id: "skb-c-14", name: "EUCLIDES DA CUNHA EE", zipCode: "06310-000", city: "Carapicuíba", state: "SP", latitude: -23.5211, longitude: -46.8333, neighborhood: "Centro" },
-        { id: "skb-c-15", name: "IMACULADA CONCEICAO COLEGIO", zipCode: "06310-010", city: "Carapicuíba", state: "SP", latitude: -23.5215, longitude: -46.8322, neighborhood: "Centro" },
-        { id: "skb-c-16", name: "PIAGET COLEGIO", zipCode: "06315-010", city: "Carapicuíba", state: "SP", latitude: -23.5255, longitude: -46.8388, neighborhood: "Vila Caldas" },
-        { id: "skb-c-17", name: "TOBIAS DE AGUIAR EE", zipCode: "06310-050", city: "Carapicuíba", state: "SP", latitude: -23.5205, longitude: -46.8311, neighborhood: "Centro" },
-        { id: "skb-c-18", name: "SAO JORGE COLEGIO", zipCode: "06310-040", city: "Carapicuíba", state: "SP", latitude: -23.5218, longitude: -46.8344, neighborhood: "Centro" }
+        // Escolas Carapicuíba - SP (Privadas)
+        { id: "skb-c-1", name: "ADVENTISTA DE CARAPICUIBA COLEGIO", type: "private", zipCode: "06310-160", city: "Carapicuíba", state: "SP", latitude: -23.5225, longitude: -46.8355, neighborhood: "Centro" },
+        { id: "skb-c-2", name: "AGOSTINHO COLEGIO", type: "private", zipCode: "06310-100", city: "Carapicuíba", state: "SP", latitude: -23.5235, longitude: -46.8345, neighborhood: "Centro" },
+        { id: "skb-c-9", name: "CAMINHO DO SABER COLEGIO", type: "private", zipCode: "06321-110", city: "Carapicuíba", state: "SP", latitude: -23.5322, longitude: -46.8377, neighborhood: "Vila Cretti" },
+        { id: "skb-c-12", name: "DIVINO MESTRE COLEGIO", type: "private", zipCode: "06315-000", city: "Carapicuíba", state: "SP", latitude: -23.5244, longitude: -46.8399, neighborhood: "Vila Caldas" },
+        { id: "skb-c-13", name: "ESCOLA DA VILA COLEGIO", type: "private", zipCode: "06355-300", city: "Carapicuíba", state: "SP", latitude: -23.5611, longitude: -46.8288, neighborhood: "Aldeia de Carapicuiba" },
+        { id: "skb-c-15", name: "IMACULADA CONCEICAO COLEGIO", type: "private", zipCode: "06310-010", city: "Carapicuíba", state: "SP", latitude: -23.5215, longitude: -46.8322, neighborhood: "Centro" },
+        { id: "skb-c-16", name: "PIAGET COLEGIO", type: "private", zipCode: "06315-010", city: "Carapicuíba", state: "SP", latitude: -23.5255, longitude: -46.8388, neighborhood: "Vila Caldas" },
+        { id: "skb-c-18", name: "SAO JORGE COLEGIO", type: "private", zipCode: "06310-040", city: "Carapicuíba", state: "SP", latitude: -23.5218, longitude: -46.8344, neighborhood: "Centro" },
+        { id: "skb-c-19", name: "COLEGIO ALFA", type: "private", zipCode: "06310-200", city: "Carapicuíba", state: "SP", latitude: -23.5240, longitude: -46.8310, neighborhood: "Centro" },
+        { id: "skb-c-20", name: "COLEGIO OBJETIVO CARAPICUIBA", type: "private", zipCode: "06310-250", city: "Carapicuíba", state: "SP", latitude: -23.5210, longitude: -46.8360, neighborhood: "Centro" },
+        
+        // Escolas Carapicuíba - SP (Públicas)
+        { id: "skb-c-3", name: "AMALIA TIBIRICA DE CARVALHO PROFESSORA EE", type: "public", zipCode: "06386-430", city: "Carapicuíba", state: "SP", latitude: -23.5345, longitude: -46.8255, neighborhood: "Vila Dirce" },
+        { id: "skb-c-4", name: "ANA MARIA DE SOUZA PROFESSORA EMEF", type: "public", zipCode: "06333-270", city: "Carapicuíba", state: "SP", latitude: -23.5412, longitude: -46.8123, neighborhood: "Ariston" },
+        { id: "skb-c-5", name: "ANDREI SAKHAROV EE", type: "public", zipCode: "06327-270", city: "Carapicuíba", state: "SP", latitude: -23.5288, longitude: -46.8412, neighborhood: "Parque Jandaia" },
+        { id: "skb-c-6", name: "ANNA LAURA EMEI", type: "public", zipCode: "06328-340", city: "Carapicuíba", state: "SP", latitude: -23.5299, longitude: -46.8455, neighborhood: "Cohab V" },
+        { id: "skb-c-7", name: "ANTONIO DE OLIVEIRA PROFESSOR EE", type: "public", zipCode: "06321-610", city: "Carapicuíba", state: "SP", latitude: -23.5312, longitude: -46.8388, neighborhood: "Vila Cretti" },
+        { id: "skb-c-8", name: "BASILIO BADI EE", type: "public", zipCode: "06325-000", city: "Carapicuíba", state: "SP", latitude: -23.5355, longitude: -46.8422, neighborhood: "Vila Menck" },
+        { id: "skb-c-10", name: "CAROLINA MARIA DE JESUS PROFESSORA EMEF", type: "public", zipCode: "06341-000", city: "Carapicuíba", state: "SP", latitude: -23.5455, longitude: -46.8211, neighborhood: "Pq. Santa Teresa" },
+        { id: "skb-c-11", name: "CHICO MENDES EMEF", type: "public", zipCode: "06390-400", city: "Carapicuíba", state: "SP", latitude: -23.5511, longitude: -46.8155, neighborhood: "Vila Marcondes" },
+        { id: "skb-c-14", name: "EUCLIDES DA CUNHA EE", type: "public", zipCode: "06310-000", city: "Carapicuíba", state: "SP", latitude: -23.5211, longitude: -46.8333, neighborhood: "Centro" },
+        { id: "skb-c-17", name: "TOBIAS DE AGUIAR EE", type: "public", zipCode: "06310-050", city: "Carapicuíba", state: "SP", latitude: -23.5205, longitude: -46.8311, neighborhood: "Centro" }
     ],
     parents: [
         {

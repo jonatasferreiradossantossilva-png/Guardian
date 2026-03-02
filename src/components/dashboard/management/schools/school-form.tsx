@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -24,7 +25,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useCallback } from 'react';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
-import { Loader2, Search, Sparkles, MapPin, CheckCircle2, Globe, Building2, Info } from 'lucide-react';
+import { Loader2, Search, Sparkles, MapPin, CheckCircle2, Globe, Building2, Info, GraduationCap, School } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { searchSchoolsInep } from '@/ai/flows/search-schools-inep';
@@ -32,6 +33,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Label } from '@/components/ui/label';
+import { cn } from '@/lib/utils';
 
 const UF_LIST = [
     "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS", "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC", "SP", "SE", "TO"
@@ -40,6 +42,7 @@ const UF_LIST = [
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   cnpj: z.string().optional(),
+  type: z.enum(['public', 'private']).default('public'),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   zipCode: z.string().optional(),
@@ -62,6 +65,7 @@ interface SchoolFormProps {
 const defaultValues: SchoolFormValues = {
   name: '',
   cnpj: '',
+  type: 'public',
   latitude: undefined,
   longitude: undefined,
   zipCode: '',
@@ -135,6 +139,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const selectFromKnowledgeBase = (skbItem: any) => {
     form.setValue('name', skbItem.name, { shouldValidate: true, shouldDirty: true });
+    form.setValue('type', skbItem.type || 'public', { shouldValidate: true, shouldDirty: true });
     form.setValue('street', skbItem.street || '', { shouldValidate: true, shouldDirty: true });
     form.setValue('number', skbItem.number || '', { shouldValidate: true, shouldDirty: true });
     form.setValue('neighborhood', skbItem.neighborhood || '', { shouldValidate: true, shouldDirty: true });
@@ -222,6 +227,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       form.reset({
         name: school.name || '',
         cnpj: school.cnpj || '',
+        type: school.type || 'public',
         latitude: school.latitude,
         longitude: school.longitude,
         zipCode: school.zipCode || '',
@@ -257,6 +263,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             if (!existsInKB) {
                 addDoc('school_knowledge_base', {
                     name: data.name,
+                    type: data.type,
                     latitude: data.latitude,
                     longitude: data.longitude,
                     street: data.street,
@@ -356,7 +363,15 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                                     className="w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors group flex items-center justify-between"
                                 >
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold group-hover:text-primary truncate">{item.name}</p>
+                                        <div className="flex items-center gap-2">
+                                            <p className="text-sm font-bold group-hover:text-primary truncate">{item.name}</p>
+                                            <Badge variant="outline" className={cn(
+                                                "text-[8px] h-3.5 px-1 uppercase",
+                                                item.type === 'private' ? "text-amber-600 border-amber-200 bg-amber-50" : "text-blue-600 border-blue-200 bg-blue-50"
+                                            )}>
+                                                {item.type === 'private' ? 'Privada' : 'Pública'}
+                                            </Badge>
+                                        </div>
                                         <p className="text-[10px] text-muted-foreground truncate">{item.neighborhood}, {item.city} - {item.state}</p>
                                     </div>
                                     <Badge variant="secondary" className="text-[9px] h-4">Custo Zero</Badge>
@@ -374,17 +389,42 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
           <Form {...form}>
             <form id="school-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-10">
-              <FormField
-                control={form.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Building2 className="h-4 w-4" />Nome Oficial da Unidade</FormLabel>
-                    <FormControl><Input placeholder="Ex: Escola Primária do Saber" {...field} value={field.value ?? ''} /></FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="md:col-span-2">
+                    <FormField
+                        control={form.control}
+                        name="name"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="flex items-center gap-2"><Building2 className="h-4 w-4" />Nome Oficial da Unidade</FormLabel>
+                            <FormControl><Input placeholder="Ex: Escola Primária do Saber" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                </div>
+                <FormField
+                    control={form.control}
+                    name="type"
+                    render={({ field }) => (
+                    <FormItem>
+                        <FormLabel className="flex items-center gap-2"><GraduationCap className="h-4 w-4" />Tipo de Escola</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                    <SelectValue />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="public">Pública</SelectItem>
+                                <SelectItem value="private">Privada</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                    </FormItem>
+                    )}
+                />
+              </div>
 
               <div className="border-t pt-4 mt-4">
                 <p className="text-sm font-bold mb-4 flex items-center gap-2 text-foreground/80"><MapPin className="h-4 w-4 text-primary" /> Endereço Confirmado</p>
