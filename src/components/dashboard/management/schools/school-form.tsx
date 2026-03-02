@@ -60,6 +60,10 @@ interface SchoolFormProps {
   onFormSubmit: () => void;
 }
 
+// Auxiliar para normalizar strings (remover acentos para comparação)
+const normalize = (str: string) => 
+    str?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim() || "";
+
 export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
@@ -94,10 +98,14 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const filteredSuggestions = useMemo(() => {
     if (!knowledgeBase || searchQuery.length < 1 || !selectedCity || !selectedUF) return [];
     
+    const normCity = normalize(selectedCity);
+    const normUF = normalize(selectedUF);
+    const normQuery = normalize(searchQuery);
+
     return knowledgeBase.filter((s: any) => 
-        s.city.toLowerCase().trim() === selectedCity.toLowerCase().trim() &&
-        s.state.toUpperCase() === selectedUF.toUpperCase() &&
-        s.name.toLowerCase().includes(searchQuery.toLowerCase())
+        normalize(s.city) === normCity &&
+        normalize(s.state) === normUF &&
+        normalize(s.name).includes(normQuery)
     ).slice(0, 5);
   }, [knowledgeBase, searchQuery, selectedCity, selectedUF]);
 
@@ -158,7 +166,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             updateDoc('schools', school.id, data);
         } else {
             addDoc('schools', data);
-            // Alimenta a base global com o novo cadastro
             addDoc('school_knowledge_base', {
                 name: data.name,
                 city: data.city,
@@ -244,16 +251,16 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                         onClick={handleGoogleSearch} 
                         disabled={isSearchingGoogle || !searchQuery.trim() || !selectedCity || !selectedUF}
                         className="border-primary/20 text-primary h-11 w-11"
-                        title="Não encontrou? Buscar no Google Maps"
+                        title="Não encontrou? Buscar no Mapa"
                     >
-                        {isSearchingGoogle ? <Loader2 className="h-5 w-5 animate-spin" /> : <Globe className="h-5 w-5" />}
+                        {isSearchingGoogle ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
                     </Button>
                 </div>
 
                 {filteredSuggestions.length > 0 && (
                     <div className="absolute top-full left-0 right-0 z-[100] mt-1 bg-background border-2 rounded-md shadow-2xl overflow-hidden border-primary">
                         <div className="px-3 py-1.5 bg-primary/10 text-[10px] font-bold text-primary uppercase flex items-center gap-2">
-                            <Sparkles className="h-3 w-3" /> Sugestões da Base de Carapicuíba
+                            <Sparkles className="h-3 w-3" /> Sugestões da Base de {selectedCity}
                         </div>
                         <div className="divide-y max-h-60 overflow-y-auto">
                             {filteredSuggestions.map((item: any) => (
