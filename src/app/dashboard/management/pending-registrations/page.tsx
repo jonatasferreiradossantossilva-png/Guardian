@@ -14,6 +14,7 @@ import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { geocodeAddress } from '@/ai/flows/geocode-address';
 
 export default function PendingRegistrationsPage() {
   const { data: registrations, isLoading } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
@@ -29,35 +30,59 @@ export default function PendingRegistrationsPage() {
   const handleApprove = async (reg: any) => {
     setIsProcessing(true);
     try {
-        // 1. Criar o Pai
+        const address = reg.address || {};
+        
+        // 0. Tentar obter coordenadas GPS de forma invisível para o aluno
+        let latitude = 0;
+        let longitude = 0;
+        if (address.street && address.city) {
+            try {
+                const fullAddress = `${address.street}, ${address.number || ''}, ${address.neighborhood || ''}, ${address.city} - ${address.state || ''}`;
+                const geoResult = await geocodeAddress({ address: fullAddress });
+                latitude = geoResult.latitude;
+                longitude = geoResult.longitude;
+            } catch (e) {
+                console.warn("Geocodificação automática falhou na aprovação:", e);
+            }
+        }
+
+        // 1. Criar o Pai com o endereço completo vindo do formulário
         const newParentId = `parent-${Date.now()}`;
         addDoc('parents', {
             id: newParentId,
-            userId: `user-gen-${Date.now()}`, 
+            userId: reg.userId || `user-gen-${Date.now()}`, 
             name: reg.parentName,
             email: reg.email,
             phone: reg.phone,
             cpf: reg.documentData?.cpf,
             rg: reg.documentData?.rg,
+            ...address, // zipCode, street, number, complement, neighborhood, city, state
             active: true
         });
 
-        // 2. Criar o Aluno
+        // 2. Criar o Aluno sincronizando o endereço e as coordenadas GPS obtidas
         addDoc('students', {
             name: reg.studentName,
             schoolId: reg.schoolId,
             parentId: newParentId,
             shift: 'Manhã', 
             status: 'aguardando',
+            ...address,
+            latitude,
+            longitude,
             active: true
         });
 
         // 3. Marcar solicitação como aprovada
         updateDoc('pending_registrations', reg.id, { status: 'approved' });
 
-        toast({ title: "Solicitação Aprovada!", description: "Pai e Aluno foram adicionados aos cadastros oficiais." });
+        toast({ 
+            title: "Solicitação Aprovada!", 
+            description: "Pai e Aluno integrados com sucesso. Endereço e GPS configurados automaticamente." 
+        });
         setSelectedReg(null);
     } catch (e) {
+        console.error(e);
         toast({ title: "Erro ao processar", variant: "destructive" });
     } finally {
         setIsProcessing(false);
@@ -183,6 +208,16 @@ export default function PendingRegistrationsPage() {
                                   <Detail label="Telefone" value={selectedReg.phone} />
                               </div>
                           </div>
+                          <div className="p-4 bg-muted/20 rounded-lg border border-dashed">
+                              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+                                <MapPin className="h-3 w-3" /> Endereço de Coleta
+                              </p>
+                              <div className="space-y-3">
+                                  <Detail label="Rua" value={`${selectedReg.address?.street}, ${selectedReg.address?.number}`} />
+                                  <Detail label="Bairro/Cidade" value={`${selectedReg.address?.neighborhood} - ${selectedReg.address?.city}`} />
+                                  <Detail label="CEP" value={selectedReg.address?.zipCode} />
+                              </div>
+                          </div>
                       </div>
                       <div className="space-y-4">
                           <div className="p-4 bg-muted/50 rounded-lg border">
@@ -194,7 +229,7 @@ export default function PendingRegistrationsPage() {
                           </div>
                           <Alert variant="destructive" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
                               <AlertTriangle className="h-4 w-4" />
-                              <AlertDescription className="text-[10px]">Verifique se os dados de CPF/RG conferem antes de gerar o contrato.</AlertDescription>
+                              <AlertDescription className="text-[10px]">A aprovação irá sincronizar automaticamente os endereços e buscar a localização GPS.</AlertDescription>
                           </Alert>
                       </div>
                   </div>
@@ -224,3 +259,23 @@ function Detail({ label, value }: { label: string, value?: string }) {
         </div>
     )
 }
+
+function MapPin(props: any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    )
+  }
