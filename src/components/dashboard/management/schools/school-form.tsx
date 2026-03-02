@@ -77,7 +77,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     },
   });
 
-  const { zipCode } = form.watch();
+  const { zipCode, neighborhood, city } = form.watch();
 
   const handleSmartSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -96,7 +96,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         form.setValue('latitude', result.latitude);
         form.setValue('longitude', result.longitude);
         
-        // Tenta inferir o nome da escola se o campo estiver vazio
         if (!form.getValues('name')) {
             const firstPart = searchQuery.split(',')[0];
             if (firstPart && firstPart.length > 3) {
@@ -106,7 +105,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         
         toast({
             title: "Localização encontrada!",
-            description: "Endereço completo, CEP e bairro preenchidos.",
+            description: "Endereço, CEP e bairro preenchidos automaticamente.",
         });
     } catch (e) {
         toast({
@@ -123,13 +122,14 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     const cleanedCep = zipCode?.replace(/\D/g, '');
     if (cleanedCep && cleanedCep.length === 8) {
       const fetchAddress = async () => {
+        // Se já tivermos bairro e cidade (vinda da Busca Inteligente), não rodamos o ViaCEP
+        if (neighborhood && city) return;
+
         setIsFetchingCep(true);
         try {
           const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
-          if (!response.ok) throw new Error('Falha ao buscar CEP');
           const data = await response.json();
           if (!data.erro) {
-            // Só preenche se os campos estiverem vazios para não sobrescrever a Busca Inteligente
             if (!form.getValues('street')) form.setValue('street', data.logradouro || '');
             if (!form.getValues('neighborhood')) form.setValue('neighborhood', data.bairro || '');
             if (!form.getValues('city')) form.setValue('city', data.localidade || '');
@@ -144,7 +144,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       };
       fetchAddress();
     }
-  }, [zipCode, form]);
+  }, [zipCode, form, neighborhood, city]);
 
   useEffect(() => {
     if (school) {
@@ -205,11 +205,13 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Preencha as informações da escola ou use a busca combinada para agilizar.</DialogDescription>
+        <DialogDescription>Configure os dados da unidade escolar para o planejamento das rotas.</DialogDescription>
       </DialogHeader>
       
-      <div className="px-6 py-2 shrink-0">
-          <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3 mt-4">
+      <ScrollArea className="flex-1">
+        <div className="px-6 py-4 space-y-6">
+          {/* Smart Search Inside Scroll Area */}
+          <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-semibold text-sm">
                 <Sparkles className="h-4 w-4" />
                 <span>Busca Inteligente (Nome do Colégio + Cidade)</span>
@@ -227,27 +229,26 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 </Button>
             </div>
             <p className="text-[10px] text-muted-foreground italic leading-tight">
-                Dica: Informe <strong>Escola + Cidade + Rua</strong> para preencher Bairro, CEP e Número automaticamente.
+                Dica: A busca inteligente tenta preencher CEP, Bairro e coordenadas GPS para você.
             </p>
           </div>
-      </div>
 
-      <ScrollArea className="flex-1">
-        <Form {...form}>
-            <form id="school-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-6 py-4">
-            <FormField
+          <Form {...form}>
+            <form id="school-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-10">
+              <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
-                <FormItem>
+                  <FormItem>
                     <FormLabel>Nome da Escola</FormLabel>
                     <FormControl><Input placeholder="Ex: Colégio Saber" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
-                </FormItem>
+                  </FormItem>
                 )}
-            />
-            <div className="border-t pt-4 mt-4">
-                <p className="text-sm font-medium mb-2 flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço</p>
+              />
+
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-medium mb-4 flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Endereço</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                         control={form.control} name="zipCode"
@@ -268,8 +269,8 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                         control={form.control} name="street"
                         render={({ field }) => (
                             <FormItem className="md:col-span-2">
-                            <FormLabel>Rua</FormLabel>
-                            <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormLabel>Rua/Avenida</FormLabel>
+                            <FormControl><Input placeholder="Ex: Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
                             <FormMessage />
                             </FormItem>
                         )}
@@ -279,7 +280,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     <FormField
                         control={form.control} name="number"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="Ex: 123" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                     <FormField
@@ -291,7 +292,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     <FormField
                         control={form.control} name="neighborhood"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Centro" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Ex: Centro" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                 </div>
@@ -299,29 +300,31 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     <FormField
                         control={form.control} name="city"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="Ex: São Paulo" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                     <FormField
                         control={form.control} name="state"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="Ex: SP" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                 </div>
-            </div>
-            <FormField
+              </div>
+
+              <FormField
                 control={form.control}
                 name="active"
                 render={({ field }) => (
-                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4 mb-8">
-                    <div className="space-y-0.5"><FormLabel>Escola Ativa</FormLabel></div>
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                    <div className="space-y-0.5"><FormLabel>Escola Ativa para Rotas</FormLabel></div>
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-                </FormItem>
+                  </FormItem>
                 )}
-            />
+              />
             </form>
-        </Form>
+          </Form>
+        </div>
       </ScrollArea>
 
       <DialogFooter className="p-6 border-t shrink-0 bg-background">
