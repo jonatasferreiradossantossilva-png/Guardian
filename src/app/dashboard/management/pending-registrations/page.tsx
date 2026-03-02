@@ -75,7 +75,7 @@ export default function PendingRegistrationsPage() {
             phone: reg.phone,
             cpf: reg.documentData?.cpf,
             rg: reg.documentData?.rg,
-            preferredPaymentDay: reg.preferredPaymentDay || 10,
+            preferredPaymentDay: reg.preferredPaymentDay || 10, // Integração Automática do Dia Preferencial
             ...address,
             active: true
         });
@@ -83,7 +83,7 @@ export default function PendingRegistrationsPage() {
         addDoc('students', {
             name: reg.studentName,
             schoolId: reg.schoolId,
-            parentId: newParentId, // Vínculo garantido
+            parentId: newParentId, 
             shift: 'Manhã', 
             status: 'aguardando',
             ...address,

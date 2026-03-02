@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays } from 'lucide-react';
+import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays, Info } from 'lucide-react';
 import { extractDocumentData, type ExtractDocumentDataOutput } from '@/ai/flows/extract-document-data';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -66,7 +66,7 @@ export default function PublicRegistrationPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to top on step change
+  // Auto-scroll to top on step change - Resolvendo o requisito de iniciar no cabeçalho
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
@@ -360,7 +360,12 @@ export default function PublicRegistrationPage() {
                                     {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
                                 </SelectContent>
                             </Select>
-                            <p className="text-[10px] text-muted-foreground italic">Este será o dia em que suas faturas mensais vencerão. (Sujeito à aprovação do gestor)</p>
+                            <div className="p-3 bg-primary/5 rounded-md flex items-start gap-2 mt-2">
+                                <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                                <p className="text-[10px] text-muted-foreground italic leading-tight">
+                                    Este será o dia em que suas faturas mensais vencerão. A data escolhida está sujeita à aprovação final do gestor da frota.
+                                </p>
+                            </div>
                         </div>
                     </div>
 
