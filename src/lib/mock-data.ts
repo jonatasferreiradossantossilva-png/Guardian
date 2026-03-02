@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais para o protótipo do Guardian.
@@ -46,7 +45,6 @@ export const initialMockData = {
             zipCode: "01305-000"
         }
     ],
-    // Base de conhecimento alimentada pela comunidade de gestores
     school_knowledge_base: [
         {
             id: "skb-1",
@@ -128,14 +126,14 @@ export const initialMockData = {
             active: true,
             latitude: -23.5580,
             longitude: -46.6600,
-            street: "Rua das Acácias",
+            street: "Rua das Academias",
             number: "10",
             neighborhood: "Vila Madalena",
             city: "São Paulo",
             state: "SP",
             zipCode: "05445-010",
             monthlyFee: 450.00,
-            medicalNote: "Alérgico a lactose. Não pode ingerir derivados de leite no lanche."
+            medicalNote: "Alérgico a lactose."
         },
         {
             id: "student-2",
@@ -172,7 +170,7 @@ export const initialMockData = {
             state: "SP",
             zipCode: "01426-001",
             monthlyFee: 480.00,
-            medicalNote: "Asma. Levar bombinha na mochila para emergências."
+            medicalNote: "Asma."
         }
     ],
     drivers: [
@@ -240,7 +238,7 @@ export const initialMockData = {
             severity: "Média",
             timestamp: new Date().toISOString(),
             location: { lat: -23.555, lng: -46.645 },
-            description: "Congestionamento intenso na subida da Rua Augusta sentido Centro.",
+            description: "Congestionamento intenso na subida da Rua Augusta.",
             reporter: "Juliano Castro"
         }
     ],
@@ -302,7 +300,7 @@ export const initialMockData = {
         {
             id: "tpl-1",
             name: "Contrato Padrão 2024",
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}, CPF: {{responsavel_cpf}}.\nALUNO: {{aluno_nome}}.\nESCOLA: {{escola_nome}}.\nVALOR: R$ {{valor_mensalidade}} mensais.\n\nData de geração: {{data_geracao}}.\nAno Letivo: {{ano_letivo}}.",
+            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}, CPF: {{responsavel_cpf}}.\nALUNO: {{aluno_nome}}.\nESCOLA: {{escola_nome}}.\nVALOR: R$ {{valor_mensalidade}} mensais.",
             createdAt: new Date().toISOString()
         }
     ],
@@ -337,7 +335,7 @@ export const initialMockData = {
         {
             id: "ann-1",
             title: "Manutenção Preventiva - Van 01",
-            content: "Prezados pais, informamos que a Van 01 passará por manutenção amanhã. O trajeto será realizado pela Van Reserva 05 (Sprinter Branca). Os horários permanecem os mesmos.",
+            content: "Prezados pais, informamos que a Van 01 passará por manutenção amanhã.",
             createdAt: new Date().toISOString(),
             priority: "high",
             target: "all"
@@ -351,28 +349,8 @@ export const initialMockData = {
             plannedKm: 12.5,
             actualKm: 11.2,
             driverName: "Juliano Castro",
-            savingsKm: 3.2, // Estimado comparado ao plano "burro" manual
+            savingsKm: 3.2,
             fuelSaved: 19.20
-        },
-        {
-            id: "hist-2",
-            date: "2024-08-02",
-            routeName: "Rota Centro - Manhã",
-            plannedKm: 12.5,
-            actualKm: 11.8,
-            driverName: "Juliano Castro",
-            savingsKm: 2.6,
-            fuelSaved: 15.60
-        },
-        {
-            id: "hist-3",
-            date: "2024-08-03",
-            routeName: "Rota Centro - Manhã",
-            plannedKm: 12.5,
-            actualKm: 10.9,
-            driverName: "Juliano Castro",
-            savingsKm: 3.5,
-            fuelSaved: 21.00
         }
     ]
 };

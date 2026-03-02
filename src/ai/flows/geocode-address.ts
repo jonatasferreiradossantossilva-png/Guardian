@@ -33,14 +33,12 @@ export const geocodeAddress = ai.defineFlow(
     outputSchema: GeocodeAddressOutputSchema,
   },
   async ({ address }) => {
-    // Utilizamos a chave do Google Maps disponível no ambiente
     const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
     
     if (!apiKey) {
       throw new Error('Chave de API do Google Maps não configurada no ambiente.');
     }
 
-    // Chamada à Geocoding API do Google com viés para o Brasil
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
       address
     )}&key=${apiKey}&language=pt-BR&region=br`;
@@ -60,14 +58,12 @@ export const geocodeAddress = ai.defineFlow(
         const result = data.results[0];
         const components = result.address_components;
         
-        // Função auxiliar para extrair componentes específicos do endereço do Google
         const getComponent = (types: string[]) => 
             components.find((c: any) => types.some(t => c.types.includes(t)))?.long_name || '';
         
         const getShortComponent = (types: string[]) => 
             components.find((c: any) => types.some(t => c.types.includes(t)))?.short_name || '';
 
-        // Mapeamento estruturado para o padrão brasileiro
         return {
           latitude: result.geometry.location.lat,
           longitude: result.geometry.location.lng,

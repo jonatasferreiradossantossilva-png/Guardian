@@ -84,7 +84,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const zipCode = form.watch('zipCode');
 
-  // Busca na Base de Conhecimento Interna (Guardian SKB)
   const handleLocalSearch = (query: string) => {
     setSearchQuery(query);
     if (!query.trim() || !knowledgeBase) {
@@ -212,7 +211,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         } else {
             addDoc('schools', data);
             
-            // Alimentar a Base de Conhecimento se for um novo registro único
             const existsInSKB = knowledgeBase?.some((s: any) => 
                 s.name.toLowerCase() === data.name.toLowerCase() && s.city === data.city
             );
@@ -249,7 +247,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
           
-          {/* Busca Híbrida (Guardian SKB -> Google) */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
@@ -270,7 +267,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     </Button>
                 </div>
 
-                {/* Sugestões da Base de Conhecimento Guardian (Custo Zero) */}
                 {localResults.length > 0 && (
                     <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-lg overflow-hidden border-primary/20">
                         <p className="px-3 py-1.5 bg-secondary/50 text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2">
