@@ -1,6 +1,6 @@
 'use server';
 /**
- * @fileOverview Fluxo para geocodificar endereços ou buscar locais usando a API Geoapify.
+ * @fileOverview Fluxo para geocodificar endereços ou buscar locais usando a API do Google Maps.
  * Suporta busca semântica por nome de colégio ou endereço completo.
  * Retorna dados estruturados para preenchimento automático de formulários brasileiros.
  */
@@ -33,48 +33,54 @@ export const geocodeAddress = ai.defineFlow(
     outputSchema: GeocodeAddressOutputSchema,
   },
   async ({ address }) => {
-    const apiKey = process.env.GEOAPIFY_API_KEY;
+    // Utilizamos a chave do Google Maps disponível no ambiente
+    const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+    
     if (!apiKey) {
-      throw new Error('GEOAPIFY_API_KEY não configurada no ambiente.');
+      throw new Error('Chave de API do Google Maps não configurada no ambiente.');
     }
 
-    // Usamos a API de geocodificação com viés para o Brasil e resultados em português
-    const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(
+    // Chamada à Geocoding API do Google com viés para o Brasil
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
       address
-    )}&lang=pt&limit=1&filter=countrycode:br&apiKey=${apiKey}`;
+    )}&key=${apiKey}&language=pt-BR&region=br`;
 
     try {
         const response = await fetch(url);
         if (!response.ok) {
-          throw new Error(`Geoapify API falhou com status ${response.status}`);
+          throw new Error(`Google Maps API falhou com status ${response.status}`);
         }
 
         const data = await response.json();
 
-        if (!data.features || data.features.length === 0) {
-          throw new Error('Localização não encontrada para o termo informado.');
+        if (data.status !== 'OK' || !data.results || data.results.length === 0) {
+          throw new Error('Localização não encontrada pelo Google Maps.');
         }
 
-        const feature = data.features[0];
-        const props = feature.properties;
-        const { lon, lat } = feature.geometry.coordinates ? 
-            { lon: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1] } : 
-            { lon: props.lon, lat: props.lat };
+        const result = data.results[0];
+        const components = result.address_components;
+        
+        // Função auxiliar para extrair componentes específicos do endereço do Google
+        const getComponent = (types: string[]) => 
+            components.find((c: any) => types.some(t => c.types.includes(t)))?.long_name || '';
+        
+        const getShortComponent = (types: string[]) => 
+            components.find((c: any) => types.some(t => c.types.includes(t)))?.short_name || '';
 
-        // Mapeamento inteligente para o padrão brasileiro
+        // Mapeamento estruturado para o padrão brasileiro
         return {
-          latitude: lat,
-          longitude: lon,
-          formattedAddress: props.formatted,
-          street: props.street || '',
-          number: props.housenumber || '',
-          neighborhood: props.suburb || props.district || props.neighborhood || props.village || '',
-          city: props.city || props.town || props.municipality || '',
-          state: props.state_code || props.state || '',
-          zipCode: props.postcode || '',
+          latitude: result.geometry.location.lat,
+          longitude: result.geometry.location.lng,
+          formattedAddress: result.formatted_address,
+          street: getComponent(['route']),
+          number: getComponent(['street_number']),
+          neighborhood: getComponent(['sublocality_level_1', 'sublocality', 'neighborhood']),
+          city: getComponent(['administrative_area_level_2', 'locality']),
+          state: getShortComponent(['administrative_area_level_1']),
+          zipCode: getComponent(['postal_code']),
         };
     } catch (error) {
-        console.error("Erro no fluxo de geocodificação:", error);
+        console.error("Erro no fluxo de geocodificação Google:", error);
         throw error;
     }
   }

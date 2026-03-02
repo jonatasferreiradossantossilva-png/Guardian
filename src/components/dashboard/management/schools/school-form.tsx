@@ -88,7 +88,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Atualização atômica e forçada de todos os campos
+        // Atualização atômica para sincronizar UI e Estado do formulário
         form.setValue('street', result.street || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('number', result.number || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('zipCode', result.zipCode || '', { shouldValidate: true, shouldDirty: true });
@@ -98,19 +98,20 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         form.setValue('latitude', result.latitude, { shouldValidate: true, shouldDirty: true });
         form.setValue('longitude', result.longitude, { shouldValidate: true, shouldDirty: true });
         
+        // Se o nome estiver vazio, sugere o nome buscado
         if (!form.getValues('name')) {
             const suggestedName = searchQuery.split(',')[0];
             form.setValue('name', suggestedName.trim());
         }
         
         toast({
-            title: "Localização encontrada!",
-            description: "Campos de endereço e GPS atualizados automaticamente.",
+            title: "Localização Google encontrada!",
+            description: "Endereço e GPS preenchidos com precisão.",
         });
     } catch (e) {
         toast({
             title: "Busca sem resultados",
-            description: "Tente digitar o nome da escola seguido da rua e cidade.",
+            description: "Tente digitar o nome da escola seguido da rua e cidade para ajudar o Google.",
             variant: "destructive"
         });
     } finally {
@@ -191,20 +192,20 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Utilize a busca inteligente ou o CEP para preencher o endereço.</DialogDescription>
+        <DialogDescription>Utilize a busca Google ou o CEP para preencher o endereço.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
-          {/* Barra de Busca Inteligente Integrada */}
+          {/* Busca Inteligente via Google Maps */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
-                <span>Busca Inteligente (Nome da Escola, Rua e Cidade)</span>
+                <span>Busca Inteligente Google (Nome da Escola, Rua e Cidade)</span>
             </div>
             <div className="flex gap-2">
                 <Input 
-                    placeholder="Ex: Colégio Anglo, Rua São José, Campinas" 
+                    placeholder="Ex: Colégio Anglo, Campinas" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
