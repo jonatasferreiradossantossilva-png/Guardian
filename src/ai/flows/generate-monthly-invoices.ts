@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -13,12 +14,12 @@ const StudentSchema = z.object({
     id: z.string(),
     parentId: z.string(),
     monthlyFee: z.number().optional(),
+    preferredPaymentDay: z.number().optional(),
 }).passthrough();
 
 const ParentSchema = z.object({
     id: z.string(),
     userId: z.string(),
-    preferredPaymentDay: z.number().optional(),
 }).passthrough();
 
 const InvoiceSchema = z.object({
@@ -87,7 +88,8 @@ const generateMonthlyInvoicesFlow = ai.defineFlow(
         });
 
         if (!hasInvoiceThisMonth) {
-            const paymentDay = parent.preferredPaymentDay || 10;
+            // FIXED: Now looking for preferredPaymentDay on the Student instead of the Parent
+            const paymentDay = student.preferredPaymentDay || 10;
             // Ensure paymentDay is valid for the current month
             const lastDayOfMonth = endOfMonth(currentMonthStart).getDate();
             const validPaymentDay = Math.min(paymentDay, lastDayOfMonth);

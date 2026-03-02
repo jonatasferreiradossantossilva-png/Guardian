@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -16,6 +17,9 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+
+const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 
 export default function PendingRegistrationsPage() {
   const { data: registrations, isLoading } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
@@ -26,6 +30,7 @@ export default function PendingRegistrationsPage() {
   const [selectedReg, setSelectedReg] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [approvedMonthlyFee, setApprovedMonthlyFee] = useState<number>(450);
+  const [approvedPreferredPaymentDay, setApprovedPreferredPaymentDay] = useState<string>('10');
   const [editableParentName, setEditableParentName] = useState('');
 
   const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
@@ -33,6 +38,7 @@ export default function PendingRegistrationsPage() {
   const handleOpenReview = (reg: any) => {
       setSelectedReg(reg);
       setApprovedMonthlyFee(reg.monthlyFee || 450);
+      setApprovedPreferredPaymentDay((reg.preferredPaymentDay || 10).toString());
       setEditableParentName(reg.parentName || '');
   };
 
@@ -64,7 +70,6 @@ export default function PendingRegistrationsPage() {
             }
         }
 
-        // Criamos um ID fixo para garantir o vínculo correto entre Pai e Aluno no banco mockado
         const newParentId = `parent-${Date.now()}`;
         
         addDoc('parents', {
@@ -75,7 +80,6 @@ export default function PendingRegistrationsPage() {
             phone: reg.phone,
             cpf: reg.documentData?.cpf,
             rg: reg.documentData?.rg,
-            preferredPaymentDay: reg.preferredPaymentDay || 10, // Integração Automática do Dia Preferencial
             ...address,
             active: true
         });
@@ -90,6 +94,7 @@ export default function PendingRegistrationsPage() {
             latitude,
             longitude,
             monthlyFee: Number(approvedMonthlyFee),
+            preferredPaymentDay: Number(approvedPreferredPaymentDay),
             serie: reg.studentSerie,
             turma: reg.studentTurma,
             active: true
@@ -205,7 +210,7 @@ export default function PendingRegistrationsPage() {
 
       <Dialog open={!!selectedReg} onOpenChange={() => setSelectedReg(null)}>
         {selectedReg && (
-            <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden">
+            <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
                 <DialogHeader className="p-6 pb-2 border-b shrink-0">
                     <DialogTitle>Revisar Cadastro</DialogTitle>
                     <DialogDescription>Confira e ajuste os dados extraídos pela IA antes de aprovar.</DialogDescription>
@@ -232,10 +237,6 @@ export default function PendingRegistrationsPage() {
                                     <Detail label="RG" value={selectedReg.documentData?.rg} />
                                     <Detail label="E-mail" value={selectedReg.email} />
                                     <Detail label="Telefone" value={selectedReg.phone} />
-                                    <div className="flex items-center gap-2 pt-1">
-                                        <CalendarDays className="h-3 w-3 text-primary" />
-                                        <Detail label="Dia Preferencial" value={`Dia ${selectedReg.preferredPaymentDay || '10'}`} />
-                                    </div>
                                 </div>
                             </div>
                             <div className="p-4 bg-muted/20 rounded-lg border border-dashed">
@@ -265,18 +266,29 @@ export default function PendingRegistrationsPage() {
 
                             <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
-                                  <DollarSign className="h-3 w-3" /> Configuração Financeira
+                                  <DollarSign className="h-3 w-3" /> Configuração Financeira (Contrato)
                                 </p>
-                                <div className="space-y-2">
-                                    <Label htmlFor="rev-fee" className="text-xs">Valor da Mensalidade (R$)</Label>
-                                    <Input 
-                                        id="rev-fee"
-                                        type="number" 
-                                        value={approvedMonthlyFee} 
-                                        onChange={(e) => setApprovedMonthlyFee(Number(e.target.value))}
-                                        className="bg-background font-bold text-lg"
-                                    />
-                                    <p className="text-[10px] text-muted-foreground italic">Este valor será usado para gerar as faturas automáticas.</p>
+                                <div className="space-y-4">
+                                    <div className="space-y-2">
+                                        <Label htmlFor="rev-fee" className="text-xs">Valor da Mensalidade (R$)</Label>
+                                        <Input 
+                                            id="rev-fee"
+                                            type="number" 
+                                            value={approvedMonthlyFee} 
+                                            onChange={(e) => setApprovedMonthlyFee(Number(e.target.value))}
+                                            className="bg-background font-bold text-lg"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="rev-day" className="text-xs">Dia Preferencial de Vencimento</Label>
+                                        <Select onValueChange={setApprovedPreferredPaymentDay} value={approvedPreferredPaymentDay}>
+                                            <SelectTrigger id="rev-day" className="bg-background"><SelectValue /></SelectTrigger>
+                                            <SelectContent>
+                                                {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
+                                            </SelectContent>
+                                        </Select>
+                                        <p className="text-[10px] text-muted-foreground italic">O pai sugeriu o dia {selectedReg.preferredPaymentDay || '10'}.</p>
+                                    </div>
                                 </div>
                             </div>
 

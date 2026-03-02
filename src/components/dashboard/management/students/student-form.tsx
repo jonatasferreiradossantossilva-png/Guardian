@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -32,7 +33,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Copy, Loader2, HeartPulse } from 'lucide-react';
+import { Copy, Loader2, HeartPulse, CalendarDays } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Textarea } from '@/components/ui/textarea';
@@ -56,6 +57,8 @@ const SERIE_OPTIONS = [
     "Outro"
 ];
 
+const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   latitude: z.coerce.number().optional(),
@@ -64,6 +67,7 @@ const formSchema = z.object({
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
   shift: z.enum(['Manhã', 'Tarde', 'Integral'], { required_error: 'Selecione um turno.' }),
   monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
+  preferredPaymentDay: z.coerce.number().int().min(1).max(31).optional(),
   medicalNote: z.string().optional(),
   zipCode: z.string().optional(),
   street: z.string().optional(),
@@ -93,7 +97,7 @@ type Parent = {
 };
 
 interface StudentFormProps {
-  student?: { id: string; monthlyFee?: number } & Partial<StudentFormValues>;
+  student?: { id: string; monthlyFee?: number; preferredPaymentDay?: number } & Partial<StudentFormValues>;
   schools: School[];
   parents: Parent[];
   onFormSubmit: () => void;
@@ -120,6 +124,7 @@ export function StudentForm({
       parentId: '',
       shift: 'Manhã',
       monthlyFee: undefined,
+      preferredPaymentDay: 10,
       medicalNote: '',
       zipCode: '',
       street: '',
@@ -172,6 +177,7 @@ export function StudentForm({
         parentId: student.parentId || '',
         shift: student.shift || 'Manhã',
         monthlyFee: student.monthlyFee,
+        preferredPaymentDay: student.preferredPaymentDay,
         medicalNote: student.medicalNote || '',
         zipCode: student.zipCode || '',
         street: student.street || '',
@@ -239,7 +245,7 @@ export function StudentForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden">
+    <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{student ? 'Editar Aluno' : 'Adicionar Aluno'}</DialogTitle>
         <DialogDescription>Preencha as informações do aluno abaixo.</DialogDescription>
@@ -417,7 +423,12 @@ export function StudentForm({
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
+                <div className="md:col-span-2">
+                    <p className="text-sm font-bold flex items-center gap-2 mb-3">
+                        <CalendarDays className="h-4 w-4 text-primary" /> Configurações Financeiras do Aluno
+                    </p>
+                </div>
                 <FormField
                   control={form.control}
                   name="shift"
@@ -449,6 +460,24 @@ export function StudentForm({
                         </FormItem>
                     )}
                    />
+                <FormField
+                    control={form.control}
+                    name="preferredPaymentDay"
+                    render={({ field }) => (
+                        <FormItem className="md:col-span-2">
+                            <FormLabel>Dia Preferencial de Vencimento</FormLabel>
+                            <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value?.toString()}>
+                                <FormControl>
+                                    <SelectTrigger><SelectValue placeholder="Selecione o dia" /></SelectTrigger>
+                                </FormControl>
+                                <SelectContent>
+                                    {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                    )}
+                />
               </div>
 
                <FormField

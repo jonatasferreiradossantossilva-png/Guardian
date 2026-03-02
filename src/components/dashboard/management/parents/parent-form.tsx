@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -50,7 +51,6 @@ const formSchema = z.object({
   neighborhood: z.string().optional(),
   city: z.string().optional(),
   state: z.string().optional(),
-  preferredPaymentDay: z.coerce.number().int().min(1).max(31).optional(),
   active: z.boolean().default(true),
 });
 
@@ -82,7 +82,6 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
       neighborhood: '',
       city: '',
       state: '',
-      preferredPaymentDay: undefined,
       active: true,
     },
   });
@@ -146,7 +145,6 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
         neighborhood: parent.neighborhood || '',
         city: parent.city || '',
         state: parent.state || '',
-        preferredPaymentDay: parent.preferredPaymentDay,
         active: parent.active ?? true,
       });
     } else {
@@ -155,19 +153,14 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
   }, [parent, form]);
 
   const onSubmit = (data: ParentFormValues) => {
-    const finalData = { ...data };
-    if (!finalData.preferredPaymentDay) {
-        delete (finalData as Partial<typeof finalData>).preferredPaymentDay;
-    }
-
     if (parent) {
-      updateDoc('parents', parent.id, finalData);
+      updateDoc('parents', parent.id, data);
       toast({
         title: 'Responsável atualizado!',
         description: `Os dados de ${data.name} foram atualizados com sucesso.`,
       });
     } else {
-      addDoc('parents', finalData);
+      addDoc('parents', data);
       toast({
         title: 'Responsável adicionado!',
         description: `${data.name} foi adicionado com sucesso.`,
@@ -176,10 +169,8 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
     onFormSubmit();
   };
 
-  const paymentDays = Array.from({ length: 31 }, (_, i) => i + 1);
-
   return (
-    <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden">
+    <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{parent ? 'Editar Responsável' : 'Adicionar Responsável'}</DialogTitle>
         <DialogDescription>
@@ -260,33 +251,6 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
                     )}
                     />
               </div>
-
-              <FormField
-                control={form.control}
-                name="preferredPaymentDay"
-                render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>Dia de Pagamento Preferencial</FormLabel>
-                    <Select onValueChange={(value) => field.onChange(value === 'none' ? undefined : parseInt(value))} value={field.value?.toString() || ""}>
-                        <FormControl>
-                        <SelectTrigger>
-                            <SelectValue placeholder="Selecione um dia" />
-                        </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                        <SelectItem value="none">Nenhum (usará o padrão)</SelectItem>
-                        {paymentDays.map(day => (
-                            <SelectItem key={day} value={day.toString()}>{day}</SelectItem>
-                        ))}
-                        </SelectContent>
-                    </Select>
-                    <FormDescription>
-                        O dia do mês em que as faturas deste responsável irão vencer.
-                    </FormDescription>
-                    <FormMessage />
-                    </FormItem>
-                )}
-                />
               
               <div className="border-t pt-4 mt-4">
                 <p className="text-sm font-medium mb-2">Endereço (Opcional)</p>
