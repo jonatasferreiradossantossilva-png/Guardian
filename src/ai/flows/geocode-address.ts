@@ -1,4 +1,3 @@
-
 'use server';
 /**
  * @fileOverview Fluxo para geocodificar endereços ou buscar locais usando a API do Google Maps.
@@ -78,7 +77,7 @@ export const geocodeAddress = ai.defineFlow(
           neighborhood: getComponent(['sublocality_level_1', 'sublocality', 'neighborhood', 'political']),
           city: getComponent(['administrative_area_level_2', 'locality']),
           state: getShortComponent(['administrative_area_level_1']),
-          zipCode: getComponent(['postal_code']),
+          zipCode: getComponent(['postal_code']).replace(/\D/g, ''),
         };
     } catch (error) {
         console.error("Erro no fluxo de geocodificação Google:", error);
