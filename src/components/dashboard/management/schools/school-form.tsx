@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -23,12 +22,11 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
-import { Loader2, Search, Sparkles, MapPin, CheckCircle2, Globe, Building2, X } from 'lucide-react';
+import { Loader2, Search, Sparkles, MapPin, CheckCircle2, Globe, Building2, X, School } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
-import { searchSchoolsInep } from '@/ai/flows/search-schools-inep';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -56,168 +54,95 @@ const formSchema = z.object({
 
 type SchoolFormValues = z.infer<typeof formSchema>;
 
-const defaultValues: SchoolFormValues = {
-  name: '',
-  cnpj: '',
-  latitude: undefined,
-  longitude: undefined,
-  zipCode: '',
-  street: '',
-  number: '',
-  complement: '',
-  neighborhood: '',
-  city: 'Carapicuíba',
-  state: 'SP',
-  active: true,
-};
+interface SchoolFormProps {
+  school?: { id: string } & Partial<SchoolFormValues>;
+  onFormSubmit: () => void;
+}
 
 export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   const { data: knowledgeBase } = useMockCollection('school_knowledge_base');
   
-  const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSearchingGoogle, setIsSearchingGoogle] = useState(false);
-  const [isSearchingInternal, setIsSearchingInternal] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [aiSuggestions, setAiSuggestions] = useState<any[]>([]);
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues,
+    defaultValues: {
+      name: '',
+      cnpj: '',
+      latitude: undefined,
+      longitude: undefined,
+      zipCode: '',
+      street: '',
+      number: '',
+      complement: '',
+      neighborhood: '',
+      city: 'Carapicuíba',
+      state: 'SP',
+      active: true,
+    },
   });
 
-  const { watch, setValue, setFocus } = form;
-  const currentCity = watch('city');
-  const currentState = watch('state');
-  const zipCode = watch('zipCode');
+  const { watch, setValue } = form;
+  const selectedCity = watch('city');
+  const selectedUF = watch('state');
 
-  // Busca Automática na Base (Debounce)
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (searchQuery.trim().length >= 3) {
-        handleInternalSearch();
-      } else {
-        setAiSuggestions([]);
-      }
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  const handleInternalSearch = async () => {
-    if (!knowledgeBase) return;
-
-    setIsSearchingInternal(true);
-    try {
-        // Filtra a base local pelo contexto do formulário (Cidade/Estado)
-        const cityFilter = knowledgeBase.filter((s: any) => 
-            s.city.toLowerCase() === currentCity.toLowerCase() && 
-            s.state === currentState
-        );
-
-        const result = await searchSchoolsInep({
-            query: searchQuery,
-            city: currentCity,
-            state: currentState,
-            knowledgeBase: cityFilter.length > 0 ? cityFilter : knowledgeBase 
-        });
-        
-        const enrichedMatches = result.matches.map(match => {
-            const fullData = (knowledgeBase || []).find(kb => kb.id === match.id);
-            return { ...fullData, score: match.score };
-        }).filter(Boolean);
-
-        setAiSuggestions(enrichedMatches);
-    } catch (e) {
-        console.error("Erro na busca interna:", e);
-    } finally {
-        setIsSearchingInternal(false);
-    }
-  };
-
-  const selectFromSuggestions = (item: any) => {
-    setValue('name', item.name, { shouldValidate: true, shouldDirty: true });
-    setValue('street', item.street || '', { shouldValidate: true, shouldDirty: true });
-    setValue('number', item.number || '', { shouldValidate: true, shouldDirty: true });
-    setValue('neighborhood', item.neighborhood || '', { shouldValidate: true, shouldDirty: true });
-    setValue('city', item.city, { shouldValidate: true, shouldDirty: true });
-    setValue('state', item.state, { shouldValidate: true, shouldDirty: true });
-    setValue('zipCode', item.zipCode || '', { shouldValidate: true, shouldDirty: true });
-    setValue('latitude', item.latitude, { shouldValidate: true, shouldDirty: true });
-    setValue('longitude', item.longitude, { shouldValidate: true, shouldDirty: true });
+  // Filtro imediato da base de conhecimento local
+  const filteredSuggestions = useMemo(() => {
+    if (!knowledgeBase || searchQuery.length < 2) return [];
     
-    setAiSuggestions([]);
+    return knowledgeBase.filter((s: any) => 
+        s.city.toLowerCase() === selectedCity.toLowerCase() &&
+        s.state === selectedUF &&
+        s.name.toLowerCase().includes(searchQuery.toLowerCase())
+    ).slice(0, 5);
+  }, [knowledgeBase, searchQuery, selectedCity, selectedUF]);
+
+  const selectSchool = (item: any) => {
+    setValue('name', item.name);
+    setValue('street', item.street || '');
+    setValue('neighborhood', item.neighborhood || '');
+    setValue('city', item.city);
+    setValue('state', item.state);
+    setValue('zipCode', item.zipCode || '');
+    setValue('latitude', item.latitude);
+    setValue('longitude', item.longitude);
+    
     setSearchQuery('');
-    toast({ title: "Dados importados!", description: "Endereço preenchido via base Guardian." });
+    toast({ title: "Escola selecionada!", description: "Dados preenchidos via Base Guardian." });
   };
 
   const handleGoogleSearch = async () => {
-    if (!searchQuery.trim()) {
-        toast({ title: "Digite o nome para buscar no Google", variant: "destructive" });
-        return;
-    }
-    
+    if (!searchQuery.trim()) return;
     setIsSearchingGoogle(true);
-    setAiSuggestions([]);
     try {
-        const fullSearch = `${searchQuery}, ${currentCity}, ${currentState}`;
-        const result = await geocodeAddress({ address: fullSearch });
-        
-        setValue('name', searchQuery.trim(), { shouldValidate: true, shouldDirty: true });
-        setValue('street', result.street || '', { shouldValidate: true, shouldDirty: true });
-        setValue('number', result.number || '', { shouldValidate: true, shouldDirty: true });
-        setValue('zipCode', result.zipCode || '', { shouldValidate: true, shouldDirty: true });
-        setValue('neighborhood', result.neighborhood || '', { shouldValidate: true, shouldDirty: true });
-        setValue('city', result.city || currentCity, { shouldValidate: true, shouldDirty: true });
-        setValue('state', result.state || currentState, { shouldValidate: true, shouldDirty: true });
-        setValue('latitude', result.latitude, { shouldValidate: true, shouldDirty: true });
-        setValue('longitude', result.longitude, { shouldValidate: true, shouldDirty: true });
-        
+        const result = await geocodeAddress({ address: `${searchQuery}, ${selectedCity}, ${selectedUF}` });
+        setValue('name', searchQuery);
+        setValue('street', result.street || '');
+        setValue('zipCode', result.zipCode || '');
+        setValue('neighborhood', result.neighborhood || '');
+        setValue('city', result.city || selectedCity);
+        setValue('state', result.state || selectedUF);
+        setValue('latitude', result.latitude);
+        setValue('longitude', result.longitude);
         setSearchQuery('');
-        toast({ title: "Localizado pelo Google!", description: "Dados de GPS e CEP capturados." });
+        toast({ title: "Localizado no Google!" });
     } catch (e) {
-        toast({ title: "Não encontramos no Google Maps", variant: "destructive" });
+        toast({ title: "Não encontrado no Google Maps", variant: "destructive" });
     } finally {
         setIsSearchingGoogle(false);
     }
   };
 
   useEffect(() => {
-    const cleanedCep = zipCode?.replace(/\D/g, '');
-    if (cleanedCep && cleanedCep.length === 8) {
-        const fetchAddress = async () => {
-            setIsFetchingCep(true);
-            try {
-                const res = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
-                const data = await res.json();
-                if (!data.erro) {
-                    setValue('street', data.logradouro || '', { shouldValidate: true, shouldDirty: true });
-                    setValue('neighborhood', data.bairro || '', { shouldValidate: true, shouldDirty: true });
-                    setValue('city', data.localidade || '', { shouldValidate: true, shouldDirty: true });
-                    setValue('state', data.uf || '', { shouldValidate: true, shouldDirty: true });
-                }
-            } catch (e) {} finally { setIsFetchingCep(false); }
-        };
-        fetchAddress();
-    }
-  }, [zipCode, setValue]);
-
-  useEffect(() => {
     if (school) {
       form.reset({
-        name: school.name || '',
-        cnpj: school.cnpj || '',
-        latitude: school.latitude,
-        longitude: school.longitude,
-        zipCode: school.zipCode || '',
-        street: school.street || '',
-        number: school.number || '',
-        complement: school.complement || '',
-        neighborhood: school.neighborhood || '',
+        ...school,
         city: school.city || 'Carapicuíba',
         state: school.state || 'SP',
-        active: school.active ?? true,
       });
     }
   }, [school, form]);
@@ -227,9 +152,9 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     try {
         if (school) {
             updateDoc('schools', school.id, data);
-            toast({ title: 'Escola atualizada!' });
         } else {
             addDoc('schools', data);
+            // Alimenta a base de conhecimento com o novo registro
             addDoc('school_knowledge_base', {
                 name: data.name,
                 city: data.city,
@@ -240,8 +165,8 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 latitude: data.latitude,
                 longitude: data.longitude
             });
-            toast({ title: 'Escola cadastrada!' });
         }
+        toast({ title: 'Salvo com sucesso!' });
         onFormSubmit();
     } catch (error) {
         toast({ title: "Erro ao salvar", variant: "destructive" });
@@ -251,100 +176,102 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   };
 
   return (
-    <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
+    <DialogContent className="sm:max-w-xl h-[90vh] flex flex-col p-0 overflow-hidden">
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
-        <DialogTitle>{school ? 'Editar Escola' : 'Nova Escola'}</DialogTitle>
-        <DialogDescription>Digite o nome para buscar na base Guardian ou use o Google Maps.</DialogDescription>
+        <DialogTitle>{school ? 'Editar Escola' : 'Cadastrar Escola'}</DialogTitle>
+        <DialogDescription>Inicie pela localização para buscar na nossa base de conhecimento.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
           
-          {/* BUSCA INTELIGENTE INTEGRADA */}
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-                <Label className="flex items-center gap-2 text-primary font-bold">
-                    <Sparkles className="h-4 w-4" />
-                    Busca Rápida (Base Carapicuíba)
-                </Label>
-                <div className="flex gap-2">
-                    <Badge variant="outline" className="text-[10px] uppercase">{currentCity}</Badge>
-                    <Badge variant="outline" className="text-[10px] uppercase">{currentState}</Badge>
-                </div>
-            </div>
-
-            <div className="relative">
-                <div className="flex gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input 
-                            placeholder="Comece a digitar o nome da escola..." 
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                            className="bg-primary/5 border-primary/20 pl-9 pr-9"
-                        />
-                        {isSearchingInternal && <Loader2 className="absolute right-2.5 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />}
-                        {searchQuery && !isSearchingInternal && (
-                            <button 
-                                onClick={() => {setSearchQuery(''); setAiSuggestions([]);}}
-                                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
-                            >
-                                <X className="h-4 w-4" />
-                            </button>
-                        )}
-                    </div>
-                    <Button 
-                        variant="outline" 
-                        size="icon"
-                        onClick={handleGoogleSearch} 
-                        disabled={isSearchingGoogle || !searchQuery.trim()}
-                        title="Buscar no Google Maps"
-                        className="border-primary/20 text-primary hover:bg-primary/10"
-                    >
-                        {isSearchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
-                    </Button>
-                </div>
-
-                {/* DROPDOWN DE SUGESTÕES DA IA */}
-                {aiSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-2xl overflow-hidden border-primary/30 animate-in fade-in slide-in-from-top-2">
-                        <div className="px-3 py-1.5 bg-primary/10 text-[10px] font-bold text-primary uppercase flex items-center justify-between">
-                            <span className="flex items-center gap-2"><CheckCircle2 className="h-3 w-3" /> Sugestões Encontradas</span>
-                            <span className="text-[9px] opacity-70">Custo Zero</span>
-                        </div>
-                        <div className="divide-y max-h-60 overflow-y-auto">
-                            {aiSuggestions.map((item) => (
-                                <button 
-                                    key={item.id}
-                                    type="button"
-                                    onClick={() => selectFromSuggestions(item)}
-                                    className="w-full text-left px-3 py-3 hover:bg-primary/5 transition-colors group flex items-center justify-between"
-                                >
-                                    <div className="min-w-0">
-                                        <p className="text-sm font-bold group-hover:text-primary truncate">{item.name}</p>
-                                        <p className="text-[10px] text-muted-foreground truncate flex items-center gap-1">
-                                            <MapPin className="h-2.5 w-2.5" />
-                                            {item.neighborhood}, {item.city} - {item.state}
-                                        </p>
-                                    </div>
-                                    <Badge variant="secondary" className="text-[9px] h-5 bg-primary/10 text-primary border-primary/20 ml-2 shrink-0">Selecionar</Badge>
-                                </button>
-                            ))}
-                        </div>
-                    </div>
+          {/* PASSO 1: LOCALIZAÇÃO */}
+          <div className="grid grid-cols-3 gap-4">
+            <FormField
+                control={form.control}
+                name="state"
+                render={({ field }) => (
+                    <FormItem>
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground mb-1 block">Estado (UF)</Label>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
+                            <SelectContent>{UF_LIST.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
+                        </Select>
+                    </FormItem>
                 )}
+            />
+            <FormField
+                control={form.control}
+                name="city"
+                render={({ field }) => (
+                    <FormItem className="col-span-2">
+                        <Label className="text-[10px] uppercase font-bold text-muted-foreground mb-1 block">Cidade</Label>
+                        <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
+                    </FormItem>
+                )}
+            />
+          </div>
+
+          {/* PASSO 2: BUSCA NA BASE */}
+          <div className="space-y-2 relative">
+            <Label className="flex items-center gap-2 text-primary font-bold">
+                <Sparkles className="h-4 w-4" />
+                Buscar Escola na Base Guardian
+            </Label>
+            <div className="flex gap-2">
+                <div className="relative flex-1">
+                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input 
+                        placeholder="Digite o nome (ex: Marjore)..." 
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        className="bg-primary/5 border-primary/20 pl-9"
+                    />
+                </div>
+                <Button 
+                    variant="outline" 
+                    size="icon"
+                    onClick={handleGoogleSearch} 
+                    disabled={isSearchingGoogle || !searchQuery.trim()}
+                    className="border-primary/20 text-primary"
+                >
+                    {isSearchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                </Button>
             </div>
+
+            {/* SUGESTÕES IMEDIATAS */}
+            {filteredSuggestions.length > 0 && (
+                <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-xl overflow-hidden border-primary/30">
+                    <div className="px-3 py-1 bg-primary/10 text-[9px] font-bold text-primary uppercase">Sugestões da Base</div>
+                    <div className="divide-y max-h-48 overflow-y-auto">
+                        {filteredSuggestions.map((item: any) => (
+                            <button 
+                                key={item.id}
+                                type="button"
+                                onClick={() => selectSchool(item)}
+                                className="w-full text-left px-3 py-2 hover:bg-secondary transition-colors flex items-center justify-between"
+                            >
+                                <div className="min-w-0">
+                                    <p className="text-sm font-bold truncate">{item.name}</p>
+                                    <p className="text-[10px] text-muted-foreground truncate">{item.neighborhood}</p>
+                                </div>
+                                <Badge variant="outline" className="text-[8px] h-4">Selecionar</Badge>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            )}
           </div>
 
           <Form {...form}>
-            <form id="school-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-10">
+            <form id="school-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pt-4 border-t">
               <FormField
                 control={form.control}
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel className="flex items-center gap-2"><Building2 className="h-4 w-4" />Nome Oficial</FormLabel>
-                    <FormControl><Input placeholder="Ex: Colégio Marjore Paula" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormLabel>Nome da Escola</FormLabel>
+                    <FormControl><Input placeholder="Nome que aparecerá na rota" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
@@ -352,87 +279,45 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
               <div className="grid grid-cols-3 gap-4">
                 <FormField
-                    control={form.control}
-                    name="state"
+                    control={form.control} name="zipCode"
                     render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Estado (UF)</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                                <FormControl><SelectTrigger><SelectValue /></SelectTrigger></FormControl>
-                                <SelectContent>{UF_LIST.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </FormItem>
+                        <FormItem><FormLabel>CEP</FormLabel><FormControl><Input placeholder="00000-000" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                     )}
                 />
                 <FormField
-                    control={form.control}
-                    name="city"
+                    control={form.control} name="street"
                     render={({ field }) => (
-                        <FormItem className="col-span-2">
-                            <FormLabel>Cidade</FormLabel>
-                            <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                        </FormItem>
+                        <FormItem className="col-span-2"><FormLabel>Logradouro</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl></FormItem>
                     )}
                 />
               </div>
 
-              <div className="border-t pt-4 mt-4">
-                <p className="text-xs font-bold mb-4 flex items-center gap-2 text-muted-foreground uppercase tracking-widest">Endereço Completo</p>
-                
-                <div className="grid grid-cols-3 gap-4">
-                    <FormField
-                        control={form.control} name="zipCode"
-                        render={({ field }) => (
-                            <FormItem className="col-span-1">
-                            <FormLabel>CEP</FormLabel>
-                            <FormControl>
-                            <div className="relative">
-                                <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
-                                {isFetchingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
-                            </div>
-                            </FormControl>
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control} name="street"
-                        render={({ field }) => (
-                            <FormItem className="col-span-2">
-                            <FormLabel>Rua / Avenida</FormLabel>
-                            <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
-                            <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                </div>
-
-                <div className="grid grid-cols-2 gap-4 mt-4">
-                    <FormField
-                        control={form.control} name="number"
-                        render={({ field }) => (
-                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="Ex: 500" {...field} value={field.value ?? ''} /></FormControl></FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control} name="neighborhood"
-                        render={({ field }) => (
-                            <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Ex: Centro" {...field} value={field.value ?? ''} /></FormControl></FormItem>
-                        )}
-                    />
-                </div>
+              <div className="grid grid-cols-2 gap-4">
+                <FormField
+                    control={form.control} name="number"
+                    render={({ field }) => (
+                        <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="S/N" {...field} value={field.value ?? ''} /></FormControl></FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control} name="neighborhood"
+                    render={({ field }) => (
+                        <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl></FormItem>
+                    )}
+                />
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t opacity-40">
+              <div className="grid grid-cols-2 gap-4 pt-2 opacity-60">
                  <FormField
                     control={form.control} name="latitude"
                     render={({ field }) => (
-                        <FormItem><FormLabel className="text-[10px]">LATITUDE (GPS)</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} className="h-8 text-xs font-mono"/></FormControl></FormItem>
+                        <FormItem><Label className="text-[10px]">LATITUDE (GPS)</Label><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} className="h-8 text-xs font-mono"/></FormControl></FormItem>
                     )}
                 />
                 <FormField
                     control={form.control} name="longitude"
                     render={({ field }) => (
-                        <FormItem><FormLabel className="text-[10px]">LONGITUDE (GPS)</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} className="h-8 text-xs font-mono"/></FormControl></FormItem>
+                        <FormItem><Label className="text-[10px]">LONGITUDE (GPS)</Label><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} className="h-8 text-xs font-mono"/></FormControl></FormItem>
                     )}
                 />
               </div>
@@ -441,8 +326,8 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 control={form.control}
                 name="active"
                 render={({ field }) => (
-                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                    <div className="space-y-0.5"><FormLabel>Escola Ativa para Transportes</FormLabel></div>
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 bg-secondary/20">
+                    <div className="space-y-0.5"><FormLabel className="text-xs">Escola Ativa para Transportes</FormLabel></div>
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   </FormItem>
                 )}
@@ -453,9 +338,9 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       </ScrollArea>
 
       <DialogFooter className="p-6 border-t shrink-0 bg-background">
-        <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-        <Button type="submit" form="school-form" disabled={isSaving}>
-            {isSaving ? <Loader2 className="mr-2 animate-spin"/> : "Confirmar e Salvar"}
+        <DialogClose asChild><Button type="button" variant="ghost">Cancelar</Button></DialogClose>
+        <Button type="submit" form="school-form" disabled={isSaving} className="min-w-[120px]">
+            {isSaving ? <Loader2 className="animate-spin h-4 w-4"/> : "Salvar Escola"}
         </Button>
       </DialogFooter>
     </DialogContent>
