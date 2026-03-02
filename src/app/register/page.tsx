@@ -69,7 +69,6 @@ export default function PublicRegistrationPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Auto-scroll to top on step change
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
@@ -81,7 +80,6 @@ export default function PublicRegistrationPage() {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Preenchimento automático de TODOS os campos baseados no resultado estruturado da API
         if (result.street) setStreet(result.street);
         if (result.number) setNumber(result.number);
         if (result.zipCode) setZipCode(result.zipCode);
@@ -91,12 +89,12 @@ export default function PublicRegistrationPage() {
 
         toast({
             title: "Endereço localizado!",
-            description: "Logradouro, bairro e CEP preenchidos automaticamente.",
+            description: "Campos preenchidos automaticamente.",
         });
     } catch (e) {
         toast({
             title: "Busca falhou",
-            description: "Tente informar o endereço completo + bairro + cidade.",
+            description: "Não localizamos o endereço exato.",
             variant: "destructive"
         });
     } finally {
@@ -104,14 +102,10 @@ export default function PublicRegistrationPage() {
     }
   };
 
-  // Auto-fetch address from ViaCEP (apenas se os campos essenciais estiverem vazios)
   useEffect(() => {
     const cleanedCep = zipCode.replace(/\D/g, '');
     if (cleanedCep.length === 8) {
       const fetchAddress = async () => {
-        // Se já tivermos bairro e cidade (vinda da Busca Inteligente), não rodamos o ViaCEP para não sobrescrever
-        if (neighborhood && city) return;
-
         setIsFetchingCep(true);
         try {
           const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
@@ -121,7 +115,7 @@ export default function PublicRegistrationPage() {
             setNeighborhood(data.bairro || '');
             setCity(data.localidade || '');
             setState(data.uf || '');
-            toast({ title: "CEP localizado!", description: "Preenchemos os campos para você." });
+            toast({ title: "CEP localizado!", description: "Endereço atualizado." });
           } else {
             toast({ title: "CEP não encontrado", variant: "destructive" });
           }
@@ -133,7 +127,7 @@ export default function PublicRegistrationPage() {
       };
       fetchAddress();
     }
-  }, [zipCode, toast, neighborhood, city]);
+  }, [zipCode, toast]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -162,7 +156,7 @@ export default function PublicRegistrationPage() {
 
   const handleFinalSubmit = () => {
     if (!extractedData?.name || !email || !phone || !studentName || !selectedSchoolId || !zipCode || !street || !number) {
-        toast({ title: "Campos obrigatórios", description: "Por favor, preencha seu nome, contato, endereço completo e dados do aluno.", variant: "destructive" });
+        toast({ title: "Campos obrigatórios", description: "Por favor, complete todos os dados marcados.", variant: "destructive" });
         return;
     }
 
@@ -297,7 +291,6 @@ export default function PublicRegistrationPage() {
             
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
-                    {/* Visual Preview */}
                     {previewUrl && (
                         <div className="space-y-2">
                             <Label className="text-[10px] font-bold uppercase text-muted-foreground">Imagem Analisada</Label>
@@ -307,7 +300,6 @@ export default function PublicRegistrationPage() {
                         </div>
                     )}
 
-                    {/* Dados Pessoais */}
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label>Seu Nome Completo</Label>
@@ -337,7 +329,6 @@ export default function PublicRegistrationPage() {
                         </div>
                     </div>
 
-                    {/* Endereço */}
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
                             <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta
@@ -403,7 +394,6 @@ export default function PublicRegistrationPage() {
                         </div>
                     </div>
                     
-                    {/* Preferências Financeiras */}
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
                             <CalendarDays className="h-4 w-4 text-primary" /> Preferências Financeiras
@@ -425,7 +415,6 @@ export default function PublicRegistrationPage() {
                         </div>
                     </div>
 
-                    {/* Dados do Aluno */}
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
                             <User className="h-4 w-4 text-primary" /> Dados do Aluno
@@ -485,24 +474,7 @@ export default function PublicRegistrationPage() {
                     </div>
                     <div className="space-y-2">
                         <h2 className="text-2xl font-bold">Solicitação Enviada!</h2>
-                        <p className="text-muted-foreground text-sm leading-relaxed">Recebemos seus dados e endereço. O gestor da frota analisará a viabilidade da rota e entrará em contato via WhatsApp para formalizar o contrato digital.</p>
-                    </div>
-                    <div className="p-4 bg-muted/50 rounded-lg text-left text-xs space-y-3 border border-dashed">
-                        <p className="font-bold text-foreground">Próximos Passos:</p>
-                        <ul className="space-y-2">
-                            <li className="flex items-center gap-2">
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                <span>Cálculo de tempo e distância da rota</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                <span>Geração do contrato com seus dados</span>
-                            </li>
-                            <li className="flex items-center gap-2">
-                                <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                <span>Acesso ao rastreamento em tempo real</span>
-                            </li>
-                        </ul>
+                        <p className="text-muted-foreground text-sm leading-relaxed">Recebemos seus dados e endereço. O gestor analisará a viabilidade da rota e entrará em contato.</p>
                     </div>
                     <Button asChild variant="outline" className="w-full">
                         <Link href="/">Voltar para o Início</Link>

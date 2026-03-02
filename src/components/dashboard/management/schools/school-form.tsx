@@ -51,6 +51,21 @@ interface SchoolFormProps {
   onFormSubmit: () => void;
 }
 
+const defaultValues: SchoolFormValues = {
+  name: '',
+  cnpj: '',
+  latitude: undefined,
+  longitude: undefined,
+  zipCode: '',
+  street: '',
+  number: '',
+  complement: '',
+  neighborhood: '',
+  city: '',
+  state: '',
+  active: true,
+};
+
 export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
@@ -61,23 +76,10 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
-      name: '',
-      cnpj: '',
-      latitude: undefined,
-      longitude: undefined,
-      zipCode: '',
-      street: '',
-      number: '',
-      complement: '',
-      neighborhood: '',
-      city: '',
-      state: '',
-      active: true,
-    },
+    defaultValues,
   });
 
-  const { zipCode, neighborhood, city } = form.watch();
+  const zipCode = form.watch('zipCode');
 
   const handleSmartSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -86,7 +88,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Preenchimento automático dos campos baseados no resultado estruturado da API
         form.setValue('street', result.street || '');
         form.setValue('number', result.number || '');
         form.setValue('zipCode', result.zipCode || '');
@@ -105,12 +106,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         
         toast({
             title: "Localização encontrada!",
-            description: "Endereço, CEP e bairro preenchidos automaticamente.",
+            description: "Dados de endereço e coordenadas preenchidos.",
         });
     } catch (e) {
         toast({
             title: "Busca não concluída",
-            description: "Não conseguimos localizar esse local exato. Tente incluir o nome do colégio + cidade.",
+            description: "Não conseguimos localizar o endereço exato.",
             variant: "destructive"
         });
     } finally {
@@ -122,29 +123,35 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     const cleanedCep = zipCode?.replace(/\D/g, '');
     if (cleanedCep && cleanedCep.length === 8) {
       const fetchAddress = async () => {
-        // Se já tivermos bairro e cidade (vinda da Busca Inteligente), não rodamos o ViaCEP
-        if (neighborhood && city) return;
-
         setIsFetchingCep(true);
         try {
           const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
           const data = await response.json();
           if (!data.erro) {
-            if (!form.getValues('street')) form.setValue('street', data.logradouro || '');
-            if (!form.getValues('neighborhood')) form.setValue('neighborhood', data.bairro || '');
-            if (!form.getValues('city')) form.setValue('city', data.localidade || '');
-            if (!form.getValues('state')) form.setValue('state', data.uf || '');
+            form.setValue('street', data.logradouro || '');
+            form.setValue('neighborhood', data.bairro || '');
+            form.setValue('city', data.localidade || '');
+            form.setValue('state', data.uf || '');
+            toast({
+                title: "CEP localizado!",
+                description: "Campos de endereço atualizados.",
+            });
             form.setFocus('number');
+          } else {
+            toast({
+                title: "CEP não encontrado",
+                variant: "destructive"
+            });
           }
         } catch (error) {
-          console.error(error);
+          console.error("Erro ao buscar CEP:", error);
         } finally {
           setIsFetchingCep(false);
         }
       };
       fetchAddress();
     }
-  }, [zipCode, form, neighborhood, city]);
+  }, [zipCode, form, toast]);
 
   useEffect(() => {
     if (school) {
@@ -163,7 +170,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         active: school.active ?? true,
       });
     } else {
-      form.reset(form.defaultValues);
+      form.reset(defaultValues);
     }
   }, [school, form]);
 
@@ -180,7 +187,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 finalLat = geoResult.latitude;
                 finalLng = geoResult.longitude;
             } catch (e) {
-                console.warn("Geocodificação automática falhou no salvamento:", e);
+                console.warn("Geocodificação automática falhou na gravação:", e);
             }
         }
 
@@ -210,7 +217,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
-          {/* Smart Search Inside Scroll Area */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-semibold text-sm">
                 <Sparkles className="h-4 w-4" />
@@ -229,7 +235,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 </Button>
             </div>
             <p className="text-[10px] text-muted-foreground italic leading-tight">
-                Dica: A busca inteligente tenta preencher CEP, Bairro e coordenadas GPS para você.
+                Dica: A busca inteligente tenta preencher endereço completo e coordenadas GPS para você.
             </p>
           </div>
 
