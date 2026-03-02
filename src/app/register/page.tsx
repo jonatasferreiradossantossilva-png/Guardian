@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, X, User } from 'lucide-react';
+import { Camera, Upload, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, X, User, MapPin } from 'lucide-react';
 import { extractDocumentData, type ExtractDocumentDataOutput } from '@/ai/flows/extract-document-data';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -19,6 +19,7 @@ type Step = 'welcome' | 'scan' | 'confirm' | 'success';
 export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [isProcessing, setIsProcessing] = useState(false);
+  const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [extractedData, setExtractedData] = useState<ExtractDocumentDataOutput | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
@@ -30,8 +31,45 @@ export default function PublicRegistrationPage() {
   const [phone, setPhone] = useState('');
   const [studentName, setStudentName] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
+  
+  // Address states
+  const [zipCode, setZipCode] = useState('');
+  const [street, setStreet] = useState('');
+  const [number, setNumber] = useState('');
+  const [complement, setComplement] = useState('');
+  const [neighborhood, setNeighborhood] = useState('');
+  const [city, setCity] = useState('');
+  const [state, setState] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-fetch address from ViaCEP
+  useEffect(() => {
+    const cleanedCep = zipCode.replace(/\D/g, '');
+    if (cleanedCep.length === 8) {
+      const fetchAddress = async () => {
+        setIsFetchingCep(true);
+        try {
+          const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
+          const data = await response.json();
+          if (!data.erro) {
+            setStreet(data.logradouro || '');
+            setNeighborhood(data.bairro || '');
+            setCity(data.localidade || '');
+            setState(data.uf || '');
+            toast({ title: "Endereço localizado!", description: "Preenchemos os campos para você." });
+          } else {
+            toast({ title: "CEP não encontrado", variant: "destructive" });
+          }
+        } catch (e) {
+          console.error("Erro ao buscar CEP:", e);
+        } finally {
+          setIsFetchingCep(false);
+        }
+      };
+      fetchAddress();
+    }
+  }, [zipCode, toast]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -41,14 +79,18 @@ export default function PublicRegistrationPage() {
     const reader = new FileReader();
     reader.onloadend = async () => {
       const base64 = reader.result as string;
-      setPreviewUrl(base64); // Armazena a imagem para visualização do usuário
+      setPreviewUrl(base64);
       try {
         const result = await extractDocumentData({ photoDataUri: base64 });
         setExtractedData(result);
+        
+        // Se a IA extraiu um endereço bruto da CNH, podemos tentar usar como dica (opcional)
+        // Por agora, focamos na validação manual + CEP que é mais precisa
+        
         setStep('confirm');
-        toast({ title: "Documento Lido!", description: "A IA preencheu os campos para você conferir." });
+        toast({ title: "Documento Lido!", description: "Confira os dados abaixo." });
       } catch (e) {
-        toast({ title: "Falha na leitura", description: "Não conseguimos ler o documento automaticamente. Por favor, preencha manualmente.", variant: "destructive" });
+        toast({ title: "Falha na leitura", description: "Por favor, preencha manualmente.", variant: "destructive" });
         setExtractedData({ name: '', cpf: '', rg: '', birthDate: '', address: '' });
         setStep('confirm');
       } finally {
@@ -59,8 +101,8 @@ export default function PublicRegistrationPage() {
   };
 
   const handleFinalSubmit = () => {
-    if (!extractedData || !email || !phone || !studentName || !selectedSchoolId) {
-        toast({ title: "Campos incompletos", description: "Por favor, preencha todos os dados obrigatórios.", variant: "destructive" });
+    if (!extractedData?.name || !email || !phone || !studentName || !selectedSchoolId || !zipCode || !street || !number) {
+        toast({ title: "Campos obrigatórios", description: "Por favor, preencha seu nome, contato, endereço completo e dados do aluno.", variant: "destructive" });
         return;
     }
 
@@ -72,11 +114,19 @@ export default function PublicRegistrationPage() {
         schoolId: selectedSchoolId,
         status: 'pending_approval',
         createdAt: new Date().toISOString(),
+        address: {
+            zipCode,
+            street,
+            number,
+            complement,
+            neighborhood,
+            city,
+            state
+        },
         documentData: {
             cpf: extractedData.cpf,
             rg: extractedData.rg,
-            birthDate: extractedData.birthDate,
-            address: extractedData.address
+            birthDate: extractedData.birthDate
         }
     });
 
@@ -183,91 +233,103 @@ export default function PublicRegistrationPage() {
             </CardHeader>
             
             <ScrollArea className="flex-1 overflow-y-auto">
-                <CardContent className="space-y-6 pt-6">
-                    {/* Visual Preview of the scan */}
+                <CardContent className="space-y-6 pt-6 pb-10">
+                    {/* Visual Preview */}
                     {previewUrl && (
                         <div className="space-y-2">
                             <Label className="text-[10px] font-bold uppercase text-muted-foreground">Imagem Analisada</Label>
                             <div className="relative aspect-video rounded-lg overflow-hidden border-2 border-muted shadow-sm">
-                                <Image 
-                                    src={previewUrl} 
-                                    alt="Documento escaneado" 
-                                    fill 
-                                    className="object-cover"
-                                />
+                                <Image src={previewUrl} alt="Scan" fill className="object-cover" />
                             </div>
                         </div>
                     )}
 
+                    {/* Dados Pessoais */}
                     <div className="space-y-4">
                         <div className="space-y-2">
                             <Label>Seu Nome Completo</Label>
-                            <Input 
-                                value={extractedData.name || ''} 
-                                onChange={e => setExtractedData({...extractedData, name: e.target.value})} 
-                                placeholder="Como no documento"
-                            />
+                            <Input value={extractedData.name || ''} onChange={e => setExtractedData({...extractedData, name: e.target.value})} placeholder="Como no documento" />
                         </div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>CPF</Label>
-                                <Input 
-                                    value={extractedData.cpf || ''} 
-                                    onChange={e => setExtractedData({...extractedData, cpf: e.target.value})} 
-                                    placeholder="000.000.000-00"
-                                />
+                                <Input value={extractedData.cpf || ''} onChange={e => setExtractedData({...extractedData, cpf: e.target.value})} placeholder="000.000.000-00" />
                             </div>
                             <div className="space-y-2">
                                 <Label>RG</Label>
-                                <Input 
-                                    value={extractedData.rg || ''} 
-                                    onChange={e => setExtractedData({...extractedData, rg: e.target.value})} 
-                                    placeholder="00.000.000-0"
-                                />
+                                <Input value={extractedData.rg || ''} onChange={e => setExtractedData({...extractedData, rg: e.target.value})} placeholder="00.000.000-0" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>Seu E-mail</Label>
-                                <Input 
-                                    type="email" 
-                                    placeholder="exemplo@email.com" 
-                                    value={email} 
-                                    onChange={e => setEmail(e.target.value)} 
-                                />
+                                <Input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label>WhatsApp (Telefone)</Label>
-                                <Input 
-                                    placeholder="(11) 90000-0000" 
-                                    value={phone} 
-                                    onChange={e => setPhone(e.target.value)} 
-                                />
+                                <Input placeholder="(11) 90000-0000" value={phone} onChange={e => setPhone(e.target.value)} />
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Endereço */}
+                    <div className="border-t pt-6">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2">
+                            <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta
+                        </p>
+                        <div className="space-y-4">
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2 col-span-1">
+                                    <Label>CEP</Label>
+                                    <div className="relative">
+                                        <Input placeholder="00000-000" value={zipCode} onChange={e => setZipCode(e.target.value)} />
+                                        {isFetchingCep && <Loader2 className="absolute right-2 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
+                                    </div>
+                                </div>
+                                <div className="space-y-2 col-span-2">
+                                    <Label>Rua/Avenida</Label>
+                                    <Input placeholder="Logradouro" value={street} onChange={e => setStreet(e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Número</Label>
+                                    <Input placeholder="Ex: 123" value={number} onChange={e => setNumber(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Complemento</Label>
+                                    <Input placeholder="Apto, Bloco..." value={complement} onChange={e => setComplement(e.target.value)} />
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>Bairro</Label>
+                                    <Input placeholder="Bairro" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Cidade</Label>
+                                    <Input placeholder="Cidade" value={city} readOnly className="bg-muted/50" />
+                                </div>
                             </div>
                         </div>
                     </div>
                     
+                    {/* Dados do Aluno */}
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-primary" /> Dados do Aluno
+                            <User className="h-4 w-4 text-primary" /> Dados do Aluno
                         </p>
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Nome do Filho(a)</Label>
-                                <Input 
-                                    placeholder="Nome completo do aluno" 
-                                    value={studentName} 
-                                    onChange={e => setStudentName(e.target.value)} 
-                                />
+                                <Input placeholder="Nome completo do aluno" value={studentName} onChange={e => setStudentName(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Escola de Destino</Label>
                                 <Select onValueChange={setSelectedSchoolId} value={selectedSchoolId}>
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Selecione a escola..." />
-                                    </SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
                                     <SelectContent>
                                         {schools?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                                     </SelectContent>
@@ -284,7 +346,7 @@ export default function PublicRegistrationPage() {
                         Finalizar Solicitação
                     </Button>
                     <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('scan')}>
-                        Refazer foto
+                        Refazer foto do documento
                     </Button>
                 </div>
             </CardFooter>
@@ -299,27 +361,27 @@ export default function PublicRegistrationPage() {
                     </div>
                     <div className="space-y-2">
                         <h2 className="text-2xl font-bold">Solicitação Enviada!</h2>
-                        <p className="text-muted-foreground text-sm leading-relaxed">Recebemos seus dados. O gestor da frota analisará seu cadastro e entrará em contato via WhatsApp para formalizar o contrato.</p>
+                        <p className="text-muted-foreground text-sm leading-relaxed">Recebemos seus dados e endereço. O gestor da frota analisará a viabilidade da rota e entrará em contato via WhatsApp para formalizar o contrato digital.</p>
                     </div>
                     <div className="p-4 bg-muted/50 rounded-lg text-left text-xs space-y-3 border border-dashed">
-                        <p className="font-bold text-foreground">O que acontece agora?</p>
+                        <p className="font-bold text-foreground">Próximos Passos:</p>
                         <ul className="space-y-2">
                             <li className="flex items-center gap-2">
                                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                <span>Verificação de vaga na rota</span>
+                                <span>Cálculo de tempo e distância da rota</span>
                             </li>
                             <li className="flex items-center gap-2">
                                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                <span>Geração do contrato digital</span>
+                                <span>Geração do contrato com seus dados</span>
                             </li>
                             <li className="flex items-center gap-2">
                                 <div className="h-1.5 w-1.5 rounded-full bg-primary" />
-                                <span>Envio do link de rastreamento real-time</span>
+                                <span>Acesso ao rastreamento em tempo real</span>
                             </li>
                         </ul>
                     </div>
                     <Button asChild variant="outline" className="w-full">
-                        <Link href="/">Voltar para o Login</Link>
+                        <Link href="/">Voltar para o Início</Link>
                     </Button>
                 </CardContent>
             </Card>
