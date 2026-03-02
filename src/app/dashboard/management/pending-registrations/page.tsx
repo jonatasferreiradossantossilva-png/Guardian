@@ -1,13 +1,13 @@
 
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign } from 'lucide-react';
+import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
@@ -27,17 +27,24 @@ export default function PendingRegistrationsPage() {
   const [selectedReg, setSelectedReg] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
   const [approvedMonthlyFee, setApprovedMonthlyFee] = useState<number>(450);
+  const [editableParentName, setEditableParentName] = useState('');
 
   const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
 
   const handleOpenReview = (reg: any) => {
       setSelectedReg(reg);
-      setApprovedMonthlyFee(450); // Valor padrão sugerido
+      setApprovedMonthlyFee(reg.monthlyFee || 450);
+      setEditableParentName(reg.parentName || '');
   };
 
   const handleApprove = async (reg: any) => {
     if (!approvedMonthlyFee || approvedMonthlyFee <= 0) {
         toast({ title: "Valor inválido", description: "Por favor, defina o valor da mensalidade.", variant: "destructive" });
+        return;
+    }
+
+    if (!editableParentName.trim()) {
+        toast({ title: "Nome ausente", description: "O nome do responsável é obrigatório.", variant: "destructive" });
         return;
     }
 
@@ -58,11 +65,13 @@ export default function PendingRegistrationsPage() {
             }
         }
 
+        // Criamos um ID fixo para garantir o vínculo correto entre Pai e Aluno no banco mockado
         const newParentId = `parent-${Date.now()}`;
+        
         addDoc('parents', {
             id: newParentId,
             userId: reg.userId || `user-gen-${Date.now()}`, 
-            name: reg.parentName,
+            name: editableParentName,
             email: reg.email,
             phone: reg.phone,
             cpf: reg.documentData?.cpf,
@@ -74,7 +83,7 @@ export default function PendingRegistrationsPage() {
         addDoc('students', {
             name: reg.studentName,
             schoolId: reg.schoolId,
-            parentId: newParentId,
+            parentId: newParentId, // Vínculo garantido
             shift: 'Manhã', 
             status: 'aguardando',
             ...address,
@@ -88,7 +97,7 @@ export default function PendingRegistrationsPage() {
 
         toast({ 
             title: "Solicitação Aprovada!", 
-            description: `Pai e Aluno integrados. Mensalidade de R$ ${approvedMonthlyFee.toFixed(2)} configurada.` 
+            description: `Responsável (${editableParentName}) e Aluno integrados com sucesso.` 
         });
         setSelectedReg(null);
     } catch (e) {
@@ -197,7 +206,7 @@ export default function PendingRegistrationsPage() {
             <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden">
                 <DialogHeader className="p-6 pb-2 border-b shrink-0">
                     <DialogTitle>Revisar Cadastro</DialogTitle>
-                    <DialogDescription>Confira os dados extraídos pela IA antes de aprovar.</DialogDescription>
+                    <DialogDescription>Confira e ajuste os dados extraídos pela IA antes de aprovar.</DialogDescription>
                 </DialogHeader>
                 
                 <ScrollArea className="flex-1">
@@ -208,8 +217,15 @@ export default function PendingRegistrationsPage() {
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
                                   <FileText className="h-3 w-3" /> Dados do Responsável
                                 </p>
-                                <div className="space-y-3">
-                                    <Detail label="Nome" value={selectedReg.parentName} />
+                                <div className="space-y-4">
+                                    <div className="space-y-1.5">
+                                        <Label className="text-[10px] text-muted-foreground uppercase">Nome Completo</Label>
+                                        <Input 
+                                            value={editableParentName} 
+                                            onChange={(e) => setEditableParentName(e.target.value)}
+                                            className="h-8 bg-background"
+                                        />
+                                    </div>
                                     <Detail label="CPF" value={selectedReg.documentData?.cpf} />
                                     <Detail label="RG" value={selectedReg.documentData?.rg} />
                                     <Detail label="E-mail" value={selectedReg.email} />
@@ -218,7 +234,7 @@ export default function PendingRegistrationsPage() {
                             </div>
                             <div className="p-4 bg-muted/20 rounded-lg border border-dashed">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-                                  <MapPin className="h-3 w-3" /> Endereço de Coleta
+                                  <MapPinIcon className="h-3 w-3" /> Endereço de Coleta
                                 </p>
                                 <div className="space-y-3">
                                     <Detail label="Rua" value={`${selectedReg.address?.street}, ${selectedReg.address?.number}`} />
@@ -287,7 +303,7 @@ function Detail({ label, value }: { label: string, value?: string }) {
     )
 }
 
-function MapPin(props: any) {
+function MapPinIcon(props: any) {
     return (
       <svg
         {...props}

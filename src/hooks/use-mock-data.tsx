@@ -7,9 +7,8 @@ import { initialMockData } from '@/lib/mock-data';
 
 const MockDataContext = createContext(null);
 
-let docIdCounter = 0; // Use a simple counter to ensure unique IDs within a session
+let docIdCounter = 0; 
 
-// This provider will wrap the application and hold the state of the mock data.
 export function MockDataProvider({ children }) {
   const [db, setDb] = useState(initialMockData);
 
@@ -17,16 +16,12 @@ export function MockDataProvider({ children }) {
     if (!collectionName || !db[collectionName]) return [];
 
     let results;
-    // The 'locations' key in db holds an object, not an array.
-    // This handles calls that might incorrectly ask for the 'locations' collection,
-    // preventing the .filter error.
     if (collectionName === 'locations') {
         results = Object.entries(db.locations).map(([id, data]) => ({ ...data, id }));
     } else {
         results = db[collectionName];
     }
     
-    // Defensive check to ensure we only filter arrays.
     if (!Array.isArray(results)) {
         console.error(`Data for collection "${collectionName}" is not an array.`, results);
         return [];
@@ -40,7 +35,6 @@ export function MockDataProvider({ children }) {
             return doc[field] === value;
           }
           if (op === 'in') {
-            // FIXED: Now correctly uses the field parameter instead of hardcoded doc.id
             return Array.isArray(value) && value.includes(doc[field]);
           }
           return true;
@@ -67,20 +61,21 @@ export function MockDataProvider({ children }) {
   }, [db]);
 
   const addDoc = useCallback((collectionName, data) => {
-    // Using a counter appended to a timestamp ensures uniqueness even in fast loops.
-    const newId = `${collectionName.slice(0, 3)}-${Date.now()}-${docIdCounter++}`;
+    // Se o dado já trouxer um ID (como fizemos na aprovação), nós o respeitamos.
+    // Caso contrário, geramos um novo.
+    const newId = data.id || `${collectionName.slice(0, 3)}-${Date.now()}-${docIdCounter++}`;
     const newDoc = { ...data, id: newId };
     setDb(prevDb => ({
       ...prevDb,
       [collectionName]: [...(prevDb[collectionName] || []), newDoc],
     }));
+    return newId;
   }, []);
 
   const updateDoc = useCallback((collectionName, docId, data) => {
-    // Special handling for updating a location in the locations object
     if (collectionName === 'locations') {
         setDb(prevDb => {
-            if (!prevDb.locations[docId]) return prevDb; // Don't update if it doesn't exist
+            if (!prevDb.locations[docId]) return prevDb; 
             return {
                 ...prevDb,
                 locations: {
@@ -90,7 +85,6 @@ export function MockDataProvider({ children }) {
             };
         });
     } else {
-        // Standard handling for array-based collections
         setDb(prevDb => ({
           ...prevDb,
           [collectionName]: (prevDb[collectionName] || []).map(doc =>
@@ -138,7 +132,6 @@ export function MockDataProvider({ children }) {
   );
 }
 
-// Custom hook to access the mock database context.
 export const useMockData = () => {
   const context = useContext(MockDataContext);
   if (!context) {
@@ -147,14 +140,12 @@ export const useMockData = () => {
   return context;
 };
 
-// A hook that simulates useCollection
 export const useMockCollection = (collectionName, filters) => {
     const { getCollection, db } = useMockData();
     const data = useMemo(() => getCollection(collectionName, filters), [db, collectionName, JSON.stringify(filters), getCollection]);
     return { data, isLoading: false, error: null };
 }
 
-// A hook that simulates useDoc
 export const useMockDoc = (collectionName, docId) => {
     const { getDoc, db } = useMockData();
     const data = useMemo(() => {
@@ -167,25 +158,8 @@ export const useMockDoc = (collectionName, docId) => {
     return { data, isLoading: false, error: null };
 }
 
-// A hook that simulates useDoc for nested structures like locations
 export const useMockNestedDoc = (path) => {
     const { getNestedDoc, db } = useMockData();
      const data = useMemo(() => path ? getNestedDoc(path) : null, [db, path, getNestedDoc]);
     return { data, isLoading: false, error: null };
 }
-
-
-// Mocks for non-blocking updates
-export const addDocumentNonBlocking = (collectionRef, data) => {
-    // This is a placeholder for API compatibility.
-    // In mock mode, forms use `useMockData` directly.
-};
-export const updateDocumentNonBlocking = (docRef, data) => {
-    // This is a placeholder for API compatibility.
-};
-export const deleteDocumentNonBlocking = (docRef) => {
-    // This is a placeholder for API compatibility.
-};
-export const setDocumentNonBlocking = (docRef, data) => {
-    // This is a placeholder for API compatibility.
-};
