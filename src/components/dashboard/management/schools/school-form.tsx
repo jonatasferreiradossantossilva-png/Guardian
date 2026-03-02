@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -90,7 +91,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const selectedCity = watch('city');
   const selectedUF = watch('state');
 
-  // Filtro imediato da base de conhecimento local baseado no que o usuário digita
   const filteredSuggestions = useMemo(() => {
     if (!knowledgeBase || searchQuery.length < 2) return [];
     
@@ -108,6 +108,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     setValue('city', item.city);
     setValue('state', item.state);
     setValue('zipCode', item.zipCode || '');
+    setValue('number', item.number || '');
     setValue('latitude', item.latitude);
     setValue('longitude', item.longitude);
     
@@ -161,6 +162,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 street: data.street,
                 neighborhood: data.neighborhood,
                 zipCode: data.zipCode,
+                number: data.number,
                 latitude: data.latitude,
                 longitude: data.longitude
             });
@@ -175,7 +177,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   };
 
   return (
-    <DialogContent className="sm:max-w-xl h-[90vh] flex flex-col p-0 overflow-hidden">
+    <DialogContent className="sm:max-w-xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Cadastrar Escola'}</DialogTitle>
         <DialogDescription>Inicie pela localização para buscar na nossa base de conhecimento.</DialogDescription>
@@ -186,7 +188,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
           <ScrollArea className="flex-1">
             <div className="px-6 py-4 space-y-6">
               
-              {/* PASSO 1: LOCALIZAÇÃO */}
               <div className="grid grid-cols-3 gap-4">
                 <FormField
                     control={form.control}
@@ -213,7 +214,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 />
               </div>
 
-              {/* PASSO 2: BUSCA NA BASE */}
               <div className="space-y-2 relative">
                 <Label className="flex items-center gap-2 text-primary font-bold">
                     <Sparkles className="h-4 w-4" />
@@ -241,7 +241,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     </Button>
                 </div>
 
-                {/* SUGESTÕES IMEDIATAS */}
                 {filteredSuggestions.length > 0 && (
                     <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-xl overflow-hidden border-primary/30">
                         <div className="px-3 py-1 bg-primary/10 text-[9px] font-bold text-primary uppercase">Sugestões da Base</div>
@@ -265,7 +264,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 )}
               </div>
 
-              {/* PASSO 3: DADOS DETALHADOS */}
               <div className="space-y-4 pt-4 border-t">
                 <FormField
                   control={form.control}

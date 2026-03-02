@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -430,7 +431,7 @@ export default function DashboardPage() {
             console.error("Falha ao compartilhar:", err);
             toast({
                 title: "Erro ao compartilhar",
-                description: "Não foi possível copiar o link automaticamente.",
+                description: "Não foi possível copiar le link automaticamente.",
                 variant: "destructive"
             });
         }

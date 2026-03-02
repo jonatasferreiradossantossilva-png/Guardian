@@ -49,6 +49,9 @@ export const initialMockData = {
         }
     ],
     school_knowledge_base: [
+        // Escola Solicitada
+        { id: "skb-c-marjore", name: "COLEGIO MARJORE PAULA", zipCode: "06321-470", city: "Carapicuíba", state: "SP", latitude: -23.5285, longitude: -46.8321, neighborhood: "Vila Silviania", street: "Rua Padre Áureliano", number: "93" },
+        
         // Escolas Carapicuíba - SP (Privadas)
         { id: "skb-c-1", name: "ADVENTISTA DE CARAPICUIBA COLEGIO", type: "private", zipCode: "06310-160", city: "Carapicuíba", state: "SP", latitude: -23.5225, longitude: -46.8355, neighborhood: "Centro" },
         { id: "skb-c-2", name: "AGOSTINHO COLEGIO", type: "private", zipCode: "06310-100", city: "Carapicuíba", state: "SP", latitude: -23.5235, longitude: -46.8345, neighborhood: "Centro" },
