@@ -24,7 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Search, Sparkles, MapPin } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 
@@ -54,7 +54,9 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -76,12 +78,45 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const { zipCode } = form.watch();
 
+  // Busca Inteligente por Nome/Endereço
+  const handleSmartSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    try {
+        const result = await geocodeAddress({ address: searchQuery });
+        
+        // Tenta extrair partes do endereço formatado (Rua, Número, Bairro, Cidade, Estado)
+        // O Geoapify retorna algo como "Rua Augusta, 500 - Consolação, São Paulo - SP, 01305-000, Brazil"
+        const parts = result.formattedAddress.split(',');
+        
+        form.setValue('street', parts[0]?.trim() || '');
+        form.setValue('city', result.formattedAddress.includes('São Paulo') ? 'São Paulo' : ''); // Simplificação para o protótipo
+        form.setValue('latitude', result.latitude);
+        form.setValue('longitude', result.longitude);
+        
+        toast({
+            title: "Localização encontrada!",
+            description: "Campos preenchidos com base na busca inteligente.",
+        });
+    } catch (e) {
+        toast({
+            title: "Busca não concluída",
+            description: "Não conseguimos localizar esse endereço exato. Tente ser mais específico ou preencha manualmente.",
+            variant: "destructive"
+        });
+    } finally {
+        setIsSearching(false);
+    }
+  };
+
   useEffect(() => {
-    if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
+    const cleanedCep = zipCode?.replace(/\D/g, '');
+    if (cleanedCep && cleanedCep.length === 8) {
       const fetchAddress = async () => {
         setIsFetchingCep(true);
         try {
-          const response = await fetch(`https://viacep.com.br/ws/${zipCode.replace(/\D/g, '')}/json/`);
+          const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
           if (!response.ok) throw new Error('Falha ao buscar CEP');
           const data = await response.json();
           if (!data.erro) {
@@ -157,13 +192,35 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   };
 
   return (
-    <DialogContent className="sm:max-w-2xl">
+    <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader>
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Preencha as informações da escola abaixo.</DialogDescription>
+        <DialogDescription>Preencha as informações da escola. Use a busca inteligente se não souber o CEP.</DialogDescription>
       </DialogHeader>
+      
+      {/* Smart Search Field */}
+      <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3 mb-2">
+        <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+            <Sparkles className="h-4 w-4" />
+            <span>Busca Inteligente (IA + Mapas)</span>
+        </div>
+        <div className="flex gap-2">
+            <Input 
+                placeholder="Ex: Colégio Saber, Rua das Flores, São Paulo" 
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
+                className="bg-background"
+            />
+            <Button variant="secondary" onClick={handleSmartSearch} disabled={isSearching || !searchQuery.trim()}>
+                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+            </Button>
+        </div>
+        <p className="text-[10px] text-muted-foreground italic">Digite o nome da escola e a rua para preencher o endereço automaticamente.</p>
+      </div>
+
       <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
           <FormField
             control={form.control}
             name="name"
@@ -176,7 +233,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             )}
           />
            <div className="border-t pt-4 mt-4">
-             <p className="text-sm font-medium mb-2">Endereço</p>
+             <p className="text-sm font-medium mb-2 flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço</p>
              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                  <FormField
                     control={form.control} name="zipCode"

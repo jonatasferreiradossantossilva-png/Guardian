@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,7 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Copy, Loader2, HeartPulse, CalendarDays } from 'lucide-react';
+import { Copy, Loader2, HeartPulse, CalendarDays, Search, Sparkles, MapPin } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Textarea } from '@/components/ui/textarea';
@@ -112,7 +111,9 @@ export function StudentForm({
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
+  const [isSearching, setIsSearching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(formSchema),
@@ -141,12 +142,40 @@ export function StudentForm({
 
   const { zipCode, parentId } = form.watch();
 
+  const handleSmartSearch = async () => {
+    if (!searchQuery.trim()) return;
+    
+    setIsSearching(true);
+    try {
+        const result = await geocodeAddress({ address: searchQuery });
+        const parts = result.formattedAddress.split(',');
+        
+        form.setValue('street', parts[0]?.trim() || '');
+        form.setValue('latitude', result.latitude);
+        form.setValue('longitude', result.longitude);
+        
+        toast({
+            title: "Endereço localizado!",
+            description: "Campos preenchidos via busca inteligente.",
+        });
+    } catch (e) {
+        toast({
+            title: "Busca falhou",
+            description: "Tente informar a rua e o bairro para melhores resultados.",
+            variant: "destructive"
+        });
+    } finally {
+        setIsSearching(false);
+    }
+  };
+
   useEffect(() => {
-    if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
+    const cleanedCep = zipCode?.replace(/\D/g, '');
+    if (cleanedCep && cleanedCep.length === 8) {
       const fetchAddress = async () => {
         setIsFetchingCep(true);
         try {
-          const response = await fetch(`https://viacep.com.br/ws/${zipCode.replace(/\D/g, '')}/json/`);
+          const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
           if (!response.ok) throw new Error('Falha ao buscar CEP');
           const data = await response.json();
           if (!data.erro) {
@@ -250,8 +279,29 @@ export function StudentForm({
         <DialogTitle>{student ? 'Editar Aluno' : 'Adicionar Aluno'}</DialogTitle>
         <DialogDescription>Preencha as informações do aluno abaixo.</DialogDescription>
       </DialogHeader>
+      
       <ScrollArea className="flex-1">
-        <div className="px-6 py-4">
+        <div className="px-6 py-4 space-y-6">
+          
+          <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
+            <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                <Sparkles className="h-4 w-4" />
+                <span>Busca Inteligente de Endereço</span>
+            </div>
+            <div className="flex gap-2">
+                <Input 
+                    placeholder="Ex: Rua Oscar Freire, 50, Jardins, SP" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
+                    className="bg-background"
+                />
+                <Button variant="secondary" onClick={handleSmartSearch} disabled={isSearching || !searchQuery.trim()}>
+                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                </Button>
+            </div>
+          </div>
+
           <Form {...form}>
             <form id="student-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
               <FormField
@@ -321,9 +371,9 @@ export function StudentForm({
 
               <div className="border-t pt-4 mt-4">
                  <div className="flex justify-between items-center mb-2">
-                    <p className="text-sm font-medium">Endereço do Aluno</p>
+                    <p className="text-sm font-medium flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço de Coleta</p>
                     <Button type="button" variant="outline" size="sm" onClick={handleCopyAddress} disabled={!parentId}>
-                        <Copy className="mr-2 h-3 w-3"/> Usar endereço do responsável
+                        <Copy className="mr-2 h-3 w-3"/> Usar do responsável
                     </Button>
                 </div>
                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -377,25 +427,21 @@ export function StudentForm({
 
               <div className="border-t pt-4 mt-4 bg-destructive/5 p-4 rounded-lg">
                  <p className="text-sm font-bold flex items-center gap-2 mb-3 text-destructive">
-                    <HeartPulse className="h-4 w-4" /> Alertas Médicos e Cuidados Especiais
+                    <HeartPulse className="h-4 w-4" /> Alertas Médicos
                  </p>
                  <FormField
                     control={form.control}
                     name="medicalNote"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-xs">Informações de Saúde (Alergias, Remédios, etc.)</FormLabel>
                             <FormControl>
                                 <Textarea 
-                                    placeholder="Ex: Alérgico a amendoim. Levar bombinha de asma em caso de falta de ar." 
+                                    placeholder="Ex: Alérgico a amendoim. Levar bombinha de asma." 
                                     {...field} 
                                     value={field.value ?? ''}
                                     className="bg-background"
                                 />
                             </FormControl>
-                            <FormDescription className="text-[10px]">
-                                Este alerta ficará visível para o motorista e monitor durante o embarque.
-                            </FormDescription>
                             <FormMessage />
                         </FormItem>
                     )}
@@ -423,10 +469,10 @@ export function StudentForm({
                 )}
               />
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4 pb-10">
                 <div className="md:col-span-2">
                     <p className="text-sm font-bold flex items-center gap-2 mb-3">
-                        <CalendarDays className="h-4 w-4 text-primary" /> Configurações Financeiras do Aluno
+                        <CalendarDays className="h-4 w-4 text-primary" /> Configurações Financeiras
                     </p>
                 </div>
                 <FormField
@@ -465,7 +511,7 @@ export function StudentForm({
                     name="preferredPaymentDay"
                     render={({ field }) => (
                         <FormItem className="md:col-span-2">
-                            <FormLabel>Dia Preferencial de Vencimento</FormLabel>
+                            <FormLabel>Dia de Vencimento</FormLabel>
                             <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value?.toString()}>
                                 <FormControl>
                                     <SelectTrigger><SelectValue placeholder="Selecione o dia" /></SelectTrigger>
