@@ -104,8 +104,8 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         }
         
         toast({
-            title: "Localização encontrada via Google!",
-            description: "Endereço e coordenadas preenchidos automaticamente.",
+            title: "Localização encontrada!",
+            description: "Endereço e coordenadas preenchidos automaticamente via Google.",
         });
     } catch (e) {
         toast({
@@ -191,12 +191,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Use a busca inteligente ou preencha os dados manualmente.</DialogDescription>
+        <DialogDescription>Preencha os dados abaixo. Use a busca inteligente para agilizar.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
-          {/* Busca Inteligente Google */}
+          {/* Busca Inteligente Google - Dentro do Scroll */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
@@ -204,7 +204,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             </div>
             <div className="flex gap-2">
                 <Input 
-                    placeholder="Ex: Colégio Objetivo, Campinas" 
+                    placeholder="Ex: Colégio Vanguarda, São Paulo" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
@@ -224,7 +224,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nome da Escola</FormLabel>
-                    <FormControl><Input placeholder="Ex: Colégio Vanguarda" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: Escola Primária do Saber" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}

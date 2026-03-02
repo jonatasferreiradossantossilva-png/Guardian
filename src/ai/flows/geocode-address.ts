@@ -6,7 +6,7 @@
  */
 
 import { ai } from '@/ai/genkit';
-import { z } from 'kit';
+import { z } from 'genkit';
 
 const GeocodeAddressInputSchema = z.object({
   address: z.string().describe('O endereço completo ou nome de um local para buscar coordenadas.'),
