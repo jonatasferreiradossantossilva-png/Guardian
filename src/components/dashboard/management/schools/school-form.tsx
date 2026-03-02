@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -25,7 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useCallback } from 'react';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
-import { Loader2, Search, Sparkles, MapPin, CheckCircle2, Globe, Building2, Info, GraduationCap, School } from 'lucide-react';
+import { Loader2, Search, Sparkles, MapPin, CheckCircle2, Globe, Building2, Info } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { searchSchoolsInep } from '@/ai/flows/search-schools-inep';
@@ -42,7 +41,6 @@ const UF_LIST = [
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
   cnpj: z.string().optional(),
-  type: z.enum(['public', 'private']).default('public'),
   latitude: z.coerce.number().optional(),
   longitude: z.coerce.number().optional(),
   zipCode: z.string().optional(),
@@ -65,7 +63,6 @@ interface SchoolFormProps {
 const defaultValues: SchoolFormValues = {
   name: '',
   cnpj: '',
-  type: 'public',
   latitude: undefined,
   longitude: undefined,
   zipCode: '',
@@ -99,10 +96,10 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const zipCode = form.watch('zipCode');
 
-  // Busca Semântica (Fuzzy Match) via IA em nossa base
-  const handleFuzzySearch = async () => {
-    if (!searchQuery.trim() || searchQuery.length < 3 || !knowledgeBase) {
-        toast({ title: "Digite pelo menos 3 letras", variant: "destructive" });
+  // Busca Inteligente na Base Guardian (Custo Zero)
+  const handleInternalSearch = async () => {
+    if (!searchQuery.trim() || searchQuery.length < 2 || !knowledgeBase) {
+        toast({ title: "Digite o nome da escola", variant: "destructive" });
         return;
     }
 
@@ -110,62 +107,71 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     setAiSuggestions([]);
     
     try {
-        const filteredKB = knowledgeBase.filter((s: any) => s.city === searchCity && s.state === searchUF);
-        
+        // Filtra a base local por cidade antes de mandar para a IA (performance)
+        const cityFilter = knowledgeBase.filter((s: any) => 
+            s.city.toLowerCase() === searchCity.toLowerCase() && 
+            s.state === searchUF
+        );
+
+        if (cityFilter.length === 0) {
+            toast({ title: "Sem dados para esta cidade", description: "Tente usar a busca do Google." });
+            setIsSearchingInternal(false);
+            return;
+        }
+
         const result = await searchSchoolsInep({
             query: searchQuery,
             city: searchCity,
             state: searchUF,
-            knowledgeBase: filteredKB
+            knowledgeBase: cityFilter
         });
         
         const enrichedMatches = result.matches.map(match => {
             const fullData = knowledgeBase.find(kb => kb.id === match.id);
             return { ...fullData, score: match.score };
-        }).filter(m => m.score > 0.5);
+        });
 
         setAiSuggestions(enrichedMatches);
         
         if (enrichedMatches.length === 0) {
-            toast({ title: "Nenhuma sugestão na base local", description: "Tente usar o botão do Google Maps." });
+            toast({ title: "Nenhuma sugestão encontrada", description: "Use a busca global do Google." });
         }
     } catch (e) {
         console.error(e);
-        toast({ title: "Erro na busca interna", variant: "destructive" });
+        toast({ title: "Erro na pesquisa inteligente", variant: "destructive" });
     } finally {
         setIsSearchingInternal(false);
     }
   };
 
-  const selectFromKnowledgeBase = (skbItem: any) => {
-    form.setValue('name', skbItem.name, { shouldValidate: true, shouldDirty: true });
-    form.setValue('type', skbItem.type || 'public', { shouldValidate: true, shouldDirty: true });
-    form.setValue('street', skbItem.street || '', { shouldValidate: true, shouldDirty: true });
-    form.setValue('number', skbItem.number || '', { shouldValidate: true, shouldDirty: true });
-    form.setValue('neighborhood', skbItem.neighborhood || '', { shouldValidate: true, shouldDirty: true });
-    form.setValue('city', skbItem.city, { shouldValidate: true, shouldDirty: true });
-    form.setValue('state', skbItem.state, { shouldValidate: true, shouldDirty: true });
-    form.setValue('zipCode', skbItem.zipCode || '', { shouldValidate: true, shouldDirty: true });
-    form.setValue('latitude', skbItem.latitude, { shouldValidate: true, shouldDirty: true });
-    form.setValue('longitude', skbItem.longitude, { shouldValidate: true, shouldDirty: true });
+  const selectFromSuggestions = (item: any) => {
+    form.setValue('name', item.name, { shouldValidate: true, shouldDirty: true });
+    form.setValue('street', item.street || '', { shouldValidate: true, shouldDirty: true });
+    form.setValue('number', item.number || '', { shouldValidate: true, shouldDirty: true });
+    form.setValue('neighborhood', item.neighborhood || '', { shouldValidate: true, shouldDirty: true });
+    form.setValue('city', item.city, { shouldValidate: true, shouldDirty: true });
+    form.setValue('state', item.state, { shouldValidate: true, shouldDirty: true });
+    form.setValue('zipCode', item.zipCode || '', { shouldValidate: true, shouldDirty: true });
+    form.setValue('latitude', item.latitude, { shouldValidate: true, shouldDirty: true });
+    form.setValue('longitude', item.longitude, { shouldValidate: true, shouldDirty: true });
     
     setAiSuggestions([]);
-    setSearchQuery(skbItem.name);
-    toast({
-        title: "Escola Selecionada!",
-        description: "Dados importados da base Guardian.",
-    });
+    toast({ title: "Dados importados!", description: "Endereço preenchido via base Guardian." });
   };
 
   const handleGoogleSearch = async () => {
-    if (!searchQuery.trim()) return;
+    if (!searchQuery.trim()) {
+        toast({ title: "Digite o nome da escola", variant: "destructive" });
+        return;
+    }
     
     setIsSearchingGoogle(true);
     setAiSuggestions([]);
     try {
-        const fullSearchQuery = `${searchQuery}, ${searchCity}, ${searchUF}`;
-        const result = await geocodeAddress({ address: fullSearchQuery });
+        const fullSearch = `${searchQuery}, ${searchCity}, ${searchUF}`;
+        const result = await geocodeAddress({ address: fullSearch });
         
+        form.setValue('name', searchQuery.trim(), { shouldValidate: true, shouldDirty: true });
         form.setValue('street', result.street || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('number', result.number || '', { shouldValidate: true, shouldDirty: true });
         form.setValue('zipCode', result.zipCode || '', { shouldValidate: true, shouldDirty: true });
@@ -175,59 +181,38 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         form.setValue('latitude', result.latitude, { shouldValidate: true, shouldDirty: true });
         form.setValue('longitude', result.longitude, { shouldValidate: true, shouldDirty: true });
         
-        if (!form.getValues('name')) {
-            form.setValue('name', searchQuery.trim(), { shouldValidate: true, shouldDirty: true });
-        }
-        
-        toast({
-            title: "Localização Encontrada!",
-            description: "Dados GPS capturados via Google Maps.",
-        });
+        toast({ title: "Localizado pelo Google!", description: "Dados de GPS e CEP capturados." });
     } catch (e) {
-        toast({
-            title: "Google não encontrou este local",
-            description: "Verifique o nome e tente novamente.",
-            variant: "destructive"
-        });
+        toast({ title: "Não encontramos no Google Maps", variant: "destructive" });
     } finally {
         setIsSearchingGoogle(false);
     }
   };
 
-  const fetchAddressByCep = useCallback(async (cep: string) => {
-    const cleanedCep = cep.replace(/\D/g, '');
-    if (cleanedCep.length !== 8) return;
-
-    setIsFetchingCep(true);
-    try {
-      const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
-      const data = await response.json();
-      if (!data.erro) {
-        form.setValue('street', data.logradouro || '', { shouldValidate: true, shouldDirty: true });
-        form.setValue('neighborhood', data.bairro || '', { shouldValidate: true, shouldDirty: true });
-        form.setValue('city', data.localidade || '', { shouldValidate: true, shouldDirty: true });
-        form.setValue('state', data.uf || '', { shouldValidate: true, shouldDirty: true });
-        toast({ title: "CEP localizado!" });
-      }
-    } catch (error) {
-      console.error(error);
-    } finally {
-      setIsFetchingCep(false);
-    }
-  }, [form, toast]);
-
   useEffect(() => {
     if (zipCode && zipCode.replace(/\D/g, '').length === 8) {
-        fetchAddressByCep(zipCode);
+        const fetchAddress = async () => {
+            setIsFetchingCep(true);
+            try {
+                const res = await fetch(`https://viacep.com.br/ws/${zipCode.replace(/\D/g, '')}/json/`);
+                const data = await res.json();
+                if (!data.erro) {
+                    form.setValue('street', data.logradouro || '', { shouldValidate: true, shouldDirty: true });
+                    form.setValue('neighborhood', data.bairro || '', { shouldValidate: true, shouldDirty: true });
+                    form.setValue('city', data.localidade || '', { shouldValidate: true, shouldDirty: true });
+                    form.setValue('state', data.uf || '', { shouldValidate: true, shouldDirty: true });
+                }
+            } catch (e) {} finally { setIsFetchingCep(false); }
+        };
+        fetchAddress();
     }
-  }, [zipCode, fetchAddressByCep]);
+  }, [zipCode, form]);
 
   useEffect(() => {
     if (school) {
       form.reset({
         name: school.name || '',
         cnpj: school.cnpj || '',
-        type: school.type || 'public',
         latitude: school.latitude,
         longitude: school.longitude,
         zipCode: school.zipCode || '',
@@ -241,8 +226,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       });
       setSearchCity(school.city || 'Carapicuíba');
       setSearchUF(school.state || 'SP');
-    } else {
-      form.reset(defaultValues);
     }
   }, [school, form]);
 
@@ -254,27 +237,18 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             toast({ title: 'Escola atualizada!' });
         } else {
             addDoc('schools', data);
-            
-            // Grava na Base de Conhecimento para ajudar outros gestores (Custo Zero futuro)
-            const existsInKB = knowledgeBase?.some((s: any) => 
-                s.name.toLowerCase() === data.name.toLowerCase() && s.city === data.city
-            );
-            
-            if (!existsInKB) {
-                addDoc('school_knowledge_base', {
-                    name: data.name,
-                    type: data.type,
-                    latitude: data.latitude,
-                    longitude: data.longitude,
-                    street: data.street,
-                    number: data.number,
-                    neighborhood: data.neighborhood,
-                    city: data.city,
-                    state: data.state,
-                    zipCode: data.zipCode
-                });
-            }
-            toast({ title: 'Escola salva e adicionada à base do Guardian!' });
+            // Salva na Base de Conhecimento para o próximo gestor não gastar API
+            addDoc('school_knowledge_base', {
+                name: data.name,
+                city: data.city,
+                state: data.state,
+                street: data.street,
+                neighborhood: data.neighborhood,
+                zipCode: data.zipCode,
+                latitude: data.latitude,
+                longitude: data.longitude
+            });
+            toast({ title: 'Escola cadastrada e salva na base Guardian!' });
         }
         onFormSubmit();
     } catch (error) {
@@ -287,43 +261,31 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   return (
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
-        <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Use os filtros e a busca inteligente (IA) para preencher o endereço automaticamente.</DialogDescription>
+        <DialogTitle>{school ? 'Editar Escola' : 'Nova Escola'}</DialogTitle>
+        <DialogDescription>Use a busca inteligente para acelerar o cadastro com dados reais.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
           
-          {/* Sessão de Busca Inteligente Híbrida */}
+          {/* Sessão de Busca Híbrida */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-4">
-            <div className="flex items-center justify-between">
-                <div className="flex items-center gap-2 text-primary font-bold text-sm">
-                    <Sparkles className="h-4 w-4" />
-                    <span>Ferramenta de Busca Guardian</span>
-                </div>
-                <Badge variant="outline" className="text-[10px] uppercase bg-background">IA + Google</Badge>
+            <div className="flex items-center gap-2 text-primary font-bold text-sm">
+                <Sparkles className="h-4 w-4" />
+                <span>Busca Inteligente Híbrida</span>
             </div>
 
             <div className="grid grid-cols-3 gap-2">
                 <div className="col-span-1">
                     <Label className="text-[10px] uppercase font-bold text-muted-foreground mb-1 block">Estado</Label>
                     <Select value={searchUF} onValueChange={setSearchUF}>
-                        <SelectTrigger className="h-8 text-xs bg-background">
-                            <SelectValue />
-                        </SelectTrigger>
-                        <SelectContent>
-                            {UF_LIST.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}
-                        </SelectContent>
+                        <SelectTrigger className="h-8 bg-background"><SelectValue /></SelectTrigger>
+                        <SelectContent>{UF_LIST.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
                     </Select>
                 </div>
                 <div className="col-span-2">
                     <Label className="text-[10px] uppercase font-bold text-muted-foreground mb-1 block">Cidade</Label>
-                    <Input 
-                        value={searchCity} 
-                        onChange={e => setSearchCity(e.target.value)}
-                        placeholder="Ex: Carapicuíba"
-                        className="h-8 text-xs bg-background"
-                    />
+                    <Input value={searchCity} onChange={e => setSearchCity(e.target.value)} className="h-8 bg-background" />
                 </div>
             </div>
 
@@ -332,108 +294,69 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     <div className="relative flex-1">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input 
-                            placeholder="Nome da Escola..." 
+                            placeholder="Ex: Colégio Marjore Paula..." 
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
-                            onKeyPress={(e) => e.key === 'Enter' && handleFuzzySearch()}
+                            onKeyPress={(e) => e.key === 'Enter' && handleInternalSearch()}
                             className="bg-background pl-9"
                         />
                     </div>
-                    <Button variant="secondary" onClick={handleFuzzySearch} disabled={isSearchingInternal || !searchQuery.trim()}>
-                        {isSearchingInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-                        <span className="ml-2 hidden sm:inline">Pesquisar Base</span>
+                    <Button variant="secondary" onClick={handleInternalSearch} disabled={isSearchingInternal}>
+                        {isSearchingInternal ? <Loader2 className="h-4 w-4 animate-spin" /> : "Pesquisar Base"}
                     </Button>
-                    <Button variant="outline" onClick={handleGoogleSearch} disabled={isSearchingGoogle || !searchQuery.trim()}>
+                    <Button variant="outline" onClick={handleGoogleSearch} disabled={isSearchingGoogle}>
                         {isSearchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
-                        <span className="ml-2 hidden sm:inline">Google</span>
                     </Button>
                 </div>
 
                 {aiSuggestions.length > 0 && (
                     <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-xl overflow-hidden border-primary/30">
                         <p className="px-3 py-1.5 bg-secondary/50 text-[10px] font-bold text-muted-foreground uppercase flex items-center gap-2">
-                            <CheckCircle2 className="h-3 w-3 text-green-500" /> Sugestões Encontradas na Comunidade
+                            <CheckCircle2 className="h-3 w-3 text-green-500" /> Sugestões da Base Guardian (Custo Zero)
                         </p>
                         <div className="divide-y max-h-48 overflow-y-auto">
                             {aiSuggestions.map((item) => (
                                 <button 
                                     key={item.id}
                                     type="button"
-                                    onClick={() => selectFromKnowledgeBase(item)}
+                                    onClick={() => selectFromSuggestions(item)}
                                     className="w-full text-left px-3 py-2.5 hover:bg-primary/5 transition-colors group flex items-center justify-between"
                                 >
                                     <div className="min-w-0">
-                                        <div className="flex items-center gap-2">
-                                            <p className="text-sm font-bold group-hover:text-primary truncate">{item.name}</p>
-                                            <Badge variant="outline" className={cn(
-                                                "text-[8px] h-3.5 px-1 uppercase",
-                                                item.type === 'private' ? "text-amber-600 border-amber-200 bg-amber-50" : "text-blue-600 border-blue-200 bg-blue-50"
-                                            )}>
-                                                {item.type === 'private' ? 'Privada' : 'Pública'}
-                                            </Badge>
-                                        </div>
+                                        <p className="text-sm font-bold group-hover:text-primary truncate">{item.name}</p>
                                         <p className="text-[10px] text-muted-foreground truncate">{item.neighborhood}, {item.city} - {item.state}</p>
                                     </div>
-                                    <Badge variant="secondary" className="text-[9px] h-4">Custo Zero</Badge>
+                                    <Badge variant="secondary" className="text-[9px] h-4">Importar</Badge>
                                 </button>
                             ))}
                         </div>
                     </div>
                 )}
             </div>
-            <p className="text-[10px] text-muted-foreground italic leading-tight flex items-start gap-1.5">
-                <Info className="h-3 w-3 mt-0.5 shrink-0" />
-                <span>Clique em <strong>Pesquisar Base</strong> para buscar no Guardian (Custo Zero). Use <strong>Google</strong> apenas se não encontrar resultados.</span>
-            </p>
           </div>
 
           <Form {...form}>
             <form id="school-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 pb-10">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="md:col-span-2">
-                    <FormField
-                        control={form.control}
-                        name="name"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel className="flex items-center gap-2"><Building2 className="h-4 w-4" />Nome Oficial da Unidade</FormLabel>
-                            <FormControl><Input placeholder="Ex: Escola Primária do Saber" {...field} value={field.value ?? ''} /></FormControl>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                </div>
-                <FormField
-                    control={form.control}
-                    name="type"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel className="flex items-center gap-2"><GraduationCap className="h-4 w-4" />Tipo de Escola</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                    <SelectValue />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="public">Pública</SelectItem>
-                                <SelectItem value="private">Privada</SelectItem>
-                            </SelectContent>
-                        </Select>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-              </div>
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2"><Building2 className="h-4 w-4" />Nome da Escola</FormLabel>
+                    <FormControl><Input placeholder="Nome oficial" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
               <div className="border-t pt-4 mt-4">
-                <p className="text-sm font-bold mb-4 flex items-center gap-2 text-foreground/80"><MapPin className="h-4 w-4 text-primary" /> Endereço Confirmado</p>
+                <p className="text-sm font-bold mb-4 flex items-center gap-2 text-foreground/80"><MapPin className="h-4 w-4 text-primary" /> Endereço</p>
                 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="grid grid-cols-3 gap-4">
                     <FormField
                         control={form.control} name="zipCode"
                         render={({ field }) => (
-                            <FormItem className="md:col-span-1">
+                            <FormItem className="col-span-1">
                             <FormLabel>CEP</FormLabel>
                             <FormControl>
                             <div className="relative">
@@ -441,60 +364,44 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                                 {isFetchingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
                             </div>
                             </FormControl>
-                            <FormMessage />
                             </FormItem>
                         )}
                     />
                     <FormField
                         control={form.control} name="street"
                         render={({ field }) => (
-                            <FormItem className="md:col-span-2">
+                            <FormItem className="col-span-2">
                             <FormLabel>Rua / Avenida</FormLabel>
-                            <FormControl><Input placeholder="Logradouro" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormControl><Input {...field} value={field.value ?? ''} /></FormControl>
                             <FormMessage />
                             </FormItem>
                         )}
                     />
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                <div className="grid grid-cols-3 gap-4 mt-4">
                     <FormField
                         control={form.control} name="number"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="Ex: 123" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control} name="complement"
-                        render={({ field }) => (
-                            <FormItem><FormLabel>Complemento</FormLabel><FormControl><Input placeholder="Ex: Bloco A" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl></FormItem>
                         )}
                     />
                     <FormField
                         control={form.control} name="neighborhood"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Bairro" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl></FormItem>
                         )}
                     />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                     <FormField
                         control={form.control} name="city"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="Cidade" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control} name="state"
-                        render={({ field }) => (
-                            <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="UF" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl></FormItem>
                         )}
                     />
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4 pt-4 border-t opacity-60">
+              <div className="grid grid-cols-2 gap-4 pt-4 border-t opacity-60 grayscale">
                  <FormField
                     control={form.control} name="latitude"
                     render={({ field }) => (
@@ -514,7 +421,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 name="active"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                    <div className="space-y-0.5"><FormLabel>Escola Ativa para Rotas</FormLabel></div>
+                    <div className="space-y-0.5"><FormLabel>Escola Ativa</FormLabel></div>
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   </FormItem>
                 )}
@@ -525,9 +432,9 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       </ScrollArea>
 
       <DialogFooter className="p-6 border-t shrink-0 bg-background">
-        <DialogClose asChild><Button type="button" variant="outline" disabled={isSaving}>Cancelar</Button></DialogClose>
+        <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
         <Button type="submit" form="school-form" disabled={isSaving}>
-            {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Escola"}
+            {isSaving ? <Loader2 className="mr-2 animate-spin"/> : "Salvar Escola"}
         </Button>
       </DialogFooter>
     </DialogContent>

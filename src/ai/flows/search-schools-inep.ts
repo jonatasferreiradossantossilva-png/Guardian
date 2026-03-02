@@ -35,17 +35,17 @@ const prompt = ai.definePrompt({
   model: 'googleai/gemini-1.5-flash',
   input: { schema: SearchSchoolsInputSchema },
   output: { schema: SearchSchoolsOutputSchema },
-  prompt: `Você é um especialista em dados educacionais brasileiros. 
-Sua tarefa é encontrar correspondências entre a busca do usuário e a nossa base de conhecimento de escolas.
+  prompt: `Você é um motor de busca inteligente para escolas brasileiras. 
+Sua tarefa é encontrar na lista 'Base de Conhecimento' as escolas que mais se assemelham à 'Busca do Usuário'.
 
-REGRAS:
-1. Ignore prefixos como "Colégio", "Escola", "E.E.", "E.M." se eles estiverem atrapalhando o núcleo do nome.
-2. Identifique nomes grafados de forma diferente mas que se referem à mesma instituição (ex: "Bandeirantes" e "Col. Bandeirantes").
-3. Retorne apenas escolas que pertençam à cidade de {{{city}}} - {{{state}}}.
-4. Atribua um score de 0 a 1 para a similaridade.
+REGRAS DE OURO:
+1. Ignore prefixos como "Colégio", "Escola", "E.E.", "E.M.", "Instituto" se eles estiverem atrapalhando o núcleo do nome.
+2. Se o usuário digitar "Marjore", e na base estiver "MARJORE PAULA", isso é um match forte.
+3. Retorne apenas as 5 melhores correspondências.
+4. Atribua um score de 0 a 1 para a similaridade (acima de 0.4 já é considerado útil).
 
 Busca do Usuário: "{{{query}}}"
-Cidade/UF: {{{city}}} - {{{state}}}
+Localização: {{{city}}} - {{{state}}}
 
 Base de Conhecimento (JSON):
 {{{json knowledgeBase}}}
@@ -60,7 +60,7 @@ const searchSchoolsInepFlow = ai.defineFlow(
     outputSchema: SearchSchoolsOutputSchema,
   },
   async input => {
-    if (!input.query || input.query.length < 3 || input.knowledgeBase.length === 0) {
+    if (!input.query || input.query.length < 2 || !input.knowledgeBase || input.knowledgeBase.length === 0) {
         return { matches: [] };
     }
     try {
