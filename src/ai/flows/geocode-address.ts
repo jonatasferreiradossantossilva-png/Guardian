@@ -56,10 +56,12 @@ export const geocodeAddress = ai.defineFlow(
         }
 
         const feature = data.features[0];
-        const { lon, lat } = feature.properties;
         const props = feature.properties;
+        const { lon, lat } = feature.geometry.coordinates ? 
+            { lon: feature.geometry.coordinates[0], lat: feature.geometry.coordinates[1] } : 
+            { lon: props.lon, lat: props.lat };
 
-        // Mapeamento inteligente para o padrão brasileiro do OpenStreetMap/Geoapify
+        // Mapeamento inteligente para o padrão brasileiro
         // Prioriza postcode para o campo zipCode e housenumber para o número
         return {
           latitude: lat,
