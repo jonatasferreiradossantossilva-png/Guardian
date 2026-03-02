@@ -196,15 +196,15 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
-          {/* Busca Inteligente Google - Dentro do Scroll */}
+          {/* Busca Inteligente Google - Agora integrada no Scroll */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
-                <span>Busca Inteligente (Nome da Escola + Cidade)</span>
+                <span>Busca Inteligente via Google Maps</span>
             </div>
             <div className="flex gap-2">
                 <Input 
-                    placeholder="Ex: Colégio Vanguarda, São Paulo" 
+                    placeholder="Ex: Colégio Bandeirantes, São Paulo" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
