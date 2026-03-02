@@ -10,3 +10,4 @@ import '@/ai/flows/geocode-address.ts';
 import '@/ai/flows/routing-geoapify.ts';
 import '@/ai/flows/validate-api-keys.ts';
 import '@/ai/flows/extract-document-data.ts';
+import '@/ai/flows/search-schools-inep.ts';
