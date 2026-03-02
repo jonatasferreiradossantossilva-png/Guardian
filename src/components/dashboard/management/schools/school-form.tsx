@@ -85,22 +85,18 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Extração básica do endereço formatado
-        const parts = result.formattedAddress.split(',');
+        // Preenchimento automático dos campos baseados no resultado estruturado da API
+        if (result.street) form.setValue('street', result.street);
+        if (result.number) form.setValue('number', result.number);
+        if (result.zipCode) form.setValue('zipCode', result.zipCode);
+        if (result.neighborhood) form.setValue('neighborhood', result.neighborhood);
+        if (result.city) form.setValue('city', result.city);
+        if (result.state) form.setValue('state', result.state);
         
-        // Tenta preencher campos com base no resultado da API
-        if (parts[0]) form.setValue('street', parts[0].trim());
-        
-        // Tenta detectar cidade e estado no endereço formatado
-        if (result.formattedAddress.toLowerCase().includes('são paulo')) {
-            form.setValue('city', 'São Paulo');
-            form.setValue('state', 'SP');
-        }
-
         form.setValue('latitude', result.latitude);
         form.setValue('longitude', result.longitude);
         
-        // Se o nome da escola ainda estiver vazio, tenta extrair da busca
+        // Tenta inferir o nome da escola se o campo estiver vazio
         if (!form.getValues('name')) {
             const firstPart = searchQuery.split(',')[0];
             if (firstPart && firstPart.length > 3) {
@@ -110,7 +106,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         
         toast({
             title: "Localização encontrada!",
-            description: "Campos preenchidos com base nos dados da escola, cidade e endereço.",
+            description: "Endereço completo, CEP e coordenadas preenchidos.",
         });
     } catch (e) {
         toast({
@@ -229,7 +225,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             </Button>
         </div>
         <p className="text-[10px] text-muted-foreground italic leading-tight">
-            Dica: Combine <strong>Nome da Escola + Cidade + Rua</strong> para obter o resultado mais preciso possível.
+            Dica: Informe <strong>Escola + Cidade + Rua</strong> para preencher CEP e Número automaticamente.
         </p>
       </div>
 

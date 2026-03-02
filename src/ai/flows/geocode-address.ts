@@ -2,6 +2,7 @@
 /**
  * @fileOverview Fluxo para geocodificar endereços ou buscar locais usando a API Geoapify.
  * Suporta busca semântica por nome de colégio ou endereço completo.
+ * Retorna dados estruturados para preenchimento automático de formulários.
  */
 
 import { ai } from '@/ai/genkit';
@@ -16,6 +17,12 @@ const GeocodeAddressOutputSchema = z.object({
   latitude: z.number(),
   longitude: z.number(),
   formattedAddress: z.string(),
+  street: z.string().optional(),
+  number: z.string().optional(),
+  neighborhood: z.string().optional(),
+  city: z.string().optional(),
+  state: z.string().optional(),
+  zipCode: z.string().optional(),
 });
 export type GeocodeAddressOutput = z.infer<typeof GeocodeAddressOutputSchema>;
 
@@ -31,7 +38,6 @@ export const geocodeAddress = ai.defineFlow(
       throw new Error('GEOAPIFY_API_KEY não configurada no ambiente.');
     }
 
-    // Usamos o endpoint de Search que é mais flexível para nomes de estabelecimentos + endereços
     const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(
       address
     )}&lang=pt&limit=1&apiKey=${apiKey}`;
@@ -50,12 +56,18 @@ export const geocodeAddress = ai.defineFlow(
 
         const feature = data.features[0];
         const { lon, lat } = feature.properties;
-        const formattedAddress = feature.properties.formatted;
+        const props = feature.properties;
 
         return {
           latitude: lat,
           longitude: lon,
-          formattedAddress,
+          formattedAddress: props.formatted,
+          street: props.street,
+          number: props.housenumber,
+          neighborhood: props.suburb || props.district,
+          city: props.city || props.town,
+          state: props.state_code || props.state,
+          zipCode: props.postcode,
         };
     } catch (error) {
         console.error("Erro no fluxo de geocodificação:", error);

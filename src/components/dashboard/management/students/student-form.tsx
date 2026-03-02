@@ -10,7 +10,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -148,22 +147,21 @@ export function StudentForm({
     setIsSearching(true);
     try {
         const result = await geocodeAddress({ address: searchQuery });
-        const parts = result.formattedAddress.split(',');
         
-        if (parts[0]) form.setValue('street', parts[0].trim());
-        
-        // Tenta detectar cidade e estado
-        if (result.formattedAddress.toLowerCase().includes('são paulo')) {
-            form.setValue('city', 'São Paulo');
-            form.setValue('state', 'SP');
-        }
+        // Preenchimento automático dos campos estruturados
+        if (result.street) form.setValue('street', result.street);
+        if (result.number) form.setValue('number', result.number);
+        if (result.zipCode) form.setValue('zipCode', result.zipCode);
+        if (result.neighborhood) form.setValue('neighborhood', result.neighborhood);
+        if (result.city) form.setValue('city', result.city);
+        if (result.state) form.setValue('state', result.state);
 
         form.setValue('latitude', result.latitude);
         form.setValue('longitude', result.longitude);
         
         toast({
             title: "Endereço localizado!",
-            description: "Campos preenchidos via busca combinada (Rua, Cidade, Bairro).",
+            description: "Logradouro, número e CEP preenchidos via busca inteligente.",
         });
     } catch (e) {
         toast({
@@ -308,7 +306,7 @@ export function StudentForm({
                 </Button>
             </div>
             <p className="text-[10px] text-muted-foreground italic leading-tight">
-                Combine <strong>Endereço + Bairro + Cidade</strong> para garantir que o GPS seja calibrado corretamente.
+                Dica: Informe o endereço completo para que o sistema preencha o CEP e Número automaticamente.
             </p>
           </div>
 

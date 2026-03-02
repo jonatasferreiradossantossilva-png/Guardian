@@ -80,24 +80,23 @@ export default function PublicRegistrationPage() {
     setIsSearching(true);
     try {
         const result = await geocodeAddress({ address: searchQuery });
-        const parts = result.formattedAddress.split(',');
         
-        if (parts[0]) setStreet(parts[0].trim());
-        
-        // Tenta detectar cidade e estado
-        if (result.formattedAddress.toLowerCase().includes('são paulo')) {
-            setCity('São Paulo');
-            setState('SP');
-        }
+        // Preenchimento automático dos campos baseados no resultado estruturado da API
+        if (result.street) setStreet(result.street);
+        if (result.number) setNumber(result.number);
+        if (result.zipCode) setZipCode(result.zipCode);
+        if (result.neighborhood) setNeighborhood(result.neighborhood);
+        if (result.city) setCity(result.city);
+        if (result.state) setState(result.state);
 
         toast({
             title: "Endereço localizado!",
-            description: "Campos preenchidos via busca inteligente.",
+            description: "Campos preenchidos automaticamente via busca inteligente.",
         });
     } catch (e) {
         toast({
             title: "Busca falhou",
-            description: "Tente informar a rua, bairro e cidade.",
+            description: "Tente informar o endereço completo + bairro + cidade.",
             variant: "destructive"
         });
     } finally {
@@ -392,12 +391,12 @@ export default function PublicRegistrationPage() {
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Cidade</Label>
-                                    <Input placeholder="Cidade" value={city} readOnly className="bg-muted/50" />
+                                    <Input placeholder="Cidade" value={city} onChange={e => setCity(e.target.value)} />
                                 </div>
                             </div>
                             <div className="space-y-2">
                                 <Label>Estado (UF)</Label>
-                                <Input placeholder="UF" value={state} readOnly className="bg-muted/50" />
+                                <Input placeholder="UF" value={state} onChange={e => setState(e.target.value)} />
                             </div>
                         </div>
                     </div>
