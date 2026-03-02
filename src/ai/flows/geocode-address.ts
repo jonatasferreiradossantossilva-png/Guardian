@@ -58,16 +58,18 @@ export const geocodeAddress = ai.defineFlow(
         const { lon, lat } = feature.properties;
         const props = feature.properties;
 
+        // Geoapify retorna bairro em 'suburb' ou 'district'
+        // Estado (UF) geralmente vem em 'state_code'
         return {
           latitude: lat,
           longitude: lon,
           formattedAddress: props.formatted,
-          street: props.street,
-          number: props.housenumber,
-          neighborhood: props.suburb || props.district,
-          city: props.city || props.town,
-          state: props.state_code || props.state,
-          zipCode: props.postcode,
+          street: props.street || '',
+          number: props.housenumber || '',
+          neighborhood: props.suburb || props.district || props.neighborhood || '',
+          city: props.city || props.town || props.village || '',
+          state: props.state_code || props.state || '',
+          zipCode: props.postcode || '',
         };
     } catch (error) {
         console.error("Erro no fluxo de geocodificação:", error);

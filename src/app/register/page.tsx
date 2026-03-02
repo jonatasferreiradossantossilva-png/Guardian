@@ -81,7 +81,7 @@ export default function PublicRegistrationPage() {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Preenchimento automático dos campos baseados no resultado estruturado da API
+        // Preenchimento automático de TODOS os campos baseados no resultado estruturado da API
         if (result.street) setStreet(result.street);
         if (result.number) setNumber(result.number);
         if (result.zipCode) setZipCode(result.zipCode);
@@ -91,7 +91,7 @@ export default function PublicRegistrationPage() {
 
         toast({
             title: "Endereço localizado!",
-            description: "Campos preenchidos automaticamente via busca inteligente.",
+            description: "Logradouro, bairro e CEP preenchidos automaticamente.",
         });
     } catch (e) {
         toast({
@@ -104,11 +104,14 @@ export default function PublicRegistrationPage() {
     }
   };
 
-  // Auto-fetch address from ViaCEP
+  // Auto-fetch address from ViaCEP (apenas se os campos essenciais estiverem vazios)
   useEffect(() => {
     const cleanedCep = zipCode.replace(/\D/g, '');
     if (cleanedCep.length === 8) {
       const fetchAddress = async () => {
+        // Se já tivermos bairro e cidade (vinda da Busca Inteligente), não rodamos o ViaCEP para não sobrescrever
+        if (neighborhood && city) return;
+
         setIsFetchingCep(true);
         try {
           const response = await fetch(`https://viacep.com.br/ws/${cleanedCep}/json/`);
@@ -118,7 +121,7 @@ export default function PublicRegistrationPage() {
             setNeighborhood(data.bairro || '');
             setCity(data.localidade || '');
             setState(data.uf || '');
-            toast({ title: "Endereço localizado!", description: "Preenchemos os campos para você." });
+            toast({ title: "CEP localizado!", description: "Preenchemos os campos para você." });
           } else {
             toast({ title: "CEP não encontrado", variant: "destructive" });
           }
@@ -130,7 +133,7 @@ export default function PublicRegistrationPage() {
       };
       fetchAddress();
     }
-  }, [zipCode, toast]);
+  }, [zipCode, toast, neighborhood, city]);
 
   const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
@@ -340,7 +343,6 @@ export default function PublicRegistrationPage() {
                             <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta
                         </p>
                         
-                        {/* Smart Search Field for Parents */}
                         <div className="bg-primary/5 p-3 rounded-lg border border-primary/10 space-y-3 mb-4">
                             <div className="flex items-center gap-2 text-primary font-semibold text-[10px] uppercase tracking-widest">
                                 <Sparkles className="h-3.5 w-3.5" />

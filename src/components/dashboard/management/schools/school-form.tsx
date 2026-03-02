@@ -86,13 +86,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         const result = await geocodeAddress({ address: searchQuery });
         
         // Preenchimento automático dos campos baseados no resultado estruturado da API
-        if (result.street) form.setValue('street', result.street);
-        if (result.number) form.setValue('number', result.number);
-        if (result.zipCode) form.setValue('zipCode', result.zipCode);
-        if (result.neighborhood) form.setValue('neighborhood', result.neighborhood);
-        if (result.city) form.setValue('city', result.city);
-        if (result.state) form.setValue('state', result.state);
-        
+        form.setValue('street', result.street || '');
+        form.setValue('number', result.number || '');
+        form.setValue('zipCode', result.zipCode || '');
+        form.setValue('neighborhood', result.neighborhood || '');
+        form.setValue('city', result.city || '');
+        form.setValue('state', result.state || '');
         form.setValue('latitude', result.latitude);
         form.setValue('longitude', result.longitude);
         
@@ -106,7 +105,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         
         toast({
             title: "Localização encontrada!",
-            description: "Endereço completo, CEP e coordenadas preenchidos.",
+            description: "Endereço completo, CEP e bairro preenchidos.",
         });
     } catch (e) {
         toast({
@@ -129,10 +128,11 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
           if (!response.ok) throw new Error('Falha ao buscar CEP');
           const data = await response.json();
           if (!data.erro) {
-            form.setValue('street', data.logradouro || '');
-            form.setValue('neighborhood', data.bairro || '');
-            form.setValue('city', data.localidade || '');
-            form.setValue('state', data.uf || '');
+            // Só preenche se os campos estiverem vazios para não sobrescrever a Busca Inteligente
+            if (!form.getValues('street')) form.setValue('street', data.logradouro || '');
+            if (!form.getValues('neighborhood')) form.setValue('neighborhood', data.bairro || '');
+            if (!form.getValues('city')) form.setValue('city', data.localidade || '');
+            if (!form.getValues('state')) form.setValue('state', data.uf || '');
             form.setFocus('number');
           }
         } catch (error) {
@@ -201,129 +201,134 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   };
 
   return (
-    <DialogContent className="sm:max-w-2xl" onOpenAutoFocus={(e) => e.preventDefault()}>
-      <DialogHeader>
+    <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
         <DialogDescription>Preencha as informações da escola ou use a busca combinada para agilizar.</DialogDescription>
       </DialogHeader>
       
-      <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3 mb-2">
-        <div className="flex items-center gap-2 text-primary font-semibold text-sm">
-            <Sparkles className="h-4 w-4" />
-            <span>Busca Inteligente (IA + Mapas)</span>
-        </div>
-        <div className="flex gap-2">
-            <Input 
-                placeholder="Ex: Colégio Saber, Rua das Flores, São Paulo" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
-                className="bg-background"
-            />
-            <Button variant="secondary" onClick={handleSmartSearch} disabled={isSearching || !searchQuery.trim()}>
-                {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
-            </Button>
-        </div>
-        <p className="text-[10px] text-muted-foreground italic leading-tight">
-            Dica: Informe <strong>Escola + Cidade + Rua</strong> para preencher CEP e Número automaticamente.
-        </p>
+      <div className="px-6 py-2 shrink-0">
+          <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3 mt-4">
+            <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+                <Sparkles className="h-4 w-4" />
+                <span>Busca Inteligente (Nome do Colégio + Cidade)</span>
+            </div>
+            <div className="flex gap-2">
+                <Input 
+                    placeholder="Ex: Colégio Saber, São Paulo" 
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
+                    className="bg-background"
+                />
+                <Button variant="secondary" onClick={handleSmartSearch} disabled={isSearching || !searchQuery.trim()}>
+                    {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
+                </Button>
+            </div>
+            <p className="text-[10px] text-muted-foreground italic leading-tight">
+                Dica: Informe <strong>Escola + Cidade + Rua</strong> para preencher Bairro, CEP e Número automaticamente.
+            </p>
+          </div>
       </div>
 
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[60vh] overflow-y-auto pr-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome da Escola</FormLabel>
-                <FormControl><Input placeholder="Ex: Colégio Saber" {...field} value={field.value ?? ''} /></FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-           <div className="border-t pt-4 mt-4">
-             <p className="text-sm font-medium mb-2 flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço</p>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                 <FormField
-                    control={form.control} name="zipCode"
-                    render={({ field }) => (
-                        <FormItem className="md:col-span-1">
-                        <FormLabel>CEP</FormLabel>
-                        <FormControl>
-                          <div className="relative">
-                            <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
-                            {isFetchingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
-                          </div>
-                        </FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control} name="street"
-                    render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                        <FormLabel>Rua</FormLabel>
-                        <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-             </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                 <FormField
-                    control={form.control} name="number"
-                    render={({ field }) => (
-                        <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control} name="complement"
-                    render={({ field }) => (
-                        <FormItem><FormLabel>Complemento</FormLabel><FormControl><Input placeholder="Ex: Bloco A" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control} name="neighborhood"
-                    render={({ field }) => (
-                        <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Centro" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )}
-                />
-             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                 <FormField
-                    control={form.control} name="city"
-                    render={({ field }) => (
-                        <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control} name="state"
-                    render={({ field }) => (
-                        <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
-                    )}
-                />
-             </div>
-          </div>
-           <FormField
-            control={form.control}
-            name="active"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                <div className="space-y-0.5"><FormLabel>Escola Ativa</FormLabel></div>
-                <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
-              </FormItem>
-            )}
-          />
-          <DialogFooter className="pt-4">
-            <DialogClose asChild><Button type="button" variant="outline" disabled={isSaving}>Cancelar</Button></DialogClose>
-            <Button type="submit" disabled={isSaving}>
-                {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Escola"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
+      <ScrollArea className="flex-1">
+        <Form {...form}>
+            <form id="school-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 px-6 py-4">
+            <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                <FormItem>
+                    <FormLabel>Nome da Escola</FormLabel>
+                    <FormControl><Input placeholder="Ex: Colégio Saber" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormMessage />
+                </FormItem>
+                )}
+            />
+            <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-medium mb-2 flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                        control={form.control} name="zipCode"
+                        render={({ field }) => (
+                            <FormItem className="md:col-span-1">
+                            <FormLabel>CEP</FormLabel>
+                            <FormControl>
+                            <div className="relative">
+                                <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
+                                {isFetchingCep && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />}
+                            </div>
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="street"
+                        render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                            <FormLabel>Rua</FormLabel>
+                            <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <FormField
+                        control={form.control} name="number"
+                        render={({ field }) => (
+                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="complement"
+                        render={({ field }) => (
+                            <FormItem><FormLabel>Complemento</FormLabel><FormControl><Input placeholder="Ex: Bloco A" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="neighborhood"
+                        render={({ field }) => (
+                            <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Centro" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        )}
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <FormField
+                        control={form.control} name="city"
+                        render={({ field }) => (
+                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="state"
+                        render={({ field }) => (
+                            <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        )}
+                    />
+                </div>
+            </div>
+            <FormField
+                control={form.control}
+                name="active"
+                render={({ field }) => (
+                <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4 mb-8">
+                    <div className="space-y-0.5"><FormLabel>Escola Ativa</FormLabel></div>
+                    <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
+                </FormItem>
+                )}
+            />
+            </form>
+        </Form>
+      </ScrollArea>
+
+      <DialogFooter className="p-6 border-t shrink-0 bg-background">
+        <DialogClose asChild><Button type="button" variant="outline" disabled={isSaving}>Cancelar</Button></DialogClose>
+        <Button type="submit" form="school-form" disabled={isSaving}>
+            {isSaving ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Salvando...</> : "Salvar Escola"}
+        </Button>
+      </DialogFooter>
     </DialogContent>
   );
 }

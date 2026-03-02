@@ -149,24 +149,23 @@ export function StudentForm({
         const result = await geocodeAddress({ address: searchQuery });
         
         // Preenchimento automático dos campos estruturados
-        if (result.street) form.setValue('street', result.street);
-        if (result.number) form.setValue('number', result.number);
-        if (result.zipCode) form.setValue('zipCode', result.zipCode);
-        if (result.neighborhood) form.setValue('neighborhood', result.neighborhood);
-        if (result.city) form.setValue('city', result.city);
-        if (result.state) form.setValue('state', result.state);
-
+        form.setValue('street', result.street || '');
+        form.setValue('number', result.number || '');
+        form.setValue('zipCode', result.zipCode || '');
+        form.setValue('neighborhood', result.neighborhood || '');
+        form.setValue('city', result.city || '');
+        form.setValue('state', result.state || '');
         form.setValue('latitude', result.latitude);
         form.setValue('longitude', result.longitude);
         
         toast({
             title: "Endereço localizado!",
-            description: "Logradouro, número e CEP preenchidos via busca inteligente.",
+            description: "Logradouro, bairro, cidade e CEP preenchidos.",
         });
     } catch (e) {
         toast({
             title: "Busca falhou",
-            description: "Tente informar o endereço completo + bairro + cidade para melhores resultados.",
+            description: "Tente informar o endereço completo + bairro + cidade.",
             variant: "destructive"
         });
     } finally {
@@ -184,10 +183,11 @@ export function StudentForm({
           if (!response.ok) throw new Error('Falha ao buscar CEP');
           const data = await response.json();
           if (!data.erro) {
-            form.setValue('street', data.logradouro || '');
-            form.setValue('neighborhood', data.bairro || '');
-            form.setValue('city', data.localidade || '');
-            form.setValue('state', data.uf || '');
+            // Só preenche se estiverem vazios para evitar conflito com a Busca Inteligente
+            if (!form.getValues('street')) form.setValue('street', data.logradouro || '');
+            if (!form.getValues('neighborhood')) form.setValue('neighborhood', data.bairro || '');
+            if (!form.getValues('city')) form.setValue('city', data.localidade || '');
+            if (!form.getValues('state')) form.setValue('state', data.uf || '');
             form.setFocus('number');
           }
         } catch (error) {
@@ -306,7 +306,7 @@ export function StudentForm({
                 </Button>
             </div>
             <p className="text-[10px] text-muted-foreground italic leading-tight">
-                Dica: Informe o endereço completo para que o sistema preencha o CEP e Número automaticamente.
+                Dica: Informe o endereço completo para preencher Bairro, CEP e Número automaticamente.
             </p>
           </div>
 
@@ -431,6 +431,20 @@ export function StudentForm({
                         )}
                     />
                  </div>
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <FormField
+                        control={form.control} name="city"
+                        render={({ field }) => (
+                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="state"
+                        render={({ field }) => (
+                            <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                        )}
+                    />
+                </div>
               </div>
 
               <div className="border-t pt-4 mt-4 bg-destructive/5 p-4 rounded-lg">
