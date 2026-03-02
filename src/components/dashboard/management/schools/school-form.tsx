@@ -27,6 +27,7 @@ import { useMockData } from '@/hooks/use-mock-data';
 import { Loader2, Search, Sparkles, MapPin } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
