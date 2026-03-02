@@ -81,7 +81,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const zipCode = form.watch('zipCode');
 
-  // Busca Inteligente: Nome + Endereço
+  // Busca Inteligente: Preenchimento TOTAL inclusive CEP e Número
   const handleSmartSearch = async () => {
     if (!searchQuery.trim()) return;
     
@@ -89,7 +89,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
-        // Atualiza campos de forma atômica
+        // Atualizamos todos os campos estruturados retornados pela inteligência
         form.setValue('street', result.street || '', { shouldDirty: true });
         form.setValue('number', result.number || '', { shouldDirty: true });
         form.setValue('zipCode', result.zipCode || '', { shouldDirty: true });
@@ -99,6 +99,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         form.setValue('latitude', result.latitude, { shouldDirty: true });
         form.setValue('longitude', result.longitude, { shouldDirty: true });
         
+        // Sugere o nome da escola se o campo estiver vazio
         if (!form.getValues('name')) {
             const suggestedName = searchQuery.split(',')[0];
             form.setValue('name', suggestedName.trim(), { shouldDirty: true });
@@ -106,12 +107,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         
         toast({
             title: "Localização encontrada!",
-            description: "Dados de endereço e GPS preenchidos.",
+            description: "Dados de endereço, CEP e GPS preenchidos automaticamente.",
         });
     } catch (e) {
         toast({
-            title: "Busca não retornou resultados",
-            description: "Verifique o nome e tente novamente.",
+            title: "Busca sem resultados",
+            description: "Não conseguimos localizar este colégio. Verifique os termos ou preencha manualmente.",
             variant: "destructive"
         });
     } finally {
@@ -119,7 +120,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     }
   };
 
-  // Busca por CEP Tradicional
+  // Busca por CEP Tradicional (ViaCEP)
   const fetchAddressByCep = useCallback(async (cep: string) => {
     const cleanedCep = cep.replace(/\D/g, '');
     if (cleanedCep.length !== 8) return;
@@ -133,7 +134,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         form.setValue('neighborhood', data.bairro || '', { shouldDirty: true });
         form.setValue('city', data.localidade || '', { shouldDirty: true });
         form.setValue('state', data.uf || '', { shouldDirty: true });
-        toast({ title: "CEP localizado!" });
+        toast({ title: "Endereço localizado via CEP!" });
       } else {
         toast({ title: "CEP não encontrado", variant: "destructive" });
       }
@@ -193,11 +194,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Use a busca inteligente para agilizar ou preencha manualmente.</DialogDescription>
+        <DialogDescription>Use a busca inteligente para agilizar ou preencha os dados manualmente abaixo.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
+          {/* Busca Inteligente (Dentro do Scroll para não poluir) */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
@@ -205,7 +207,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             </div>
             <div className="flex gap-2">
                 <Input 
-                    placeholder="Ex: Colégio Saber, Rua Augusta, São Paulo" 
+                    placeholder="Ex: Colégio Objetivo, Rua Augusta, São Paulo" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
@@ -232,7 +234,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
               />
 
               <div className="border-t pt-4 mt-4">
-                <p className="text-sm font-bold mb-4 flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Endereço</p>
+                <p className="text-sm font-bold mb-4 flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Endereço e Localização</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                         control={form.control} name="zipCode"
@@ -316,7 +318,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 name="active"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                    <div className="space-y-0.5"><FormLabel>Escola Ativa</FormLabel></div>
+                    <div className="space-y-0.5"><FormLabel>Escola Ativa para Rotas</FormLabel></div>
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   </FormItem>
                 )}
