@@ -187,55 +187,57 @@ export default function PendingRegistrationsPage() {
       {/* Detalhes da Solicitação */}
       <Dialog open={!!selectedReg} onOpenChange={() => setSelectedReg(null)}>
         {selectedReg && (
-            <DialogContent className="sm:max-w-2xl max-h-[90vh] flex flex-col p-0 overflow-hidden">
-                <DialogHeader className="p-6 pb-2 border-b">
+            <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden">
+                <DialogHeader className="p-6 pb-2 border-b shrink-0">
                     <DialogTitle>Revisar Cadastro</DialogTitle>
                     <DialogDescription>Confira os dados extraídos pela IA antes de aprovar.</DialogDescription>
                 </DialogHeader>
                 
-                <ScrollArea className="flex-1 px-6 py-4">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 pb-6">
-                      <div className="space-y-4">
-                          <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
-                                <FileText className="h-3 w-3" /> Dados do Responsável
-                              </p>
-                              <div className="space-y-3">
-                                  <Detail label="Nome" value={selectedReg.parentName} />
-                                  <Detail label="CPF" value={selectedReg.documentData?.cpf} />
-                                  <Detail label="RG" value={selectedReg.documentData?.rg} />
-                                  <Detail label="E-mail" value={selectedReg.email} />
-                                  <Detail label="Telefone" value={selectedReg.phone} />
-                              </div>
-                          </div>
-                          <div className="p-4 bg-muted/20 rounded-lg border border-dashed">
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-                                <MapPin className="h-3 w-3" /> Endereço de Coleta
-                              </p>
-                              <div className="space-y-3">
-                                  <Detail label="Rua" value={`${selectedReg.address?.street}, ${selectedReg.address?.number}`} />
-                                  <Detail label="Bairro/Cidade" value={`${selectedReg.address?.neighborhood} - ${selectedReg.address?.city}`} />
-                                  <Detail label="CEP" value={selectedReg.address?.zipCode} />
-                              </div>
-                          </div>
-                      </div>
-                      <div className="space-y-4">
-                          <div className="p-4 bg-muted/50 rounded-lg border">
-                              <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Dados do Aluno</p>
-                              <div className="space-y-3">
-                                  <Detail label="Nome" value={selectedReg.studentName} />
-                                  <Detail label="Escola" value={schoolsMap.get(selectedReg.schoolId)} />
-                              </div>
-                          </div>
-                          <Alert variant="destructive" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
-                              <AlertTriangle className="h-4 w-4" />
-                              <AlertDescription className="text-[10px]">A aprovação irá sincronizar automaticamente os endereços e buscar a localização GPS.</AlertDescription>
-                          </Alert>
-                      </div>
+                <ScrollArea className="flex-1">
+                  <div className="px-6 py-4 space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-4">
+                            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
+                                  <FileText className="h-3 w-3" /> Dados do Responsável
+                                </p>
+                                <div className="space-y-3">
+                                    <Detail label="Nome" value={selectedReg.parentName} />
+                                    <Detail label="CPF" value={selectedReg.documentData?.cpf} />
+                                    <Detail label="RG" value={selectedReg.documentData?.rg} />
+                                    <Detail label="E-mail" value={selectedReg.email} />
+                                    <Detail label="Telefone" value={selectedReg.phone} />
+                                </div>
+                            </div>
+                            <div className="p-4 bg-muted/20 rounded-lg border border-dashed">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
+                                  <MapPin className="h-3 w-3" /> Endereço de Coleta
+                                </p>
+                                <div className="space-y-3">
+                                    <Detail label="Rua" value={`${selectedReg.address?.street}, ${selectedReg.address?.number}`} />
+                                    <Detail label="Bairro/Cidade" value={`${selectedReg.address?.neighborhood} - ${selectedReg.address?.city}`} />
+                                    <Detail label="CEP" value={selectedReg.address?.zipCode} />
+                                </div>
+                            </div>
+                        </div>
+                        <div className="space-y-4">
+                            <div className="p-4 bg-muted/50 rounded-lg border">
+                                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3">Dados do Aluno</p>
+                                <div className="space-y-3">
+                                    <Detail label="Nome" value={selectedReg.studentName} />
+                                    <Detail label="Escola" value={schoolsMap.get(selectedReg.schoolId)} />
+                                </div>
+                            </div>
+                            <Alert variant="destructive" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                                <AlertTriangle className="h-4 w-4" />
+                                <AlertDescription className="text-[10px]">A aprovação irá sincronizar automaticamente os endereços e buscar a localização GPS.</AlertDescription>
+                            </Alert>
+                        </div>
+                    </div>
                   </div>
                 </ScrollArea>
 
-                <DialogFooter className="p-6 border-t gap-2 flex-col sm:flex-row">
+                <DialogFooter className="p-6 border-t gap-2 flex-col sm:flex-row shrink-0 bg-background">
                     <Button variant="destructive" onClick={() => handleReject(selectedReg)} disabled={isProcessing} className="w-full sm:flex-none">Recusar</Button>
                     <div className="flex-1" />
                     <DialogClose asChild><Button variant="outline" className="w-full sm:flex-none">Fechar</Button></DialogClose>

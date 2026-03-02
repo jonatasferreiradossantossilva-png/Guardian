@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -83,10 +84,6 @@ export default function PublicRegistrationPage() {
       try {
         const result = await extractDocumentData({ photoDataUri: base64 });
         setExtractedData(result);
-        
-        // Se a IA extraiu um endereço bruto da CNH, podemos tentar usar como dica (opcional)
-        // Por agora, focamos na validação manual + CEP que é mais precisa
-        
         setStep('confirm');
         toast({ title: "Documento Lido!", description: "Confira os dados abaixo." });
       } catch (e) {
@@ -223,7 +220,7 @@ export default function PublicRegistrationPage() {
         )}
 
         {step === 'confirm' && extractedData && (
-          <Card className="shadow-2xl border-primary/20 flex flex-col max-h-[90vh]">
+          <Card className="shadow-2xl border-primary/20 flex flex-col h-[90vh]">
             <CardHeader className="border-b bg-muted/30 shrink-0">
               <CardTitle className="text-lg flex items-center gap-2">
                 <CheckCircle className="text-green-500 h-5 w-5" />
@@ -232,7 +229,7 @@ export default function PublicRegistrationPage() {
               <CardDescription>A IA detectou estes dados. Ajuste se necessário.</CardDescription>
             </CardHeader>
             
-            <ScrollArea className="flex-1 overflow-y-auto">
+            <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
                     {/* Visual Preview */}
                     {previewUrl && (
@@ -251,7 +248,7 @@ export default function PublicRegistrationPage() {
                             <Input value={extractedData.name || ''} onChange={e => setExtractedData({...extractedData, name: e.target.value})} placeholder="Como no documento" />
                         </div>
                         
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>CPF</Label>
                                 <Input value={extractedData.cpf || ''} onChange={e => setExtractedData({...extractedData, cpf: e.target.value})} placeholder="000.000.000-00" />
@@ -280,15 +277,15 @@ export default function PublicRegistrationPage() {
                             <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta
                         </p>
                         <div className="space-y-4">
-                            <div className="grid grid-cols-3 gap-4">
-                                <div className="space-y-2 col-span-1">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div className="space-y-2 sm:col-span-1">
                                     <Label>CEP</Label>
                                     <div className="relative">
                                         <Input placeholder="00000-000" value={zipCode} onChange={e => setZipCode(e.target.value)} />
                                         {isFetchingCep && <Loader2 className="absolute right-2 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
                                     </div>
                                 </div>
-                                <div className="space-y-2 col-span-2">
+                                <div className="space-y-2 sm:col-span-2">
                                     <Label>Rua/Avenida</Label>
                                     <Input placeholder="Logradouro" value={street} onChange={e => setStreet(e.target.value)} />
                                 </div>
@@ -303,7 +300,7 @@ export default function PublicRegistrationPage() {
                                     <Input placeholder="Apto, Bloco..." value={complement} onChange={e => setComplement(e.target.value)} />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Bairro</Label>
                                     <Input placeholder="Bairro" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
