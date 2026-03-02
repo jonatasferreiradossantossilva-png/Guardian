@@ -222,10 +222,10 @@ export default function PendingRegistrationsPage() {
                                 <div className="space-y-4">
                                     <div className="space-y-1.5">
                                         <Label className="text-[10px] text-muted-foreground uppercase">Nome Completo</Label>
-                                        <Input 
+                                        <input 
                                             value={editableParentName} 
                                             onChange={(e) => setEditableParentName(e.target.value)}
-                                            className="h-8 bg-background"
+                                            className="w-full h-8 bg-background border rounded px-2 text-sm focus:ring-1 focus:ring-primary outline-none"
                                         />
                                     </div>
                                     <Detail label="CPF" value={selectedReg.documentData?.cpf} />

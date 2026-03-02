@@ -360,7 +360,7 @@ export default function PublicRegistrationPage() {
                                     {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
                                 </SelectContent>
                             </Select>
-                            <p className="text-[10px] text-muted-foreground italic">Este será o dia em que suas faturas mensais vencerão.</p>
+                            <p className="text-[10px] text-muted-foreground italic">Este será o dia em que suas faturas mensais vencerão. (Sujeito à aprovação do gestor)</p>
                         </div>
                     </div>
 
