@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Search } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Search, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -72,6 +72,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
 
+  const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedStudent, setSelectedStudent] = useState<Student | null>(null);
@@ -79,6 +80,10 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
   // Search and Pagination State
   const [searchQuery, setSearchSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Use live data from hooks for reactivity, falling back to initial data.
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
@@ -154,6 +159,14 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
 
   const formatSerieTurma = (student: Student) => {
       return [student.serie, student.turma].filter(Boolean).join(' / ') || 'N/A';
+  }
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (

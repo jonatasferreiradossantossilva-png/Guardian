@@ -1,6 +1,7 @@
+
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -10,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Wrench } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Wrench, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   Dialog,
@@ -59,10 +60,15 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
 
+  const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isMaintenanceOpen, setIsMaintenanceOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedVehicle, setSelectedVehicle] = useState<Vehicle | null>(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { data: liveVehicles, isLoading } = useMockCollection('vehicles');
   const vehicles = liveVehicles ?? initialVehicles;
@@ -99,6 +105,14 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
     setIsMaintenanceOpen(false);
     setSelectedVehicle(null);
   };
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div>

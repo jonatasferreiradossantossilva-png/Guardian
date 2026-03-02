@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -77,11 +77,15 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
   
+  const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedDriver, setSelectedDriver] = useState<Driver | null>(null);
 
-  // Use live data from the hook for reactivity, falling back to initial data.
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   const { data: liveDrivers, isLoading: areDriversLoading } = useMockCollection('drivers');
   const { data: liveVehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
 
@@ -120,10 +124,13 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
     setIsFormOpen(false);
     setSelectedDriver(null);
   };
-  
-  const formatAddress = (driver: Driver) => {
-    if (!driver.street) return 'N/A';
-    return `${driver.street}, ${driver.number} - ${driver.city}, ${driver.state}`;
+
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
   }
 
   return (

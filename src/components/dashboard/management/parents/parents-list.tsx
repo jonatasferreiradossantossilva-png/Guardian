@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, Search, ExternalLink } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, Search, ExternalLink, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -68,6 +68,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
 
+  const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
@@ -75,6 +76,10 @@ export function ParentsList({ initialParents }: ParentsListProps) {
   // Search and Pagination
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const { data: liveParents, isLoading } = useMockCollection('parents');
   const parents = liveParents ?? initialParents;
@@ -170,6 +175,13 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     return `${parent.street}, ${parent.number} - ${parent.city}, ${parent.state}`;
   }
 
+  if (!mounted) {
+    return (
+      <div className="flex h-96 items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div>
