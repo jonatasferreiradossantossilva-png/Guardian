@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User } from 'lucide-react';
+import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
@@ -75,6 +75,7 @@ export default function PendingRegistrationsPage() {
             phone: reg.phone,
             cpf: reg.documentData?.cpf,
             rg: reg.documentData?.rg,
+            preferredPaymentDay: reg.preferredPaymentDay || 10,
             ...address,
             active: true
         });
@@ -231,6 +232,10 @@ export default function PendingRegistrationsPage() {
                                     <Detail label="RG" value={selectedReg.documentData?.rg} />
                                     <Detail label="E-mail" value={selectedReg.email} />
                                     <Detail label="Telefone" value={selectedReg.phone} />
+                                    <div className="flex items-center gap-2 pt-1">
+                                        <CalendarDays className="h-3 w-3 text-primary" />
+                                        <Detail label="Dia Preferencial" value={`Dia ${selectedReg.preferredPaymentDay || '10'}`} />
+                                    </div>
                                 </div>
                             </div>
                             <div className="p-4 bg-muted/20 rounded-lg border border-dashed">

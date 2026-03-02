@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, Upload, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, X, User, MapPin } from 'lucide-react';
+import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays } from 'lucide-react';
 import { extractDocumentData, type ExtractDocumentDataOutput } from '@/ai/flows/extract-document-data';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -34,6 +34,8 @@ const SERIE_OPTIONS = [
     "Outro"
 ];
 
+const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+
 export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -51,6 +53,7 @@ export default function PublicRegistrationPage() {
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [studentSerie, setStudentSerie] = useState('');
   const [studentTurma, setStudentTurma] = useState('');
+  const [preferredPaymentDay, setPreferredPaymentDay] = useState('10');
   
   // Address states
   const [zipCode, setZipCode] = useState('');
@@ -62,6 +65,11 @@ export default function PublicRegistrationPage() {
   const [state, setState] = useState('');
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Auto-scroll to top on step change
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, [step]);
 
   // Auto-fetch address from ViaCEP
   useEffect(() => {
@@ -130,6 +138,7 @@ export default function PublicRegistrationPage() {
         schoolId: selectedSchoolId,
         studentSerie,
         studentTurma,
+        preferredPaymentDay: Number(preferredPaymentDay),
         status: 'pending_approval',
         createdAt: new Date().toISOString(),
         address: {
@@ -338,6 +347,23 @@ export default function PublicRegistrationPage() {
                         </div>
                     </div>
                     
+                    {/* Preferências Financeiras */}
+                    <div className="border-t pt-6">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2">
+                            <CalendarDays className="h-4 w-4 text-primary" /> Preferências Financeiras
+                        </p>
+                        <div className="space-y-2">
+                            <Label>Melhor Dia para Vencimento</Label>
+                            <Select onValueChange={setPreferredPaymentDay} value={preferredPaymentDay}>
+                                <SelectTrigger><SelectValue placeholder="Selecione o dia..." /></SelectTrigger>
+                                <SelectContent>
+                                    {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
+                            <p className="text-[10px] text-muted-foreground italic">Este será o dia em que suas faturas mensais vencerão.</p>
+                        </div>
+                    </div>
+
                     {/* Dados do Aluno */}
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">

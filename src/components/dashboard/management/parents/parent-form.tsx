@@ -34,6 +34,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
@@ -178,238 +179,244 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
   const paymentDays = Array.from({ length: 31 }, (_, i) => i + 1);
 
   return (
-    <DialogContent className="sm:max-w-2xl">
-      <DialogHeader>
+    <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden">
+      <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{parent ? 'Editar Responsável' : 'Adicionar Responsável'}</DialogTitle>
         <DialogDescription>
           Preencha as informações do responsável abaixo. O ID do usuário é necessário para que ele possa acessar o painel.
         </DialogDescription>
       </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4 max-h-[70vh] overflow-y-auto pr-4">
-          <FormField
-            control={form.control}
-            name="name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Nome Completo</FormLabel>
-                <FormControl>
-                  <Input placeholder="Ex: Maria Souza" {...field} value={field.value ?? ''} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Email</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: maria.souza@email.com" {...field} value={field.value ?? ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="phone"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel>Telefone</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: (11) 98765-4321" {...field} value={field.value ?? ''} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-             <FormField
+      
+      <ScrollArea className="flex-1">
+        <div className="px-6 py-4">
+          <Form {...form}>
+            <form id="parent-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
                 control={form.control}
-                name="cpf"
+                name="name"
                 render={({ field }) => (
-                    <FormItem>
-                    <FormLabel>CPF (Opcional)</FormLabel>
+                  <FormItem>
+                    <FormLabel>Nome Completo</FormLabel>
                     <FormControl>
-                        <Input placeholder="000.000.000-00" {...field} value={field.value ?? ''} />
+                      <Input placeholder="Ex: Maria Souza" {...field} value={field.value ?? ''} />
                     </FormControl>
                     <FormMessage />
-                    </FormItem>
+                  </FormItem>
                 )}
-                />
-            <FormField
-                control={form.control}
-                name="rg"
-                render={({ field }) => (
+              />
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
                     <FormItem>
-                    <FormLabel>RG (Opcional)</FormLabel>
-                    <FormControl>
-                        <Input placeholder="00.000.000-0" {...field} value={field.value ?? ''} />
-                    </FormControl>
-                    <FormMessage />
+                      <FormLabel>Email</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: maria.souza@email.com" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
                     </FormItem>
-                )}
+                  )}
                 />
-          </div>
-
-          <FormField
-            control={form.control}
-            name="preferredPaymentDay"
-            render={({ field }) => (
-                <FormItem>
-                <FormLabel>Dia de Pagamento Preferencial</FormLabel>
-                <Select onValueChange={(value) => field.onChange(value === 'none' ? undefined : parseInt(value))} value={field.value?.toString() || ""}>
-                    <FormControl>
-                    <SelectTrigger>
-                        <SelectValue placeholder="Selecione um dia" />
-                    </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                    <SelectItem value="none">Nenhum (usará o padrão)</SelectItem>
-                    {paymentDays.map(day => (
-                        <SelectItem key={day} value={day.toString()}>{day}</SelectItem>
-                    ))}
-                    </SelectContent>
-                </Select>
-                <FormDescription>
-                    O dia do mês em que as faturas deste responsável irão vencer.
-                </FormDescription>
-                <FormMessage />
-                </FormItem>
-            )}
-            />
-          
-           <div className="border-t pt-4 mt-4">
-             <p className="text-sm font-medium mb-2">Endereço (Opcional)</p>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                 <FormField
-                    control={form.control} name="zipCode"
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Telefone</FormLabel>
+                      <FormControl>
+                        <Input placeholder="Ex: (11) 98765-4321" {...field} value={field.value ?? ''} />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <FormField
+                    control={form.control}
+                    name="cpf"
                     render={({ field }) => (
-                        <FormItem className="md:col-span-1">
-                        <FormLabel>CEP</FormLabel>
+                        <FormItem>
+                        <FormLabel>CPF (Opcional)</FormLabel>
                         <FormControl>
-                          <div className="relative">
-                            <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
-                            {isFetchingCep && (
-                              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
-                            )}
-                          </div>
+                            <Input placeholder="000.000.000-00" {...field} value={field.value ?? ''} />
                         </FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
-                />
-                 <FormField
-                    control={form.control} name="street"
-                    render={({ field }) => (
-                        <FormItem className="md:col-span-2">
-                        <FormLabel>Rua</FormLabel>
-                        <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-             </div>
-             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
-                 <FormField
-                    control={form.control} name="number"
+                    />
+                <FormField
+                    control={form.control}
+                    name="rg"
                     render={({ field }) => (
                         <FormItem>
-                        <FormLabel>Número</FormLabel>
-                        <FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl>
+                        <FormLabel>RG (Opcional)</FormLabel>
+                        <FormControl>
+                            <Input placeholder="00.000.000-0" {...field} value={field.value ?? ''} />
+                        </FormControl>
                         <FormMessage />
                         </FormItem>
                     )}
+                    />
+              </div>
+
+              <FormField
+                control={form.control}
+                name="preferredPaymentDay"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel>Dia de Pagamento Preferencial</FormLabel>
+                    <Select onValueChange={(value) => field.onChange(value === 'none' ? undefined : parseInt(value))} value={field.value?.toString() || ""}>
+                        <FormControl>
+                        <SelectTrigger>
+                            <SelectValue placeholder="Selecione um dia" />
+                        </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                        <SelectItem value="none">Nenhum (usará o padrão)</SelectItem>
+                        {paymentDays.map(day => (
+                            <SelectItem key={day} value={day.toString()}>{day}</SelectItem>
+                        ))}
+                        </SelectContent>
+                    </Select>
+                    <FormDescription>
+                        O dia do mês em que as faturas deste responsável irão vencer.
+                    </FormDescription>
+                    <FormMessage />
+                    </FormItem>
+                )}
                 />
-                 <FormField
-                    control={form.control} name="complement"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Complemento</FormLabel>
-                        <FormControl><Input placeholder="Apto 4B" {...field} value={field.value ?? ''} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control} name="neighborhood"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Bairro</FormLabel>
-                        <FormControl><Input placeholder="Centro" {...field} value={field.value ?? ''} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-             </div>
-             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                 <FormField
-                    control={form.control} name="city"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Cidade</FormLabel>
-                        <FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-                 <FormField
-                    control={form.control} name="state"
-                    render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Estado (UF)</FormLabel>
-                        <FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl>
-                        <FormMessage />
-                        </FormItem>
-                    )}
-                />
-             </div>
-          </div>
-            <FormField
-            control={form.control}
-            name="active"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                <div className="space-y-0.5">
-                  <FormLabel>Responsável Ativo</FormLabel>
+              
+              <div className="border-t pt-4 mt-4">
+                <p className="text-sm font-medium mb-2">Endereço (Opcional)</p>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <FormField
+                        control={form.control} name="zipCode"
+                        render={({ field }) => (
+                            <FormItem className="md:col-span-1">
+                            <FormLabel>CEP</FormLabel>
+                            <FormControl>
+                              <div className="relative">
+                                <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
+                                {isFetchingCep && (
+                                  <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
+                                )}
+                              </div>
+                            </FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="street"
+                        render={({ field }) => (
+                            <FormItem className="md:col-span-2">
+                            <FormLabel>Rua</FormLabel>
+                            <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
                 </div>
-                <FormControl>
-                  <Switch
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                  />
-                </FormControl>
-              </FormItem>
-            )}
-          />
-           <FormField
-            control={form.control}
-            name="userId"
-            render={({ field }) => (
-              <FormItem className="pt-4">
-                <FormLabel>ID do Usuário (Firebase Auth)</FormLabel>
-                <FormControl>
-                  <Input placeholder="Cole o UID do usuário" {...field} value={field.value ?? ''} />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-          <DialogFooter className="pt-4">
-            <DialogClose asChild>
-              <Button type="button" variant="outline">
-                Cancelar
-              </Button>
-            </DialogClose>
-            <Button type="submit">Salvar</Button>
-          </DialogFooter>
-        </form>
-      </Form>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <FormField
+                        control={form.control} name="number"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Número</FormLabel>
+                            <FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="complement"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Complemento</FormLabel>
+                            <FormControl><Input placeholder="Apto 4B" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="neighborhood"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Bairro</FormLabel>
+                            <FormControl><Input placeholder="Centro" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                    <FormField
+                        control={form.control} name="city"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Cidade</FormLabel>
+                            <FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control} name="state"
+                        render={({ field }) => (
+                            <FormItem>
+                            <FormLabel>Estado (UF)</FormLabel>
+                            <FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormMessage />
+                            </FormItem>
+                        )}
+                    />
+                </div>
+              </div>
+                <FormField
+                control={form.control}
+                name="active"
+                render={({ field }) => (
+                  <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
+                    <div className="space-y-0.5">
+                      <FormLabel>Responsável Ativo</FormLabel>
+                    </div>
+                    <FormControl>
+                      <Switch
+                        checked={field.value}
+                        onCheckedChange={field.onChange}
+                      />
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="userId"
+                render={({ field }) => (
+                  <FormItem className="pt-4">
+                    <FormLabel>ID do Usuário (Firebase Auth)</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Cole o UID do usuário" {...field} value={field.value ?? ''} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </form>
+          </Form>
+        </div>
+      </ScrollArea>
+
+      <DialogFooter className="p-6 border-t shrink-0 bg-background">
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            Cancelar
+          </Button>
+        </DialogClose>
+        <Button type="submit" form="parent-form">Salvar</Button>
+      </DialogFooter>
     </DialogContent>
   );
 }
