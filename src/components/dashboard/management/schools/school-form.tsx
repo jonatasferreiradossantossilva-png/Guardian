@@ -92,11 +92,11 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const selectedUF = watch('state');
 
   const filteredSuggestions = useMemo(() => {
-    if (!knowledgeBase || searchQuery.length < 2 || !selectedCity || !selectedUF) return [];
+    if (!knowledgeBase || searchQuery.length < 1 || !selectedCity || !selectedUF) return [];
     
     return knowledgeBase.filter((s: any) => 
-        s.city.toLowerCase() === selectedCity.toLowerCase() &&
-        s.state === selectedUF &&
+        s.city.toLowerCase().trim() === selectedCity.toLowerCase().trim() &&
+        s.state.toUpperCase() === selectedUF.toUpperCase() &&
         s.name.toLowerCase().includes(searchQuery.toLowerCase())
     ).slice(0, 5);
   }, [knowledgeBase, searchQuery, selectedCity, selectedUF]);
@@ -113,7 +113,10 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     setValue('longitude', item.longitude);
     
     setSearchQuery('');
-    toast({ title: "Escola selecionada!", description: "Dados preenchidos via Base Guardian." });
+    toast({ 
+        title: "Escola Selecionada!", 
+        description: `Dados de ${item.name} preenchidos via Base Guardian.` 
+    });
   };
 
   const handleGoogleSearch = async () => {
@@ -155,6 +158,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
             updateDoc('schools', school.id, data);
         } else {
             addDoc('schools', data);
+            // Alimenta a base global com o novo cadastro
             addDoc('school_knowledge_base', {
                 name: data.name,
                 city: data.city,
@@ -180,7 +184,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Cadastrar Escola'}</DialogTitle>
-        <DialogDescription>Selecione a região para buscar na nossa base de conhecimento.</DialogDescription>
+        <DialogDescription>Inicie selecionando a Cidade e o Estado para ativar a busca inteligente.</DialogDescription>
       </DialogHeader>
       
       <Form {...form}>
@@ -208,7 +212,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     render={({ field }) => (
                         <FormItem className="col-span-2">
                             <Label className="text-[10px] uppercase font-bold text-muted-foreground mb-1 block">Cidade</Label>
-                            <FormControl><Input placeholder="Digite a cidade..." {...field} value={field.value ?? ''} /></FormControl>
+                            <FormControl><Input placeholder="Ex: Carapicuíba" {...field} value={field.value ?? ''} /></FormControl>
                         </FormItem>
                     )}
                 />
@@ -216,21 +220,21 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
               <div className="space-y-2 relative">
                 <Label className={cn(
-                    "flex items-center gap-2 font-bold transition-opacity",
+                    "flex items-center gap-2 font-bold transition-all",
                     (!selectedCity || !selectedUF) ? "opacity-30" : "text-primary opacity-100"
                 )}>
                     <Sparkles className="h-4 w-4" />
-                    Buscar Escola na Base Guardian
+                    Buscar Escola na Base Guardian (Custo Zero)
                 </Label>
                 <div className="flex gap-2">
                     <div className="relative flex-1">
                         <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <Input 
-                            placeholder={(!selectedCity || !selectedUF) ? "Selecione UF e Cidade primeiro" : "Digite o nome (ex: Marjore)..."}
+                            placeholder={(!selectedCity || !selectedUF) ? "Selecione UF e Cidade acima" : "Digite o nome da escola..."}
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
                             disabled={!selectedCity || !selectedUF}
-                            className="bg-primary/5 border-primary/20 pl-9"
+                            className="bg-primary/5 border-primary/20 pl-9 focus:ring-primary h-11"
                         />
                     </div>
                     <Button 
@@ -239,29 +243,31 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                         size="icon"
                         onClick={handleGoogleSearch} 
                         disabled={isSearchingGoogle || !searchQuery.trim() || !selectedCity || !selectedUF}
-                        className="border-primary/20 text-primary"
-                        title="Buscar globalmente no Google"
+                        className="border-primary/20 text-primary h-11 w-11"
+                        title="Não encontrou? Buscar no Google Maps"
                     >
-                        {isSearchingGoogle ? <Loader2 className="h-4 w-4 animate-spin" /> : <Globe className="h-4 w-4" />}
+                        {isSearchingGoogle ? <Loader2 className="h-5 w-5 animate-spin" /> : <Globe className="h-5 w-5" />}
                     </Button>
                 </div>
 
                 {filteredSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 z-50 mt-1 bg-background border rounded-md shadow-xl overflow-hidden border-primary/30">
-                        <div className="px-3 py-1 bg-primary/10 text-[9px] font-bold text-primary uppercase">Sugestões da Base</div>
-                        <div className="divide-y max-h-48 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 z-[100] mt-1 bg-background border-2 rounded-md shadow-2xl overflow-hidden border-primary">
+                        <div className="px-3 py-1.5 bg-primary/10 text-[10px] font-bold text-primary uppercase flex items-center gap-2">
+                            <Sparkles className="h-3 w-3" /> Sugestões da Base de Carapicuíba
+                        </div>
+                        <div className="divide-y max-h-60 overflow-y-auto">
                             {filteredSuggestions.map((item: any) => (
                                 <button 
                                     key={item.id}
                                     type="button"
                                     onClick={() => selectSchool(item)}
-                                    className="w-full text-left px-3 py-2 hover:bg-secondary transition-colors flex items-center justify-between"
+                                    className="w-full text-left px-4 py-3 hover:bg-secondary transition-colors flex items-center justify-between group"
                                 >
                                     <div className="min-w-0">
-                                        <p className="text-sm font-bold truncate">{item.name}</p>
-                                        <p className="text-[10px] text-muted-foreground truncate">{item.neighborhood}</p>
+                                        <p className="text-sm font-bold truncate group-hover:text-primary">{item.name}</p>
+                                        <p className="text-[10px] text-muted-foreground truncate">{item.street}, {item.number} - {item.neighborhood}</p>
                                     </div>
-                                    <Badge variant="outline" className="text-[8px] h-4">Selecionar</Badge>
+                                    <Badge variant="outline" className="text-[9px] h-5 bg-background">Selecionar</Badge>
                                 </button>
                             ))}
                         </div>
@@ -275,8 +281,8 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Nome da Escola</FormLabel>
-                      <FormControl><Input placeholder="Nome que aparecerá na rota" {...field} value={field.value ?? ''} /></FormControl>
+                      <FormLabel>Nome Oficial da Escola</FormLabel>
+                      <FormControl><Input placeholder="Nome da instituição" {...field} value={field.value ?? ''} /></FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -292,7 +298,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                   <FormField
                       control={form.control} name="street"
                       render={({ field }) => (
-                          <FormItem className="col-span-2"><FormLabel>Logradouro</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl></FormItem>
+                          <FormItem className="col-span-2"><FormLabel>Logradouro</FormLabel><FormControl><Input placeholder="Rua, Avenida, etc." {...field} value={field.value ?? ''} /></FormControl></FormItem>
                       )}
                   />
                 </div>
@@ -307,7 +313,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                   <FormField
                       control={form.control} name="neighborhood"
                       render={({ field }) => (
-                          <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input {...field} value={field.value ?? ''} /></FormControl></FormItem>
+                          <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Bairro" {...field} value={field.value ?? ''} /></FormControl></FormItem>
                       )}
                   />
                 </div>
