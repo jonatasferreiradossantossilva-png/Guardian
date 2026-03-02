@@ -587,6 +587,14 @@
             "overdue",
             "pagamento_em_analise"
           ]
+        },
+        "pixPayload": {
+          "type": "string",
+          "description": "O código Pix 'Copia e Cola' gerado pelo banco para esta fatura."
+        },
+        "pixQrCodeUrl": {
+          "type": "string",
+          "description": "A URL ou Base64 da imagem do QR Code Pix."
         }
       },
       "required": [
@@ -828,7 +836,6 @@
         "latitude": {
           "type": "number",
           "description": "The driver's current latitude."
-"
         },
         "longitude": {
           "type": "number",

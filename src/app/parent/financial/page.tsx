@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DollarSign, ArrowLeft } from "lucide-react";
+import { DollarSign, ArrowLeft, QrCode, CreditCard } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { PixPaymentModal } from '@/components/parent/financial/pix-payment-modal';
 
 type Invoice = {
   id: string;
@@ -47,6 +48,9 @@ export default function ParentFinancialPage() {
   const { toast } = useToast();
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  
+  // Pix Payment State
+  const [selectedInvoiceForPix, setSelectedInvoiceForPix] = useState<Invoice | null>(null);
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
@@ -61,6 +65,17 @@ export default function ParentFinancialPage() {
       title: 'Pagamento Informado!',
       description: 'Seu pagamento foi enviado para análise e será confirmado pelo gestor.',
     });
+  };
+
+  const handlePixSuccess = () => {
+    if (selectedInvoiceForPix) {
+        updateDoc('invoices', selectedInvoiceForPix.id, { status: 'paid' });
+        toast({
+            title: 'Pagamento Confirmado!',
+            description: 'A inteligência do banco confirmou o recebimento do seu Pix.',
+        });
+        setSelectedInvoiceForPix(null);
+    }
   };
 
   const sortedInvoices = useMemo(() => {
@@ -85,13 +100,14 @@ export default function ParentFinancialPage() {
             <Button asChild variant="outline" size="icon">
                 <Link href="/parent/tracking"><ArrowLeft /></Link>
             </Button>
+            <h1 className="text-xl font-bold md:hidden">Financeiro</h1>
         </div>
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
-                    <DollarSign /> Histórico de Faturas
+                    <DollarSign className="text-primary" /> Histórico de Faturas
                 </CardTitle>
-                <CardDescription>Visualize seu histórico de pagamentos e faturas pendentes.</CardDescription>
+                <CardDescription>Visualize seu histórico de pagamentos e gere códigos Pix para faturas em aberto.</CardDescription>
             </CardHeader>
             <CardContent>
               {/* Desktop View */}
@@ -123,7 +139,12 @@ export default function ParentFinancialPage() {
                             </TableCell>
                             <TableCell className="text-right">
                             {(invoice.status === 'pending' || invoice.status === 'overdue') && (
-                                <Button size="sm" onClick={() => handleInformPayment(invoice.id)}>Informar Pagamento</Button>
+                                <div className="flex gap-2 justify-end">
+                                    <Button variant="outline" size="sm" onClick={() => handleInformPayment(invoice.id)}>Anexar Comprovante</Button>
+                                    <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => setSelectedInvoiceForPix(invoice)}>
+                                        <QrCode className="mr-2 h-4 w-4" /> Pagar com Pix
+                                    </Button>
+                                </div>
                             )}
                             </TableCell>
                         </TableRow>
@@ -144,7 +165,7 @@ export default function ParentFinancialPage() {
                 {isLoading && <p className="text-center text-muted-foreground">Carregando...</p>}
                 {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
                     sortedInvoices.map((invoice) => (
-                        <Card key={invoice.id} className="p-4">
+                        <Card key={invoice.id} className="p-4 border-2">
                             <div className="flex justify-between items-start">
                                 <p className="font-medium pr-2">{invoice.description}</p>
                                 <Badge variant={statusVariantMap[invoice.status]} className={cn('flex-shrink-0', invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
@@ -158,13 +179,18 @@ export default function ParentFinancialPage() {
                                 </div>
                                 <div>
                                     <p className="text-xs text-muted-foreground">Valor</p>
-                                    <p>R$ {invoice.amount.toFixed(2)}</p>
+                                    <p className="font-bold">R$ {invoice.amount.toFixed(2)}</p>
                                 </div>
                             </div>
                             {(invoice.status === 'pending' || invoice.status === 'overdue') && (
-                                <Button size="sm" onClick={() => handleInformPayment(invoice.id)} className="w-full mt-4">
-                                    Informar Pagamento
-                                </Button>
+                                <div className="flex flex-col gap-2 mt-4">
+                                    <Button onClick={() => setSelectedInvoiceForPix(invoice)} className="w-full h-12 text-base">
+                                        <QrCode className="mr-2 h-5 w-5" /> Pagar via Pix (Agora)
+                                    </Button>
+                                    <Button variant="outline" size="sm" onClick={() => handleInformPayment(invoice.id)} className="w-full">
+                                        Já paguei / Anexar comprovante
+                                    </Button>
+                                </div>
                             )}
                         </Card>
                     ))
@@ -175,6 +201,15 @@ export default function ParentFinancialPage() {
             </CardContent>
         </Card>
       </div>
+
+      {selectedInvoiceForPix && (
+          <PixPaymentModal 
+            isOpen={!!selectedInvoiceForPix}
+            onClose={() => setSelectedInvoiceForPix(null)}
+            invoice={selectedInvoiceForPix}
+            onPaymentSuccess={handlePixSuccess}
+          />
+      )}
     </div>
   );
 }
