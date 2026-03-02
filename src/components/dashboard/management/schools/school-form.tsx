@@ -81,7 +81,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
   const zipCode = form.watch('zipCode');
 
-  // Busca Inteligente (Nome + Endereço)
+  // Busca Inteligente Combinada: Nome do Colégio + Rua + Cidade
   const handleSmartSearch = async () => {
     if (!searchQuery.trim()) return;
     
@@ -89,6 +89,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     try {
         const result = await geocodeAddress({ address: searchQuery });
         
+        // Atualizamos o formulário com prioridade para os dados da busca
         form.setValue('street', result.street || '');
         form.setValue('number', result.number || '');
         form.setValue('zipCode', result.zipCode || '');
@@ -98,6 +99,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         form.setValue('latitude', result.latitude);
         form.setValue('longitude', result.longitude);
         
+        // Se o nome da escola ainda estiver vazio, tentamos sugerir a partir da busca
         if (!form.getValues('name')) {
             const firstPart = searchQuery.split(',')[0];
             if (firstPart && firstPart.length > 3) {
@@ -107,12 +109,12 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         
         toast({
             title: "Localização encontrada!",
-            description: "Dados de endereço e coordenadas preenchidos.",
+            description: "Endereço, CEP e Coordenadas preenchidos automaticamente.",
         });
     } catch (e) {
         toast({
             title: "Busca não concluída",
-            description: "Não conseguimos localizar o endereço exato.",
+            description: "Tente ser mais específico (Ex: Colégio Saber, Rua Augusta, São Paulo).",
             variant: "destructive"
         });
     } finally {
@@ -120,7 +122,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     }
   };
 
-  // Busca por CEP (ViaCEP) - Agora mais agressiva e funcional
+  // Busca por CEP (ViaCEP) - Backup robusto
   useEffect(() => {
     const cleanedCep = zipCode?.replace(/\D/g, '');
     if (cleanedCep && cleanedCep.length === 8) {
@@ -182,14 +184,15 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         let finalLat = data.latitude;
         let finalLng = data.longitude;
 
+        // Se não houver coordenadas, tentamos uma última geocodificação silenciosa antes de salvar
         if (data.street && data.city && (!finalLat || !finalLng)) {
-            const fullAddress = `${data.street}, ${data.number || ''}, ${data.neighborhood || ''}, ${data.city} - ${data.state || ''}`;
+            const fullAddress = `${data.street}, ${data.number || ''}, ${data.city} - ${data.state || ''}`;
             try {
                 const geoResult = await geocodeAddress({ address: fullAddress });
                 finalLat = geoResult.latitude;
                 finalLng = geoResult.longitude;
             } catch (e) {
-                console.warn("Geocodificação automática falhou na gravação:", e);
+                console.warn("Geocodificação silenciosa falhou:", e);
             }
         }
 
@@ -197,10 +200,10 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
 
         if (school) {
             updateDoc('schools', school.id, schoolData);
-            toast({ title: 'Escola atualizada!' });
+            toast({ title: 'Escola atualizada com sucesso!' });
         } else {
             addDoc('schools', schoolData);
-            toast({ title: 'Escola adicionada!' });
+            toast({ title: 'Escola adicionada à frota!' });
         }
         onFormSubmit();
     } catch (error) {
@@ -214,30 +217,31 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{school ? 'Editar Escola' : 'Adicionar Escola'}</DialogTitle>
-        <DialogDescription>Configure os dados da unidade escolar para o planejamento das rotas.</DialogDescription>
+        <DialogDescription>Use a busca inteligente para agilizar o cadastro ou preencha manualmente.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
+          {/* Campo de Busca Inteligente Integrado */}
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
-            <div className="flex items-center gap-2 text-primary font-semibold text-sm">
+            <div className="flex items-center gap-2 text-primary font-bold text-sm">
                 <Sparkles className="h-4 w-4" />
-                <span>Busca Inteligente (Nome do Colégio + Cidade)</span>
+                <span>Busca Inteligente por Nome ou Endereço</span>
             </div>
             <div className="flex gap-2">
                 <Input 
-                    placeholder="Ex: Colégio Saber, São Paulo" 
+                    placeholder="Ex: Colégio Saber, Rua Augusta, São Paulo" 
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     onKeyPress={(e) => e.key === 'Enter' && handleSmartSearch()}
-                    className="bg-background"
+                    className="bg-background shadow-sm"
                 />
                 <Button variant="secondary" onClick={handleSmartSearch} disabled={isSearching || !searchQuery.trim()}>
                     {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 </Button>
             </div>
             <p className="text-[10px] text-muted-foreground italic leading-tight">
-                Dica: A busca inteligente tenta preencher endereço completo e coordenadas GPS para você.
+                Dica: Digite o nome da escola seguido da rua e cidade para obter coordenadas GPS exatas.
             </p>
           </div>
 
@@ -249,14 +253,14 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Nome da Escola</FormLabel>
-                    <FormControl><Input placeholder="Ex: Colégio Saber" {...field} value={field.value ?? ''} /></FormControl>
+                    <FormControl><Input placeholder="Ex: Colégio Vanguarda" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
               <div className="border-t pt-4 mt-4">
-                <p className="text-sm font-medium mb-4 flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Endereço</p>
+                <p className="text-sm font-bold mb-4 flex items-center gap-2"><MapPin className="h-4 w-4 text-primary" /> Localização</p>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                     <FormField
                         control={form.control} name="zipCode"
@@ -278,7 +282,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                         render={({ field }) => (
                             <FormItem className="md:col-span-2">
                             <FormLabel>Rua/Avenida</FormLabel>
-                            <FormControl><Input placeholder="Ex: Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
+                            <FormControl><Input placeholder="Logradouro" {...field} value={field.value ?? ''} /></FormControl>
                             <FormMessage />
                             </FormItem>
                         )}
@@ -300,7 +304,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     <FormField
                         control={form.control} name="neighborhood"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Ex: Centro" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Bairro</FormLabel><FormControl><Input placeholder="Bairro" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                 </div>
@@ -308,16 +312,31 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     <FormField
                         control={form.control} name="city"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="Ex: São Paulo" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="Cidade" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                     <FormField
                         control={form.control} name="state"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="Ex: SP" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="UF" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4 pt-4 opacity-60">
+                 <FormField
+                    control={form.control} name="latitude"
+                    render={({ field }) => (
+                        <FormItem><FormLabel className="text-[10px]">LATITUDE (IA)</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} className="h-8 text-xs"/></FormControl></FormItem>
+                    )}
+                />
+                <FormField
+                    control={form.control} name="longitude"
+                    render={({ field }) => (
+                        <FormItem><FormLabel className="text-[10px]">LONGITUDE (IA)</FormLabel><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} className="h-8 text-xs"/></FormControl></FormItem>
+                    )}
+                />
               </div>
 
               <FormField
@@ -325,7 +344,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 name="active"
                 render={({ field }) => (
                   <FormItem className="flex flex-row items-center justify-between rounded-lg border p-3 shadow-sm mt-4">
-                    <div className="space-y-0.5"><FormLabel>Escola Ativa para Rotas</FormLabel></div>
+                    <div className="space-y-0.5"><FormLabel>Escola Ativa</FormLabel></div>
                     <FormControl><Switch checked={field.value} onCheckedChange={field.onChange} /></FormControl>
                   </FormItem>
                 )}

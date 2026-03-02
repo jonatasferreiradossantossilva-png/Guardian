@@ -2,7 +2,7 @@
 /**
  * @fileOverview Fluxo para geocodificar endereços ou buscar locais usando a API Geoapify.
  * Suporta busca semântica por nome de colégio ou endereço completo.
- * Retorna dados estruturados para preenchimento automático de formulários.
+ * Retorna dados estruturados para preenchimento automático de formulários brasileiros.
  */
 
 import { ai } from '@/ai/genkit';
@@ -38,9 +38,10 @@ export const geocodeAddress = ai.defineFlow(
       throw new Error('GEOAPIFY_API_KEY não configurada no ambiente.');
     }
 
+    // Usamos a API de geocodificação com viés para o Brasil e resultados em português
     const url = `https://api.geoapify.com/v1/geocode/search?text=${encodeURIComponent(
       address
-    )}&lang=pt&limit=1&apiKey=${apiKey}`;
+    )}&lang=pt&limit=1&filter=countrycode:br&apiKey=${apiKey}`;
 
     try {
         const response = await fetch(url);
@@ -58,16 +59,15 @@ export const geocodeAddress = ai.defineFlow(
         const { lon, lat } = feature.properties;
         const props = feature.properties;
 
-        // Geoapify retorna bairro em 'suburb' ou 'district'
-        // Estado (UF) geralmente vem em 'state_code'
+        // Mapeamento inteligente para o padrão brasileiro do OpenStreetMap/Geoapify
         return {
           latitude: lat,
           longitude: lon,
           formattedAddress: props.formatted,
           street: props.street || '',
           number: props.housenumber || '',
-          neighborhood: props.suburb || props.district || props.neighborhood || '',
-          city: props.city || props.town || props.village || '',
+          neighborhood: props.suburb || props.district || props.neighborhood || props.village || '',
+          city: props.city || props.town || props.municipality || '',
           state: props.state_code || props.state || '',
           zipCode: props.postcode || '',
         };
