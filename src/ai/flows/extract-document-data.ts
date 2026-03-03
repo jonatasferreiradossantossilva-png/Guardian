@@ -30,28 +30,26 @@ const prompt = ai.definePrompt({
   input: { schema: ExtractDocumentDataInputSchema },
   output: { schema: ExtractDocumentDataOutputSchema },
   config: {
-    // IMPORTANTE: Ajuste de segurança para permitir que a IA processe documentos de identificação
-    // sem disparar o bloqueio de "Sensitive Content" (PII).
     safetySettings: [
       { category: 'HARM_CATEGORY_HARASSMENT', threshold: 'BLOCK_NONE' },
       { category: 'HARM_CATEGORY_HATE_SPEECH', threshold: 'BLOCK_NONE' },
       { category: 'HARM_CATEGORY_SEXUALLY_EXPLICIT', threshold: 'BLOCK_NONE' },
       { category: 'HARM_CATEGORY_DANGEROUS_CONTENT', threshold: 'BLOCK_NONE' },
     ],
-    temperature: 0.1, // Baixa temperatura para máxima precisão técnica
+    temperature: 0.1,
   },
-  prompt: `Você é um robô de OCR industrial especializado em documentos civis brasileiros.
-Sua única tarefa é extrair os dados solicitados ignorando qualquer ruído visual.
+  prompt: `Você é um robô de OCR industrial especializado em documentos civis brasileiros (RG e CNH).
+Sua tarefa é extrair os dados do TITULAR do documento.
 
-INSTRUÇÕES TÉCNICAS:
-1. IDENTIFIQUE O DOCUMENTO: CNH (tem "Habilitação") ou RG (tem "Registro Geral").
-2. NOME: Localize o campo "NOME" (topo). Extraia o texto em destaque. IGNORE campos como "FILIAÇÃO", "PAI" ou "MÃE".
-3. CPF: Localize o rótulo "CPF". Extraia apenas os 11 dígitos numéricos.
-4. RG: Localize "DOC. IDENTIDADE" ou "REGISTRO GERAL". Extraia o número completo.
-5. DATA NASCIMENTO: Localize "NASCIMENTO" ou "DATA DE NASC.". Formato esperado: DD/MM/AAAA.
+INSTRUÇÕES TÉCNICAS PARA FOTOS DE CELULAR:
+1. IDENTIFICAÇÃO: Se houver "Habilitação", é CNH. Se houver "Registro Geral", é RG.
+2. NOME DO TITULAR: É o texto de maior destaque no topo. IGNORE nomes de PAI ou MÃE (filiação).
+3. CPF: Localize o campo 'CPF'. Extraia apenas os 11 números. Se houver pontos ou traços, remova-os.
+4. RG: Localize 'DOC. IDENTIDADE' ou 'REGISTRO GERAL'. Extraia o número completo.
+5. DATA NASCIMENTO: Procure pelo campo 'NASCIMENTO'. Formato DD/MM/AAAA.
 
-Se um campo estiver ilegível, retorne uma string vazia. Não invente dados.
-O processamento é feito em ambiente seguro e privado.
+Se um campo estiver ilegível, retorne uma string vazia.
+NÃO INVENTE DADOS.
 
 Documento: {{media url=photoDataUri}}`,
 });
@@ -66,10 +64,9 @@ const extractDocumentDataFlow = ai.defineFlow(
     try {
         const { output } = await prompt(input);
         if (!output) {
-            throw new Error("A IA não conseguiu processar a imagem ou o conteúdo foi bloqueado pelos filtros de segurança.");
+            throw new Error("A IA não conseguiu processar a imagem.");
         }
         
-        // Limpeza final de caracteres não numéricos
         return {
             ...output,
             cpf: output.cpf.replace(/\D/g, ''),
@@ -77,8 +74,7 @@ const extractDocumentDataFlow = ai.defineFlow(
         };
     } catch (error: any) {
         console.error("Erro técnico no OCR do Guardian:", error);
-        // Se o erro for de segurança, o log acima mostrará.
-        throw new Error("Não foi possível ler o documento automaticamente. Verifique a iluminação ou preencha manualmente.");
+        throw new Error("Falha na leitura automática.");
     }
   }
 );

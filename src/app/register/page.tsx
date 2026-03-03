@@ -96,7 +96,7 @@ export default function PublicRegistrationPage() {
         } catch (error: any) {
             toast({ 
                 title: "Falha na leitura automática", 
-                description: "Não conseguimos ler os dados. Você pode preencher manualmente.", 
+                description: "Não conseguimos ler os dados. Por favor, preencha manualmente.", 
                 variant: "destructive" 
             });
             setStep('form');
@@ -253,7 +253,10 @@ export default function PublicRegistrationPage() {
                         <Camera className="mr-2 h-5 w-5" />
                         Tirar Foto Agora
                     </Button>
-                    <Button variant="ghost" onClick={() => setStep('welcome')} disabled={isProcessing}>Voltar</Button>
+                    <div className="grid grid-cols-2 gap-2 w-full">
+                        <Button variant="outline" onClick={() => setStep('welcome')} disabled={isProcessing}>Voltar</Button>
+                        <Button variant="secondary" onClick={() => setStep('form')} disabled={isProcessing}>Pular para Manual</Button>
+                    </div>
                 </CardFooter>
             </Card>
         )}
