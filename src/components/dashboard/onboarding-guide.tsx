@@ -52,12 +52,9 @@ const introSlides = [
   { title: "12. Alertas de Saúde", description: "Informações sobre alergias ou cuidados especiais que aparecerão no embarque.", icon: <HeartPulse />, imageId: "ob-12-health" },
   { title: "13. Cadastro Enviado", description: "O pai finaliza o fluxo e os dados são enviados instantaneamente para o gestor.", icon: <Check />, imageId: "ob-13-done" },
   { title: "14. Alerta para o Gestor", description: "O administrador recebe um aviso push informando que há uma nova solicitação.", icon: <Smartphone />, imageId: "ob-14-notification" },
-  { title: "15. Lista de Triagem", description: "O gestor visualiza a nova solicitação pronta para aprovação comercial.", icon: <Search />, imageId: "ob-15-triage" },
-  { title: "16. Validação GPS", description: "A IA valida a viabilidade da rota comparando o endereço com a frota atual.", icon: <Navigation />, imageId: "ob-16-gps" },
-  { title: "17. Contrato Digital", description: "Geração automática do contrato para assinatura pelo celular do responsável.", icon: <FileText />, imageId: "ob-17-sign" },
-  { title: "18. Montagem de Rota", description: "Vínculo do novo aluno a um motorista e veículo disponível.", icon: <RouteIcon />, imageId: "ob-18-itinerary" },
-  { title: "19. Otimização IA", description: "O motor de logística recalcula a melhor sequência para economizar quilometragem.", icon: <Sparkles />, imageId: "ob-19-optimization" },
-  { title: "20. Início da Operação", description: "Van monitorada em tempo real com segurança total para as famílias.", icon: <Car />, imageId: "ob-20-live" }
+  { title: "15. Lista de Triagem", description: "O gestor visualiza a nova solicitação pronta para iniciar o cadastro da rota.", icon: <Search />, imageId: "ob-15-triage" },
+  { title: "16. Validação de Rota", description: "A IA valida a viabilidade e sugere o melhor motorista para o novo aluno.", icon: <Navigation />, imageId: "ob-16-gps" },
+  { title: "17. Aceite do Contrato", description: "Após a definição da rota, o contrato é gerado e assinado digitalmente.", icon: <FileText />, imageId: "ob-17-sign" }
 ];
 
 interface OnboardingGuideProps {

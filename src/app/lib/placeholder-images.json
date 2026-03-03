@@ -87,39 +87,21 @@
     },
     {
       "id": "ob-15-triage",
-      "description": "Visualização na Lista de Triagem",
+      "description": "Lista de Triagem",
       "imageUrl": "https://lh3.googleusercontent.com/d/1FigK2WEVaol7l_XhxKcLJrf2gWiQPnWU",
       "imageHint": "triage list"
     },
     {
       "id": "ob-16-gps",
-      "description": "Validação de Coordenadas GPS",
+      "description": "Validação de Rota",
       "imageUrl": "https://lh3.googleusercontent.com/d/1i2uAifpZptoHOGO7MRox0C-YklPCc37O",
       "imageHint": "gps map"
     },
     {
       "id": "ob-17-sign",
-      "description": "Aceite Digital do Contrato",
+      "description": "Aceite do Contrato",
       "imageUrl": "https://lh3.googleusercontent.com/d/1E52UE3uzdXGGw_WeZzY8Y9WwFIaE1Ey3",
       "imageHint": "contract sign"
-    },
-    {
-      "id": "ob-18-itinerary",
-      "description": "Montagem do Itinerário da Rota",
-      "imageUrl": "https://picsum.photos/seed/ob18/800/600",
-      "imageHint": "route building"
-    },
-    {
-      "id": "ob-19-optimization",
-      "description": "Otimização via Inteligência Artificial",
-      "imageUrl": "https://picsum.photos/seed/ob19/800/600",
-      "imageHint": "ai path"
-    },
-    {
-      "id": "ob-20-live",
-      "description": "Van em Rota com Tracking Real",
-      "imageUrl": "https://picsum.photos/seed/ob20/800/600",
-      "imageHint": "live monitoring"
     }
   ]
 }
