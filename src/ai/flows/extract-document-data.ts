@@ -1,7 +1,7 @@
 'use server';
 /**
  * @fileOverview Fluxo de IA especializado na extração de dados de identidade brasileira (RG/CNH).
- * Foco exclusivo em Nome, CPF, RG e Data de Nascimento para máxima precisão.
+ * Utiliza mapeamento de âncoras visuais para máxima precisão em layouts densos.
  */
 
 import { ai } from '@/ai/genkit';
@@ -13,10 +13,10 @@ const ExtractDocumentDataInputSchema = z.object({
 export type ExtractDocumentDataInput = z.infer<typeof ExtractDocumentDataInputSchema>;
 
 const ExtractDocumentDataOutputSchema = z.object({
-  name: z.string().describe("Nome completo exatamente como consta no documento."),
-  cpf: z.string().describe("Apenas os dígitos do CPF."),
-  rg: z.string().describe("Apenas os dígitos do RG (incluindo o dígito verificador se houver)."),
-  birthDate: z.string().describe("Data de nascimento no formato DD/MM/AAAA."),
+  name: z.string().describe("Nome completo do portador."),
+  cpf: z.string().describe("Apenas os 11 números do CPF."),
+  rg: z.string().describe("O número do RG/Registro Geral completo."),
+  birthDate: z.string().describe("Data de nascimento (DD/MM/AAAA)."),
 });
 export type ExtractDocumentDataOutput = z.infer<typeof ExtractDocumentDataOutputSchema>;
 
@@ -29,23 +29,39 @@ const prompt = ai.definePrompt({
   model: 'googleai/gemini-1.5-flash',
   input: { schema: ExtractDocumentDataInputSchema },
   output: { schema: ExtractDocumentDataOutputSchema },
-  prompt: `Você é um assistente de visão computacional especialista em documentos de identidade brasileiros (RG e CNH).
-Analise a imagem fornecida e extraia APENAS as informações de identificação civil solicitadas.
+  prompt: `Você é um Especialista em Visão Computacional para Documentos Oficiais Brasileiros.
+Sua tarefa é mapear e extrair dados de Identidade (RG ou CNH) com 100% de precisão.
 
-DIRETRIZES TÉCNICAS DE EXTRAÇÃO:
-1. NOME COMPLETO: É o primeiro e maior bloco de texto no topo do documento. Ignore prefixos como "NOME". Pegue o nome completo do titular.
-2. CPF: Procure explicitamente pelo rótulo "CPF". Extraia apenas os 11 dígitos numéricos.
-3. RG / DOC. IDENTIDADE: No RG, procure por "REGISTRO GERAL". Na CNH, procure por "DOC. IDENTIDADE". Extraia apenas os números e letras do código, ignorando órgãos emissores (ex: SSP/SP).
-4. DATA DE NASCIMENTO: Localize o rótulo "DATA DE NASCIMENTO" ou "NASCIMENTO". Formate estritamente como DD/MM/AAAA.
+### DIRETRIZES DE MAPEAMENTO (LAYOUT BRASIL):
 
-REGRAS DE FILTRAGEM (CRÍTICO):
-- FILIAÇÃO: Ignore completamente os nomes de pai e mãe. Eles costumam estar abaixo do nome do titular ou no verso. Não os confunda com o nome principal.
-- RUÍDOS: Ignore brasões, marcas d'água, assinaturas e textos miúdos de leis.
-- SEGREGAÇÃO: Se detectar que é uma CNH, foque nos campos delimitados por linhas. Se for RG, foque no campo "REGISTRO GERAL".
+1. **IDENTIFICAÇÃO DO TIPO**:
+   - Se houver o texto "CARTEIRA NACIONAL DE HABILITAÇÃO", aplique o mapa de CNH.
+   - Se houver "REGISTRO GERAL", aplique o mapa de RG.
 
-Se um campo não estiver legível ou não existir (como CPF em RGs muito antigos), retorne uma string vazia.
+2. **NOME COMPLETO (ÂNCORA: TOPO)**:
+   - Na CNH: É o primeiro grande bloco de texto logo abaixo do cabeçalho "NOME".
+   - No RG: É o texto de maior destaque no verso, geralmente acima da "FILIAÇÃO".
+   - CRÍTICO: Ignore nomes de pai ou mãe (geralmente precedidos por "FILIAÇÃO", "PAI" ou "MÃE"). Pegue apenas o nome do titular.
 
-Documento: {{media url=photoDataUri}}`,
+3. **CPF (ÂNCORA: "CPF")**:
+   - Localize o rótulo "CPF". Extraia apenas os 11 dígitos numéricos que o seguem.
+   - Remova pontos e traços.
+
+4. **DOC. IDENTIDADE / RG (ÂNCORA: "DOC. IDENTIDADE" ou "REGISTRO GERAL")**:
+   - Na CNH: Procure pelo campo rotulado como "DOC. IDENTIDADE".
+   - No RG: Procure pelo número associado ao rótulo "REGISTRO GERAL".
+   - Extraia o código alfanumérico completo.
+
+5. **DATA DE NASCIMENTO (ÂNCORA: "NASCIMENTO")**:
+   - Localize o rótulo "DATA DE NASCIMENTO" ou "NASC.".
+   - Retorne estritamente no formato DD/MM/AAAA.
+
+### REGRAS DE SEGURANÇA E LIMPEZA:
+- Se um campo estiver ilegível, retorne uma string vazia.
+- Ignore assinaturas que cruzam sobre o texto.
+- Não confunda a "Validade" ou "Data de Emissão" com a "Data de Nascimento".
+
+Documento para Análise: {{media url=photoDataUri}}`,
 });
 
 const extractDocumentDataFlow = ai.defineFlow(
@@ -57,11 +73,17 @@ const extractDocumentDataFlow = ai.defineFlow(
   async input => {
     try {
         const { output } = await prompt(input);
-        if (!output) throw new Error("A IA não conseguiu identificar os campos básicos do documento.");
-        return output;
+        if (!output) throw new Error("A IA não conseguiu mapear os campos do documento.");
+        
+        // Limpeza final para garantir apenas números nos documentos
+        return {
+            ...output,
+            cpf: output.cpf.replace(/\D/g, ''),
+            rg: output.rg.replace(/\s/g, ''),
+        };
     } catch (error) {
-        console.error("Erro no OCR especializado:", error);
-        throw new Error("Falha na leitura automática. Por favor, preencha os dados manualmente.");
+        console.error("Erro no OCR Especializado:", error);
+        throw new Error("Falha na leitura técnica do documento. Por favor, preencha os dados manualmente.");
     }
   }
 );
