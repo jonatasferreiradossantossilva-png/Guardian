@@ -28,7 +28,10 @@ import {
   FileText,
   MousePointerClick,
   Navigation,
-  CheckCircle2
+  CheckCircle2,
+  User,
+  MapPin,
+  GraduationCap
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -38,23 +41,23 @@ const introSlides = [
   { title: "1. Convite WhatsApp", description: "O gestor compartilha o link exclusivo de cadastro com o pai via WhatsApp.", icon: <Share2 />, imageId: "ob-1-invite" },
   { title: "2. Link Recebido", description: "O pai recebe o convite e clica para iniciar o processo sem burocracia.", icon: <MessageSquare />, imageId: "ob-2-received" },
   { title: "3. Boas-vindas", description: "Interface moderna e amigável para o pai iniciar o cadastro.", icon: <Smartphone />, imageId: "ob-3-welcome" },
-  { title: "4. Leitura via IA", description: "O pai tira foto do RG ou CNH e nossa IA lê todos os dados instantaneamente.", icon: <Sparkles />, imageId: "ob-4-scan" },
-  { title: "5. Revisão de Dados", description: "Os dados extraídos pela IA são revisados pelo pai para garantir precisão.", icon: <ClipboardCheck />, imageId: "ob-5-review" },
-  { title: "6. Endereço de Embarque", description: "Preenchimento do local exato onde a criança aguardará a van.", icon: <MapPinIcon />, imageId: "ob-6-address" },
-  { title: "7. Escola de Destino", description: "Seleção da escola através da nossa base nacional inteligente.", icon: <School />, imageId: "ob-7-school" },
-  { title: "8. Financeiro", description: "O pai sugere o melhor dia de vencimento para seu planejamento.", icon: <DollarSign />, imageId: "ob-8-finance" },
-  { title: "9. Alertas de Saúde", description: "Informações críticas de saúde que aparecerão para o motorista no embarque.", icon: <HeartPulse />, imageId: "ob-9-health" },
-  { title: "10. Cadastro Finalizado", description: "O pai recebe a confirmação e os dados voam para o gestor.", icon: <Check />, imageId: "ob-10-done-parent" },
-  { title: "11. Notificação Gestor", description: "O gestor é avisado que há uma nova solicitação pronta para triagem.", icon: <Sparkles />, imageId: "ob-11-notification" },
-  { title: "12. Área de Triagem", description: "Todos os cadastros prontos em uma lista organizada para o gestor.", icon: <Search />, imageId: "ob-12-triagem" },
-  { title: "13. Revisão Triagem", description: "O gestor revisa os dados e a localização GPS capturada pela IA.", icon: <MapPinIcon />, imageId: "ob-13-review-triagem" },
-  { title: "14. Valor e Vencimento", description: "O gestor define o valor da mensalidade e confirma o dia de pagamento.", icon: <DollarSign />, imageId: "ob-14-set-price" },
-  { title: "15. Aprovação Final", description: "Com um clique, o aluno é integrado à frota e o contrato é gerado.", icon: <MousePointerClick />, imageId: "ob-15-approve" },
-  { title: "16. Contrato Digital", description: "O contrato com validade jurídica é gerado automaticamente.", icon: <FileText />, imageId: "ob-16-contract" },
-  { title: "17. Aceite do Pai", description: "O pai recebe e aceita o contrato direto pelo app. Zero papel.", icon: <Check />, imageId: "ob-17-accept" },
-  { title: "18. Cadastro de Rota", description: "O gestor vincula alunos, escolas e motoristas em um itinerário.", icon: <RouteIcon />, imageId: "ob-18-route-setup" },
-  { title: "19. Otimização IA", description: "A IA calcula a menor distância, economizando combustível e tempo.", icon: <Sparkles />, imageId: "ob-19-optimize" },
-  { title: "20. Rota Ativa", description: "Van na rua com tracking real e segurança total para as crianças.", icon: <Navigation />, imageId: "ob-20-live" }
+  { title: "4. Leitura via IA", description: "O pai tira foto do documento e nossa IA lê todos os dados instantaneamente.", icon: <Sparkles />, imageId: "ob-4-scan" },
+  { title: "5. Revisão Identidade", description: "Primeira etapa do formulário: confirmação dos dados pessoais extraídos pela IA.", icon: <User />, imageId: "ob-5-review" },
+  { title: "6. Local de Embarque", description: "O pai define o ponto exato de coleta no mapa para evitar erros de navegação.", icon: <MapPin />, imageId: "ob-6-address" },
+  { title: "7. Escola de Destino", description: "Seleção da instituição através da nossa base proprietária de escolas ativas.", icon: <School />, imageId: "ob-7-school" },
+  { title: "8. Série e Turma", description: "Organização escolar para garantir que o monitor saiba exatamente onde desembarcar.", icon: <GraduationCap />, imageId: "ob-8-class" },
+  { title: "9. Plano Financeiro", description: "Configuração do vencimento e preferências de cobrança do responsável.", icon: <DollarSign />, imageId: "ob-9-finance" },
+  { title: "10. Conferência Geral", description: "Revisão completa do cadastro antes de avançar para a parte de saúde.", icon: <ClipboardCheck />, imageId: "ob-10-summary" },
+  { title: "11. Parte Médica", description: "Alertas de saúde críticos que aparecerão para o motorista no momento do embarque.", icon: <HeartPulse />, imageId: "ob-11-health" },
+  { title: "12. Cadastro Enviado", description: "O pai finaliza o fluxo e os dados são enviados instantaneamente para o gestor.", icon: <Check />, imageId: "ob-12-done" },
+  { title: "13. Notificação Gestor", description: "O admin recebe um alerta push informando que há uma nova solicitação pendente.", icon: <Smartphone />, imageId: "ob-13-notification" },
+  { title: "14. Lista de Triagem", description: "O gestor visualiza todas as solicitações prontas para aprovação comercial.", icon: <Search />, imageId: "ob-14-triage" },
+  { title: "15. Validação GPS", description: "A IA valida a viabilidade da rota comparando o endereço com a frota atual.", icon: <Navigation />, imageId: "ob-15-gps" },
+  { title: "16. Mensalidade", description: "Definição do valor final e geração automática do contrato digital.", icon: <DollarSign />, imageId: "ob-16-price" },
+  { title: "17. Aceite do Contrato", description: "O pai recebe o documento e assina digitalmente pelo próprio celular.", icon: <FileText />, imageId: "ob-17-sign" },
+  { title: "18. Montagem de Rota", description: "Vínculo do novo aluno a um motorista e veículo com capacidade disponível.", icon: <RouteIcon />, imageId: "ob-18-itinerary" },
+  { title: "19. Otimização IA", description: "O motor de logística recalcula a melhor sequência para economizar combustível.", icon: <Sparkles />, imageId: "ob-19-optimization" },
+  { title: "20. Rota Ativa", description: "Início da operação com tracking real e segurança garantida pelo Guardian.", icon: <Car />, imageId: "ob-20-live" }
 ];
 
 interface OnboardingGuideProps {
@@ -168,7 +171,6 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden border-primary/20 shadow-2xl">
-        
         <div className={cn(
             "p-0 flex flex-col items-center justify-center border-b transition-all duration-500 overflow-hidden",
             view === 'presentation' ? "bg-black h-[350px]" : "bg-secondary/20 h-40"
@@ -209,7 +211,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                     <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-bold tracking-widest text-[10px]">
                         FASE DE CONFIGURAÇÃO
                     </Badge>
-                    <DialogTitle className="sr-only">Configuração da Frota</DialogTitle>
+                    <DialogTitle className="sr-only">{currentData.title}</DialogTitle>
                 </div>
             )}
         </div>
@@ -218,9 +220,9 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
             <div className="space-y-2 min-h-[80px]">
                 {view === 'checklist' && (
                     <div className="flex items-center gap-2 mb-1">
-                        <DialogTitle className="text-xl font-bold tracking-tight">
+                        <h3 className="text-xl font-bold tracking-tight">
                             {currentData.title}
-                        </DialogTitle>
+                        </h3>
                         {(currentData as any).isDone && <Badge className="bg-green-500/10 text-green-500 border-green-500/20 text-[9px] h-5">CONCLUÍDO</Badge>}
                     </div>
                 )}
@@ -287,23 +289,3 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
     </Dialog>
   );
 }
-
-function MapPinIcon(props: any) {
-    return (
-      <svg
-        {...props}
-        xmlns="http://www.w3.org/2000/svg"
-        width="24"
-        height="24"
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      >
-        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
-        <circle cx="12" cy="10" r="3" />
-      </svg>
-    )
-  }
