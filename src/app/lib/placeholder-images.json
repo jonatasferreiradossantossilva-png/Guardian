@@ -27,27 +27,27 @@
     },
     {
       "id": "onboarding-welcome",
-      "description": "Guardian Fleet Concept",
+      "description": "Print da tela inicial do Dashboard ou Logo do Guardian",
       "imageUrl": "https://picsum.photos/seed/guardian-van/600/400",
-      "imageHint": "transport van"
+      "imageHint": "dashboard home"
     },
     {
       "id": "onboarding-parent-link",
-      "description": "Guardian Mobile App",
+      "description": "Print da tela de cadastro que o pai visualiza (/register)",
       "imageUrl": "https://picsum.photos/seed/guardian-app/600/400",
-      "imageHint": "mobile interface"
+      "imageHint": "registration screen"
     },
     {
       "id": "onboarding-approval",
-      "description": "Guardian Dashboard",
+      "description": "Print da tela de triagem/aprovação do gestor",
       "imageUrl": "https://picsum.photos/seed/guardian-dash/600/400",
-      "imageHint": "dashboard ui"
+      "imageHint": "approval area"
     },
     {
       "id": "onboarding-ai-routes",
-      "description": "Guardian AI Maps",
+      "description": "Print do mapa com polilinha de rota otimizada",
       "imageUrl": "https://picsum.photos/seed/guardian-map/600/400",
-      "imageHint": "map route"
+      "imageHint": "map optimization"
     }
   ]
 }
