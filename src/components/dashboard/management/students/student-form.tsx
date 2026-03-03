@@ -31,12 +31,14 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
-import { Copy, Loader2, HeartPulse, CalendarDays, Search, Sparkles, MapPin, Camera, User, Users } from 'lucide-react';
+import { Copy, Loader2, HeartPulse, CalendarDays, Search, Sparkles, MapPin, Camera, User, Users, Apple, Activity, Wind, Accessibility, Brain, AlertTriangle } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Checkbox } from '@/components/ui/checkbox';
+import { Badge } from '@/components/ui/badge';
 
 const SERIE_OPTIONS = [
     "Berçário / Maternal",
@@ -56,6 +58,14 @@ const SERIE_OPTIONS = [
     "Outro"
 ];
 
+const HEALTH_CATEGORIES = [
+    { id: 'Alergia', label: 'Alergia (Alimentar/Med)', icon: <Apple className="h-3 w-3" /> },
+    { id: 'Respiratório', label: 'Asma/Bronquite', icon: <Wind className="h-3 w-3" /> },
+    { id: 'Diabetes', label: 'Diabetes', icon: <Activity className="h-3 w-3" /> },
+    { id: 'Mobilidade', label: 'Dificuldade Locomoção', icon: <Accessibility className="h-3 w-3" /> },
+    { id: 'Neuro', label: 'Neurodiversidade (TEA/TDAH)', icon: <Brain className="h-3 w-3" /> },
+];
+
 const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 
 const formSchema = z.object({
@@ -68,6 +78,7 @@ const formSchema = z.object({
   monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
   preferredPaymentDay: z.coerce.number().int().min(1).max(31).optional(),
   medicalNote: z.string().optional(),
+  medicalConditions: z.array(z.string()).default([]),
   zipCode: z.string().optional(),
   street: z.string().optional(),
   number: z.string().optional(),
@@ -113,6 +124,7 @@ const defaultValues: StudentFormValues = {
   monthlyFee: undefined,
   preferredPaymentDay: 10,
   medicalNote: '',
+  medicalConditions: [],
   zipCode: '',
   street: '',
   number: '',
@@ -150,6 +162,7 @@ export function StudentForm({
   const zipCode = form.watch('zipCode');
   const parentId = form.watch('parentId');
   const currentPhoto = form.watch('photoUrl');
+  const selectedConditions = form.watch('medicalConditions') || [];
 
   // Herança de Irmãos Inteligente
   const siblings = useMemo(() => {
@@ -256,6 +269,7 @@ export function StudentForm({
         monthlyFee: student.monthlyFee,
         preferredPaymentDay: student.preferredPaymentDay,
         medicalNote: student.medicalNote || '',
+        medicalConditions: student.medicalConditions || [],
         zipCode: student.zipCode || '',
         street: student.street || '',
         number: student.number || '',
@@ -538,19 +552,50 @@ export function StudentForm({
 
               <div className="border-t pt-4 mt-4 bg-destructive/5 p-4 rounded-lg">
                  <p className="text-sm font-bold flex items-center gap-2 mb-3 text-destructive">
-                    <HeartPulse className="h-4 w-4" /> Alertas Médicos
+                    <HeartPulse className="h-4 w-4" /> Alertas de Saúde e Cuidados
                  </p>
+                 
+                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
+                    {HEALTH_CATEGORIES.map((cat) => (
+                        <FormField
+                            key={cat.id}
+                            control={form.control}
+                            name="medicalConditions"
+                            render={({ field }) => (
+                                <FormItem className="flex flex-row items-center space-x-3 space-y-0 rounded-md border p-2 bg-background">
+                                    <FormControl>
+                                        <Checkbox
+                                            checked={field.value?.includes(cat.id)}
+                                            onCheckedChange={(checked) => {
+                                                const current = field.value || [];
+                                                return checked
+                                                    ? field.onChange([...current, cat.id])
+                                                    : field.onChange(current.filter((value) => value !== cat.id));
+                                            }}
+                                        />
+                                    </FormControl>
+                                    <FormLabel className="text-xs font-medium flex items-center gap-2 cursor-pointer">
+                                        {cat.icon}
+                                        {cat.label}
+                                    </FormLabel>
+                                </FormItem>
+                            )}
+                        />
+                    ))}
+                 </div>
+
                  <FormField
                     control={form.control}
                     name="medicalNote"
                     render={({ field }) => (
                         <FormItem>
+                            <FormLabel className="text-xs text-muted-foreground">Observações Detalhadas</FormLabel>
                             <FormControl>
                                 <Textarea 
-                                    placeholder="Ex: Alérgico a amendoim. Levar bombinha de asma." 
+                                    placeholder="Detalhes sobre alergias, dosagens de medicação ou cuidados específicos..." 
                                     {...field} 
                                     value={field.value ?? ''}
-                                    className="bg-background"
+                                    className="bg-background text-sm"
                                 />
                             </FormControl>
                             <FormMessage />

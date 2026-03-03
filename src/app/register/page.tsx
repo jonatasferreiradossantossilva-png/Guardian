@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Info, Users, Smartphone, Camera, Sparkles, RefreshCw, AlertTriangle } from 'lucide-react';
+import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Info, Users, Smartphone, Camera, Sparkles, RefreshCw, AlertTriangle, Apple, Wind, Activity, Accessibility, Brain, HeartPulse } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,9 +13,10 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { extractDocumentData } from '@/ai/flows/extract-document-data';
+import { Checkbox } from '@/components/ui/checkbox';
 import Link from 'next/link';
 
-type Step = 'welcome' | 'scan' | 'review' | 'form' | 'success';
+type Step = 'welcome' | 'scan' | 'review' | 'form' | 'health' | 'success';
 
 const SERIE_OPTIONS = [
     "Berçário / Maternal",
@@ -35,7 +36,13 @@ const SERIE_OPTIONS = [
     "Outro"
 ];
 
-const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+const HEALTH_CATEGORIES = [
+    { id: 'Alergia', label: 'Alergia (Alimentar ou Med)', icon: <Apple className="h-4 w-4" /> },
+    { id: 'Respiratório', label: 'Asma ou Bronquite', icon: <Wind className="h-4 w-4" /> },
+    { id: 'Diabetes', label: 'Diabetes / Insulina', icon: <Activity className="h-4 w-4" /> },
+    { id: 'Mobilidade', label: 'Dificuldade de Locomoção', icon: <Accessibility className="h-4 w-4" /> },
+    { id: 'Neuro', label: 'TEA / TDAH / Neurodiversidade', icon: <Brain className="h-4 w-4" /> },
+];
 
 export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
@@ -59,7 +66,10 @@ export default function PublicRegistrationPage() {
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [studentSerie, setStudentSerie] = useState('');
   const [studentTurma, setStudentTurma] = useState('');
-  const [preferredPaymentDay, setPreferredPaymentDay] = useState('10');
+  
+  // Health states
+  const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
+  const [medicalNote, setMedicalNote] = useState('');
   
   // Address states
   const [zipCode, setZipCode] = useState('');
@@ -121,7 +131,7 @@ export default function PublicRegistrationPage() {
             setNeighborhood(data.bairro || '');
             setCity(data.localidade || '');
             setState(data.uf || '');
-            toast({ title: "CEP localizado!", description: "Endereço atualizado automaticamente." });
+            toast({ title: "CEP localizado!", description: "Endereço de embarque atualizado." });
           }
         } catch (e) {
           console.error("Erro ao buscar CEP:", e);
@@ -134,11 +144,6 @@ export default function PublicRegistrationPage() {
   }, [zipCode, toast]);
 
   const handleFinalSubmit = () => {
-    if (!parentName || !parentCpf || !email || !phone || !studentName || !selectedSchoolId || !zipCode || !street || !number) {
-        toast({ title: "Campos obrigatórios", description: "Por favor, preencha os dados básicos do responsável, aluno e endereço.", variant: "destructive" });
-        return;
-    }
-
     addDoc('pending_registrations', {
         parentName,
         email,
@@ -147,7 +152,8 @@ export default function PublicRegistrationPage() {
         schoolId: selectedSchoolId,
         studentSerie,
         studentTurma,
-        preferredPaymentDay: Number(preferredPaymentDay),
+        medicalConditions,
+        medicalNote,
         status: 'pending_approval',
         createdAt: new Date().toISOString(),
         address: { zipCode, street, number, complement, neighborhood, city, state },
@@ -162,8 +168,16 @@ export default function PublicRegistrationPage() {
       setSelectedSchoolId('');
       setStudentSerie('');
       setStudentTurma('');
+      setMedicalConditions([]);
+      setMedicalNote('');
       setStep('form');
-      toast({ title: "Dados do responsável preservados!", description: "Agilizando o cadastro do próximo filho." });
+      toast({ title: "Dados preservados!", description: "Cadastre o próximo filho com o mesmo endereço de embarque." });
+  };
+
+  const toggleCondition = (id: string) => {
+      setMedicalConditions(prev => 
+          prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
+      );
   };
 
   return (
@@ -185,7 +199,7 @@ export default function PublicRegistrationPage() {
                         <div className="bg-primary/20 p-2 rounded-lg mt-1"><Smartphone className="h-4 w-4 text-primary" /></div>
                         <div>
                             <p className="font-semibold text-sm">Leitura via IA</p>
-                            <p className="text-xs text-muted-foreground">Tire uma foto do seu documento (RG ou CNH) para preenchimento automático.</p>
+                            <p className="text-xs text-muted-foreground">Tire uma foto do seu documento para preenchimento automático.</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-3">
@@ -268,7 +282,7 @@ export default function PublicRegistrationPage() {
                         <Sparkles className="h-5 w-5" />
                         <CardTitle className="text-lg">Revisar Dados Extraídos</CardTitle>
                     </div>
-                    <CardDescription>A IA conseguiu capturar estes campos. Ajuste se necessário.</CardDescription>
+                    <CardDescription>A IA capturou estes campos. Ajuste se necessário.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-6">
                     <div className="space-y-2">
@@ -310,15 +324,15 @@ export default function PublicRegistrationPage() {
           <Card className="shadow-2xl border-primary/20 flex flex-col h-[90vh]">
             <CardHeader className="border-b bg-muted/30 shrink-0">
               <CardTitle className="text-lg">Finalizar Inscrição</CardTitle>
-              <CardDescription>Complete com seus dados de contato e endereço.</CardDescription>
+              <CardDescription>Complete com seus dados de contato e endereço atual.</CardDescription>
             </CardHeader>
             
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
                     
                     <div className="space-y-4">
-                        <p className="text-sm font-bold flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-primary" /> Contato do Responsável
+                        <p className="text-sm font-bold flex items-center gap-2 text-primary">
+                            <FileText className="h-4 w-4" /> Contato do Responsável
                         </p>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -334,8 +348,8 @@ export default function PublicRegistrationPage() {
                     </div>
 
                     <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" /> Endereço de Embarque
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                            <MapPin className="h-4 w-4" /> Endereço de Embarque
                         </p>
                         
                         <div className="space-y-4">
@@ -376,8 +390,8 @@ export default function PublicRegistrationPage() {
                     </div>
                     
                     <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                            <User className="h-4 w-4 text-primary" /> Dados do Aluno
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                            <User className="h-4 w-4" /> Dados do Aluno
                         </p>
                         <div className="space-y-4">
                             <div className="space-y-2">
@@ -415,8 +429,9 @@ export default function PublicRegistrationPage() {
 
             <CardFooter className="border-t p-6 shrink-0 bg-background">
                 <div className="flex flex-col w-full gap-2">
-                    <Button className="w-full h-12 text-base font-bold" onClick={handleFinalSubmit}>
-                        Finalizar Inscrição
+                    <Button className="w-full h-12 text-base font-bold" onClick={() => setStep('health')}>
+                        Continuar para Saúde
+                        <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                     <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('review')}>
                         Voltar
@@ -424,6 +439,60 @@ export default function PublicRegistrationPage() {
                 </div>
             </CardFooter>
           </Card>
+        )}
+
+        {step === 'health' && (
+            <Card className="shadow-2xl border-destructive/20 animate-in slide-in-from-right-4 duration-500">
+                <CardHeader className="bg-destructive/5 border-b">
+                    <div className="flex items-center gap-2 text-destructive">
+                        <HeartPulse className="h-5 w-5" />
+                        <CardTitle className="text-lg">Saúde e Cuidados</CardTitle>
+                    </div>
+                    <CardDescription>Estes alertas aparecerão para o motorista no momento do embarque.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-6">
+                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Selecione alertas críticos:</p>
+                    <div className="grid grid-cols-1 gap-3">
+                        {HEALTH_CATEGORIES.map(cat => (
+                            <div 
+                                key={cat.id} 
+                                onClick={() => toggleCondition(cat.id)}
+                                className={cn(
+                                    "flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all",
+                                    medicalConditions.includes(cat.id) 
+                                        ? "border-destructive bg-destructive/5 shadow-inner" 
+                                        : "border-muted hover:border-destructive/30"
+                                )}
+                            >
+                                <div className={cn(
+                                    "p-2 rounded-full",
+                                    medicalConditions.includes(cat.id) ? "bg-destructive text-white" : "bg-muted text-muted-foreground"
+                                )}>
+                                    {cat.icon}
+                                </div>
+                                <span className="text-sm font-medium flex-1">{cat.label}</span>
+                                <Checkbox checked={medicalConditions.includes(cat.id)} onCheckedChange={() => {}} />
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="space-y-2 pt-4 border-t">
+                        <Label className="text-xs">Observações Adicionais (Opcional)</Label>
+                        <Textarea 
+                            placeholder="Descreva detalhes importantes (ex: tipo de alergia, dosagem de bombinha, etc.)"
+                            value={medicalNote}
+                            onChange={e => setMedicalNote(e.target.value)}
+                            className="bg-muted/30"
+                        />
+                    </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2 border-t pt-6 bg-muted/20">
+                    <Button className="w-full h-12 text-base font-bold" onClick={handleFinalSubmit}>
+                        Finalizar e Enviar Cadastro
+                    </Button>
+                    <Button variant="ghost" className="text-xs" onClick={() => setStep('form')}>Voltar</Button>
+                </CardFooter>
+            </Card>
         )}
 
         {step === 'success' && (

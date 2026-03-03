@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users } from 'lucide-react';
+import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users, HeartPulse } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
@@ -111,6 +111,8 @@ export default function PendingRegistrationsPage() {
             preferredPaymentDay: Number(approvedPreferredPaymentDay),
             serie: reg.studentSerie,
             turma: reg.studentTurma,
+            medicalConditions: reg.medicalConditions || [],
+            medicalNote: reg.medicalNote || '',
             active: true
         });
 
@@ -174,6 +176,8 @@ export default function PendingRegistrationsPage() {
                             (p.cpf && reg.documentData?.cpf && p.cpf.replace(/\D/g, '') === reg.documentData.cpf.replace(/\D/g, '')) ||
                             (p.email.toLowerCase() === reg.email.toLowerCase())
                         );
+                        const hasAlert = reg.medicalConditions?.length > 0 || reg.medicalNote;
+
                         return (
                         <TableRow key={reg.id}>
                           <TableCell className="font-medium">
@@ -182,7 +186,12 @@ export default function PendingRegistrationsPage() {
                                 {isExisting && <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-primary/20"><Users className="h-3 w-3 mr-1"/> Irmão</Badge>}
                               </div>
                           </TableCell>
-                          <TableCell>{reg.studentName}</TableCell>
+                          <TableCell>
+                              <div className="flex items-center gap-2">
+                                {reg.studentName}
+                                {hasAlert && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" title="Alerta Médico" />}
+                              </div>
+                          </TableCell>
                           <TableCell>{schoolsMap.get(reg.schoolId) || 'N/A'}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(reg.createdAt), { addSuffix: true, locale: ptBR })}
@@ -287,6 +296,27 @@ export default function PendingRegistrationsPage() {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Alertas Médicos em Destaque na Revisão */}
+                            {(selectedReg.medicalConditions?.length > 0 || selectedReg.medicalNote) && (
+                                <div className="p-4 bg-destructive/5 rounded-lg border border-destructive/20">
+                                    <p className="text-[10px] font-bold uppercase tracking-widest text-destructive mb-3 flex items-center gap-2">
+                                        <HeartPulse className="h-3 w-3" /> Alertas de Saúde (Pai Informou)
+                                    </p>
+                                    <div className="space-y-2">
+                                        <div className="flex flex-wrap gap-1">
+                                            {selectedReg.medicalConditions?.map((c: string) => (
+                                                <Badge key={c} variant="outline" className="text-[9px] border-destructive/30 text-destructive">{c}</Badge>
+                                            ))}
+                                        </div>
+                                        {selectedReg.medicalNote && (
+                                            <p className="text-xs italic text-muted-foreground bg-background p-2 rounded border border-dashed">
+                                                "{selectedReg.medicalNote}"
+                                            </p>
+                                        )}
+                                    </div>
+                                </div>
+                            )}
 
                             <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 flex items-center gap-2">

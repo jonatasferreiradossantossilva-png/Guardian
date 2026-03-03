@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -76,6 +75,7 @@ interface Student {
   longitude: number;
   schoolId: string;
   medicalNote?: string;
+  medicalConditions?: string[];
   street?: string;
   number?: string;
   neighborhood?: string;
@@ -120,26 +120,27 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
   if (!student) return null;
 
   const isGoing = direction === 'ida';
+  const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
   return (
-    <Card className="w-full shadow-lg border-primary/20">
+    <Card className={cn("w-full shadow-lg border-primary/20", hasMedicalAlert && "border-destructive ring-2 ring-destructive/20")}>
       <CardHeader>
         <div className="flex justify-between items-start">
             <CardDescription>Próxima Parada</CardDescription>
-            {student.medicalNote && (
-                <Badge variant="destructive" className="animate-pulse flex gap-1" onClick={() => {
+            {hasMedicalAlert && (
+                <Badge variant="destructive" className="animate-pulse flex gap-1 cursor-pointer" onClick={() => {
                     toast({
-                        title: "🚨 ALERTA MÉDICO",
-                        description: student.medicalNote,
+                        title: "🚨 ALERTA DE SAÚDE",
+                        description: student.medicalNote || `Condições: ${student.medicalConditions?.join(', ')}`,
                         duration: 8000
                     });
                 }}>
-                    <HeartPulse className="h-3 w-3" /> CUIDADO ESPECIAL
+                    <HeartPulse className="h-3 w-3" /> ALERTA CRÍTICO
                 </Badge>
             )}
         </div>
         <CardTitle className="flex items-start gap-3 text-2xl">
-            <Avatar className="h-12 w-12 flex-shrink-0">
+            <Avatar className="h-12 w-12 flex-shrink-0 border-2 border-background shadow-sm">
                 <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
                 <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
             </Avatar>
@@ -154,6 +155,14 @@ const NextStopCard = ({ student, onStatusChange, onNavigate, onOpenAuthorizedMod
         <p className="text-sm text-muted-foreground pt-1">
           {student.street ? `${student.street}, ${student.number}` : 'Endereço não disponível'}
         </p>
+        
+        {student.medicalConditions && student.medicalConditions.length > 0 && (
+            <div className="flex flex-wrap gap-1 mt-2">
+                {student.medicalConditions.map(c => (
+                    <Badge key={c} variant="outline" className="text-[10px] bg-destructive/10 text-destructive border-destructive/20 font-bold uppercase">{c}</Badge>
+                ))}
+            </div>
+        )}
       </CardHeader>
       <CardContent className="grid grid-cols-2 gap-2">
         {isGoing ? (
@@ -271,6 +280,7 @@ const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], for
             {stops.map((stop, index) => {
               const isStudent = stop.type === 'student';
               const item = stop.data as Student | SchoolData;
+              const hasAlert = isStudent && ((item as Student).medicalConditions?.length || (item as Student).medicalNote);
 
               return (
                 <li key={`${stop.id}-${index}`} className="flex items-center gap-3 p-2 rounded-md bg-secondary/50">
@@ -288,7 +298,7 @@ const UpcomingStopsList = ({ stops, formatStudentDetails }: { stops: Stop[], for
                                 </div>
                             )}
                         </Avatar>
-                        {isStudent && (item as Student).medicalNote && (
+                        {hasAlert && (
                             <div className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-0.5 border border-background">
                                 <HeartPulse className="h-2.5 w-2.5" />
                             </div>
@@ -382,11 +392,12 @@ function RouteMap({ driverLocation, stops, routePolyline, toast, recenterTrigger
                  const isStudent = stop.type === 'student';
                  const item = stop.data;
                  if (!item?.latitude || !item?.longitude) return null;
+                 const hasAlert = isStudent && ((item as Student).medicalConditions?.length || (item as Student).medicalNote);
 
                  return (
                     <AdvancedMarker key={stop.id} position={{ lat: item.latitude, lng: item.longitude }} title={item.name}>
                         {isStudent ? (
-                            <Pin background={ (item as Student).medicalNote ? '#dc2626' : '#3b82f6'} borderColor={'#fff'}>
+                            <Pin background={ hasAlert ? '#dc2626' : '#3b82f6'} borderColor={'#fff'}>
                                 <Avatar className="h-6 w-6">
                                     <AvatarImage src={`https://picsum.photos/seed/student-${item.id}/40/40`} alt={item.name} />
                                     <AvatarFallback>{item.name.charAt(0)}</AvatarFallback>
@@ -407,6 +418,7 @@ function RouteMap({ driverLocation, stops, routePolyline, toast, recenterTrigger
 function StudentChecklistRow({ student, onStatusChange, direction }: { student: Student; onStatusChange: (studentId: string, status: StudentStatus) => void; direction: 'ida' | 'volta' }) {
     const isProcessed = student.status !== 'aguardando';
     const { toast } = useToast();
+    const hasAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
     return (
         <div className={cn("p-3 flex items-center gap-3 rounded-md transition-colors", isProcessed ? "bg-secondary" : "bg-background")}>
@@ -415,9 +427,13 @@ function StudentChecklistRow({ student, onStatusChange, direction }: { student: 
                     <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
                     <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
                 </Avatar>
-                {student.medicalNote && (
+                {hasAlert && (
                     <div className="absolute -top-1 -right-1 bg-destructive text-white rounded-full p-1 border-2 border-background cursor-pointer" onClick={() => {
-                        toast({ title: `Atenção: ${student.name}`, description: student.medicalNote, duration: 6000 });
+                        toast({ 
+                            title: `Atenção: ${student.name}`, 
+                            description: student.medicalNote || `Condições: ${student.medicalConditions?.join(', ')}`, 
+                            duration: 6000 
+                        });
                     }}>
                         <HeartPulse className="h-3 w-3" />
                     </div>
@@ -425,6 +441,11 @@ function StudentChecklistRow({ student, onStatusChange, direction }: { student: 
             </div>
             <div className="flex-1">
                 <p className={cn("font-medium", isProcessed && "text-muted-foreground line-through")}>{student.name}</p>
+                {hasAlert && (
+                    <p className="text-[9px] text-destructive font-bold uppercase truncate max-w-[150px]">
+                        {student.medicalConditions?.join(' • ') || 'Ver Observação'}
+                    </p>
+                )}
             </div>
             {isProcessed ? (
                 <Badge variant={student.status === 'a_bordo' ? 'default' : 'destructive'} className={cn(student.status === 'a_bordo' && "bg-green-600")}>
@@ -538,7 +559,6 @@ export default function DriverRoutePlanPage() {
   const { data: vehicle } = useMockDoc('vehicles', driverProfile?.vehicleId);
 
   // --- Real-time Movement & Odometer Simulation ---
-  // FIXED: Optimized simulation effect using a ref to prevent unnecessary interval resets and loops
   const locRef = useRef(driverLocation);
   useEffect(() => { locRef.current = driverLocation; }, [driverLocation]);
 
