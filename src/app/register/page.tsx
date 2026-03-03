@@ -1,10 +1,9 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays, Info, Users } from 'lucide-react';
-import { extractDocumentData, type ExtractDocumentDataOutput } from '@/ai/flows/extract-document-data';
+import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Info, Users, Smartphone } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -12,9 +11,8 @@ import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import Link from 'next/link';
-import Image from 'next/image';
 
-type Step = 'welcome' | 'scan' | 'confirm' | 'success';
+type Step = 'welcome' | 'form' | 'success';
 
 const SERIE_OPTIONS = [
     "Berçário / Maternal",
@@ -38,17 +36,20 @@ const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 
 export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
-  const [isProcessing, setIsProcessing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
-  const [extractedData, setExtractedData] = useState<ExtractDocumentDataOutput | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const { toast } = useToast();
   const { addDoc } = useMockData();
   const { data: schools } = useMockCollection('schools');
 
-  // Form states
+  // Form states - Responsible
+  const [parentName, setParentName] = useState('');
+  const [parentCpf, setParentCpf] = useState('');
+  const [parentRg, setParentRg] = useState('');
+  const [parentBirthDate, setParentBirthDate] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  
+  // Form states - Student
   const [studentName, setStudentName] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [studentSerie, setStudentSerie] = useState('');
@@ -63,8 +64,6 @@ export default function PublicRegistrationPage() {
   const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
-
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -97,34 +96,10 @@ export default function PublicRegistrationPage() {
     }
   }, [zipCode, toast]);
 
-  const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
-
-    setIsProcessing(true);
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const base64 = reader.result as string;
-      setPreviewUrl(base64);
-      try {
-        const result = await extractDocumentData({ photoDataUri: base64 });
-        setExtractedData(result);
-        setStep('confirm');
-        toast({ title: "Documento Lido!", description: "Confira seus dados de identidade." });
-      } catch (e) {
-        toast({ title: "Falha na leitura", description: "Por favor, preencha manualmente.", variant: "destructive" });
-        setExtractedData({ name: '', cpf: '', rg: '', birthDate: '' });
-        setStep('confirm');
-      } finally {
-        setIsProcessing(false);
-      }
-    };
-    reader.readAsDataURL(file);
-  };
-
   const handleFinalSubmit = () => {
     if (
-        !extractedData?.name || 
+        !parentName || 
+        !parentCpf ||
         !email || 
         !phone || 
         !studentName || 
@@ -145,7 +120,7 @@ export default function PublicRegistrationPage() {
     }
 
     addDoc('pending_registrations', {
-        parentName: extractedData.name,
+        parentName,
         email,
         phone,
         studentName,
@@ -165,9 +140,9 @@ export default function PublicRegistrationPage() {
             state
         },
         documentData: {
-            cpf: extractedData.cpf,
-            rg: extractedData.rg,
-            birthDate: extractedData.birthDate
+            cpf: parentCpf,
+            rg: parentRg,
+            birthDate: parentBirthDate
         }
     });
 
@@ -175,12 +150,12 @@ export default function PublicRegistrationPage() {
   };
 
   const handleRegisterSibling = () => {
-      // Loop inteligente: Mantém dados do pai e endereço, limpa apenas do aluno
+      // Manten os dados do pai e endereço, limpa apenas do aluno
       setStudentName('');
       setSelectedSchoolId('');
       setStudentSerie('');
       setStudentTurma('');
-      setStep('confirm');
+      setStep('form');
       toast({ title: "Pronto para o próximo!", description: "Dados do responsável preservados para agilizar." });
   };
 
@@ -193,33 +168,33 @@ export default function PublicRegistrationPage() {
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 border-2 border-primary/20">
                 <UserPlus className="text-primary h-8 w-8" />
               </div>
-              <CardTitle className="text-2xl font-bold">Seja bem-vindo ao Guardian</CardTitle>
-              <CardDescription>Vamos agilizar seu cadastro em menos de 2 minutos usando Inteligência Artificial.</CardDescription>
+              <CardTitle className="text-2xl font-bold">Cadastro Guardian</CardTitle>
+              <CardDescription>Inicie seu cadastro para formalizar o transporte escolar do seu filho.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                        <div className="bg-primary/20 p-2 rounded-lg mt-1"><Camera className="h-4 w-4 text-primary" /></div>
+                        <div className="bg-primary/20 p-2 rounded-lg mt-1"><FileText className="h-4 w-4 text-primary" /></div>
                         <div>
-                            <p className="font-semibold text-sm">Passo 1: Foto do Documento</p>
-                            <p className="text-xs text-muted-foreground">Nossa IA lê seus dados automaticamente (CNH ou RG).</p>
+                            <p className="font-semibold text-sm">Dados do Responsável</p>
+                            <p className="text-xs text-muted-foreground">Informações para o contrato e contato.</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-3">
-                        <div className="bg-primary/20 p-2 rounded-lg mt-1"><FileText className="h-4 w-4 text-primary" /></div>
+                        <div className="bg-primary/20 p-2 rounded-lg mt-1"><User className="h-4 w-4 text-primary" /></div>
                         <div>
-                            <p className="font-semibold text-sm">Passo 2: Dados do Aluno</p>
-                            <p className="text-xs text-muted-foreground">Informe o nome do seu filho e a escola.</p>
+                            <p className="font-semibold text-sm">Dados do Aluno</p>
+                            <p className="text-xs text-muted-foreground">Nome, escola e endereço de coleta.</p>
                         </div>
                     </div>
                 </div>
                 <div className="p-4 bg-muted/50 rounded-lg border border-dashed flex items-center gap-3">
                     <ShieldCheck className="text-green-500 h-5 w-5 shrink-0" />
-                    <p className="text-[10px] text-muted-foreground leading-tight">Seus dados estão protegidos por criptografia e serão usados exclusivamente para a formalização do contrato de transporte.</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">Seus dados estão protegidos por criptografia e serão usados exclusivamente para a formalização do contrato.</p>
                 </div>
             </CardContent>
             <CardHeader>
-              <Button className="w-full h-12 text-lg" onClick={() => setStep('scan')}>
+              <Button className="w-full h-12 text-lg" onClick={() => setStep('form')}>
                 Começar Cadastro
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -227,105 +202,55 @@ export default function PublicRegistrationPage() {
           </Card>
         )}
 
-        {step === 'scan' && (
-          <Card className="shadow-2xl border-primary/20 overflow-hidden">
-            <CardHeader className="text-center pb-2">
-              <CardTitle>Identificação</CardTitle>
-              <CardDescription>Tire uma foto nítida do seu documento (CNH ou RG) para preenchimento automático.</CardDescription>
-            </CardHeader>
-            <CardContent className="p-8">
-                <div 
-                    className="aspect-[3/2] border-2 border-dashed border-primary/30 rounded-xl bg-primary/5 flex flex-col items-center justify-center gap-4 cursor-pointer hover:bg-primary/10 transition-colors relative"
-                    onClick={() => !isProcessing && fileInputRef.current?.click()}
-                >
-                    {isProcessing ? (
-                        <div className="text-center space-y-4 animate-pulse">
-                            <Loader2 className="h-12 w-12 text-primary animate-spin mx-auto" />
-                            <div className="space-y-1">
-                                <p className="font-bold text-primary flex items-center justify-center gap-2">
-                                    <Sparkles className="h-4 w-4" /> Inteligência Analisando...
-                                </p>
-                                <p className="text-xs text-muted-foreground px-4 text-center">Extraindo dados de identidade.</p>
-                            </div>
-                        </div>
-                    ) : (
-                        <>
-                            <div className="bg-primary/20 p-4 rounded-full">
-                                <Camera className="h-10 w-10 text-primary" />
-                            </div>
-                            <p className="font-semibold">Tirar Foto ou Enviar Arquivo</p>
-                            <p className="text-xs text-muted-foreground">Frente e verso (ou apenas frente da CNH)</p>
-                        </>
-                    )}
-                    <input 
-                        type="file" 
-                        accept="image/*" 
-                        capture="environment" 
-                        ref={fileInputRef} 
-                        onChange={handleFileChange} 
-                        className="hidden" 
-                    />
-                </div>
-            </CardContent>
-            <CardFooter>
-                <Button variant="ghost" className="w-full" onClick={() => setStep('welcome')} disabled={isProcessing}>Voltar</Button>
-            </CardFooter>
-          </Card>
-        )}
-
-        {step === 'confirm' && extractedData && (
+        {step === 'form' && (
           <Card className="shadow-2xl border-primary/20 flex flex-col h-[90vh]">
             <CardHeader className="border-b bg-muted/30 shrink-0">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <CheckCircle className="text-green-500 h-5 w-5" />
-                Confirme seus Dados
-              </CardTitle>
-              <CardDescription>A IA detectou estes dados de identidade. Ajuste se necessário.</CardDescription>
+              <CardTitle className="text-lg">Formulário de Inscrição</CardTitle>
+              <CardDescription>Preencha os campos abaixo com atenção.</CardDescription>
             </CardHeader>
             
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
-                    {previewUrl && (
-                        <div className="space-y-2">
-                            <Label className="text-[10px] font-bold uppercase text-muted-foreground">Imagem Analisada</Label>
-                            <div className="relative aspect-video rounded-lg overflow-hidden border-2 border-muted shadow-sm">
-                                <Image src={previewUrl} alt="Scan" fill className="object-cover" />
-                            </div>
-                        </div>
-                    )}
-
+                    
                     <div className="space-y-4">
+                        <p className="text-sm font-bold flex items-center gap-2">
+                            <FileText className="h-4 w-4 text-primary" /> Dados do Responsável
+                        </p>
                         <div className="space-y-2">
                             <Label>Seu Nome Completo</Label>
-                            <Input value={extractedData.name ?? ''} onChange={e => setExtractedData({...extractedData, name: e.target.value})} placeholder="Como no documento" />
+                            <Input value={parentName} onChange={e => setParentName(e.target.value)} placeholder="Como no documento" />
                         </div>
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>CPF</Label>
-                                <Input value={extractedData.cpf ?? ''} onChange={e => setExtractedData({...extractedData, cpf: e.target.value})} placeholder="000.000.000-00" />
+                                <Input value={parentCpf} onChange={e => setParentCpf(e.target.value)} placeholder="000.000.000-00" />
                             </div>
                             <div className="space-y-2">
                                 <Label>RG</Label>
-                                <Input value={extractedData.rg ?? ''} onChange={e => setExtractedData({...extractedData, rg: e.target.value})} placeholder="00.000.000-0" />
+                                <Input value={parentRg} onChange={e => setParentRg(e.target.value)} placeholder="00.000.000-0" />
                             </div>
                         </div>
 
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>Seu E-mail</Label>
+                                <Label>E-mail</Label>
                                 <Input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label>WhatsApp (Telefone)</Label>
+                                <Label>WhatsApp</Label>
                                 <Input placeholder="(11) 90000-0000" value={phone} onChange={e => setPhone(e.target.value)} />
                             </div>
+                        </div>
+                        <div className="space-y-2">
+                            <Label>Data de Nascimento</Label>
+                            <Input type="date" value={parentBirthDate} onChange={e => setParentBirthDate(e.target.value)} />
                         </div>
                     </div>
 
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta (Obrigatório)
+                            <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta
                         </p>
                         
                         <div className="space-y-4">
@@ -374,19 +299,13 @@ export default function PublicRegistrationPage() {
                             <CalendarDays className="h-4 w-4 text-primary" /> Preferências Financeiras
                         </p>
                         <div className="space-y-2">
-                            <Label>Melhor Dia para Vencimento</Label>
+                            <Label>Dia de Vencimento (Desejado)</Label>
                             <Select onValueChange={setPreferredPaymentDay} value={preferredPaymentDay}>
                                 <SelectTrigger><SelectValue placeholder="Selecione o dia..." /></SelectTrigger>
                                 <SelectContent>
                                     {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
                                 </SelectContent>
                             </Select>
-                            <div className="p-3 bg-primary/5 rounded-md flex items-start gap-2 mt-2">
-                                <Info className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                                <p className="text-[10px] text-muted-foreground italic leading-tight">
-                                    Este será o dia em que suas faturas mensais vencerão. A data escolhida está sujeita à aprovação final do gestor da frota.
-                                </p>
-                            </div>
                         </div>
                     </div>
 
@@ -431,10 +350,10 @@ export default function PublicRegistrationPage() {
             <CardFooter className="border-t p-6 shrink-0 bg-background">
                 <div className="flex flex-col w-full gap-2">
                     <Button className="w-full h-12 text-base font-bold" onClick={handleFinalSubmit}>
-                        Finalizar Solicitação
+                        Finalizar Inscrição
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('scan')}>
-                        Refazer foto do documento
+                    <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('welcome')}>
+                        Voltar
                     </Button>
                 </div>
             </CardFooter>
@@ -448,8 +367,8 @@ export default function PublicRegistrationPage() {
                         <CheckCircle className="text-green-500 h-10 w-10" />
                     </div>
                     <div className="space-y-2">
-                        <h2 className="text-2xl font-bold">Solicitação Enviada!</h2>
-                        <p className="text-muted-foreground text-sm leading-relaxed">Recebemos seus dados e endereço. O gestor analisará a viabilidade da rota e entrará em contato.</p>
+                        <h2 className="text-2xl font-bold">Inscrição Enviada!</h2>
+                        <p className="text-muted-foreground text-sm leading-relaxed">Recebemos seus dados. O gestor analisará a viabilidade da rota e entrará em contato.</p>
                     </div>
                     
                     <div className="flex flex-col gap-3 pt-4">
