@@ -20,36 +20,40 @@ import {
   Sparkles, 
   Share2, 
   ClipboardCheck,
+  Smartphone,
+  MessageSquare,
+  Search,
+  DollarSign,
+  HeartPulse,
+  FileText,
+  MousePointerClick,
+  Navigation
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 
-// --- FASE 1: SLIDES DE APRESENTAÇÃO (COMO FUNCIONA) ---
+// --- FASE 1: SLIDES DE APRESENTAÇÃO (JORNADA COMPLETA) ---
 const introSlides = [
-  {
-    title: "Bem-vindo ao Futuro da sua Frota!",
-    description: "O Guardian não é apenas um sistema de gestão, é uma inteligência que trabalha para você. Veja como transformamos burocracia em lucro em 3 passos.",
-    icon: <Sparkles className="w-12 h-12" />,
-    imageId: "onboarding-welcome"
-  },
-  {
-    title: "1. O Link que Trabalha por Você",
-    description: "Esqueça a digitação manual. Você envia um link pelo WhatsApp, o pai tira foto do documento e a nossa IA preenche tudo instantaneamente.",
-    icon: <Share2 className="w-12 h-12" />,
-    imageId: "onboarding-parent-link"
-  },
-  {
-    title: "2. Triagem e Aprovação em 1 Clique",
-    description: "Os dados chegam prontos na sua tela. Você revisa o endereço de embarque, define o valor da mensalidade e aprova. O contrato digital é enviado na hora.",
-    icon: <ClipboardCheck className="w-12 h-12" />,
-    imageId: "onboarding-approval"
-  },
-  {
-    title: "3. Rotas Otimizadas por IA",
-    description: "Com os alunos aprovados, nossa IA calcula a sequência perfeita de embarque para economizar km e combustível. Você vê a economia real no painel.",
-    icon: <RouteIcon className="w-12 h-12" />,
-    imageId: "onboarding-ai-routes"
-  }
+  { title: "1. Convite WhatsApp", description: "O gestor compartilha o link exclusivo de cadastro com o pai via WhatsApp.", icon: <Share2 />, imageId: "ob-1-invite" },
+  { title: "2. Link Recebido", description: "O pai recebe o convite e clica para iniciar o processo sem burocracia.", icon: <MessageSquare />, imageId: "ob-2-received" },
+  { title: "3. Boas-vindas", description: "Interface moderna e amigável para o pai iniciar o cadastro.", icon: <Smartphone />, imageId: "ob-3-welcome" },
+  { title: "4. Leitura via IA", description: "O pai tira foto do RG ou CNH e nossa IA lê todos os dados instantaneamente.", icon: <Sparkles />, imageId: "ob-4-scan" },
+  { title: "5. Revisão de Dados", description: "Os dados extraídos pela IA são revisados pelo pai para garantir precisão.", icon: <ClipboardCheck />, imageId: "ob-5-review" },
+  { title: "6. Endereço de Embarque", description: "Preenchimento do local exato onde a criança aguardará a van.", icon: <MapPinIcon />, imageId: "ob-6-address" },
+  { title: "7. Escola de Destino", description: "Seleção da escola através da nossa base nacional inteligente.", icon: <School />, imageId: "ob-7-school" },
+  { title: "8. Financeiro", description: "O pai sugere o melhor dia de vencimento para seu planejamento.", icon: <DollarSign />, imageId: "ob-8-finance" },
+  { title: "9. Alertas de Saúde", description: "Informações críticas de saúde que aparecerão para o motorista no embarque.", icon: <HeartPulse />, imageId: "ob-9-health" },
+  { title: "10. Cadastro Finalizado", description: "O pai recebe a confirmação e os dados voam para o gestor.", icon: <Check />, imageId: "ob-10-done-parent" },
+  { title: "11. Notificação Gestor", description: "O gestor é avisado que há uma nova solicitação pronta para triagem.", icon: <Sparkles />, imageId: "ob-11-notification" },
+  { title: "12. Área de Triagem", description: "Todos os cadastros prontos em uma lista organizada para o gestor.", icon: <Search />, imageId: "ob-12-triagem" },
+  { title: "13. Revisão Triagem", description: "O gestor revisa os dados e a localização GPS capturada pela IA.", icon: <MapPinIcon />, imageId: "ob-13-review-triagem" },
+  { title: "14. Valor e Vencimento", description: "O gestor define o valor da mensalidade e confirma o dia de pagamento.", icon: <DollarSign />, imageId: "ob-14-set-price" },
+  { title: "15. Aprovação Final", description: "Com um clique, o aluno é integrado à frota e o contrato é gerado.", icon: <MousePointerClick />, imageId: "ob-15-approve" },
+  { title: "16. Contrato Digital", description: "O contrato com validade jurídica é gerado automaticamente.", icon: <FileText />, imageId: "ob-16-contract" },
+  { title: "17. Aceite do Pai", description: "O pai recebe e aceita o contrato direto pelo app. Zero papel.", icon: <Check />, imageId: "ob-17-accept" },
+  { title: "18. Cadastro de Rota", description: "O gestor vincula alunos, escolas e motoristas em um itinerário.", icon: <RouteIcon />, imageId: "ob-18-route-setup" },
+  { title: "19. Otimização IA", description: "A IA calcula a menor distância, economizando combustível e tempo.", icon: <Sparkles />, imageId: "ob-19-optimize" },
+  { title: "20. Rota Ativa", description: "Van na rua com tracking real e segurança total para as crianças.", icon: <Navigation />, imageId: "ob-20-live" }
 ];
 
 // --- FASE 2: PASSOS DO CHECKLIST DE CONFIGURAÇÃO ---
@@ -139,6 +143,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
   };
 
   const currentData = view === 'presentation' ? introSlides[currentIndex] : configSteps[currentIndex];
+  const totalSteps = view === 'presentation' ? introSlides.length : configSteps.length;
   const progress = view === 'presentation' 
     ? ((currentIndex + 1) / introSlides.length) * 50 
     : 50 + ((currentIndex + 1) / configSteps.length) * 50;
@@ -151,12 +156,12 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
-      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-primary/20 shadow-2xl">
+      <DialogContent className="sm:max-w-xl p-0 overflow-hidden border-primary/20 shadow-2xl">
         
-        {/* Header Visual */}
+        {/* Header Visual com Imagem do Processo */}
         <div className={cn(
-            "p-0 flex flex-col items-center justify-center border-b transition-colors duration-500 overflow-hidden",
-            view === 'presentation' ? "bg-primary/5 border-primary/10 h-64" : "bg-secondary/20 border-border h-40"
+            "p-0 flex flex-col items-center justify-center border-b transition-all duration-500 overflow-hidden",
+            view === 'presentation' ? "bg-black h-[350px]" : "bg-secondary/20 h-40"
         )}>
             {view === 'presentation' && currentImageData ? (
                 <div className="relative w-full h-full group">
@@ -164,15 +169,21 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                         src={currentImageData.imageUrl} 
                         alt={currentImageData.description}
                         fill
-                        className="object-cover"
+                        className="object-contain bg-black"
                         data-ai-hint={currentImageData.imageHint}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-white p-2 rounded-full bg-primary/20 backdrop-blur-md border border-white/20 animate-in zoom-in duration-500">
-                        {currentData.icon}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    <div className="absolute bottom-4 left-6 flex items-center gap-3 text-white">
+                        <div className="p-3 rounded-full bg-primary text-primary-foreground shadow-lg">
+                            {currentData.icon}
+                        </div>
+                        <div>
+                            <p className="text-xs font-bold uppercase tracking-widest opacity-70">Passo {currentIndex + 1}</p>
+                            <p className="text-lg font-bold">{currentData.title}</p>
+                        </div>
                     </div>
                 </div>
-            ) : view === 'checklist' ? (
+            ) : (
                 <div className="flex flex-col items-center gap-4">
                     <div className="p-4 bg-background text-primary rounded-full border-2 border-primary/20 shadow-lg">
                         {currentData.icon}
@@ -181,16 +192,18 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                         FASE DE CONFIGURAÇÃO
                     </Badge>
                 </div>
-            ) : null}
+            )}
         </div>
 
         {/* Content Body */}
         <div className="p-6 space-y-6">
-            <div className="space-y-2 text-center min-h-[100px]">
-                <DialogTitle className="text-xl font-bold tracking-tight">
-                    {currentData.title}
-                </DialogTitle>
-                <DialogDescription className="text-sm leading-relaxed px-2">
+            <div className="space-y-2 min-h-[80px]">
+                {view === 'checklist' && (
+                    <DialogTitle className="text-xl font-bold tracking-tight">
+                        {currentData.title}
+                    </DialogTitle>
+                )}
+                <DialogDescription className="text-sm leading-relaxed text-foreground">
                     {currentData.description}
                 </DialogDescription>
             </div>
@@ -198,8 +211,8 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
             {/* Step Progress */}
             <div className="space-y-2">
                 <div className="flex justify-between text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                    <span>{view === 'presentation' ? "Apresentação" : "Implementação"}</span>
-                    <span>{currentIndex + 1} de {view === 'presentation' ? introSlides.length : configSteps.length}</span>
+                    <span>{view === 'presentation' ? "Jornada Inteligente" : "Implementação Prática"}</span>
+                    <span>{currentIndex + 1} de {totalSteps}</span>
                 </div>
                 <Progress value={progress} className="h-1.5" />
             </div>
@@ -214,7 +227,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                 </Button>
             ) : (
                 <Button className="w-full h-14 text-base font-bold" onClick={handleNext}>
-                    {isLastSlide ? "Entendido, vamos configurar!" : "Continuar Apresentação"}
+                    {isLastSlide ? "Entendido, vamos configurar!" : "Próximo Passo"}
                     <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
             )}
@@ -234,12 +247,12 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
           
           {view === 'presentation' ? (
               <Button variant="link" size="sm" onClick={() => { setView('checklist'); setCurrentIndex(0); }} className="text-xs text-muted-foreground">
-                  Pular Introdução
+                  Pular para Configuração
               </Button>
           ) : (
               !isLastChecklist ? (
                 <Button size="sm" variant="ghost" onClick={handleNext} className="text-xs font-bold text-primary">
-                    Próximo Passo <ArrowRight className="ml-2 h-3 w-3"/>
+                    Próximo <ArrowRight className="ml-2 h-3 w-3"/>
                 </Button>
               ) : (
                 <Button size="sm" onClick={handleClose} variant="ghost" className="text-xs font-bold text-green-600">
@@ -249,10 +262,30 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
           )}
         </DialogFooter>
 
-        <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-white/70 hover:text-white" onClick={handleClose}>
+        <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-white/70 hover:text-white z-50" onClick={handleClose}>
              <X className="h-4 w-4" />
         </Button>
       </DialogContent>
     </Dialog>
   );
 }
+
+function MapPinIcon(props: any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    )
+  }
