@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -18,6 +17,7 @@ import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 
@@ -38,7 +38,6 @@ export default function PendingRegistrationsPage() {
 
   const handleOpenReview = (reg: any) => {
       setSelectedReg(reg);
-      // Agora o valor vem em branco por padrão para forçar o preenchimento manual do gestor
       setApprovedMonthlyFee(reg.monthlyFee || '');
       setApprovedPreferredPaymentDay((reg.preferredPaymentDay || 10).toString());
       setEditableParentName(reg.parentName || '');
@@ -47,7 +46,6 @@ export default function PendingRegistrationsPage() {
   const handleApprove = async (reg: any) => {
     const feeNum = Number(approvedMonthlyFee);
     
-    // Validação estrita: Não permite aprovar sem valor
     if (!approvedMonthlyFee || feeNum <= 0) {
         toast({ 
             title: "Valor Obrigatório", 
@@ -66,7 +64,6 @@ export default function PendingRegistrationsPage() {
     try {
         const address = reg.address || {};
         
-        // 1. Inteligência Anti-Duplicidade: Checar se o pai já existe
         const parentMatch = existingParents?.find(p => 
             (p.cpf && reg.documentData?.cpf && p.cpf.replace(/\D/g, '') === reg.documentData.cpf.replace(/\D/g, '')) ||
             (p.email.toLowerCase() === reg.email.toLowerCase())
@@ -92,7 +89,6 @@ export default function PendingRegistrationsPage() {
             parentIdToUse = newParentId;
         }
 
-        // 2. Geocodificação Automática
         let latitude = 0;
         let longitude = 0;
         if (address.street && address.city) {
@@ -106,7 +102,6 @@ export default function PendingRegistrationsPage() {
             }
         }
 
-        // 3. Criar Aluno vinculado ao pai correto (novo ou existente)
         addDoc('students', {
             name: reg.studentName,
             schoolId: reg.schoolId,
@@ -306,7 +301,6 @@ export default function PendingRegistrationsPage() {
                                 </div>
                             </div>
 
-                            {/* Alertas Médicos em Destaque na Revisão */}
                             {(selectedReg.medicalConditions?.length > 0 || selectedReg.medicalNote) && (
                                 <div className="p-4 bg-destructive/5 rounded-lg border border-destructive/20">
                                     <p className="text-[10px] font-bold uppercase tracking-widest text-destructive mb-3 flex items-center gap-2">
