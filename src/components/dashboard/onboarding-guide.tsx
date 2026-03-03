@@ -5,57 +5,64 @@ import Link from 'next/link';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { ArrowLeft, ArrowRight, Check, School, Users, GraduationCap, Truck, Car, Route as RouteIcon, X } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Check, School, Users, GraduationCap, Truck, Car, Route as RouteIcon, X, Sparkles, Share2, ClipboardCheck } from 'lucide-react';
 
 const steps = [
   {
     title: "Bem-vindo ao Guardian!",
-    description: "Vamos configurar sua operação. Leva apenas alguns minutos. Siga os passos para começar a usar a plataforma.",
+    description: "Vamos configurar sua operação de forma inteligente. Em poucos passos, sua frota estará pronta para rodar com eficiência máxima.",
+    icon: <Sparkles className="w-8 h-8" />,
+    link: "/dashboard/management/schools",
+    linkText: "Começar Configuração"
+  },
+  {
+    title: "1. Cadastre as Escolas",
+    description: "Sua primeira responsabilidade como gestor é definir os pontos de destino. Use nossa busca regionalizada para cadastrar escolas instantaneamente.",
     icon: <School className="w-8 h-8" />,
     link: "/dashboard/management/schools",
-    linkText: "Cadastrar Escolas"
+    linkText: "Configurar Escolas"
   },
   {
-    title: "Cadastre os Pais",
-    description: "Adicione os pais ou responsáveis pelos alunos. Você precisará deles para associar aos alunos no próximo passo.",
-    icon: <Users className="w-8 h-8" />,
-    link: "/dashboard/management/parents",
-    linkText: "Cadastrar Pais"
+    title: "2. Convide os Pais",
+    description: "Não perca tempo digitando dados! Compartilhe seu link exclusivo. Os pais realizam o cadastro via leitura automática de documentos (IA).",
+    icon: <Share2 className="h-8 w-8" />,
+    link: "/dashboard",
+    linkText: "Copiar Link de Convite"
   },
   {
-    title: "Cadastre os Alunos",
-    description: "Agora, adicione os alunos, informando a qual escola e responsável eles pertencem.",
-    icon: <GraduationCap className="w-8 h-8" />,
-    link: "/dashboard/management/students",
-    linkText: "Cadastrar Alunos"
+    title: "3. Triagem de Alunos",
+    description: "Quando um pai termina o cadastro, ele aparece na sua lista de 'Solicitações'. Você revisa o endereço, define o valor e aprova com um clique.",
+    icon: <ClipboardCheck className="w-8 h-8" />,
+    link: "/dashboard/management/pending-registrations",
+    linkText: "Ver Solicitações"
   },
   {
-    title: "Cadastre seus Veículos",
-    description: "Adicione os veículos da sua frota, especificando o modelo e a capacidade de cada um.",
+    title: "4. Cadastre seus Veículos",
+    description: "Configure sua frota informando o modelo e a capacidade. Isso é essencial para a IA não sobrecarregar as rotas.",
     icon: <Truck className="w-8 h-8" />,
     link: "/dashboard/management/vehicles",
-    linkText: "Cadastrar Veículos"
+    linkText: "Gerenciar Veículos"
   },
   {
-    title: "Cadastre os Motoristas",
-    description: "Adicione os motoristas e, se desejar, já os associe a um veículo da sua frota.",
+    title: "5. Cadastre os Motoristas",
+    description: "Adicione sua equipe e associe cada motorista a um veículo. Eles receberão o acesso ao App do Motorista para iniciar as viagens.",
     icon: <Car className="w-8 h-8" />,
     link: "/dashboard/management/drivers",
-    linkText: "Cadastrar Motoristas"
+    linkText: "Gerenciar Motoristas"
   },
   {
-    title: "Crie sua Primeira Rota",
-    description: "Para finalizar, crie uma rota juntando um motorista e os alunos que ele irá transportar.",
+    title: "6. Crie sua Primeira Rota",
+    description: "Junte motoristas, alunos e escolas. Nossa IA calculará a ordem perfeita para economizar quilometragem e tempo.",
     icon: <RouteIcon className="w-8 h-8" />,
     link: "/dashboard/management/routes",
-    linkText: "Criar Rota"
+    linkText: "Montar Itinerário"
   },
   {
-    title: "Configuração Concluída!",
-    description: "Você completou os passos essenciais! Agora você pode começar a otimizar suas rotas, gerenciar o financeiro e muito mais.",
+    title: "Tudo Pronto!",
+    description: "Sua infraestrutura está montada. Agora o Guardian cuidará da segurança das crianças e da saúde financeira da sua empresa.",
     icon: <Check className="w-8 h-8" />,
     link: "/dashboard",
-    linkText: "Ir para o Painel"
+    linkText: "Finalizar Guia"
   }
 ];
 
@@ -67,7 +74,7 @@ interface OnboardingGuideProps {
 export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const totalSteps = steps.length - 1;
-  const progress = (currentStep / (totalSteps - 1)) * 100;
+  const progress = (currentStep / totalSteps) * 100;
   const isLastStep = currentStep === totalSteps;
   const isFirstStep = currentStep === 0;
 
@@ -83,57 +90,61 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
     }
   };
   
-  // Reset step when dialog is closed/opened
-  if (!isOpen && currentStep !== 0) {
-      setCurrentStep(0);
-  }
-
   const step = steps[currentStep];
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <div className="flex justify-center mb-4">
-            <div className="p-3 bg-primary/10 text-primary rounded-full border-2 border-primary/20">
+    <Dialog open={isOpen} onOpenChange={(open) => {
+        if (!open) {
+            onClose();
+            setTimeout(() => setCurrentStep(0), 300);
+        }
+    }}>
+      <DialogContent className="sm:max-w-md p-0 overflow-hidden border-primary/20">
+        <div className="bg-primary/5 p-8 flex justify-center border-b border-primary/10">
+            <div className="p-4 bg-background text-primary rounded-full border-2 border-primary/20 shadow-xl animate-in zoom-in duration-500">
               {step.icon}
             </div>
-          </div>
-          <DialogTitle className="text-center">{step.title}</DialogTitle>
-          <DialogDescription className="text-center px-4">
-            {step.description}
-          </DialogDescription>
-        </DialogHeader>
-
-        <div className="py-4 px-6">
-            { !isLastStep && (
-                <div className="flex items-center gap-3">
-                    <span className="text-xs text-muted-foreground">{currentStep > 0 ? `Passo ${currentStep}/${totalSteps - 1}`: 'Início'}</span>
-                    <Progress value={progress} />
-                </div>
-            )}
         </div>
-        
-        {step.link && (
-            <Button asChild className="w-full" onClick={isLastStep ? onClose : undefined}>
+
+        <div className="p-6 space-y-4">
+            <DialogHeader>
+                <DialogTitle className="text-center text-xl">{step.title}</DialogTitle>
+                <DialogDescription className="text-center text-sm leading-relaxed px-2">
+                    {step.description}
+                </DialogDescription>
+            </DialogHeader>
+
+            <div className="py-2 space-y-2">
+                <div className="flex justify-between text-[10px] font-bold text-muted-foreground uppercase tracking-widest">
+                    <span>{isFirstStep ? "Início" : isLastStep ? "Concluído" : `Passo ${currentStep} de ${totalSteps - 1}`}</span>
+                    <span>{Math.round(progress)}%</span>
+                </div>
+                <Progress value={progress} className="h-1.5" />
+            </div>
+            
+            <Button asChild className="w-full h-12 text-base font-bold shadow-lg shadow-primary/20" onClick={isLastStep ? onClose : undefined}>
                 <Link href={step.link}>{step.linkText}</Link>
             </Button>
-        )}
+        </div>
 
-        <DialogFooter className="flex-row justify-between pt-4">
+        <DialogFooter className="p-4 bg-muted/30 flex-row justify-between border-t gap-2 sm:gap-0">
           {!isFirstStep ? (
-            <Button variant="outline" onClick={handlePrev}>
-              <ArrowLeft className="mr-2 h-4 w-4"/> Anterior
+            <Button variant="ghost" size="sm" onClick={handlePrev} className="text-xs">
+              <ArrowLeft className="mr-2 h-3 w-3"/> Voltar
             </Button>
-          ) : <div></div> /* Empty div to keep Next button on the right */}
+          ) : <div />}
           
           {!isLastStep ? (
-            <Button onClick={handleNext}>
-              Próximo <ArrowRight className="ml-2 h-4 w-4"/>
+            <Button size="sm" onClick={handleNext} className="text-xs font-bold">
+              Próximo <ArrowRight className="ml-2 h-3 w-3"/>
             </Button>
-          ) : null}
+          ) : (
+            <Button size="sm" onClick={onClose} variant="ghost" className="text-xs font-bold text-primary">
+                Entendido!
+            </Button>
+          )}
         </DialogFooter>
-         <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7" onClick={onClose}>
+         <Button variant="ghost" size="icon" className="absolute top-2 right-2 h-7 w-7 text-muted-foreground hover:text-foreground" onClick={onClose}>
              <X className="h-4 w-4" />
         </Button>
       </DialogContent>
