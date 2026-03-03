@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Info, Users, Smartphone, Camera, Sparkles, RefreshCw, AlertTriangle, Apple, Wind, Activity, Accessibility, Brain, HeartPulse } from 'lucide-react';
+import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Info, Users, Smartphone, Camera, Sparkles, RefreshCw, AlertTriangle, Apple, Wind, Activity, Accessibility, Brain, HeartPulse, DollarSign } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -70,6 +70,9 @@ export default function PublicRegistrationPage() {
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [studentSerie, setStudentSerie] = useState('');
   const [studentTurma, setStudentTurma] = useState('');
+  
+  // Finance states
+  const [preferredPaymentDay, setPreferredPaymentDay] = useState('10');
   
   // Health states
   const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
@@ -156,6 +159,7 @@ export default function PublicRegistrationPage() {
         schoolId: selectedSchoolId,
         studentSerie,
         studentTurma,
+        preferredPaymentDay: Number(preferredPaymentDay),
         medicalConditions,
         medicalNote,
         status: 'pending_approval',
@@ -334,7 +338,7 @@ export default function PublicRegistrationPage() {
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
                     
-                    {/* Dados de Identidade do Responsável (Caso manual ou ajuste) */}
+                    {/* Dados de Identidade do Responsável */}
                     <div className="space-y-4">
                         <p className="text-sm font-bold flex items-center gap-2 text-primary">
                             <User className="h-4 w-4" /> Identificação do Responsável
@@ -448,6 +452,25 @@ export default function PublicRegistrationPage() {
                                     <Label>Turma/Sala (Opcional)</Label>
                                     <Input placeholder="Ex: Sala 102" value={studentTurma} onChange={e => setStudentTurma(e.target.value)} />
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Preferências Financeiras Reinstaladas */}
+                    <div className="border-t pt-6">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                            <DollarSign className="h-4 w-4" /> Preferências Financeiras
+                        </p>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Sugestão de melhor dia para pagar</Label>
+                                <Select onValueChange={setPreferredPaymentDay} value={preferredPaymentDay}>
+                                    <SelectTrigger className="bg-background"><SelectValue placeholder="Escolha um dia..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                                <p className="text-[10px] text-muted-foreground italic">Essa informação ajudará o gestor na configuração do seu contrato.</p>
                             </div>
                         </div>
                     </div>
