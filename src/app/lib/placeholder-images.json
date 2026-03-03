@@ -40,49 +40,49 @@
     {
       "id": "ob-7-school",
       "description": "Seleção da escola na base nacional",
-      "imageUrl": "https://picsum.photos/seed/ob7/800/600",
+      "imageUrl": "https://lh3.googleusercontent.com/d/13aN71i_tSlEnMK9khmC5IbmrysqNc2x2",
       "imageHint": "school search"
     },
     {
       "id": "ob-8-finance",
       "description": "Preferências de pagamento do responsável",
-      "imageUrl": "https://picsum.photos/seed/ob8/800/600",
+      "imageUrl": "https://lh3.googleusercontent.com/d/13IQX0_YHwUpcJ9paTQgde2Xc5Kf7-gj1",
       "imageHint": "finance options"
     },
     {
       "id": "ob-9-health",
       "description": "Alertas de saúde críticos para o motorista",
-      "imageUrl": "https://picsum.photos/seed/ob9/800/600",
+      "imageUrl": "https://lh3.googleusercontent.com/d/1XO4__DPeZitE3Wvm2DU1vP2zcLr8QMsi",
       "imageHint": "health alerts"
     },
     {
       "id": "ob-10-done-parent",
       "description": "Sucesso no cadastro do lado do pai",
-      "imageUrl": "https://picsum.photos/seed/ob10/800/600",
+      "imageUrl": "https://lh3.googleusercontent.com/d/1g8xxyNPuQqTWeD3YUuVxhA0Z6jTDz6p-",
       "imageHint": "registration success"
     },
     {
       "id": "ob-11-notification",
       "description": "Gestor recebe aviso de nova solicitação",
-      "imageUrl": "https://picsum.photos/seed/ob11/800/600",
+      "imageUrl": "https://lh3.googleusercontent.com/d/1MzIhmo9OhMkyyIkhiW5FylBu8IrWEKjv",
       "imageHint": "admin alert"
     },
     {
       "id": "ob-12-triagem",
       "description": "Lista de triagem inteligente do gestor",
-      "imageUrl": "https://picsum.photos/seed/ob12/800/600",
+      "imageUrl": "https://lh3.googleusercontent.com/d/1-o5B8hK8OdGI9Lt23h_a3dUw_YTkNmQW",
       "imageHint": "triage list"
     },
     {
       "id": "ob-13-review-triagem",
       "description": "Revisão detalhada e validação GPS",
-      "imageUrl": "https://picsum.photos/seed/ob13/800/600",
+      "imageUrl": "https://lh3.googleusercontent.com/d/1DliIkJSN4tU84tYv_V1KNwyTI1cSXBF-",
       "imageHint": "triage details"
     },
     {
       "id": "ob-14-set-price",
       "description": "Definição de mensalidade e contrato",
-      "imageUrl": "https://picsum.photos/seed/ob14/800/600",
+      "imageUrl": "https://lh3.googleusercontent.com/d/1xpdobdVQtGsANQZByzvh4h3CK6kK2jbI",
       "imageHint": "price config"
     },
     {
