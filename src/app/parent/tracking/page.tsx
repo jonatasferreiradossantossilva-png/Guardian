@@ -5,7 +5,6 @@ import { useMemo, useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import {
   useMockCollection,
-  useMockDoc,
   useMockData,
   useMockNestedDoc,
 } from "@/hooks/use-mock-data";
@@ -31,6 +30,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { Checkbox } from "@/components/ui/checkbox";
 
 
 // Types matching mock data
@@ -268,6 +268,7 @@ export default function ParentTrackingPage() {
   // Absence State
   const [isAbsenceDialogOpen, setIsAbsenceDialogOpen] = useState(false);
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<"ausente_ida" | "ausente_volta" | "ausente_dia_todo">("ausente_dia_todo");
+  const [applyAbsenceToAll, setApplyAbsenceToAll] = useState(false);
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
@@ -350,14 +351,22 @@ export default function ParentTrackingPage() {
 
 
   const handleCommunicateAbsence = useCallback(async () => {
-    if (!student) return;
-    updateDoc('students', student.id, { status: selectedAbsenceType });
+    if (!student || !students) return;
+    
+    const targetStudents = applyAbsenceToAll ? students : [student];
+    
+    targetStudents.forEach(s => {
+        updateDoc('students', s.id, { status: selectedAbsenceType });
+    });
+
     setIsAbsenceDialogOpen(false);
     toast({
-      title: "Ausência comunicada",
-      description: `O motorista do(a) ${student.name} foi notificado.`,
+      title: applyAbsenceToAll ? "Ausências comunicadas" : "Ausência comunicada",
+      description: applyAbsenceToAll 
+        ? "Os motoristas de todos os filhos foram notificados."
+        : `O motorista do(a) ${student.name} foi notificado.`,
     });
-  }, [student, selectedAbsenceType, updateDoc, toast]);
+  }, [student, students, selectedAbsenceType, applyAbsenceToAll, updateDoc, toast]);
 
   const handleConfirmPresence = () => {
     if (!student) return;
@@ -765,10 +774,10 @@ export default function ParentTrackingPage() {
                 Informar Falta - {student?.name.split(' ')[0]}
             </AlertDialogTitle>
             <AlertDialogDescription>
-              A presença está confirmada por padrão. Utilize esta opção <strong>apenas se o aluno não for utilizar o transporte hoje</strong> para que o motorista possa otimizar o tempo da rota.
+              A presença está confirmada por padrão. Utilize esta opção <strong>apenas se o aluno não for utilizar o transporte hoje</strong>.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <div className="py-4">
+          <div className="py-4 space-y-6">
             <RadioGroup value={selectedAbsenceType} onValueChange={(v) => setSelectedAbsenceType(v as any)} className="space-y-3">
               <div className="flex items-center space-x-3 p-3 rounded-md border cursor-pointer hover:bg-secondary/50 has-[[data-state=checked]]:border-primary has-[[data-state=checked]]:bg-primary/5">
                 <RadioGroupItem value="ausente_ida" id="r-ida" />
@@ -783,9 +792,18 @@ export default function ParentTrackingPage() {
                 <Label htmlFor="r-dia" className="flex-1 cursor-pointer font-medium">Faltará o DIA TODO</Label>
               </div>
             </RadioGroup>
+
+            {students && students.length > 1 && (
+                <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-md border border-dashed">
+                    <Checkbox id="apply-all" checked={applyAbsenceToAll} onCheckedChange={(v) => setApplyAbsenceToAll(!!v)} />
+                    <Label htmlFor="apply-all" className="text-xs font-bold text-primary cursor-pointer uppercase">
+                        Aplicar esta falta a todos os meus filhos
+                    </Label>
+                </div>
+            )}
           </div>
           <AlertDialogFooter>
-            <AlertDialogCancel>Voltar (Aluno vai na Van)</AlertDialogCancel>
+            <AlertDialogCancel onClick={() => setApplyAbsenceToAll(false)}>Voltar (Aluno vai na Van)</AlertDialogCancel>
             <AlertDialogAction onClick={handleCommunicateAbsence} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
               Confirmar Falta
             </AlertDialogAction>

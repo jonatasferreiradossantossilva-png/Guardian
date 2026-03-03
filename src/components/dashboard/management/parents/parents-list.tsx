@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, Search, ExternalLink, Loader2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, Search, ExternalLink, Loader2, GraduationCap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -81,8 +81,23 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     setMounted(true);
   }, []);
 
-  const { data: liveParents, isLoading } = useMockCollection('parents');
+  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents');
+  const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection('students');
+
   const parents = liveParents ?? initialParents;
+  const isLoading = areParentsLoading || areStudentsLoading;
+
+  // Phase 4: CRM Intelligence - Map children to parents
+  const parentChildrenMap = useMemo(() => {
+      const map = new Map<string, string[]>();
+      if (!allStudents) return map;
+      
+      allStudents.forEach(s => {
+          if (!map.has(s.parentId)) map.set(s.parentId, []);
+          map.get(s.parentId)?.push(s.name);
+      });
+      return map;
+  }, [allStudents]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -234,6 +249,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
               <TableHeader>
                 <TableRow>
                   <TableHead>Responsável</TableHead>
+                  <TableHead>Filhos Cadastrados</TableHead>
                   <TableHead>Telefone</TableHead>
                   <TableHead>Endereço</TableHead>
                   <TableHead>Status</TableHead>
@@ -243,13 +259,15 @@ export function ParentsList({ initialParents }: ParentsListProps) {
               <TableBody>
                 {isLoading && (
                   <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
+                    <TableCell colSpan={6} className="text-center h-24">
                       Carregando...
                     </TableCell>
                   </TableRow>
                 )}
                 {!isLoading && paginatedParents && paginatedParents.length > 0 ? (
-                  paginatedParents.map((parent) => (
+                  paginatedParents.map((parent) => {
+                    const children = parentChildrenMap.get(parent.id) || [];
+                    return (
                     <TableRow key={parent.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
@@ -262,6 +280,19 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                             <p className="text-xs text-muted-foreground">{parent.email}</p>
                           </div>
                         </div>
+                      </TableCell>
+                      <TableCell>
+                          <div className="flex flex-wrap gap-1">
+                              {children.length > 0 ? (
+                                  children.map((name, i) => (
+                                      <Badge key={i} variant="outline" className="text-[10px] font-normal">
+                                          <GraduationCap className="mr-1 h-2 w-2" /> {name}
+                                      </Badge>
+                                  ))
+                              ) : (
+                                  <span className="text-xs text-muted-foreground italic">Sem filhos</span>
+                              )}
+                          </div>
                       </TableCell>
                       <TableCell>{parent.phone}</TableCell>
                       <TableCell>{formatAddress(parent)}</TableCell>
@@ -292,11 +323,11 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                         </div>
                       </TableCell>
                     </TableRow>
-                  ))
+                  )})
                 ) : (
                   !isLoading && (
                     <TableRow>
-                      <TableCell colSpan={5} className="text-center h-24">
+                      <TableCell colSpan={6} className="text-center h-24">
                         {searchQuery ? "Nenhum responsável encontrado." : "Nenhum responsável cadastrado."}
                       </TableCell>
                     </TableRow>
@@ -310,7 +341,9 @@ export function ParentsList({ initialParents }: ParentsListProps) {
             {isLoading && <p className="text-center py-10">Carregando...</p>}
             {!isLoading && paginatedParents && paginatedParents.length > 0 ? (
               <div className="space-y-4">
-                {paginatedParents.map((parent) => (
+                {paginatedParents.map((parent) => {
+                  const children = parentChildrenMap.get(parent.id) || [];
+                  return (
                   <Card key={parent.id} className="overflow-hidden">
                     <div className="p-4">
                         <div className="flex items-center justify-between">
@@ -337,6 +370,12 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                             </Badge>
                         </div>
                         <div className="col-span-2">
+                            <p className="text-muted-foreground text-xs">Filhos</p>
+                            <div className="flex flex-wrap gap-1 mt-1">
+                                {children.length > 0 ? children.map((n, i) => <Badge key={i} variant="outline" className="text-[9px]">{n}</Badge>) : "-"}
+                            </div>
+                        </div>
+                        <div className="col-span-2">
                             <p className="text-muted-foreground text-xs">Endereço</p>
                             <p className="font-medium">{formatAddress(parent)}</p>
                         </div>
@@ -351,7 +390,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                         </Button>
                     </CardFooter>
                   </Card>
-                ))}
+                )})}
               </div>
             ) : (
               !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum responsável encontrado.</p>

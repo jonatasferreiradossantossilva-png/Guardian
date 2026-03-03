@@ -3,7 +3,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DollarSign, ArrowLeft, QrCode, CreditCard, Filter, User } from "lucide-react";
+import { DollarSign, ArrowLeft, QrCode, CreditCard, Filter, User, Wallet, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
@@ -78,6 +78,17 @@ export default function ParentFinancialPage() {
       return invoices.filter(inv => inv.studentId === selectedStudentId);
   }, [invoices, selectedStudentId]);
 
+  // Phase 4: Family Consolidated Summary
+  const familySummary = useMemo(() => {
+      if (!invoices) return { totalPending: 0, count: 0 };
+      const pendingStatuses = ['pending', 'overdue', 'pagamento_em_analise'];
+      const pending = invoices.filter(inv => pendingStatuses.includes(inv.status));
+      return {
+          totalPending: pending.reduce((sum, inv) => sum + inv.amount, 0),
+          count: pending.length
+      };
+  }, [invoices]);
+
   const handleInformPayment = (invoiceId: string) => {
     updateDoc('invoices', invoiceId, { status: 'pagamento_em_analise' });
     toast({
@@ -122,26 +133,45 @@ export default function ParentFinancialPage() {
             <h1 className="text-xl font-bold md:hidden">Financeiro</h1>
         </div>
 
+        {/* Phase 4: Multi-child Consolidated View */}
         {students && students.length > 1 && (
-            <Card className="mb-6 border-primary/20 bg-primary/5">
-                <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="flex items-center gap-2 text-sm font-medium">
-                        <Filter className="h-4 w-4 text-primary" />
-                        <span>Filtrar por Aluno:</span>
-                    </div>
-                    <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
-                        <SelectTrigger className="w-full sm:w-[240px] bg-background">
-                            <SelectValue placeholder="Selecione um aluno" />
-                        </SelectTrigger>
-                        <SelectContent>
-                            <SelectItem value="all">Todos os Filhos</SelectItem>
-                            {students.map(s => (
-                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
-                            ))}
-                        </SelectContent>
-                    </Select>
-                </CardContent>
-            </Card>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <Card className="md:col-span-2 border-primary/20 bg-primary/5">
+                    <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between h-full gap-4">
+                        <div className="flex items-center gap-2 text-sm font-medium">
+                            <Filter className="h-4 w-4 text-primary" />
+                            <span>Filtrar por Aluno:</span>
+                        </div>
+                        <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                            <SelectTrigger className="w-full sm:w-[240px] bg-background">
+                                <SelectValue placeholder="Selecione um aluno" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="all">Todos os Filhos</SelectItem>
+                                {students.map(s => (
+                                    <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                                ))}
+                            </SelectContent>
+                        </Select>
+                    </CardContent>
+                </Card>
+                
+                {selectedStudentId === 'all' && familySummary.totalPending > 0 && (
+                    <Card className="border-amber-500/20 bg-amber-500/5">
+                        <CardHeader className="p-4 pb-0">
+                            <CardTitle className="text-xs font-bold text-amber-600 uppercase flex items-center gap-2">
+                                <TrendingUp className="h-3 w-3" /> Total da Família
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="p-4 pt-1">
+                            <p className="text-2xl font-black text-amber-600">
+                                R$ {familySummary.totalPending.toFixed(2).replace('.', ',')}
+                            </p>
+                            <p className="text-[10px] text-muted-foreground">{familySummary.count} fatura(s) em aberto</p>
+                        </CardContent>
+                    </Card>
+                )}
+            </div>
         )}
 
         <Card>
