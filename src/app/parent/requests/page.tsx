@@ -12,7 +12,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, ArrowLeft, Route, Check, X, Clock, Calendar, School, DollarSign } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, ArrowLeft, Route, Check, X, Clock, Calendar, School, DollarSign, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import {
   DropdownMenu,
@@ -65,6 +65,7 @@ const typeMap = {
 export default function TripRequestsPage() {
   const { toast } = useToast();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const { updateDoc, addDoc } = useMockData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -73,13 +74,23 @@ export default function TripRequestsPage() {
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    
+    // Phase 2: Context Sync
+    const lastSelectedId = sessionStorage.getItem('selectedStudentId');
+    setSelectedStudentId(lastSelectedId);
   }, []);
   
   const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
   const parent = useMemo(() => parents?.[0], [parents]);
   
   const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
-  const student = useMemo(() => students?.[0], [students]);
+  
+  // Phase 2: Target Student
+  const student = useMemo(() => {
+      if (!students || students.length === 0) return null;
+      if (!selectedStudentId) return students[0];
+      return students.find(s => s.id === selectedStudentId) || students[0];
+  }, [students, selectedStudentId]);
 
   const { data: schools } = useMockCollection('schools');
   const studentSchool = useMemo(() => {
@@ -87,8 +98,8 @@ export default function TripRequestsPage() {
     return schools.find(s => s.id === student.schoolId);
   }, [student, schools]);
 
-  const { data: tripRequests, isLoading } = useMockCollection('trip_requests', mockUserId ? [
-    { field: 'parentUserId', op: '==', value: mockUserId }
+  const { data: tripRequests, isLoading } = useMockCollection('trip_requests', student ? [
+    { field: 'studentId', op: '==', value: student.id }
   ] : undefined);
   
   const handleFormSubmit = () => {
@@ -111,7 +122,7 @@ export default function TripRequestsPage() {
         });
         toast({
             title: `Solicitação Aprovada!`,
-            description: `Uma nova fatura de R$ ${request.amount.toFixed(2)} foi gerada.`,
+            description: `Uma nova fatura de R$ ${request.amount.toFixed(2)} foi gerada para ${student?.name}.`,
         });
     } else {
         toast({
@@ -147,7 +158,8 @@ export default function TripRequestsPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <CardTitle className="flex items-center gap-2"><Route/>Viagens Avulsas</CardTitle>
-                    <CardDescription className="mt-2">Solicite um transporte extra para {student?.name || 'o aluno'}.</CardDescription>
+                    <CardDescription className="mt-2 text-primary font-semibold">Aluno(a): {student?.name}</CardDescription>
+                    <CardDescription className="mt-1">Solicite um transporte extra para o aluno.</CardDescription>
                 </div>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                     <DialogTrigger asChild>
@@ -238,7 +250,7 @@ export default function TripRequestsPage() {
                     !isLoading && (
                         <TableRow>
                         <TableCell colSpan={6} className="text-center h-24">
-                            Nenhuma solicitação encontrada.
+                            Nenhuma solicitação encontrada para {student?.name}.
                         </TableCell>
                         </TableRow>
                     )
@@ -303,7 +315,7 @@ export default function TripRequestsPage() {
                         </div>
                     ))
                 ) : (
-                    !isLoading && <div className="text-center py-16 text-muted-foreground italic">Nenhuma solicitação enviada.</div>
+                    !isLoading && <div className="text-center py-16 text-muted-foreground italic">Nenhuma solicitação para {student?.name}.</div>
                 )}
             </div>
 

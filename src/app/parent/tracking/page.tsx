@@ -229,7 +229,16 @@ export default function ParentTrackingPage() {
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    
+    // Phase 2: Load last selected student if available
+    const lastSelectedId = sessionStorage.getItem('selectedStudentId');
+    if (lastSelectedId) setSelectedStudentId(lastSelectedId);
   }, []);
+
+  const handleStudentSelect = (id: string) => {
+      setSelectedStudentId(id);
+      sessionStorage.setItem('selectedStudentId', id);
+  };
 
   const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", mockUserId ? [
     { field: "userId", op: "==", value: mockUserId },
@@ -240,10 +249,10 @@ export default function ParentTrackingPage() {
     { field: "parentId", op: "==", value: parent.id },
   ] : undefined);
 
-  // Initialize selectedStudentId when students load
+  // Initialize selectedStudentId when students load if not already set
   useEffect(() => {
     if (students && students.length > 0 && !selectedStudentId) {
-        setSelectedStudentId(students[0].id);
+        handleStudentSelect(students[0].id);
     }
   }, [students, selectedStudentId]);
 
@@ -407,7 +416,7 @@ export default function ParentTrackingPage() {
                     {students.map((s) => (
                         <button
                             key={s.id}
-                            onClick={() => setSelectedStudentId(s.id)}
+                            onClick={() => handleStudentSelect(s.id)}
                             className={cn(
                                 "flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0",
                                 selectedStudentId === s.id 

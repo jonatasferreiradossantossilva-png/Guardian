@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -49,6 +50,7 @@ export default function AuthorizedPage() {
   const { toast } = useToast();
   const { deleteDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -57,16 +59,26 @@ export default function AuthorizedPage() {
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    
+    // Phase 2: Context sync
+    const lastSelectedId = sessionStorage.getItem('selectedStudentId');
+    setSelectedStudentId(lastSelectedId);
   }, []);
 
   const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
   const parent = useMemo(() => parents?.[0], [parents]);
 
   const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
-  const student = useMemo(() => students?.[0], [students]);
+  
+  // Phase 2: Selected student
+  const student = useMemo(() => {
+      if (!students || students.length === 0) return null;
+      if (!selectedStudentId) return students[0];
+      return students.find(s => s.id === selectedStudentId) || students[0];
+  }, [students, selectedStudentId]);
 
-  const { data: authorizedPersons, isLoading } = useMockCollection('authorized_pickups', mockUserId ? [
-    { field: 'parentUserId', op: '==', value: mockUserId }
+  const { data: authorizedPersons, isLoading } = useMockCollection('authorized_pickups', student ? [
+    { field: 'studentId', op: '==', value: student.id }
   ]: undefined);
 
   const handleEdit = (person: AuthorizedPickup) => {
@@ -111,7 +123,8 @@ export default function AuthorizedPage() {
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
                     <CardTitle className="flex items-center gap-2"><Users/>Pessoas Autorizadas</CardTitle>
-                    <CardDescription className="mt-2">Adicione ou remova pessoas de confiança para a retirada do(a) {student?.name || 'aluno'}.</CardDescription>
+                    <CardDescription className="mt-2 text-primary font-semibold">Aluno(a): {student?.name}</CardDescription>
+                    <CardDescription className="mt-1">Adicione ou remova pessoas de confiança para a retirada do aluno.</CardDescription>
                 </div>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
                     <DialogTrigger asChild>
@@ -179,7 +192,7 @@ export default function AuthorizedPage() {
                     !isLoading && (
                         <TableRow>
                         <TableCell colSpan={4} className="text-center h-24">
-                            Nenhuma pessoa autorizada cadastrada.
+                            Nenhuma pessoa autorizada para {student?.name}.
                         </TableCell>
                         </TableRow>
                     )
@@ -225,7 +238,7 @@ export default function AuthorizedPage() {
                         </Card>
                     ))
                  ) : (
-                    !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma pessoa autorizada cadastrada.</p>
+                    !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma pessoa autorizada cadastrada para {student?.name}.</p>
                  )}
             </div>
 
@@ -236,7 +249,7 @@ export default function AuthorizedPage() {
             <AlertDialogHeader>
               <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
               <AlertDialogDescription>
-                Esta ação não pode ser desfeita. Isso irá remover permanentemente <span className="font-bold">{selectedPerson?.name}</span> da lista de pessoas autorizadas.
+                Esta ação não pode ser desfeita. Isso irá remover permanentemente <span className="font-bold">{selectedPerson?.name}</span> da lista de pessoas autorizadas para {student?.name}.
               </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

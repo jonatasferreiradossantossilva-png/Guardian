@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -19,21 +20,37 @@ type Contract = {
   acceptedAt?: string;
   createdAt: string;
   parentUserId: string;
+  studentId: string;
 };
 
 export default function ParentContractPage() {
     const { toast } = useToast();
     const [mockUserId, setMockUserId] = useState<string | null>(null);
-    const { data: contracts, isLoading } = useMockCollection('contracts', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
-    const contract = useMemo(() => contracts?.[0], [contracts]);
-    const { updateDoc } = useMockData();
-
-    const [hasAgreed, setHasAgreed] = useState(false);
-
+    const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
+    
     useEffect(() => {
         const storedUserId = sessionStorage.getItem('mockUserId');
         setMockUserId(storedUserId);
+        
+        // Phase 2: Read selected student context
+        const lastSelectedId = sessionStorage.getItem('selectedStudentId');
+        setSelectedStudentId(lastSelectedId);
     }, []);
+
+    const { data: contracts, isLoading: areContractsLoading } = useMockCollection('contracts', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
+    
+    // Phase 2: Find the contract for the selected student
+    const contract = useMemo(() => {
+        if (!contracts) return null;
+        if (!selectedStudentId) return contracts[0];
+        return contracts.find(c => c.studentId === selectedStudentId) || contracts[0];
+    }, [contracts, selectedStudentId]);
+
+    const { data: students, isLoading: areStudentsLoading } = useMockCollection('students', contract ? [{ field: 'id', op: '==', value: contract.studentId }] : undefined);
+    const student = useMemo(() => students?.[0], [students]);
+
+    const { updateDoc } = useMockData();
+    const [hasAgreed, setHasAgreed] = useState(false);
 
     const handleAcceptContract = () => {
         if (!contract) return;
@@ -43,9 +60,11 @@ export default function ParentContractPage() {
         });
         toast({
             title: 'Contrato Aceito!',
-            description: 'Obrigado! Seu aceite foi registrado com sucesso.',
+            description: `Obrigado! Seu aceite para o transporte de ${student?.name} foi registrado.`,
         });
     };
+
+    const isLoading = areContractsLoading || areStudentsLoading;
 
     if (isLoading) {
         return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin" /></div>
@@ -65,7 +84,7 @@ export default function ParentContractPage() {
                         <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                         <CardTitle>Nenhum contrato encontrado</CardTitle>
                         <CardDescription className="mt-2">
-                            Ainda não há um contrato de prestação de serviços disponível para você.
+                            Ainda não há um contrato de prestação de serviços disponível para {student?.name || 'este aluno'}.
                         </CardDescription>
                     </Card>
                 ) : (
@@ -74,7 +93,10 @@ export default function ParentContractPage() {
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                                 <div>
                                     <CardTitle className="flex items-center gap-2"><FileText />Contrato de Transporte</CardTitle>
-                                    <CardDescription className="mt-2">
+                                    <CardDescription className="mt-2 text-primary font-semibold">
+                                        Aluno(a): {student?.name}
+                                    </CardDescription>
+                                    <CardDescription>
                                         Gerado em: {format(new Date(contract.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                                     </CardDescription>
                                 </div>
@@ -99,7 +121,7 @@ export default function ParentContractPage() {
                                         htmlFor="terms"
                                         className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                                     >
-                                        Li e concordo com todos os termos do contrato.
+                                        Li e concordo com todos os termos do contrato de transporte do(a) {student?.name}.
                                     </label>
                                 </div>
                                 <Button className="w-full sm:w-auto" disabled={!hasAgreed} onClick={handleAcceptContract}>

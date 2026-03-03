@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -12,17 +13,28 @@ import Image from 'next/image';
 export default function ParentQRCodePage() {
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [qrCodeDataUrl, setQrCodeDataUrl] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    
+    // Phase 2: Read selected student from sessionStorage
+    const lastSelectedId = sessionStorage.getItem('selectedStudentId');
+    setSelectedStudentId(lastSelectedId);
   }, []);
 
   const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
   const parent = useMemo(() => parents?.[0], [parents]);
 
   const { data: students, isLoading: areStudentsLoading } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
-  const student = useMemo(() => students?.[0], [students]);
+  
+  // Phase 2: Pick the selected student, or fallback to the first one
+  const student = useMemo(() => {
+      if (!students || students.length === 0) return null;
+      if (!selectedStudentId) return students[0];
+      return students.find(s => s.id === selectedStudentId) || students[0];
+  }, [students, selectedStudentId]);
 
   useEffect(() => {
     if (student) {

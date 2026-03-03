@@ -1,8 +1,9 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { DollarSign, ArrowLeft, QrCode, CreditCard } from "lucide-react";
+import { DollarSign, ArrowLeft, QrCode, CreditCard, Filter, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
@@ -18,6 +19,7 @@ import {
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { PixPaymentModal } from '@/components/parent/financial/pix-payment-modal';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 type Invoice = {
   id: string;
@@ -48,6 +50,7 @@ export default function ParentFinancialPage() {
   const { toast } = useToast();
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | 'all'>('all');
   
   // Pix Payment State
   const [selectedInvoiceForPix, setSelectedInvoiceForPix] = useState<Invoice | null>(null);
@@ -55,9 +58,25 @@ export default function ParentFinancialPage() {
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    
+    // Phase 2: Read selected student context
+    const lastSelectedId = sessionStorage.getItem('selectedStudentId');
+    if (lastSelectedId) setSelectedStudentId(lastSelectedId);
   }, []);
 
+  const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
+  const parent = useMemo(() => parents?.[0], [parents]);
+
+  const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
+  const studentsMap = useMemo(() => new Map(students?.map(s => [s.id, s.name])), [students]);
+
   const { data: invoices, isLoading } = useMockCollection('invoices', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
+
+  const filteredInvoices = useMemo(() => {
+      if (!invoices) return [];
+      if (selectedStudentId === 'all') return invoices;
+      return invoices.filter(inv => inv.studentId === selectedStudentId);
+  }, [invoices, selectedStudentId]);
 
   const handleInformPayment = (invoiceId: string) => {
     updateDoc('invoices', invoiceId, { status: 'pagamento_em_analise' });
@@ -79,19 +98,19 @@ export default function ParentFinancialPage() {
   };
 
   const sortedInvoices = useMemo(() => {
-    if (!invoices) return [];
+    if (!filteredInvoices) return [];
     const statusOrder: Record<Invoice['status'], number> = {
         overdue: 1,
         pagamento_em_analise: 2,
         pending: 3,
         paid: 4,
     };
-    return [...invoices].sort((a, b) => {
+    return [...filteredInvoices].sort((a, b) => {
         const statusComparison = statusOrder[a.status] - statusOrder[b.status];
         if (statusComparison !== 0) return statusComparison;
         return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
     });
-  }, [invoices]);
+  }, [filteredInvoices]);
 
   return (
     <div className="min-h-screen bg-background text-foreground p-4">
@@ -102,6 +121,29 @@ export default function ParentFinancialPage() {
             </Button>
             <h1 className="text-xl font-bold md:hidden">Financeiro</h1>
         </div>
+
+        {students && students.length > 1 && (
+            <Card className="mb-6 border-primary/20 bg-primary/5">
+                <CardContent className="p-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+                    <div className="flex items-center gap-2 text-sm font-medium">
+                        <Filter className="h-4 w-4 text-primary" />
+                        <span>Filtrar por Aluno:</span>
+                    </div>
+                    <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                        <SelectTrigger className="w-full sm:w-[240px] bg-background">
+                            <SelectValue placeholder="Selecione um aluno" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="all">Todos os Filhos</SelectItem>
+                            {students.map(s => (
+                                <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>
+                            ))}
+                        </SelectContent>
+                    </Select>
+                </CardContent>
+            </Card>
+        )}
+
         <Card>
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
@@ -115,6 +157,7 @@ export default function ParentFinancialPage() {
                 <Table>
                     <TableHeader>
                     <TableRow>
+                        <TableHead>Aluno</TableHead>
                         <TableHead>Descrição</TableHead>
                         <TableHead>Vencimento</TableHead>
                         <TableHead>Valor</TableHead>
@@ -124,11 +167,12 @@ export default function ParentFinancialPage() {
                     </TableHeader>
                     <TableBody>
                     {isLoading && (
-                        <TableRow><TableCell colSpan={5} className="h-24 text-center">Carregando...</TableCell></TableRow>
+                        <TableRow><TableCell colSpan={6} className="h-24 text-center">Carregando...</TableCell></TableRow>
                     )}
                     {!isLoading && sortedInvoices && sortedInvoices.length > 0 ? (
                         sortedInvoices.map((invoice) => (
                         <TableRow key={invoice.id}>
+                            <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'N/A'}</TableCell>
                             <TableCell>{invoice.description}</TableCell>
                             <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
                             <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
@@ -152,7 +196,7 @@ export default function ParentFinancialPage() {
                     ) : (
                         !isLoading && (
                         <TableRow>
-                            <TableCell colSpan={5} className="h-24 text-center">Nenhuma fatura encontrada.</TableCell>
+                            <TableCell colSpan={6} className="h-24 text-center">Nenhuma fatura encontrada.</TableCell>
                         </TableRow>
                         )
                     )}
@@ -167,7 +211,10 @@ export default function ParentFinancialPage() {
                     sortedInvoices.map((invoice) => (
                         <Card key={invoice.id} className="p-4 border-2">
                             <div className="flex justify-between items-start">
-                                <p className="font-medium pr-2">{invoice.description}</p>
+                                <div>
+                                    <p className="text-[10px] uppercase font-bold text-primary">{studentsMap.get(invoice.studentId)}</p>
+                                    <p className="font-medium pr-2">{invoice.description}</p>
+                                </div>
                                 <Badge variant={statusVariantMap[invoice.status]} className={cn('flex-shrink-0', invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
                                     {statusTextMap[invoice.status]}
                                 </Badge>
