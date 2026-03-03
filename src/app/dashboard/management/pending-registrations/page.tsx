@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -29,7 +30,7 @@ export default function PendingRegistrationsPage() {
 
   const [selectedReg, setSelectedReg] = useState<any>(null);
   const [isProcessing, setIsProcessing] = useState(false);
-  const [approvedMonthlyFee, setApprovedMonthlyFee] = useState<number>(450);
+  const [approvedMonthlyFee, setApprovedMonthlyFee] = useState<number | string>('');
   const [approvedPreferredPaymentDay, setApprovedPreferredPaymentDay] = useState<string>('10');
   const [editableParentName, setEditableParentName] = useState('');
 
@@ -37,14 +38,22 @@ export default function PendingRegistrationsPage() {
 
   const handleOpenReview = (reg: any) => {
       setSelectedReg(reg);
-      setApprovedMonthlyFee(reg.monthlyFee || 450);
+      // Agora o valor vem em branco por padrão para forçar o preenchimento manual do gestor
+      setApprovedMonthlyFee(reg.monthlyFee || '');
       setApprovedPreferredPaymentDay((reg.preferredPaymentDay || 10).toString());
       setEditableParentName(reg.parentName || '');
   };
 
   const handleApprove = async (reg: any) => {
-    if (!approvedMonthlyFee || approvedMonthlyFee <= 0) {
-        toast({ title: "Valor inválido", description: "Por favor, defina o valor da mensalidade.", variant: "destructive" });
+    const feeNum = Number(approvedMonthlyFee);
+    
+    // Validação estrita: Não permite aprovar sem valor
+    if (!approvedMonthlyFee || feeNum <= 0) {
+        toast({ 
+            title: "Valor Obrigatório", 
+            description: "Por favor, defina o valor da mensalidade para prosseguir com a aprovação.", 
+            variant: "destructive" 
+        });
         return;
     }
 
@@ -107,7 +116,7 @@ export default function PendingRegistrationsPage() {
             ...address,
             latitude,
             longitude,
-            monthlyFee: Number(approvedMonthlyFee),
+            monthlyFee: feeNum,
             preferredPaymentDay: Number(approvedPreferredPaymentDay),
             serie: reg.studentSerie,
             turma: reg.studentTurma,
@@ -328,10 +337,17 @@ export default function PendingRegistrationsPage() {
                                         <Input 
                                             id="rev-fee"
                                             type="number" 
+                                            placeholder="Ex: 450,00"
                                             value={approvedMonthlyFee} 
-                                            onChange={(e) => setApprovedMonthlyFee(Number(e.target.value))}
-                                            className="bg-background font-bold text-lg"
+                                            onChange={(e) => setApprovedMonthlyFee(e.target.value)}
+                                            className={cn(
+                                                "bg-background font-bold text-lg",
+                                                (!approvedMonthlyFee || Number(approvedMonthlyFee) <= 0) && "border-destructive ring-destructive/20"
+                                            )}
                                         />
+                                        {(!approvedMonthlyFee || Number(approvedMonthlyFee) <= 0) && (
+                                            <p className="text-[9px] text-destructive font-bold uppercase">Preenchimento Obrigatório</p>
+                                        )}
                                     </div>
                                     <div className="space-y-2">
                                         <Label htmlFor="rev-day" className="text-xs">Dia Preferencial de Vencimento</Label>
