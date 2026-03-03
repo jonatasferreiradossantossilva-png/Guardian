@@ -217,6 +217,7 @@ export default function ParentTrackingPage() {
   const { updateDoc } = useMockData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   
   // Arrival Alert State
   const [showProximityAlert, setShowProximityAlert] = useState(false);
@@ -238,7 +239,19 @@ export default function ParentTrackingPage() {
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", parent ? [
     { field: "parentId", op: "==", value: parent.id },
   ] : undefined);
-  const student = useMemo(() => (students && students.length > 0 ? students[0] : null), [students]);
+
+  // Initialize selectedStudentId when students load
+  useEffect(() => {
+    if (students && students.length > 0 && !selectedStudentId) {
+        setSelectedStudentId(students[0].id);
+    }
+  }, [students, selectedStudentId]);
+
+  const student = useMemo(() => {
+      if (!students || students.length === 0) return null;
+      if (!selectedStudentId) return students[0];
+      return students.find(s => s.id === selectedStudentId) || students[0];
+  }, [students, selectedStudentId]);
   
   const { data: route, isLoading: isRouteLoading } = useMockDoc("routes", student?.routeId);
   const { data: driver, isLoading: isDriverLoading } = useMockDoc("drivers", route?.driverId);
@@ -265,12 +278,12 @@ export default function ParentTrackingPage() {
     const isWaitingPickup = journeyDirection === 'ida' && student.status === 'aguardando';
     const isComingHome = journeyDirection === 'volta' && student.status === 'a_bordo';
 
-    // Alerta de Proximidade em 800 metros (Apenas para o Pai se preparar em casa)
+    // Alerta de Proximidade em 800 metros
     if (currentDistance < 0.8 && (isWaitingPickup || isComingHome)) {
         if (!showProximityAlert) {
             setShowProximityAlert(true);
             toast({
-                title: "🚌 Van se aproximando!",
+                title: `🚌 Van do ${student.name.split(' ')[0]} chegando!`,
                 description: "A van entrou num raio de 800m da sua residência.",
                 variant: "default"
             });
@@ -287,7 +300,7 @@ export default function ParentTrackingPage() {
     setIsAbsenceDialogOpen(false);
     toast({
       title: "Ausência comunicada",
-      description: `O motorista foi notificado.`,
+      description: `O motorista do(a) ${student.name} foi notificado.`,
     });
   }, [student, selectedAbsenceType, updateDoc, toast]);
 
@@ -313,7 +326,6 @@ export default function ParentTrackingPage() {
     const journeyDirection = (route?.direction as 'ida' | 'volta') || 'ida';
     const isOnBoard = student.status === 'a_bordo';
     
-    // Inteligência do Destino: Na ida, se já estiver a bordo, o foco é a ESCOLA. Caso contrário, é a CASA.
     const isTargetSchool = journeyDirection === 'ida' && isOnBoard && school;
     
     const targetCoords = isTargetSchool 
@@ -387,6 +399,30 @@ export default function ParentTrackingPage() {
     )}>
       <div className="max-w-4xl mx-auto">
         
+        {/* Multi-Child Selector (Phase 1) */}
+        {students && students.length > 1 && (
+            <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
+                {students.map((s) => (
+                    <button
+                        key={s.id}
+                        onClick={() => setSelectedStudentId(s.id)}
+                        className={cn(
+                            "flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0",
+                            selectedStudentId === s.id 
+                                ? "bg-primary border-primary text-primary-foreground shadow-md scale-105" 
+                                : "bg-background border-muted text-muted-foreground hover:border-primary/50"
+                        )}
+                    >
+                        <Avatar className="h-6 w-6">
+                            <AvatarImage src={`https://picsum.photos/seed/student-${s.id}/40/40`} />
+                            <AvatarFallback>{s.name[0]}</AvatarFallback>
+                        </Avatar>
+                        <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
+                    </button>
+                ))}
+            </div>
+        )}
+
         {/* Mural de Avisos Shortcut */}
         {latestAnnouncement && (
             <Link href="/parent/mural" className="block mb-4">
@@ -452,7 +488,7 @@ export default function ParentTrackingPage() {
                                     <BellRing className="h-6 w-6" />
                                 </div>
                                 <div>
-                                    <p className="font-bold text-lg">A van está quase chegando!</p>
+                                    <p className="font-bold text-lg">A van do {student.name.split(' ')[0]} está quase chegando!</p>
                                     <p className="text-sm opacity-90">Prepare-se. Distância menor que 800 metros.</p>
                                 </div>
                             </div>
@@ -542,8 +578,8 @@ export default function ParentTrackingPage() {
                             <Share2 className="h-4 w-4" />
                             <span>
                                 {journeyDirection === 'ida' && isOnBoard 
-                                    ? "Compartilhar Chegada (Escola)" 
-                                    : "Compartilhar Aproximação (Família)"
+                                    ? `Compartilhar Chegada de ${student.name.split(' ')[0]}` 
+                                    : "Compartilhar Aproximação"
                                 }
                             </span>
                         </Button>
@@ -667,7 +703,7 @@ export default function ParentTrackingPage() {
           <AlertDialogHeader>
             <AlertDialogTitle className="flex items-center gap-2">
                 <Info className="h-5 w-5 text-primary" />
-                Informar Falta
+                Informar Falta - {student?.name.split(' ')[0]}
             </AlertDialogTitle>
             <AlertDialogDescription>
               A presença está confirmada por padrão. Utilize esta opção <strong>apenas se o aluno não for utilizar o transporte hoje</strong> para que o motorista possa otimizar o tempo da rota.

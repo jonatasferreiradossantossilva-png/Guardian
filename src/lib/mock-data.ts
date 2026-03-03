@@ -149,7 +149,27 @@ export const initialMockData = {
             state: "SP",
             zipCode: "05445-010",
             monthlyFee: 450.00,
-            medicalNote: "Alérgico a lactose."
+            medicalNote: "Alérgico a lactose.",
+            routeId: "route-1"
+        },
+        {
+            id: "student-4",
+            name: "Valentina Pereira",
+            schoolId: "school-2",
+            parentId: "parent-1",
+            shift: "Manhã",
+            status: "aguardando",
+            active: true,
+            latitude: -23.5580,
+            longitude: -46.6600,
+            street: "Rua das Academias",
+            number: "10",
+            neighborhood: "Vila Madalena",
+            city: "São Paulo",
+            state: "SP",
+            zipCode: "05445-010",
+            monthlyFee: 420.00,
+            routeId: "route-1"
         },
         {
             id: "student-2",
@@ -167,7 +187,8 @@ export const initialMockData = {
             city: "São Paulo",
             state: "SP",
             zipCode: "01310-100",
-            monthlyFee: 420.00
+            monthlyFee: 420.00,
+            routeId: "route-1"
         },
         {
             id: "student-3",
@@ -186,7 +207,8 @@ export const initialMockData = {
             state: "SP",
             zipCode: "01426-001",
             monthlyFee: 480.00,
-            medicalNote: "Asma."
+            medicalNote: "Asma.",
+            routeId: "route-1"
         }
     ],
     drivers: [
@@ -238,7 +260,7 @@ export const initialMockData = {
             driverId: "driver-1",
             monitorId: "user-monitor-1",
             shift: "Manhã",
-            studentIds: ["student-1", "student-2", "school-1", "student-3", "school-2"],
+            studentIds: ["student-1", "student-4", "student-2", "school-1", "student-3", "school-2"],
             lastOptimizedAt: "2024-08-05T08:00:00Z",
             plannedDistanceKm: 12.5,
             polyline: ""
@@ -267,6 +289,15 @@ export const initialMockData = {
             amount: 450.00,
             dueDate: "2024-08-10",
             status: "paid"
+        },
+        {
+            id: "inv-4",
+            studentId: "student-4",
+            parentUserId: "user-pai-1",
+            description: "Mensalidade Agosto",
+            amount: 420.00,
+            dueDate: "2024-08-10",
+            status: "pending"
         },
         {
             id: "inv-2",
