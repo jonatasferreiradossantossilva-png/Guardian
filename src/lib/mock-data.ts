@@ -46,6 +46,21 @@ export const initialMockData = {
             city: "São Paulo",
             state: "SP",
             zipCode: "01305-000"
+        },
+        {
+            id: "school-3",
+            name: "COLEGIO MARJORE PAULA",
+            cnpj: "11.222.333/0001-44",
+            type: "private",
+            active: true,
+            latitude: -23.5285,
+            longitude: -46.8321,
+            street: "Rua Padre Áureliano",
+            number: "93",
+            neighborhood: "Vila Silviania",
+            city: "Carapicuíba",
+            state: "SP",
+            zipCode: "06321-470"
         }
     ],
     school_knowledge_base: [
@@ -129,6 +144,20 @@ export const initialMockData = {
             city: "São Paulo",
             state: "SP",
             zipCode: "01426-001"
+        },
+        {
+            id: "parent-4",
+            userId: "user-pai-4",
+            name: "Marcos Silva",
+            email: "marcos.silva@email.com",
+            phone: "11955554444",
+            cpf: "444.555.666-77",
+            active: true,
+            street: "Av. Inocêncio Seráfico",
+            number: "2000",
+            city: "Carapicuíba",
+            state: "SP",
+            zipCode: "06320-000"
         }
     ],
     students: [
@@ -209,6 +238,61 @@ export const initialMockData = {
             monthlyFee: 480.00,
             medicalNote: "Asma.",
             routeId: "route-1"
+        },
+        {
+            id: "student-5",
+            name: "Lucas Silva",
+            schoolId: "school-3",
+            parentId: "parent-4",
+            shift: "Tarde",
+            status: "aguardando",
+            active: true,
+            latitude: -23.5300,
+            longitude: -46.8300,
+            street: "Rua do Bosque",
+            number: "100",
+            neighborhood: "Vila Silviania",
+            city: "Carapicuíba",
+            state: "SP",
+            zipCode: "06321-000",
+            monthlyFee: 400.00,
+            routeId: "route-2"
+        },
+        {
+            id: "student-6",
+            name: "Mariana Souza",
+            schoolId: "school-3",
+            parentId: "parent-4",
+            shift: "Tarde",
+            status: "aguardando",
+            active: true,
+            latitude: -23.5310,
+            longitude: -46.8315,
+            street: "Rua das Palmeiras",
+            number: "25",
+            neighborhood: "Vila Silviania",
+            city: "Carapicuíba",
+            state: "SP",
+            zipCode: "06321-100",
+            monthlyFee: 400.00
+        },
+        {
+            id: "student-7",
+            name: "Pedro Rocha",
+            schoolId: "school-3",
+            parentId: "parent-4",
+            shift: "Tarde",
+            status: "aguardando",
+            active: true,
+            latitude: -23.5290,
+            longitude: -46.8330,
+            street: "Rua Alvorada",
+            number: "88",
+            neighborhood: "Vila Silviania",
+            city: "Carapicuíba",
+            state: "SP",
+            zipCode: "06321-200",
+            monthlyFee: 400.00
         }
     ],
     drivers: [
@@ -264,10 +348,22 @@ export const initialMockData = {
             lastOptimizedAt: "2024-08-05T08:00:00Z",
             plannedDistanceKm: 12.5,
             polyline: ""
+        },
+        {
+            id: "route-2",
+            name: "Expresso Carapicuíba - Tarde",
+            driverId: "driver-2",
+            monitorId: "",
+            shift: "Tarde",
+            studentIds: ["student-5", "school-3"],
+            lastOptimizedAt: "",
+            plannedDistanceKm: 8.2,
+            polyline: ""
         }
     ],
     locations: {
-        "driver-1": { latitude: -23.5500, longitude: -46.6300, timestamp: new Date().toISOString() }
+        "driver-1": { latitude: -23.5500, longitude: -46.6300, timestamp: new Date().toISOString() },
+        "driver-2": { latitude: -23.5200, longitude: -46.8300, timestamp: new Date().toISOString() }
     },
     incidents: [
         {
