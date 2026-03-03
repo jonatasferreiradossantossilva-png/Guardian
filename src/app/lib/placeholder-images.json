@@ -4,121 +4,121 @@
     {
       "id": "ob-1-invite",
       "description": "Gestor enviando convite via WhatsApp",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_1",
+      "imageUrl": "https://picsum.photos/seed/guardian1/800/600",
       "imageHint": "whatsapp invite"
     },
     {
       "id": "ob-2-received",
       "description": "Pai recebendo o link no celular",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_2",
+      "imageUrl": "https://picsum.photos/seed/guardian2/800/600",
       "imageHint": "whatsapp message"
     },
     {
       "id": "ob-3-welcome",
       "description": "Boas-vindas ao sistema de cadastro",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_3",
+      "imageUrl": "https://picsum.photos/seed/guardian3/800/600",
       "imageHint": "mobile welcome"
     },
     {
       "id": "ob-4-scan",
       "description": "Leitura inteligente do documento (OCR)",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_4",
+      "imageUrl": "https://picsum.photos/seed/guardian4/800/600",
       "imageHint": "document scan"
     },
     {
       "id": "ob-5-review",
       "description": "Pai revisando os dados extraídos",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_5",
+      "imageUrl": "https://picsum.photos/seed/guardian5/800/600",
       "imageHint": "data review"
     },
     {
       "id": "ob-6-address",
       "description": "Definição do endereço de embarque",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_6",
+      "imageUrl": "https://picsum.photos/seed/guardian6/800/600",
       "imageHint": "address setup"
     },
     {
       "id": "ob-7-school",
       "description": "Seleção da escola na base nacional",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_7",
+      "imageUrl": "https://picsum.photos/seed/guardian7/800/600",
       "imageHint": "school search"
     },
     {
       "id": "ob-8-finance",
       "description": "Preferências de pagamento do responsável",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_8",
+      "imageUrl": "https://picsum.photos/seed/guardian8/800/600",
       "imageHint": "finance options"
     },
     {
       "id": "ob-9-health",
       "description": "Alertas de saúde críticos para o motorista",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_9",
+      "imageUrl": "https://picsum.photos/seed/guardian9/800/600",
       "imageHint": "health alerts"
     },
     {
       "id": "ob-10-done-parent",
       "description": "Sucesso no cadastro do lado do pai",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_10",
+      "imageUrl": "https://picsum.photos/seed/guardian10/800/600",
       "imageHint": "registration success"
     },
     {
       "id": "ob-11-notification",
       "description": "Gestor recebe aviso de nova solicitação",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_11",
+      "imageUrl": "https://picsum.photos/seed/guardian11/800/600",
       "imageHint": "admin alert"
     },
     {
       "id": "ob-12-triagem",
       "description": "Lista de triagem inteligente do gestor",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_12",
+      "imageUrl": "https://picsum.photos/seed/guardian12/800/600",
       "imageHint": "triage list"
     },
     {
       "id": "ob-13-review-triagem",
       "description": "Revisão detalhada e validação GPS",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_13",
+      "imageUrl": "https://picsum.photos/seed/guardian13/800/600",
       "imageHint": "triage details"
     },
     {
       "id": "ob-14-set-price",
       "description": "Definição de mensalidade e contrato",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_14",
+      "imageUrl": "https://picsum.photos/seed/guardian14/800/600",
       "imageHint": "price config"
     },
     {
       "id": "ob-15-approve",
       "description": "Aprovação final e integração à frota",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_15",
+      "imageUrl": "https://picsum.photos/seed/guardian15/800/600",
       "imageHint": "approve button"
     },
     {
       "id": "ob-16-contract",
       "description": "Visualização do contrato gerado pela IA",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_16",
+      "imageUrl": "https://picsum.photos/seed/guardian16/800/600",
       "imageHint": "digital contract"
     },
     {
       "id": "ob-17-accept",
       "description": "Aceite jurídico digital do responsável",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_17",
+      "imageUrl": "https://picsum.photos/seed/guardian17/800/600",
       "imageHint": "contract sign"
     },
     {
       "id": "ob-18-route-setup",
       "description": "Montagem do itinerário da rota",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_18",
+      "imageUrl": "https://picsum.photos/seed/guardian18/800/600",
       "imageHint": "route building"
     },
     {
       "id": "ob-19-optimize",
       "description": "Otimização lógica via Inteligência Artificial",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_19",
+      "imageUrl": "https://picsum.photos/seed/guardian19/800/600",
       "imageHint": "ai path"
     },
     {
       "id": "ob-20-live",
       "description": "Operação ativa com monitoramento real",
-      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_20",
+      "imageUrl": "https://picsum.photos/seed/guardian20/800/600",
       "imageHint": "live monitoring"
     }
   ]

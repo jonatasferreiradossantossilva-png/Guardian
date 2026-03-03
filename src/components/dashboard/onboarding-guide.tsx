@@ -27,10 +27,12 @@ import {
   HeartPulse,
   FileText,
   MousePointerClick,
-  Navigation
+  Navigation,
+  CheckCircle2
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { useMockCollection } from '@/hooks/use-mock-data';
 
 // --- FASE 1: SLIDES DE APRESENTAÇÃO (JORNADA COMPLETA) ---
 const introSlides = [
@@ -56,45 +58,6 @@ const introSlides = [
   { title: "20. Rota Ativa", description: "Van na rua com tracking real e segurança total para as crianças.", icon: <Navigation />, imageId: "ob-20-live" }
 ];
 
-// --- FASE 2: PASSOS DO CHECKLIST DE CONFIGURAÇÃO ---
-const configSteps = [
-  {
-    title: "Infraestrutura: Escolas",
-    description: "Cadastre os destinos. Use nossa busca regionalizada para preencher endereço e GPS em segundos.",
-    icon: <School className="w-8 h-8" />,
-    link: "/dashboard/management/schools",
-    linkText: "Configurar Escolas"
-  },
-  {
-    title: "Crescimento: Convite",
-    description: "Copie seu link exclusivo e envie para os pais. Deixe que eles façam o trabalho pesado de cadastro.",
-    icon: <Share2 className="w-8 h-8" />,
-    link: "/dashboard",
-    linkText: "Copiar Link de Convite"
-  },
-  {
-    title: "Gestão: Triagem",
-    description: "Revise as solicitações pendentes e integre os novos alunos à sua frota operacional.",
-    icon: <ClipboardCheck className="w-8 h-8" />,
-    link: "/dashboard/management/pending-registrations",
-    linkText: "Ver Solicitações"
-  },
-  {
-    title: "Equipe: Motoristas",
-    description: "Adicione sua equipe e vincule cada motorista a um veículo com capacidade definida.",
-    icon: <Car className="w-8 h-8" />,
-    link: "/dashboard/management/drivers",
-    linkText: "Gerenciar Equipe"
-  },
-  {
-    title: "Operação: Montar Rotas",
-    description: "Junte tudo e deixe a IA calcular a ordem perfeita. Sua frota está pronta para rodar!",
-    icon: <RouteIcon className="w-8 h-8" />,
-    link: "/dashboard/management/routes",
-    linkText: "Criar Itinerário"
-  }
-];
-
 interface OnboardingGuideProps {
   isOpen: boolean;
   onClose: () => void;
@@ -103,6 +66,55 @@ interface OnboardingGuideProps {
 export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
   const [view, setView] = useState<'presentation' | 'checklist'>('presentation');
   const [currentIndex, setCurrentIndex] = useState(0);
+
+  // Inteligência de Progresso: Verifica dados reais no mock
+  const { data: schools } = useMockCollection('schools');
+  const { data: drivers } = useMockCollection('drivers');
+  const { data: routes } = useMockCollection('routes');
+  const { data: pending } = useMockCollection('pending_registrations');
+
+  const configSteps = useMemo(() => [
+    {
+      title: "Infraestrutura: Escolas",
+      description: "Cadastre os destinos. Use nossa busca regionalizada para preencher endereço e GPS em segundos.",
+      icon: <School className="w-8 h-8" />,
+      link: "/dashboard/management/schools",
+      linkText: "Configurar Escolas",
+      isDone: schools && schools.length > 0
+    },
+    {
+      title: "Crescimento: Convite",
+      description: "Copie seu link exclusivo e envie para os pais. Deixe que eles façam o trabalho pesado de cadastro.",
+      icon: <Share2 className="w-8 h-8" />,
+      link: "/dashboard",
+      linkText: "Copiar Link de Convite",
+      isDone: false // Sempre manual
+    },
+    {
+      title: "Gestão: Triagem",
+      description: "Revise as solicitações pendentes e integre os novos alunos à sua frota operacional.",
+      icon: <ClipboardCheck className="w-8 h-8" />,
+      link: "/dashboard/management/pending-registrations",
+      linkText: "Ver Solicitações",
+      isDone: pending && pending.length === 0 && (schools?.length || 0) > 0
+    },
+    {
+      title: "Equipe: Motoristas",
+      description: "Adicione sua equipe e vincule cada motorista a um veículo com capacidade definida.",
+      icon: <Car className="w-8 h-8" />,
+      link: "/dashboard/management/drivers",
+      linkText: "Gerenciar Equipe",
+      isDone: drivers && drivers.length > 0
+    },
+    {
+      title: "Operação: Montar Rotas",
+      description: "Junte tudo e deixe a IA calcular a ordem perfeita. Sua frota está pronta para rodar!",
+      icon: <RouteIcon className="w-8 h-8" />,
+      link: "/dashboard/management/routes",
+      linkText: "Criar Itinerário",
+      isDone: routes && routes.length > 0
+    }
+  ], [schools, drivers, routes, pending]);
 
   const isLastSlide = view === 'presentation' && currentIndex === introSlides.length - 1;
   const isFirstSlide = currentIndex === 0;
@@ -144,6 +156,8 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
 
   const currentData = view === 'presentation' ? introSlides[currentIndex] : configSteps[currentIndex];
   const totalSteps = view === 'presentation' ? introSlides.length : configSteps.length;
+  
+  // Cálculo de progresso visual (0-100%)
   const progress = view === 'presentation' 
     ? ((currentIndex + 1) / introSlides.length) * 50 
     : 50 + ((currentIndex + 1) / configSteps.length) * 50;
@@ -158,7 +172,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden border-primary/20 shadow-2xl">
         
-        {/* Header Visual com Imagem do Processo */}
+        {/* Header Visual */}
         <div className={cn(
             "p-0 flex flex-col items-center justify-center border-b transition-all duration-500 overflow-hidden",
             view === 'presentation' ? "bg-black h-[350px]" : "bg-secondary/20 h-40"
@@ -169,18 +183,17 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                         src={currentImageData.imageUrl} 
                         alt={currentImageData.description}
                         fill
-                        className="object-contain bg-black"
+                        className="object-cover"
                         data-ai-hint={currentImageData.imageHint}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                     <div className="absolute bottom-4 left-6 flex items-center gap-3 text-white">
                         <div className="p-3 rounded-full bg-primary text-primary-foreground shadow-lg">
                             {currentData.icon}
                         </div>
                         <div>
-                            <p className="text-xs font-bold uppercase tracking-widest opacity-70">Passo {currentIndex + 1}</p>
-                            {/* FIXED: DialogTitle is required for accessibility */}
-                            <DialogTitle className="text-lg font-bold border-none shadow-none bg-transparent p-0 text-white">
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-70">Jornada Guardian • Passo {currentIndex + 1}</p>
+                            <DialogTitle className="text-xl font-bold border-none shadow-none bg-transparent p-0 text-white">
                                 {currentData.title}
                             </DialogTitle>
                         </div>
@@ -188,12 +201,18 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                 </div>
             ) : (
                 <div className="flex flex-col items-center gap-4">
-                    <div className="p-4 bg-background text-primary rounded-full border-2 border-primary/20 shadow-lg">
+                    <div className="p-4 bg-background text-primary rounded-full border-2 border-primary/20 shadow-lg relative">
                         {currentData.icon}
+                        {(currentData as any).isDone && (
+                            <div className="absolute -top-1 -right-1 bg-green-500 text-white rounded-full p-1 border-2 border-background">
+                                <CheckCircle2 className="h-4 w-4" />
+                            </div>
+                        )}
                     </div>
                     <Badge variant="outline" className="bg-primary/10 text-primary border-primary/20 font-bold tracking-widest text-[10px]">
                         FASE DE CONFIGURAÇÃO
                     </Badge>
+                    <DialogTitle className="sr-only">Configuração da Frota</DialogTitle>
                 </div>
             )}
         </div>
@@ -201,19 +220,13 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
         {/* Content Body */}
         <div className="p-6 space-y-6">
             <div className="space-y-2 min-h-[80px]">
-                {/* FIXED: Ensuring DialogTitle is always present for accessibility */}
-                {view === 'checklist' ? (
-                    <DialogTitle className="text-xl font-bold tracking-tight">
-                        {currentData.title}
-                    </DialogTitle>
-                ) : (
-                    /* Already rendered in header image area for presentation view, 
-                       but we provide an sr-only version if the header is not considered enough 
-                       by some screen readers or if the component logic requires consistent structure.
-                    */
-                    <DialogTitle className="sr-only">
-                        {currentData.title}
-                    </DialogTitle>
+                {view === 'checklist' && (
+                    <div className="flex items-center gap-2 mb-1">
+                        <DialogTitle className="text-xl font-bold tracking-tight">
+                            {currentData.title}
+                        </DialogTitle>
+                        {(currentData as any).isDone && <Badge className="bg-green-500/10 text-green-500 border-green-500/20 text-[9px] h-5">CONCLUÍDO</Badge>}
+                    </div>
                 )}
                 <DialogDescription className="text-sm leading-relaxed text-foreground">
                     {currentData.description}
@@ -223,7 +236,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
             {/* Step Progress */}
             <div className="space-y-2">
                 <div className="flex justify-between text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                    <span>{view === 'presentation' ? "Jornada Inteligente" : "Implementação Prática"}</span>
+                    <span>{view === 'presentation' ? "Apresentação do Produto" : "Implementação Prática"}</span>
                     <span>{currentIndex + 1} de {totalSteps}</span>
                 </div>
                 <Progress value={progress} className="h-1.5" />
@@ -259,7 +272,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
           
           {view === 'presentation' ? (
               <Button variant="link" size="sm" onClick={() => { setView('checklist'); setCurrentIndex(0); }} className="text-xs text-muted-foreground">
-                  Pular para Configuração
+                  Pular Introdução
               </Button>
           ) : (
               !isLastChecklist ? (
