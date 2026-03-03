@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais para o protótipo do Guardian.
@@ -86,28 +85,22 @@ export const initialMockData = {
     ],
     students: [
         // Rota 1 - Manhã (Centro SP)
-        { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Academias", number: "10", city: "São Paulo", state: "SP", zipCode: "05445-010" },
-        { id: "student-4", name: "Valentina Pereira", schoolId: "school-2", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Academias", number: "10", city: "São Paulo", state: "SP", zipCode: "05445-010" },
-        { id: "student-2", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", zipCode: "01310-100" },
-        { id: "student-3", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6650, street: "Rua Oscar Freire", number: "50", city: "São Paulo", state: "SP", zipCode: "01426-001" },
+        { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Academias", number: "10", city: "São Paulo", state: "SP", zipCode: "05445-010", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-4", name: "Valentina Pereira", schoolId: "school-2", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Academias", number: "10", city: "São Paulo", state: "SP", zipCode: "05445-010", monthlyFee: 420, preferredPaymentDay: 10 },
+        { id: "student-2", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", zipCode: "01310-100", monthlyFee: 480, preferredPaymentDay: 5 },
+        { id: "student-3", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6650, street: "Rua Oscar Freire", number: "50", city: "São Paulo", state: "SP", zipCode: "01426-001", monthlyFee: 500, preferredPaymentDay: 15 },
         
-        // Rota 2 - Tarde (Carapicuíba) - 10 SELECIONADOS
-        { id: "student-5", name: "Lucas Silva", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5300, longitude: -46.8300, street: "Rua do Bosque", number: "100", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-8", name: "Felipe Mendes", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5305, longitude: -46.8305, street: "Rua das Flores", number: "12", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-9", name: "Giulia Ramos", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5315, longitude: -46.8310, street: "Rua Alvorada", number: "45", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-10", name: "Henrique Oliveira", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5320, longitude: -46.8320, street: "Rua da Paz", number: "101", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-11", name: "Isabela Martins", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5325, longitude: -46.8325, street: "Rua do Porto", number: "20", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-12", name: "João Pedro", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5330, longitude: -46.8330, street: "Rua São Jorge", number: "55", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-13", name: "Larissa Manoela", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5335, longitude: -46.8335, street: "Rua Vitória", number: "9", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-14", name: "Matheus Solano", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5340, longitude: -46.8340, street: "Rua Principal", number: "200", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-15", name: "Nicole Bahls", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5345, longitude: -46.8345, street: "Av Inocêncio", number: "500", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-        { id: "student-16", name: "Otávio Mesquita", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5350, longitude: -46.8350, street: "Rua do Sol", number: "33", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
-
-        // Rota 2 - Tarde (Carapicuíba) - 4 A SELECIONAR
-        { id: "student-6", name: "Mariana Souza", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5310, longitude: -46.8315, street: "Rua das Palmeiras", number: "25", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-100" },
-        { id: "student-7", name: "Pedro Rocha", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5290, longitude: -46.8330, street: "Rua Alvorada", number: "88", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-200" },
-        { id: "student-17", name: "Rafael Bittencourt", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5280, longitude: -46.8340, street: "Rua Nova", number: "1", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-300" },
-        { id: "student-18", name: "Sabrina Sato", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5270, longitude: -46.8350, street: "Rua do Lago", number: "77", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-400" }
+        // Rota 2 - Tarde (Carapicuíba)
+        { id: "student-5", name: "Lucas Silva", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5300, longitude: -46.8300, street: "Rua do Bosque", number: "100", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-8", name: "Felipe Mendes", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5305, longitude: -46.8305, street: "Rua das Flores", number: "12", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-9", name: "Giulia Ramos", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5315, longitude: -46.8310, street: "Rua Alvorada", number: "45", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-10", name: "Henrique Oliveira", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5320, longitude: -46.8320, street: "Rua da Paz", number: "101", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-11", name: "Isabela Martins", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5325, longitude: -46.8325, street: "Rua do Porto", number: "20", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-12", name: "João Pedro", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5330, longitude: -46.8330, street: "Rua São Jorge", number: "55", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-13", name: "Larissa Manoela", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5335, longitude: -46.8335, street: "Rua Vitória", number: "9", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-14", name: "Matheus Solano", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5340, longitude: -46.8340, street: "Rua Principal", number: "200", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-15", name: "Nicole Bahls", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5345, longitude: -46.8345, street: "Av Inocêncio", number: "500", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-16", name: "Otávio Mesquita", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5350, longitude: -46.8350, street: "Rua do Sol", number: "33", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
     ],
     drivers: [
         { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo", vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 },
@@ -170,5 +163,11 @@ export const initialMockData = {
     contracts: [],
     pending_registrations: [],
     announcements: [],
-    trip_history: []
+    trip_history: [
+        { date: "2024-08-01", routeName: "Rota Centro", plannedKm: 15, actualKm: 12.8, driverName: "Juliano Castro", savingsKm: 2.2, fuelSaved: 13.20 },
+        { date: "2024-08-02", routeName: "Rota Centro", plannedKm: 15, actualKm: 13.1, driverName: "Juliano Castro", savingsKm: 1.9, fuelSaved: 11.40 },
+        { date: "2024-08-03", routeName: "Rota Centro", plannedKm: 15, actualKm: 12.5, driverName: "Juliano Castro", savingsKm: 2.5, fuelSaved: 15.00 },
+        { date: "2024-08-04", routeName: "Rota Centro", plannedKm: 15, actualKm: 12.9, driverName: "Juliano Castro", savingsKm: 2.1, fuelSaved: 12.60 },
+        { date: "2024-08-05", routeName: "Rota Centro", plannedKm: 15, actualKm: 12.2, driverName: "Juliano Castro", savingsKm: 2.8, fuelSaved: 16.80 }
+    ]
 };
