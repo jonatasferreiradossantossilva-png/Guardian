@@ -91,6 +91,22 @@ export default function PublicRegistrationPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
 
+  // Validation Logic
+  const isFormValid = () => {
+      return (
+          parentName.trim() !== '' &&
+          email.trim() !== '' &&
+          phone.trim() !== '' &&
+          studentName.trim() !== '' &&
+          selectedSchoolId !== '' &&
+          zipCode.replace(/\D/g, '').length === 8 &&
+          street.trim() !== '' &&
+          number.trim() !== '' &&
+          city.trim() !== '' &&
+          state.trim() !== ''
+      );
+  };
+
   // OCR Logic
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -151,6 +167,11 @@ export default function PublicRegistrationPage() {
   }, [zipCode, toast]);
 
   const handleFinalSubmit = () => {
+    if (!isFormValid()) {
+        toast({ title: "Dados incompletos", description: "Por favor, preencha todos os campos obrigatórios marcados com *", variant: "destructive" });
+        return;
+    }
+
     addDoc('pending_registrations', {
         parentName,
         email,
@@ -345,13 +366,13 @@ export default function PublicRegistrationPage() {
                         </p>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Nome Completo do Responsável</Label>
-                                <Input placeholder="Conforme documento" value={parentName} onChange={e => setParentName(e.target.value)} />
+                                <Label>Nome Completo do Responsável *</Label>
+                                <Input placeholder="Conforme documento" value={parentName} onChange={e => setParentName(e.target.value)} className={cn(!parentName && "border-destructive/50")} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>CPF</Label>
-                                    <Input placeholder="000.000.000-00" value={parentCpf} onChange={e => setParentCpf(e.target.value)} />
+                                    <Label>CPF *</Label>
+                                    <Input placeholder="000.000.000-00" value={parentCpf} onChange={e => setParentCpf(e.target.value)} className={cn(!parentCpf && "border-destructive/50")} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>RG</Label>
@@ -368,12 +389,12 @@ export default function PublicRegistrationPage() {
                         
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>E-mail</Label>
-                                <Input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} />
+                                <Label>E-mail *</Label>
+                                <Input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} className={cn(!email && "border-destructive/50")} />
                             </div>
                             <div className="space-y-2">
-                                <Label>WhatsApp</Label>
-                                <Input placeholder="(11) 90000-0000" value={phone} onChange={e => setPhone(e.target.value)} />
+                                <Label>WhatsApp *</Label>
+                                <Input placeholder="(11) 90000-0000" value={phone} onChange={e => setPhone(e.target.value)} className={cn(!phone && "border-destructive/50")} />
                             </div>
                         </div>
                     </div>
@@ -386,21 +407,21 @@ export default function PublicRegistrationPage() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="space-y-2 sm:col-span-1">
-                                    <Label>CEP de Embarque</Label>
+                                    <Label>CEP de Embarque *</Label>
                                     <div className="relative">
-                                        <Input placeholder="00000-000" value={zipCode} onChange={e => setZipCode(e.target.value)} />
+                                        <Input placeholder="00000-000" value={zipCode} onChange={e => setZipCode(e.target.value)} className={cn(zipCode.replace(/\D/g, '').length !== 8 && "border-destructive/50")} />
                                         {isFetchingCep && <Loader2 className="absolute right-2 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
                                     </div>
                                 </div>
                                 <div className="space-y-2 sm:col-span-2">
-                                    <Label>Rua/Avenida</Label>
-                                    <Input placeholder="Logradouro" value={street} onChange={e => setStreet(e.target.value)} />
+                                    <Label>Rua/Avenida *</Label>
+                                    <Input placeholder="Logradouro" value={street} onChange={e => setStreet(e.target.value)} className={cn(!street && "border-destructive/50")} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Número</Label>
-                                    <Input placeholder="Ex: 123" value={number} onChange={e => setNumber(e.target.value)} />
+                                    <Label>Número *</Label>
+                                    <Input placeholder="Ex: 123" value={number} onChange={e => setNumber(e.target.value)} className={cn(!number && "border-destructive/50")} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Complemento</Label>
@@ -413,8 +434,8 @@ export default function PublicRegistrationPage() {
                                     <Input placeholder="Bairro" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Cidade</Label>
-                                    <Input placeholder="Cidade" value={city} onChange={e => setCity(e.target.value)} />
+                                    <Label>Cidade *</Label>
+                                    <Input placeholder="Cidade" value={city} onChange={e => setCity(e.target.value)} className={cn(!city && "border-destructive/50")} />
                                 </div>
                             </div>
                         </div>
@@ -426,13 +447,13 @@ export default function PublicRegistrationPage() {
                         </p>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Nome do Filho(a)</Label>
-                                <Input placeholder="Nome completo do aluno" value={studentName} onChange={e => setStudentName(e.target.value)} />
+                                <Label>Nome do Filho(a) *</Label>
+                                <Input placeholder="Nome completo do aluno" value={studentName} onChange={e => setStudentName(e.target.value)} className={cn(!studentName && "border-destructive/50")} />
                             </div>
                             <div className="space-y-2">
-                                <Label>Escola de Destino</Label>
+                                <Label>Escola de Destino *</Label>
                                 <Select onValueChange={setSelectedSchoolId} value={selectedSchoolId}>
-                                    <SelectTrigger><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
+                                    <SelectTrigger className={cn(!selectedSchoolId && "border-destructive/50")}><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
                                     <SelectContent>
                                         {schools?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                                     </SelectContent>
@@ -456,7 +477,6 @@ export default function PublicRegistrationPage() {
                         </div>
                     </div>
 
-                    {/* Preferências Financeiras Reinstaladas */}
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
                             <DollarSign className="h-4 w-4" /> Preferências Financeiras
@@ -479,7 +499,14 @@ export default function PublicRegistrationPage() {
 
             <CardFooter className="border-t p-6 shrink-0 bg-background">
                 <div className="flex flex-col w-full gap-2">
-                    <Button className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90" onClick={() => setStep('health')}>
+                    <Button 
+                        className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90" 
+                        onClick={() => {
+                            if (isFormValid()) setStep('health');
+                            else toast({ title: "Campos obrigatórios", description: "Verifique os campos marcados em vermelho.", variant: "destructive" });
+                        }}
+                        disabled={!isFormValid()}
+                    >
                         Próximo: Informações de Saúde
                         <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>

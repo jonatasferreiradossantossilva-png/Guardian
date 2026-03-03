@@ -39,6 +39,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 const SERIE_OPTIONS = [
     "Berçário / Maternal",
@@ -79,13 +80,13 @@ const formSchema = z.object({
   preferredPaymentDay: z.coerce.number().int().min(1).max(31).optional(),
   medicalNote: z.string().optional(),
   medicalConditions: z.array(z.string()).default([]),
-  zipCode: z.string().optional(),
-  street: z.string().optional(),
-  number: z.string().optional(),
+  zipCode: z.string().min(8, { message: 'CEP obrigatório (8 dígitos).' }),
+  street: z.string().min(1, { message: 'A rua é obrigatória.' }),
+  number: z.string().min(1, { message: 'O número é obrigatório.' }),
   complement: z.string().optional(),
   neighborhood: z.string().optional(),
-  city: z.string().optional(),
-  state: z.string().optional(),
+  city: z.string().min(1, { message: 'A cidade é obrigatória.' }),
+  state: z.string().min(1, { message: 'O estado é obrigatório.' }),
   active: z.boolean().default(true),
   serie: z.string().optional(),
   turma: z.string().optional(),
@@ -162,7 +163,6 @@ export function StudentForm({
   const zipCode = form.watch('zipCode');
   const parentId = form.watch('parentId');
   const currentPhoto = form.watch('photoUrl');
-  const selectedConditions = form.watch('medicalConditions') || [];
 
   // Herança de Irmãos Inteligente
   const siblings = useMemo(() => {
@@ -340,7 +340,7 @@ export function StudentForm({
     <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{student ? 'Editar Aluno' : 'Adicionar Aluno'}</DialogTitle>
-        <DialogDescription>Preencha as informações do aluno abaixo ou use a busca para endereços.</DialogDescription>
+        <DialogDescription>Preencha as informações do aluno abaixo. Escola e Endereço de Embarque são obrigatórios.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
@@ -397,7 +397,7 @@ export function StudentForm({
                 name="name"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nome do Aluno</FormLabel>
+                    <FormLabel>Nome do Aluno *</FormLabel>
                     <FormControl><Input placeholder="Ex: João da Silva" {...field} value={field.value ?? ''} /></FormControl>
                     <FormMessage />
                   </FormItem>
@@ -409,7 +409,7 @@ export function StudentForm({
                 name="parentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Responsável</FormLabel>
+                    <FormLabel>Responsável *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger><SelectValue placeholder="Selecione um responsável" /></SelectTrigger>
@@ -482,7 +482,7 @@ export function StudentForm({
 
               <div className="border-t pt-4 mt-4">
                  <div className="flex justify-between items-center mb-2">
-                    <p className="text-sm font-medium flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço de Embarque</p>
+                    <p className="text-sm font-medium flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço de Embarque *</p>
                     <Button type="button" variant="outline" size="sm" onClick={handleCopyAddress} disabled={!parentId}>
                         <Copy className="mr-2 h-3 w-3"/> Usar do responsável
                     </Button>
@@ -492,7 +492,7 @@ export function StudentForm({
                         control={form.control} name="zipCode"
                         render={({ field }) => (
                             <FormItem className="md:col-span-1">
-                            <FormLabel>CEP</FormLabel>
+                            <FormLabel>CEP *</FormLabel>
                             <FormControl>
                               <div className="relative">
                                 <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
@@ -507,7 +507,7 @@ export function StudentForm({
                         control={form.control} name="street"
                         render={({ field }) => (
                             <FormItem className="md:col-span-2">
-                            <FormLabel>Rua</FormLabel>
+                            <FormLabel>Rua *</FormLabel>
                             <FormControl><Input placeholder="Rua das Flores" {...field} value={field.value ?? ''} /></FormControl>
                             <FormMessage />
                             </FormItem>
@@ -518,7 +518,7 @@ export function StudentForm({
                      <FormField
                         control={form.control} name="number"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Número</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Número *</FormLabel><FormControl><Input placeholder="123" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                      <FormField
@@ -538,13 +538,13 @@ export function StudentForm({
                     <FormField
                         control={form.control} name="city"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Cidade</FormLabel><FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Cidade *</FormLabel><FormControl><Input placeholder="São Paulo" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                     <FormField
                         control={form.control} name="state"
                         render={({ field }) => (
-                            <FormItem><FormLabel>Estado (UF)</FormLabel><FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
+                            <FormItem><FormLabel>Estado (UF) *</FormLabel><FormControl><Input placeholder="SP" {...field} value={field.value ?? ''} /></FormControl><FormMessage /></FormItem>
                         )}
                     />
                 </div>
@@ -609,7 +609,7 @@ export function StudentForm({
                 name="schoolId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Escola</FormLabel>
+                    <FormLabel>Escola de Destino *</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl>
                         <SelectTrigger><SelectValue placeholder="Selecione uma escola" /></SelectTrigger>
@@ -636,7 +636,7 @@ export function StudentForm({
                   name="shift"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Turno</FormLabel>
+                      <FormLabel>Turno *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger><SelectValue placeholder="Selecione o turno" /></SelectTrigger>
