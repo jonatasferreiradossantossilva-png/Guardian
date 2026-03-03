@@ -228,7 +228,7 @@ export default function ParentTrackingPage() {
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
-    setMockUserId(storedUserId || "user-pai-1");
+    setMockUserId(storedUserId);
   }, []);
 
   const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", mockUserId ? [
@@ -401,25 +401,28 @@ export default function ParentTrackingPage() {
         
         {/* Multi-Child Selector (Phase 1) */}
         {students && students.length > 1 && (
-            <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
-                {students.map((s) => (
-                    <button
-                        key={s.id}
-                        onClick={() => setSelectedStudentId(s.id)}
-                        className={cn(
-                            "flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0",
-                            selectedStudentId === s.id 
-                                ? "bg-primary border-primary text-primary-foreground shadow-md scale-105" 
-                                : "bg-background border-muted text-muted-foreground hover:border-primary/50"
-                        )}
-                    >
-                        <Avatar className="h-6 w-6">
-                            <AvatarImage src={`https://picsum.photos/seed/student-${s.id}/40/40`} />
-                            <AvatarFallback>{s.name[0]}</AvatarFallback>
-                        </Avatar>
-                        <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
-                    </button>
-                ))}
+            <div className="space-y-2 mb-6">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground px-1">Selecione o Aluno</p>
+                <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
+                    {students.map((s) => (
+                        <button
+                            key={s.id}
+                            onClick={() => setSelectedStudentId(s.id)}
+                            className={cn(
+                                "flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0",
+                                selectedStudentId === s.id 
+                                    ? "bg-primary border-primary text-primary-foreground shadow-md scale-105" 
+                                    : "bg-background border-muted text-muted-foreground hover:border-primary/50"
+                            )}
+                        >
+                            <Avatar className="h-6 w-6">
+                                <AvatarImage src={`https://picsum.photos/seed/student-${s.id}/40/40`} />
+                                <AvatarFallback>{s.name[0]}</AvatarFallback>
+                            </Avatar>
+                            <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
+                        </button>
+                    ))}
+                </div>
             </div>
         )}
 

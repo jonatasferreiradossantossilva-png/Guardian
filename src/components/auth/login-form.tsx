@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -30,10 +31,11 @@ const formSchema = z.object({
   }),
 });
 
+// FIXED: Updated 'pai' to point to Ana Pereira (user-pai-1) who has 2 children for multi-child validation
 const profileToMockIdMap = {
     'gestor': 'user-admin-1',
     'motorista': 'user-motorista-4',
-    'pai': 'user-pai-3',
+    'pai': 'user-pai-1', 
     'monitor': 'user-monitor-1'
 };
 
