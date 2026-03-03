@@ -31,7 +31,11 @@ import {
     ArrowDownRight,
     Zap,
     Database,
-    Search
+    Search,
+    Smartphone,
+    ClipboardCheck,
+    Navigation,
+    FileText
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -130,7 +134,25 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* Slide 4: Big Data & Zero Friction */}
+            {/* Slide 4: 17-Step Zero Friction Journey (THE BIG NEW ADDITION) */}
+            <Slide>
+                 <Badge className="mb-4 bg-primary text-primary-foreground">O GRANDE DIFERENCIAL</Badge>
+                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Onboarding em 17 Passos: Do Convite ao Contrato</h2>
+                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 w-full">
+                    <ProcessStep icon={<Smartphone />} label="Convite WhatsApp" />
+                    <ProcessStep icon={<Sparkles />} label="Leitura via IA" />
+                    <ProcessStep icon={<MapPinned />} label="GPS Validado" />
+                    <ProcessStep icon={<School />} label="Base de Escolas" />
+                    <ProcessStep icon={<Search />} label="Triagem Automática" />
+                    <ProcessStep icon={<FileText />} label="Contrato Digital" />
+                 </div>
+                 <p className="mt-12 text-center text-xl text-muted-foreground max-w-4xl">
+                    Reduzimos o tempo de cadastro de <strong>45 minutos para 2 minutos</strong>. 
+                    O pai faz o trabalho pesado via IA, e o gestor apenas valida a rota sugerida.
+                 </p>
+            </Slide>
+
+            {/* Slide 5: Big Data & Knowledge Base */}
             <Slide>
                  <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Database className="inline-block text-primary h-12 w-12 mr-4" />Big Data & Cadastro Zero Fricção</h2>
                  <div className="w-full bg-background/50 border border-primary/20 rounded-xl p-8 backdrop-blur-sm shadow-2xl">
@@ -160,7 +182,7 @@ export default function PresentationPage() {
                  </div>
             </Slide>
 
-            {/* Slide 5: Proof of ROI */}
+            {/* Slide 6: Proof of ROI */}
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">
                     <BarChart className="inline-block text-primary h-12 w-12 mr-4" />
@@ -177,8 +199,8 @@ export default function PresentationPage() {
                     <Card className="p-6 bg-primary/5 border-primary/20">
                         <h3 className="text-lg font-bold mb-4 flex items-center gap-2 text-primary"><MapPinned className="h-5 w-5"/> O que o GPS Captura</h3>
                         <p className="text-sm text-muted-foreground mb-4">O traçado real percorrido pela van, detectando desvios, paradas não planejadas e economia real de combustível.</p>
-                        <div className="h-40 bg-background rounded border flex items-center justify-center font-bold text-primary">
-                            Dashboard de ROI Ativo
+                        <div className="h-40 bg-background rounded border flex items-center justify-center font-bold text-primary text-center px-4">
+                            Economia real de 14.2% em KM detectada hoje.
                         </div>
                     </Card>
                 </div>
@@ -255,6 +277,13 @@ const MarketComparisonItem = ({ icon, text, isNegative }: { icon: React.ReactNod
     <div className={`flex items-center gap-3 p-3 rounded-lg border ${isNegative ? 'bg-secondary/30' : 'bg-primary/5 border-primary/20'}`}>
         {icon}
         <span className="text-sm font-medium">{text}</span>
+    </div>
+);
+
+const ProcessStep = ({ icon, label }: { icon: React.ReactNode, label: string }) => (
+    <div className="flex flex-col items-center text-center gap-2 p-4 rounded-lg bg-secondary/30 border border-border/50">
+        <div className="p-3 rounded-full bg-primary/10 text-primary">{icon}</div>
+        <span className="text-[10px] font-bold uppercase leading-tight">{label}</span>
     </div>
 );
 
