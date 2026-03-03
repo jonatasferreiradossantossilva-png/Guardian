@@ -36,7 +36,8 @@ import {
     ClipboardCheck,
     Navigation,
     FileText,
-    BellRing
+    BellRing,
+    School
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
