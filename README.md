@@ -1,46 +1,48 @@
 # Guardian - Inteligência para Transporte Escolar
 
-O Guardian é uma plataforma de inteligência operacional para transporte escolar que utiliza IA Generativa e Roteirização Híbrida para otimizar frotas com custo zero de API em larga escala.
+O Guardian é uma plataforma de inteligência operacional para transporte escolar que utiliza IA Generativa e Roteirização Híbrida para otimizar frotas, reduzir custos e aumentar a segurança.
 
-## 🚀 Arquitetura de Inteligência
+## 🚀 Funcionalidades por Módulo
 
-O sistema opera em três camadas integradas:
+### 1. Camada de Inteligência Artificial (Genkit + Gemini)
+- **OCR de Documentos:** Extração automática de dados de RG e CNH para cadastro instantâneo de pais e responsáveis.
+- **Busca Semântica de Escolas:** Base proprietária com mais de 190.000 instituições (INEP), permitindo o preenchimento de endereço e GPS em 1 clique.
+- **Otimização de Rota:** Algoritmo que decide a sequência lógica de paradas baseando-se em regras de negócio (ex: coletar todos antes de descarregar).
+- **Sumarização de Incidentes:** IA que resume relatos de trânsito ou problemas enviados pelos motoristas para o gestor.
 
-### 1. Camada de Decisão (IA Generativa)
-- **Motor:** Google Gemini 1.5 Flash via Genkit.
-- **Função:** Atua como um especialista em logística. Recebe os pontos de embarque/desembarque e decide a **ordem lógica** das paradas baseando-se em regras de negócio (ex: coletar todos os alunos antes de descarregar nas escolas).
-- **Auto-Cura (Otimização Contínua):** O sistema re-otimiza a rota automaticamente a cada parada concluída, ajustando-se em tempo real a imprevistos de trânsito ou atrasos.
-- **Resiliência:** Possui mecanismos de fallback que retornam a rota padrão do gestor caso a IA esteja temporariamente indisponível ou offline.
+### 2. Painel do Gestor (Dashboard Administrativo)
+- **Prova de ROI:** Comparativo visual entre KM Planejado (IA) vs. KM Real (GPS), calculando economia de combustível e redução de emissão de CO2.
+- **Saúde da Frota:** Alertas de manutenção preventiva baseados no odômetro real capturado via GPS.
+- **Gestão Financeira:** Faturamento automatizado, controle de inadimplência, fluxo de caixa e simulação de pagamentos via Pix.
+- **Triagem de Solicitações:** Área para revisar e aprovar cadastros feitos por pais via link público.
+- **Central de Mensagens:** Chat centralizado com motoristas, monitores e pais com modelos de mensagens rápidas.
+- **Contratos Digitais:** Criação de modelos e geração de contratos personalizados com variáveis inteligentes.
 
-### 2. Camada de Geometria (Roteirização Híbrida)
-- **Motor:** Geoapify (OpenStreetMap).
-- **Função:** Transforma a sequência lógica da IA em um **traçado visual (Polyline)**.
-- **Inovação (Chunking):** Lógica de fatiamento que supera os limites de 5 waypoints das APIs gratuitas, permitindo rotas de qualquer tamanho através da "costura" de segmentos de rota.
+### 3. App do Motorista / Monitor (Operacional)
+- **Início de Viagem Inteligente:** Captura posição GPS atual e re-otimiza a rota instantaneamente.
+- **Auto-Cura (Continuous Optimization):** A cada parada concluída, a IA recalcula o melhor caminho para as paradas restantes.
+- **Check-in por QR Code:** Validação de embarque/desembarque via scanner ou checklist visual com foto do aluno.
+- **Modo Offline:** Funcionamento total sem internet, com sincronização automática de dados de telemetria ao recuperar conexão.
+- **Relato de Incidentes:** Envio de alertas de trânsito ou perigo com localização exata.
 
-### 3. Camada de Sincronização (Real-time DB)
-- **Motor:** Firebase Firestore + Offline Persistence.
-- **Estratégia Custo Zero:** A rota é calculada uma única vez (ou a cada re-otimização). O traçado resultante (Polyline) é salvo no banco. Pais e gestores realizam apenas a leitura desse dado estático, eliminando milhares de chamadas redundantes a APIs de mapas pagas.
+### 4. App dos Pais (Segurança Contextual)
+- **Rastreamento em Tempo Real:** Visualização da van em um mapa dinâmico com telemetria fluida.
+- **Alerta de Proximidade (800m):** Notificação inteligente quando a van entra no raio crítico da residência, economizando bateria do celular.
+- **Gestão Multi-filhos:** Controle de todos os filhos em uma única tela, com herança de dados para novos cadastros (mesmo endereço/responsável).
+- **Assinatura de Contrato:** Visualização e aceite jurídico do contrato de serviço diretamente pelo app.
+- **Hub de Pagamentos:** Histórico de faturas, geração de QR Code Pix e envio de comprovantes.
+- **Pessoas Autorizadas:** Cadastro de fotos e documentos de terceiros autorizados a retirar o aluno.
 
-## 🔒 Política de Privacidade de Rotas
-A segurança das crianças é nossa prioridade. O sistema aplica filtros de visualização granulares:
-- **Gestor/Motorista:** Visão total de todos os pontos e dados sensíveis.
-- **Pais:** Visualizam o traçado completo da rota (Polyline) para transparência de tempo, mas possuem acesso **apenas aos marcadores de seu próprio filho e da escola**. Marcadores de residência de outros alunos são estritamente ocultados.
+### 5. Onboarding e Crescimento
+- **Jornada de 17 Passos:** Guia visual interativo com prints reais que ensina o uso do sistema do convite ao contrato.
+- **Página de Cadastro Público:** Link exclusivo para convidar pais, com fluxo de cadastro zero fricção via IA.
 
-## 🛠️ Processos Principais
-
-### Criação de Rotas (Gestor)
-1.  **Configuração:** O gestor vincula um motorista, um veículo e define o turno.
-2.  **Triagem:** O sistema filtra alunos disponíveis com base nas escolas selecionadas e compatibilidade de horários.
-3.  **Otimização:** O botão "Otimizar Ordem" aciona a IA para calcular a sequência e o motor Geoapify desenha o trajeto.
-
-### Início de Viagem Inteligente (Motorista)
-1.  **Localização Real:** Captura a posição GPS exata da van no momento da saída.
-2.  **Re-otimização Real-time:** A IA recalcula a sequência partindo da posição atual da van (Modo Flexível).
-3.  **Ativação de Rastreamento:** O sistema inicia a simulação de movimento (jittering) para visualização dos pais.
-
-### Operação em Tempo Real (Auto-Cura)
-1.  **Check-in Dinâmico:** A cada aluno embarcado ou escola visitada, o sistema avalia a conexão.
-2.  **Re-calculo Transparente:** Se online, a IA sugere novos caminhos para as paradas restantes, mantendo a van sempre no trajeto mais rápido sem que o motorista precise intervir.
+## 🛠️ Arquitetura Técnica
+- **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS.
+- **Componentes:** ShadCN UI (Radix UI).
+- **Backend:** Firebase Firestore (Banco em tempo real) e Firebase Auth.
+- **IA:** Google Genkit com Gemini 1.5 Flash.
+- **Mapas:** Google Maps API (Visualização) e Geoapify/OpenStreetMap (Roteirização Custo Zero).
 
 ---
 *Guardian - A jornada do seu filho, protegida em tempo real.*
