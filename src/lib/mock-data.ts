@@ -64,7 +64,6 @@ export const initialMockData = {
         }
     ],
     school_knowledge_base: [
-        // Escola Solicitada (Carapicuíba)
         { 
             id: "skb-marjore-paula", 
             name: "COLEGIO MARJORE PAULA", 
@@ -77,265 +76,46 @@ export const initialMockData = {
             street: "Rua Padre Áureliano", 
             number: "93" 
         },
-        
-        // Escolas Carapicuíba - SP (Privadas)
-        { id: "skb-c-1", name: "ADVENTISTA DE CARAPICUIBA COLEGIO", type: "private", zipCode: "06310-160", city: "Carapicuíba", state: "SP", latitude: -23.5225, longitude: -46.8355, neighborhood: "Centro" },
-        { id: "skb-c-2", name: "AGOSTINHO COLEGIO", type: "private", zipCode: "06310-100", city: "Carapicuíba", state: "SP", latitude: -23.5235, longitude: -46.8345, neighborhood: "Centro" },
-        { id: "skb-c-9", name: "CAMINHO DO SABER COLEGIO", type: "private", zipCode: "06321-110", city: "Carapicuíba", state: "SP", latitude: -23.5322, longitude: -46.8377, neighborhood: "Vila Cretti" },
-        { id: "skb-c-12", name: "DIVINO MESTRE COLEGIO", type: "private", zipCode: "06315-000", city: "Carapicuíba", state: "SP", latitude: -23.5244, longitude: -46.8399, neighborhood: "Vila Caldas" },
-        { id: "skb-c-13", name: "ESCOLA DA VILA COLEGIO", type: "private", zipCode: "06355-300", city: "Carapicuíba", state: "SP", latitude: -23.5611, longitude: -46.8288, neighborhood: "Aldeia de Carapicuiba" },
-        { id: "skb-c-15", name: "IMACULADA CONCEICAO COLEGIO", type: "private", zipCode: "06310-010", city: "Carapicuíba", state: "SP", latitude: -23.5215, longitude: -46.8322, neighborhood: "Centro" },
-        { id: "skb-c-16", name: "PIAGET COLEGIO", type: "private", zipCode: "06315-010", city: "Carapicuíba", state: "SP", latitude: -23.5255, longitude: -46.8388, neighborhood: "Vila Caldas" },
-        { id: "skb-c-18", name: "SAO JORGE COLEGIO", type: "private", zipCode: "06310-040", city: "Carapicuíba", state: "SP", latitude: -23.5218, longitude: -46.8344, neighborhood: "Centro" },
-        { id: "skb-c-19", name: "COLEGIO ALFA", type: "private", zipCode: "06310-200", city: "Carapicuíba", state: "SP", latitude: -23.5240, longitude: -46.8310, neighborhood: "Centro" },
-        { id: "skb-c-20", name: "COLEGIO OBJETIVO CARAPICUIBA", type: "private", zipCode: "06310-250", city: "Carapicuíba", state: "SP", latitude: -23.5210, longitude: -46.8360, neighborhood: "Centro" },
-        
-        // Escolas Carapicuíba - SP (Públicas)
-        { id: "skb-c-3", name: "AMALIA TIBIRICA DE CARVALHO PROFESSORA EE", type: "public", zipCode: "06386-430", city: "Carapicuíba", state: "SP", latitude: -23.5345, longitude: -46.8255, neighborhood: "Vila Dirce" },
-        { id: "skb-c-4", name: "ANA MARIA DE SOUZA PROFESSORA EMEF", type: "public", zipCode: "06333-270", city: "Carapicuíba", state: "SP", latitude: -23.5412, longitude: -46.8123, neighborhood: "Ariston" },
-        { id: "skb-c-5", name: "ANDREI SAKHAROV EE", type: "public", zipCode: "06327-270", city: "Carapicuíba", state: "SP", latitude: -23.5288, longitude: -46.8412, neighborhood: "Parque Jandaia" },
-        { id: "skb-c-6", name: "ANNA LAURA EMEI", type: "public", zipCode: "06328-340", city: "Carapicuíba", state: "SP", latitude: -23.5299, longitude: -46.8455, neighborhood: "Cohab V" },
-        { id: "skb-c-7", name: "ANTONIO DE OLIVEIRA PROFESSOR EE", type: "public", zipCode: "06321-610", city: "Carapicuíba", state: "SP", latitude: -23.5312, longitude: -46.8388, neighborhood: "Vila Cretti" },
-        { id: "skb-c-8", name: "BASILIO BADI EE", type: "public", zipCode: "06325-000", city: "Carapicuíba", state: "SP", latitude: -23.5355, longitude: -46.8422, neighborhood: "Vila Menck" },
-        { id: "skb-c-10", name: "CAROLINA MARIA DE JESUS PROFESSORA EMEF", type: "public", zipCode: "06341-000", city: "Carapicuíba", state: "SP", latitude: -23.5455, longitude: -46.8211, neighborhood: "Pq. Santa Teresa" },
-        { id: "skb-c-11", name: "CHICO MENDES EMEF", type: "public", zipCode: "06390-400", city: "Carapicuíba", state: "SP", latitude: -23.5511, longitude: -46.8155, neighborhood: "Vila Marcondes" },
-        { id: "skb-c-14", name: "EUCLIDES DA CUNHA EE", type: "public", zipCode: "06310-000", city: "Carapicuíba", state: "SP", latitude: -23.5211, longitude: -46.8333, neighborhood: "Centro" },
-        { id: "skb-c-17", name: "TOBIAS DE AGUIAR EE", type: "public", zipCode: "06310-050", city: "Carapicuíba", state: "SP", latitude: -23.5205, longitude: -46.8311, neighborhood: "Centro" }
+        { id: "skb-c-1", name: "ADVENTISTA DE CARAPICUIBA COLEGIO", type: "private", zipCode: "06310-160", city: "Carapicuíba", state: "SP", latitude: -23.5225, longitude: -46.8355, neighborhood: "Centro" }
     ],
     parents: [
-        {
-            id: "parent-1",
-            userId: "user-pai-1",
-            name: "Ana Pereira",
-            email: "ana.pereira@email.com",
-            phone: "11987654321",
-            cpf: "111.222.333-44",
-            active: true,
-            street: "Rua das Acácias",
-            number: "10",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "05445-010"
-        },
-        {
-            id: "parent-2",
-            userId: "user-pai-2",
-            name: "João Costa",
-            email: "joao.costa@email.com",
-            phone: "11977778888",
-            cpf: "222.333.444-55",
-            active: true,
-            street: "Av. Paulista",
-            number: "1000",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "01310-100"
-        },
-        {
-            id: "parent-3",
-            userId: "user-pai-3",
-            name: "Carla Dias",
-            email: "carla.dias@email.com",
-            phone: "11966665555",
-            cpf: "333.444.555-66",
-            active: true,
-            street: "Rua Oscar Freire",
-            number: "50",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "01426-001"
-        },
-        {
-            id: "parent-4",
-            userId: "user-pai-4",
-            name: "Marcos Silva",
-            email: "marcos.silva@email.com",
-            phone: "11955554444",
-            cpf: "444.555.666-77",
-            active: true,
-            street: "Av. Inocêncio Seráfico",
-            number: "2000",
-            city: "Carapicuíba",
-            state: "SP",
-            zipCode: "06320-000"
-        }
+        { id: "parent-1", userId: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", phone: "11987654321", active: true },
+        { id: "parent-2", userId: "user-pai-2", name: "João Costa", email: "joao.costa@email.com", phone: "11977778888", active: true },
+        { id: "parent-3", userId: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", phone: "11966665555", active: true },
+        { id: "parent-4", userId: "user-pai-4", name: "Marcos Silva", email: "marcos.silva@email.com", phone: "11955554444", active: true }
     ],
     students: [
-        {
-            id: "student-1",
-            name: "Enzo Pereira",
-            schoolId: "school-1",
-            parentId: "parent-1",
-            shift: "Manhã",
-            status: "aguardando",
-            active: true,
-            latitude: -23.5580,
-            longitude: -46.6600,
-            street: "Rua das Academias",
-            number: "10",
-            neighborhood: "Vila Madalena",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "05445-010",
-            monthlyFee: 450.00,
-            medicalNote: "Alérgico a lactose.",
-            routeId: "route-1"
-        },
-        {
-            id: "student-4",
-            name: "Valentina Pereira",
-            schoolId: "school-2",
-            parentId: "parent-1",
-            shift: "Manhã",
-            status: "aguardando",
-            active: true,
-            latitude: -23.5580,
-            longitude: -46.6600,
-            street: "Rua das Academias",
-            number: "10",
-            neighborhood: "Vila Madalena",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "05445-010",
-            monthlyFee: 420.00,
-            routeId: "route-1"
-        },
-        {
-            id: "student-2",
-            name: "Beatriz Costa",
-            schoolId: "school-1",
-            parentId: "parent-2",
-            shift: "Manhã",
-            status: "aguardando",
-            active: true,
-            latitude: -23.5650,
-            longitude: -46.6520,
-            street: "Av. Paulista",
-            number: "1000",
-            neighborhood: "Bela Vista",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "01310-100",
-            monthlyFee: 420.00,
-            routeId: "route-1"
-        },
-        {
-            id: "student-3",
-            name: "Gabriel Dias",
-            schoolId: "school-2",
-            parentId: "parent-3",
-            shift: "Manhã",
-            status: "aguardando",
-            active: true,
-            latitude: -23.5600,
-            longitude: -46.6650,
-            street: "Rua Oscar Freire",
-            number: "50",
-            neighborhood: "Jardins",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "01426-001",
-            monthlyFee: 480.00,
-            medicalNote: "Asma.",
-            routeId: "route-1"
-        },
-        {
-            id: "student-5",
-            name: "Lucas Silva",
-            schoolId: "school-3",
-            parentId: "parent-4",
-            shift: "Tarde",
-            status: "aguardando",
-            active: true,
-            latitude: -23.5300,
-            longitude: -46.8300,
-            street: "Rua do Bosque",
-            number: "100",
-            neighborhood: "Vila Silviania",
-            city: "Carapicuíba",
-            state: "SP",
-            zipCode: "06321-000",
-            monthlyFee: 400.00,
-            routeId: "route-2"
-        },
-        {
-            id: "student-6",
-            name: "Mariana Souza",
-            schoolId: "school-3",
-            parentId: "parent-4",
-            shift: "Tarde",
-            status: "aguardando",
-            active: true,
-            latitude: -23.5310,
-            longitude: -46.8315,
-            street: "Rua das Palmeiras",
-            number: "25",
-            neighborhood: "Vila Silviania",
-            city: "Carapicuíba",
-            state: "SP",
-            zipCode: "06321-100",
-            monthlyFee: 400.00
-        },
-        {
-            id: "student-7",
-            name: "Pedro Rocha",
-            schoolId: "school-3",
-            parentId: "parent-4",
-            shift: "Tarde",
-            status: "aguardando",
-            active: true,
-            latitude: -23.5290,
-            longitude: -46.8330,
-            street: "Rua Alvorada",
-            number: "88",
-            neighborhood: "Vila Silviania",
-            city: "Carapicuíba",
-            state: "SP",
-            zipCode: "06321-200",
-            monthlyFee: 400.00
-        }
+        // Rota 1 - Manhã (Centro SP)
+        { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Academias", number: "10", city: "São Paulo", state: "SP", zipCode: "05445-010" },
+        { id: "student-4", name: "Valentina Pereira", schoolId: "school-2", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Academias", number: "10", city: "São Paulo", state: "SP", zipCode: "05445-010" },
+        { id: "student-2", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", zipCode: "01310-100" },
+        { id: "student-3", name: "Gabriel Dias", schoolId: "school-2", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6650, street: "Rua Oscar Freire", number: "50", city: "São Paulo", state: "SP", zipCode: "01426-001" },
+        
+        // Rota 2 - Tarde (Carapicuíba) - 10 SELECIONADOS
+        { id: "student-5", name: "Lucas Silva", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5300, longitude: -46.8300, street: "Rua do Bosque", number: "100", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-8", name: "Felipe Mendes", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5305, longitude: -46.8305, street: "Rua das Flores", number: "12", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-9", name: "Giulia Ramos", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5315, longitude: -46.8310, street: "Rua Alvorada", number: "45", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-10", name: "Henrique Oliveira", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5320, longitude: -46.8320, street: "Rua da Paz", number: "101", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-11", name: "Isabela Martins", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5325, longitude: -46.8325, street: "Rua do Porto", number: "20", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-12", name: "João Pedro", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5330, longitude: -46.8330, street: "Rua São Jorge", number: "55", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-13", name: "Larissa Manoela", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5335, longitude: -46.8335, street: "Rua Vitória", number: "9", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-14", name: "Matheus Solano", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5340, longitude: -46.8340, street: "Rua Principal", number: "200", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-15", name: "Nicole Bahls", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5345, longitude: -46.8345, street: "Av Inocêncio", number: "500", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+        { id: "student-16", name: "Otávio Mesquita", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5350, longitude: -46.8350, street: "Rua do Sol", number: "33", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000" },
+
+        // Rota 2 - Tarde (Carapicuíba) - 4 A SELECIONAR
+        { id: "student-6", name: "Mariana Souza", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5310, longitude: -46.8315, street: "Rua das Palmeiras", number: "25", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-100" },
+        { id: "student-7", name: "Pedro Rocha", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5290, longitude: -46.8330, street: "Rua Alvorada", number: "88", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-200" },
+        { id: "student-17", name: "Rafael Bittencourt", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5280, longitude: -46.8340, street: "Rua Nova", number: "1", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-300" },
+        { id: "student-18", name: "Sabrina Sato", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5270, longitude: -46.8350, street: "Rua do Lago", number: "77", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-400" }
     ],
     drivers: [
-        {
-            id: "driver-1",
-            userId: "user-motorista-4",
-            name: "Juliano Castro",
-            status: "inativo",
-            vehicleId: "vehicle-1",
-            active: true,
-            latitude: -23.5500,
-            longitude: -46.6300
-        },
-        {
-            id: "driver-2",
-            userId: "user-motorista-2",
-            name: "Mariana Costa",
-            status: "inativo",
-            vehicleId: "vehicle-2",
-            active: true
-        }
+        { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo", vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 },
+        { id: "driver-2", userId: "user-motorista-2", name: "Mariana Costa", status: "inativo", vehicleId: "vehicle-2", active: true }
     ],
     vehicles: [
-        {
-            id: "vehicle-1",
-            model: "Mercedes Sprinter",
-            licensePlate: "BRA2E19",
-            capacity: 15,
-            active: true,
-            currentOdometer: 45200,
-            lastMaintenanceOdometer: 40000,
-            maintenanceInterval: 10000
-        },
-        {
-            id: "vehicle-2",
-            model: "Renault Master",
-            licensePlate: "KLU4J22",
-            capacity: 18,
-            active: true,
-            currentOdometer: 12000,
-            lastMaintenanceOdometer: 10000,
-            maintenanceInterval: 10000
-        }
+        { id: "vehicle-1", model: "Mercedes Sprinter", licensePlate: "BRA2E19", capacity: 15, active: true, currentOdometer: 45200, lastMaintenanceOdometer: 40000, maintenanceInterval: 10000 },
+        { id: "vehicle-2", model: "Renault Master", licensePlate: "KLU4J22", capacity: 20, active: true, currentOdometer: 12000, lastMaintenanceOdometer: 10000, maintenanceInterval: 10000 }
     ],
     routes: [
         {
@@ -355,7 +135,11 @@ export const initialMockData = {
             driverId: "driver-2",
             monitorId: "",
             shift: "Tarde",
-            studentIds: ["student-5", "school-3"],
+            studentIds: [
+                "student-5", "student-8", "student-9", "student-10", "student-11", 
+                "student-12", "student-13", "student-14", "student-15", "student-16", 
+                "school-3"
+            ],
             lastOptimizedAt: "",
             plannedDistanceKm: 8.2,
             polyline: ""
@@ -366,134 +150,25 @@ export const initialMockData = {
         "driver-2": { latitude: -23.5200, longitude: -46.8300, timestamp: new Date().toISOString() }
     },
     incidents: [
-        {
-            id: "inc-1",
-            category: "Trânsito",
-            severity: "Média",
-            timestamp: new Date().toISOString(),
-            location: { lat: -23.555, lng: -46.645 },
-            description: "Congestionamento intenso na subida da Rua Augusta.",
-            reporter: "Juliano Castro"
-        }
+        { id: "inc-1", category: "Trânsito", severity: "Média", timestamp: new Date().toISOString(), location: { lat: -23.555, lng: -46.645 }, description: "Congestionamento intenso na subida da Rua Augusta.", reporter: "Juliano Castro" }
     ],
     invoices: [
-        {
-            id: "inv-1",
-            studentId: "student-1",
-            parentUserId: "user-pai-1",
-            description: "Mensalidade Agosto",
-            amount: 450.00,
-            dueDate: "2024-08-10",
-            status: "paid"
-        },
-        {
-            id: "inv-4",
-            studentId: "student-4",
-            parentUserId: "user-pai-1",
-            description: "Mensalidade Agosto",
-            amount: 420.00,
-            dueDate: "2024-08-10",
-            status: "pending"
-        },
-        {
-            id: "inv-2",
-            studentId: "student-2",
-            parentUserId: "user-pai-2",
-            description: "Mensalidade Agosto",
-            amount: 420.00,
-            dueDate: "2024-08-10",
-            status: "pending"
-        },
-        {
-            id: "inv-3",
-            studentId: "student-3",
-            parentUserId: "user-pai-3",
-            description: "Mensalidade Agosto",
-            amount: 480.00,
-            dueDate: "2024-08-05",
-            status: "overdue"
-        }
+        { id: "inv-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450.00, dueDate: "2024-08-10", status: "paid" },
+        { id: "inv-4", studentId: "student-4", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 420.00, dueDate: "2024-08-10", status: "pending" }
     ],
     expenses: [
-        { id: "exp-1", description: "Abastecimento Sprinter", amount: 350.00, date: "2024-08-01", category: "Combustível" },
-        { id: "exp-2", description: "Troca de Óleo Renault", amount: 450.00, date: "2024-08-02", category: "Manutenção" }
+        { id: "exp-1", description: "Abastecimento Sprinter", amount: 350.00, date: "2024-08-01", category: "Combustível" }
     ],
     predefined_messages: [
-        { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
-        { id: "pm-2", text: "O aluno já foi entregue na escola.", for: "monitor" },
-        { id: "pm-3", text: "Pagamento recebido, obrigado.", for: "gestor" }
+        { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" }
     ],
-    authorized_pickups: [
-        { id: "auth-1", studentId: "student-1", parentUserId: "user-pai-1", name: "Avó Maria", cpf: "999.888.777-66", phone: "11911112222", photoUrl: "https://picsum.photos/seed/avo-maria/200/200" }
-    ],
-    trip_requests: [
-        {
-            id: "tr-1",
-            studentId: "student-1",
-            schoolId: "school-1",
-            parentUserId: "user-pai-1",
-            date: "2024-08-15",
-            type: "ida",
-            shift: "manha",
-            status: "pendente",
-            createdAt: new Date().toISOString()
-        }
-    ],
+    authorized_pickups: [],
+    trip_requests: [],
     contract_templates: [
-        {
-            id: "tpl-1",
-            name: "Contrato Padrão 2024",
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}, CPF: {{responsavel_cpf}}.\nALUNO: {{aluno_nome}}.\nESCOLA: {{escola_nome}}.\nVALOR: R$ {{valor_mensalidade}} mensais.",
-            createdAt: new Date().toISOString()
-        }
+        { id: "tpl-1", name: "Contrato Padrão 2024", content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}.\nALUNO: {{aluno_nome}}.\nVALOR: R$ {{valor_mensalidade}}.", createdAt: new Date().toISOString() }
     ],
-    contracts: [
-        {
-            id: "ct-1",
-            templateId: "tpl-1",
-            studentId: "student-3",
-            parentUserId: "user-pai-3",
-            generatedContent: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: Carla Dias, CPF: 333.444.555-66.\nALUNO: Gabriel Dias.\nESCOLA: Colégio Vanguarda.\nVALOR: R$ 480,00 mensais.",
-            status: "pending_acceptance",
-            createdAt: new Date().toISOString()
-        }
-    ],
-    pending_registrations: [
-        {
-            id: "reg-1",
-            parentName: "Roberto Silva",
-            studentName: "Davi Silva",
-            email: "roberto.silva@email.com",
-            phone: "11955551111",
-            schoolId: "school-1",
-            status: "pending_approval",
-            createdAt: new Date().toISOString(),
-            documentData: {
-                cpf: "123.456.789-01",
-                rg: "12.345.678-0"
-            }
-        }
-    ],
-    announcements: [
-        {
-            id: "ann-1",
-            title: "Manutenção Preventiva - Van 01",
-            content: "Prezados pais, informamos que a Van 01 passará por manutenção amanhã.",
-            createdAt: new Date().toISOString(),
-            priority: "high",
-            target: "all"
-        }
-    ],
-    trip_history: [
-        {
-            id: "hist-1",
-            date: "2024-08-01",
-            routeName: "Rota Centro - Manhã",
-            plannedKm: 12.5,
-            actualKm: 11.2,
-            driverName: "Juliano Castro",
-            savingsKm: 3.2,
-            fuelSaved: 19.20
-        }
-    ]
+    contracts: [],
+    pending_registrations: [],
+    announcements: [],
+    trip_history: []
 };
