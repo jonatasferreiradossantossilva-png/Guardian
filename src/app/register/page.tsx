@@ -11,6 +11,7 @@ import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { extractDocumentData } from '@/ai/flows/extract-document-data';
 import Link from 'next/link';
 
