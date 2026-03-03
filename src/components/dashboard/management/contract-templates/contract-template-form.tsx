@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +25,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { useMockData } from '@/hooks/use-mock-data';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
   name: z.string().min(3, { message: 'O nome deve ter pelo menos 3 caracteres.' }),
@@ -65,7 +65,6 @@ export function ContractTemplateForm({ template, templates, onFormSubmit }: Cont
   }, [template, form]);
 
   const onSubmit = (data: FormValues) => {
-    // Check for duplicate name
     const nameExists = templates.some(
       (t) => t.name.toLowerCase() === data.name.toLowerCase() && t.id !== template?.id
     );
@@ -102,55 +101,62 @@ export function ContractTemplateForm({ template, templates, onFormSubmit }: Cont
   ];
 
   return (
-    <DialogContent className="sm:max-w-2xl flex flex-col max-h-[90vh]">
-      <DialogHeader>
+    <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{template && template.id ? 'Editar Modelo' : 'Criar Novo Modelo de Contrato'}</DialogTitle>
         <DialogDescription>
           Crie o texto padrão do seu contrato. Use as variáveis abaixo para preencher os dados automaticamente.
         </DialogDescription>
       </DialogHeader>
-      <div className="flex-1 overflow-y-auto -mx-6 px-6">
-        <Form {...form}>
-            <form id="contract-template-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
-                <FormField
-                    control={form.control}
-                    name="name"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Nome do Modelo</FormLabel>
-                        <FormControl>
-                        <Input placeholder="Ex: Contrato Padrão (Cópia)" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
-                <FormField
-                    control={form.control}
-                    name="content"
-                    render={({ field }) => (
-                    <FormItem>
-                        <FormLabel>Conteúdo do Contrato</FormLabel>
-                        <FormControl>
-                        <Textarea placeholder="Cole ou digite o texto do seu contrato aqui..." {...field} rows={20} />
-                        </FormControl>
-                        <p className="text-xs text-muted-foreground pt-2">
-                            Variáveis disponíveis: {placeholders.map(p => <code key={p} className="mx-1 p-0.5 bg-muted rounded text-xs">{p}</code>)}
-                        </p>
-                        <FormMessage />
-                    </FormItem>
-                    )}
-                />
+      
+      <ScrollArea className="flex-1">
+        <div className="px-6 py-4">
+          <Form {...form}>
+            <form id="contract-template-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+              <FormField
+                control={form.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Nome do Modelo</FormLabel>
+                    <FormControl>
+                      <Input placeholder="Ex: Contrato Padrão 2024" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={form.control}
+                name="content"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Conteúdo do Contrato</FormLabel>
+                    <FormControl>
+                      <Textarea placeholder="Cole ou digite o texto do seu contrato aqui..." {...field} rows={15} />
+                    </FormControl>
+                    <div className="mt-2 p-3 bg-muted rounded-md border border-dashed">
+                      <p className="text-[10px] font-bold uppercase text-muted-foreground mb-2">Variáveis Inteligentes</p>
+                      <div className="flex flex-wrap gap-1">
+                        {placeholders.map(p => <code key={p} className="p-1 bg-background rounded text-[10px] text-primary">{p}</code>)}
+                      </div>
+                    </div>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
             </form>
-        </Form>
-      </div>
-      <DialogFooter className="pt-4 border-t shrink-0">
-            <DialogClose asChild>
-            <Button type="button" variant="outline">
-                Cancelar
-            </Button>
-            </DialogClose>
-            <Button type="submit" form="contract-template-form">Salvar Modelo</Button>
+          </Form>
+        </div>
+      </ScrollArea>
+
+      <DialogFooter className="p-6 border-t shrink-0 bg-background">
+        <DialogClose asChild>
+          <Button type="button" variant="outline">
+            Cancelar
+          </Button>
+        </DialogClose>
+        <Button type="submit" form="contract-template-form">Salvar Modelo</Button>
       </DialogFooter>
     </DialogContent>
   );
