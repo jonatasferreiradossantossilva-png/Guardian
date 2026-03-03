@@ -26,7 +26,6 @@ import {
   DollarSign,
   HeartPulse,
   FileText,
-  MousePointerClick,
   Navigation,
   CheckCircle2,
   User,
@@ -43,18 +42,18 @@ const introSlides = [
   { title: "2. Link Recebido", description: "O pai recebe o convite e clica para iniciar o processo sem burocracia.", icon: <MessageSquare />, imageId: "ob-2-received" },
   { title: "3. Boas-vindas", description: "Interface moderna e amigável para o pai iniciar o cadastro.", icon: <Smartphone />, imageId: "ob-3-welcome" },
   { title: "4. Leitura via IA", description: "O pai tira foto do documento e nossa IA lê todos os dados instantaneamente.", icon: <Sparkles />, imageId: "ob-4-scan" },
-  { title: "5. Dados de Identidade", description: "Primeira etapa do formulário: Nome, CPF e RG extraídos automaticamente.", icon: <User />, imageId: "ob-5-identity" },
-  { title: "6. E-mail e WhatsApp", description: "Informações essenciais para contato e recebimento de boletos digitais.", icon: <Mail />, imageId: "ob-6-contact" },
+  { title: "5. Dados de Identidade", description: "Nome, CPF e RG extraídos automaticamente do documento pela nossa inteligência.", icon: <User />, imageId: "ob-5-identity" },
+  { title: "6. E-mail e WhatsApp", description: "Dados essenciais para contato direto e envio automático de boletos.", icon: <Mail />, imageId: "ob-6-contact" },
   { title: "7. Local de Embarque", description: "O pai define o ponto exato de coleta no mapa para evitar erros de navegação.", icon: <MapPin />, imageId: "ob-7-address" },
   { title: "8. Escola de Destino", description: "Seleção da instituição através da nossa base proprietária de escolas ativas.", icon: <School />, imageId: "ob-8-school" },
-  { title: "9. Série e Turma", description: "Organização escolar para garantir que o monitor saiba exatamente onde desembarcar.", icon: <GraduationCap />, imageId: "ob-8-class" },
-  { title: "10. Plano Financeiro", description: "Configuração do vencimento e preferências de cobrança do responsável.", icon: <DollarSign />, imageId: "ob-9-finance" },
-  { title: "11. Revisão do Cadastro", description: "O pai revisa todo o formulário preenchido antes de prosseguir.", icon: <ClipboardCheck />, imageId: "ob-10-summary" },
-  { title: "12. Alertas de Saúde", description: "Informações sobre alergias ou cuidados especiais que aparecerão no embarque.", icon: <HeartPulse />, imageId: "ob-11-health" },
-  { title: "13. Cadastro Enviado", description: "O pai finaliza o fluxo e os dados são enviados instantaneamente para o gestor.", icon: <Check />, imageId: "ob-12-done" },
-  { title: "14. Alerta para o Gestor", description: "O administrador recebe um aviso push informando que há uma nova solicitação.", icon: <Smartphone />, imageId: "ob-13-notification" },
-  { title: "15. Lista de Triagem", description: "O gestor visualiza a nova solicitação pronta para aprovação comercial.", icon: <Search />, imageId: "ob-14-triage" },
-  { title: "16. Validação GPS", description: "A IA valida a viabilidade da rota comparando o endereço com a frota atual.", icon: <Navigation />, imageId: "ob-15-gps" },
+  { title: "9. Série e Turma", description: "Organização escolar para garantir que o monitor saiba exatamente onde desembarcar.", icon: <GraduationCap />, imageId: "ob-9-class" },
+  { title: "10. Plano Financeiro", description: "Configuração do vencimento e preferências de cobrança do responsável.", icon: <DollarSign />, imageId: "ob-10-finance" },
+  { title: "11. Revisão do Cadastro", description: "O pai revisa todo o formulário preenchido antes de prosseguir para a parte médica.", icon: <ClipboardCheck />, imageId: "ob-11-summary" },
+  { title: "12. Alertas de Saúde", description: "Informações sobre alergias ou cuidados especiais que aparecerão no embarque.", icon: <HeartPulse />, imageId: "ob-12-health" },
+  { title: "13. Cadastro Enviado", description: "O pai finaliza o fluxo e os dados são enviados instantaneamente para o gestor.", icon: <Check />, imageId: "ob-13-done" },
+  { title: "14. Alerta para o Gestor", description: "O administrador recebe um aviso push informando que há uma nova solicitação.", icon: <Smartphone />, imageId: "ob-14-notification" },
+  { title: "15. Lista de Triagem", description: "O gestor visualiza a nova solicitação pronta para aprovação comercial.", icon: <Search />, imageId: "ob-15-triage" },
+  { title: "16. Validação GPS", description: "A IA valida a viabilidade da rota comparando o endereço com a frota atual.", icon: <Navigation />, imageId: "ob-16-gps" },
   { title: "17. Contrato Digital", description: "Geração automática do contrato para assinatura pelo celular do responsável.", icon: <FileText />, imageId: "ob-17-sign" },
   { title: "18. Montagem de Rota", description: "Vínculo do novo aluno a um motorista e veículo disponível.", icon: <RouteIcon />, imageId: "ob-18-itinerary" },
   { title: "19. Otimização IA", description: "O motor de logística recalcula a melhor sequência para economizar quilometragem.", icon: <Sparkles />, imageId: "ob-19-optimization" },
@@ -82,7 +81,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
       icon: <School className="w-8 h-8" />,
       link: "/dashboard/management/schools",
       linkText: "Configurar Escolas",
-      isDone: schools && schools.length > 0
+      isDone: (schools?.length || 0) > 0
     },
     {
       title: "Crescimento: Convite",
@@ -98,7 +97,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
       icon: <ClipboardCheck className="w-8 h-8" />,
       link: "/dashboard/management/pending-registrations",
       linkText: "Ver Solicitações",
-      isDone: pending && pending.length === 0 && (schools?.length || 0) > 0
+      isDone: (pending?.length || 0) === 0 && (schools?.length || 0) > 0
     },
     {
       title: "Equipe: Motoristas",
@@ -106,7 +105,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
       icon: <Car className="w-8 h-8" />,
       link: "/dashboard/management/drivers",
       linkText: "Gerenciar Equipe",
-      isDone: drivers && drivers.length > 0
+      isDone: (drivers?.length || 0) > 0
     },
     {
       title: "Operação: Montar Rotas",
@@ -114,7 +113,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
       icon: <RouteIcon className="w-8 h-8" />,
       link: "/dashboard/management/routes",
       linkText: "Criar Itinerário",
-      isDone: routes && routes.length > 0
+      isDone: (routes?.length || 0) > 0
     }
   ], [schools, drivers, routes, pending]);
 
@@ -192,7 +191,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                             {currentData.icon}
                         </div>
                         <div>
-                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-70">Jornada Guardian • Passo {currentIndex + 1}</p>
+                            <p className="text-[10px] font-bold uppercase tracking-[0.2em] opacity-70">Passo {currentIndex + 1}</p>
                             <DialogTitle className="text-xl font-bold border-none shadow-none bg-transparent p-0 text-white">
                                 {currentData.title}
                             </DialogTitle>
@@ -234,7 +233,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
 
             <div className="space-y-2">
                 <div className="flex justify-between text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
-                    <span>{view === 'presentation' ? "Apresentação do Produto" : "Implementação Prática"}</span>
+                    <span>{view === 'presentation' ? "Apresentação" : "Configuração"}</span>
                     <span>{currentIndex + 1} de {totalSteps}</span>
                 </div>
                 <Progress value={progress} className="h-1.5" />
@@ -249,7 +248,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                 </Button>
             ) : (
                 <Button className="w-full h-14 text-base font-bold" onClick={handleNext}>
-                    {isLastSlide ? "Entendido, vamos configurar!" : "Próximo Passo"}
+                    {isLastSlide ? "Ir para Configurações" : "Próximo Passo"}
                     <ArrowRight className="ml-2 h-5 w-5" />
                 </Button>
             )}

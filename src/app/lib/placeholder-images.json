@@ -3,85 +3,85 @@
   "placeholderImages": [
     {
       "id": "ob-1-invite",
-      "description": "Gestor enviando convite via WhatsApp",
+      "description": "Convite WhatsApp",
       "imageUrl": "https://lh3.googleusercontent.com/d/17ieurMJ2jEAb12TB97d4upD3QvPpzxKt",
       "imageHint": "whatsapp invite"
     },
     {
       "id": "ob-2-received",
-      "description": "Pai recebendo o link no celular",
+      "description": "Link Recebido",
       "imageUrl": "https://lh3.googleusercontent.com/d/1vBY8HOyLOmKOepMydQUA7oN4iLRI2OBH",
       "imageHint": "whatsapp message"
     },
     {
       "id": "ob-3-welcome",
-      "description": "Boas-vindas ao sistema de cadastro",
+      "description": "Boas-vindas",
       "imageUrl": "https://lh3.googleusercontent.com/d/1qk_srYuKWuWhdm37dZnFf6UvhrlEO_qI",
       "imageHint": "mobile welcome"
     },
     {
       "id": "ob-4-scan",
-      "description": "Leitura inteligente do documento (OCR)",
+      "description": "Leitura via IA",
       "imageUrl": "https://lh3.googleusercontent.com/d/1do_AwgSF-Plv4TbIu_nb4SzY9ycreuGd",
       "imageHint": "document scan"
     },
     {
       "id": "ob-5-identity",
-      "description": "Dados de Identidade (Nome, CPF e RG)",
+      "description": "Dados de Identidade",
       "imageUrl": "https://lh3.googleusercontent.com/d/1LLASPQgatNoSbuMA4bcB1MQ-2gZQbxi1",
       "imageHint": "identity data"
     },
     {
       "id": "ob-6-contact",
-      "description": "Informações de E-mail e WhatsApp",
+      "description": "E-mail e WhatsApp",
       "imageUrl": "https://lh3.googleusercontent.com/d/1fa1_ijDaaGLK3X8yhl7Xa-uQzxC6peig",
       "imageHint": "contact info"
     },
     {
       "id": "ob-7-address",
-      "description": "Definição do Endereço de Embarque",
+      "description": "Local de Embarque",
       "imageUrl": "https://lh3.googleusercontent.com/d/13aN71i_tSlEnMK9khmC5IbmrysqNc2x2",
       "imageHint": "address setup"
     },
     {
       "id": "ob-8-school",
-      "description": "Seleção da Escola de Destino",
+      "description": "Escola de Destino",
       "imageUrl": "https://lh3.googleusercontent.com/d/13IQX0_YHwUpcJ9paTQgde2Xc5Kf7-gj1",
       "imageHint": "school search"
     },
     {
       "id": "ob-9-class",
-      "description": "Informações de Série e Turma",
+      "description": "Série e Turma",
       "imageUrl": "https://lh3.googleusercontent.com/d/1XO4__DPeZitE3Wvm2DU1vP2zcLr8QMsi",
       "imageHint": "student class"
     },
     {
       "id": "ob-10-finance",
-      "description": "Configuração do Plano Financeiro",
+      "description": "Plano Financeiro",
       "imageUrl": "https://lh3.googleusercontent.com/d/1g8xxyNPuQqTWeD3YUuVxhA0Z6jTDz6p-",
       "imageHint": "finance setup"
     },
     {
       "id": "ob-11-summary",
-      "description": "Revisão Geral do Cadastro",
+      "description": "Revisão do Cadastro",
       "imageUrl": "https://lh3.googleusercontent.com/d/1MzIhmo9OhMkyyIkhiW5FylBu8IrWEKjv",
       "imageHint": "form review"
     },
     {
       "id": "ob-12-health",
-      "description": "Alertas de Saúde e Cuidados",
+      "description": "Alertas de Saúde",
       "imageUrl": "https://lh3.googleusercontent.com/d/1-o5B8hK8OdGI9Lt23h_a3dUw_YTkNmQW",
       "imageHint": "health alerts"
     },
     {
       "id": "ob-13-done",
-      "description": "Cadastro Finalizado com Sucesso",
+      "description": "Cadastro Enviado",
       "imageUrl": "https://lh3.googleusercontent.com/d/1DliIkJSN4tU84tYv_V1KNwyTI1cSXBF-",
       "imageHint": "success screen"
     },
     {
       "id": "ob-14-notification",
-      "description": "Notificação Push para o Gestor",
+      "description": "Alerta para o Gestor",
       "imageUrl": "https://lh3.googleusercontent.com/d/1xpdobdVQtGsANQZByzvh4h3CK6kK2jbI",
       "imageHint": "admin notification"
     },
