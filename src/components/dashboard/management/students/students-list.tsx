@@ -38,6 +38,7 @@ import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { cn } from "@/lib/utils";
 
 
 type Student = {
