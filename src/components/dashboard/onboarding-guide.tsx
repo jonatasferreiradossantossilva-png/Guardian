@@ -179,7 +179,10 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                         </div>
                         <div>
                             <p className="text-xs font-bold uppercase tracking-widest opacity-70">Passo {currentIndex + 1}</p>
-                            <p className="text-lg font-bold">{currentData.title}</p>
+                            {/* FIXED: DialogTitle is required for accessibility */}
+                            <DialogTitle className="text-lg font-bold border-none shadow-none bg-transparent p-0 text-white">
+                                {currentData.title}
+                            </DialogTitle>
                         </div>
                     </div>
                 </div>
@@ -198,8 +201,17 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
         {/* Content Body */}
         <div className="p-6 space-y-6">
             <div className="space-y-2 min-h-[80px]">
-                {view === 'checklist' && (
+                {/* FIXED: Ensuring DialogTitle is always present for accessibility */}
+                {view === 'checklist' ? (
                     <DialogTitle className="text-xl font-bold tracking-tight">
+                        {currentData.title}
+                    </DialogTitle>
+                ) : (
+                    /* Already rendered in header image area for presentation view, 
+                       but we provide an sr-only version if the header is not considered enough 
+                       by some screen readers or if the component logic requires consistent structure.
+                    */
+                    <DialogTitle className="sr-only">
                         {currentData.title}
                     </DialogTitle>
                 )}
