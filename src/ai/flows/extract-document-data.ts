@@ -32,14 +32,18 @@ const prompt = ai.definePrompt({
   prompt: `Você é um assistente de visão computacional especialista em documentos de identidade brasileiros (RG e CNH).
 Analise a imagem fornecida e extraia APENAS as informações de identificação civil solicitadas.
 
-DIRETRIZES TÉCNICAS:
-1. FOCO TOTAL: Ignore marcas d'água, brasões da república, assinaturas e nomes de pais (filiação).
-2. NOME: Extraia o nome completo. Se houver abreviações óbvias e você conseguir ler o nome completo em outro campo, prefira a versão completa.
-3. CPF: Retorne apenas os 11 dígitos numéricos.
-4. RG: Retorne o número do registro geral sem pontos ou traços.
-5. DATA DE NASCIMENTO: Formate estritamente como DD/MM/AAAA.
+DIRETRIZES TÉCNICAS DE EXTRAÇÃO:
+1. NOME COMPLETO: É o primeiro e maior bloco de texto no topo do documento. Ignore prefixos como "NOME". Pegue o nome completo do titular.
+2. CPF: Procure explicitamente pelo rótulo "CPF". Extraia apenas os 11 dígitos numéricos.
+3. RG / DOC. IDENTIDADE: No RG, procure por "REGISTRO GERAL". Na CNH, procure por "DOC. IDENTIDADE". Extraia apenas os números e letras do código, ignorando órgãos emissores (ex: SSP/SP).
+4. DATA DE NASCIMENTO: Localize o rótulo "DATA DE NASCIMENTO" ou "NASCIMENTO". Formate estritamente como DD/MM/AAAA.
 
-IMPORTANTE: Não tente extrair endereços, observações ou categorias de habilitação. Se um campo não estiver legível, retorne uma string vazia.
+REGRAS DE FILTRAGEM (CRÍTICO):
+- FILIAÇÃO: Ignore completamente os nomes de pai e mãe. Eles costumam estar abaixo do nome do titular ou no verso. Não os confunda com o nome principal.
+- RUÍDOS: Ignore brasões, marcas d'água, assinaturas e textos miúdos de leis.
+- SEGREGAÇÃO: Se detectar que é uma CNH, foque nos campos delimitados por linhas. Se for RG, foque no campo "REGISTRO GERAL".
+
+Se um campo não estiver legível ou não existir (como CPF em RGs muito antigos), retorne uma string vazia.
 
 Documento: {{media url=photoDataUri}}`,
 });
