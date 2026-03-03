@@ -11,7 +11,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { APIProvider, Map as GoogleMap, AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight, Sparkles, BellRing, Megaphone, Info } from "lucide-react";
+import { MapPin, Bus, User, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, FileText, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, ArrowRight, Sparkles, BellRing, Megaphone, Info, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -62,6 +62,7 @@ interface Route {
   direction?: 'ida' | 'volta';
 }
 interface LocationUpdate {
+  id: string;
   latitude: number;
   longitude: number;
   timestamp: string;
@@ -95,55 +96,97 @@ function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: n
 }
 
 
-function ParentRouteMap({ busLocation, student, school, routePolyline, recenterTrigger }: { busLocation: LocationUpdate | null, student: Student | null, school: SchoolData | null, routePolyline?: string, recenterTrigger: number }) {
+function ParentMultiRouteMap({ 
+    allStudents, 
+    allRoutes, 
+    allLocations, 
+    allSchools,
+    selectedStudentId, 
+    recenterTrigger 
+}: { 
+    allStudents: Student[], 
+    allRoutes: Route[], 
+    allLocations: LocationUpdate[], 
+    allSchools: SchoolData[],
+    selectedStudentId: string | null,
+    recenterTrigger: number 
+}) {
   const map = useMap();
 
+  const selectedRoute = useMemo(() => {
+      const student = allStudents.find(s => s.id === selectedStudentId);
+      return allRoutes.find(r => r.id === student?.routeId);
+  }, [allStudents, allRoutes, selectedStudentId]);
+
   useEffect(() => {
-      if (!map) return;
+      if (!map || allStudents.length === 0) return;
       
       const bounds = new google.maps.LatLngBounds();
-      if (busLocation?.latitude && busLocation?.longitude) {
-          bounds.extend({ lat: busLocation.latitude, lng: busLocation.longitude });
-      }
-      if (student?.latitude && student?.longitude) {
-          bounds.extend({ lat: student.latitude, lng: student.longitude });
-      }
-       if (school?.latitude && school?.longitude) {
-          bounds.extend({ lat: school.latitude, lng: school.longitude });
-      }
+      
+      // Fit all students and their respective van locations
+      allStudents.forEach(s => {
+          if (s.latitude && s.longitude) {
+              bounds.extend({ lat: s.latitude, lng: s.longitude });
+          }
+          const route = allRoutes.find(r => r.id === s.routeId);
+          const loc = allLocations.find(l => l.id === route?.driverId);
+          if (loc?.latitude && loc?.longitude) {
+              bounds.extend({ lat: loc.latitude, lng: loc.longitude });
+          }
+          const school = allSchools.find(sch => sch.id === s.schoolId);
+          if (school?.latitude && school?.longitude) {
+              bounds.extend({ lat: school.latitude, lng: school.longitude });
+          }
+      });
 
       if (!bounds.isEmpty()) {
-        map.fitBounds(bounds, 100); // 100px padding
+        map.fitBounds(bounds, 100); 
       }
-  }, [map, busLocation, student, school, recenterTrigger]);
+  }, [map, allStudents, allRoutes, allLocations, allSchools, recenterTrigger]);
 
   return (
     <>
-      {routePolyline && <RoutePolyline geoJsonPath={routePolyline} />}
-      {busLocation && (
-        <AdvancedMarker position={{ lat: busLocation.latitude, lng: busLocation.longitude }} title="Posição da Van">
-          <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff">
-            <Bus />
-          </Pin>
-        </AdvancedMarker>
-      )}
-      {student && (
-        <AdvancedMarker position={{ lat: student.latitude, lng: student.longitude }} title={student.name}>
-             <Pin background={'#3b82f6'} borderColor={'#fff'}>
-                <Avatar className="h-6 w-6">
-                    <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/40/40`} alt={student.name} />
-                    <AvatarFallback>{student.name.charAt(0)}</AvatarFallback>
-                </Avatar>
-            </Pin>
-        </AdvancedMarker>
-      )}
-      {school && (
-        <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-          <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff">
-            <School />
-          </Pin>
-        </AdvancedMarker>
-      )}
+      {/* Show polyline only for the selected student to avoid clutter */}
+      {selectedRoute?.polyline && <RoutePolyline geoJsonPath={selectedRoute.polyline} />}
+      
+      {allStudents.map(s => {
+          const route = allRoutes.find(r => r.id === s.routeId);
+          const busLoc = allLocations.find(l => l.id === route?.driverId);
+          const school = allSchools.find(sch => sch.id === s.schoolId);
+          const isSelected = s.id === selectedStudentId;
+
+          return (
+              <div key={s.id}>
+                  {/* Van Marker */}
+                  {busLoc && (
+                    <AdvancedMarker position={{ lat: busLoc.latitude, lng: busLoc.longitude }} title={`Van de ${s.name}`} zIndex={isSelected ? 10 : 5}>
+                        <Pin background={isSelected ? '#2ab0c1' : '#94a3b8'} borderColor={'#fff'} glyphColor="#fff">
+                            <Bus className="h-4 w-4" />
+                        </Pin>
+                    </AdvancedMarker>
+                  )}
+
+                  {/* Student Home Marker */}
+                  <AdvancedMarker position={{ lat: s.latitude, lng: s.longitude }} title={s.name}>
+                        <Pin background={isSelected ? '#3b82f6' : '#cbd5e1'} borderColor={'#fff'}>
+                            <Avatar className={cn("h-6 w-6", !isSelected && "grayscale opacity-70")}>
+                                <AvatarImage src={`https://picsum.photos/seed/student-${s.id}/40/40`} alt={s.name} />
+                                <AvatarFallback>{s.name.charAt(0)}</AvatarFallback>
+                            </Avatar>
+                        </Pin>
+                  </AdvancedMarker>
+
+                  {/* School Marker (if unique for this student view) */}
+                  {school && (
+                    <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
+                        <Pin background={isSelected ? '#dc2626' : '#f87171'} borderColor={'#fff'} glyphColor="#fff">
+                            <School className="h-4 w-4" />
+                        </Pin>
+                    </AdvancedMarker>
+                  )}
+              </div>
+          );
+      })}
     </>
   );
 }
@@ -249,6 +292,11 @@ export default function ParentTrackingPage() {
     { field: "parentId", op: "==", value: parent.id },
   ] : undefined);
 
+  // Phase 3: Fetch all dependencies for all students to show on map
+  const { data: allRoutes, isLoading: areRoutesLoading } = useMockCollection("routes");
+  const { data: allLocations, isLoading: areLocationsLoading } = useMockCollection("locations");
+  const { data: allSchools, isLoading: areSchoolsLoading } = useMockCollection("schools");
+
   // Initialize selectedStudentId when students load if not already set
   useEffect(() => {
     if (students && students.length > 0 && !selectedStudentId) {
@@ -262,12 +310,10 @@ export default function ParentTrackingPage() {
       return students.find(s => s.id === selectedStudentId) || students[0];
   }, [students, selectedStudentId]);
   
-  const { data: route, isLoading: isRouteLoading } = useMockDoc("routes", student?.routeId);
-  const { data: driver, isLoading: isDriverLoading } = useMockDoc("drivers", route?.driverId);
+  const route = useMemo(() => allRoutes?.find(r => r.id === student?.routeId), [allRoutes, student]);
+  const displayLocation = useMemo(() => allLocations?.find(l => l.id === route?.driverId), [allLocations, route]);
+  const school = useMemo(() => allSchools?.find(s => s.id === student?.schoolId), [allSchools, student]);
 
-  const { data: displayLocation, isLoading: isLocationLoading } = useMockNestedDoc(route?.driverId ? `locations/${route.driverId}`: null);
-  
-  const { data: school } = useMockDoc('schools', student?.schoolId);
   const { data: announcements } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
   
   const latestAnnouncement = useMemo(() => {
@@ -376,7 +422,7 @@ export default function ParentTrackingPage() {
     });
   }, [student, displayLocation, route?.direction, school, toast]);
 
-  const isLoading = areParentsLoading || areStudentsLoading || isRouteLoading || isLocationLoading || isDriverLoading;
+  const isLoading = areParentsLoading || areStudentsLoading || areRoutesLoading || areLocationsLoading || areSchoolsLoading;
   const studentStatus = student?.status || 'aguardando';
   const isAbsent = studentStatus.startsWith('ausente');
   const journeyDirection = (route?.direction as 'ida' | 'volta') || 'ida';
@@ -575,7 +621,6 @@ export default function ParentTrackingPage() {
                         )}
                     </CardContent>
                     
-                    {/* Botão de WhatsApp Inteligente e Contextual */}
                     <CardFooter className="pt-0 justify-center pb-6">
                         <Button 
                             variant="outline" 
@@ -645,22 +690,28 @@ export default function ParentTrackingPage() {
             </TabsContent>
             <TabsContent value="map" className="mt-4">
                <div className="flex justify-center flex-wrap gap-x-4 gap-y-1 mb-2 text-xs text-muted-foreground font-medium">
-                    <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Van</span></div>
-                    <div className="flex items-center gap-1.5"><User className="h-4 w-4 text-blue-500" /><span>{student.name.split(' ')[0]}</span></div>
-                    <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escola</span></div>
+                    <div className="flex items-center gap-1.5"><Bus className="h-4 w-4 text-primary" /><span>Vans Ativas</span></div>
+                    <div className="flex items-center gap-1.5"><Users className="h-4 w-4 text-blue-500" /><span>Seus Filhos</span></div>
+                    <div className="flex items-center gap-1.5"><School className="h-4 w-4 text-red-600" /><span>Escolas</span></div>
                 </div>
-              <Card className="h-[70vh] border-2 shadow-2xl overflow-hidden">
+              <Card className="h-[70vh] border-2 shadow-2xl overflow-hidden relative">
                 <CardContent className="p-0 h-full relative">
                   <div className="absolute inset-0 bg-secondary flex items-center justify-center overflow-hidden rounded-lg">
                     <Button
                         variant="outline"
                         size="icon"
                         onClick={() => setRecenterTrigger(c => c + 1)}
-                        className="absolute top-3 left-3 z-10 bg-background/80 hover:bg-background"
+                        className="absolute top-3 left-3 z-10 bg-background/80 hover:bg-background border-primary/20 shadow-md"
                         title="Centralizar Rota"
                     >
-                        <LocateFixed />
+                        <LocateFixed className="h-5 w-5 text-primary" />
                     </Button>
+                    
+                    <div className="absolute bottom-3 right-3 z-10 bg-background/90 p-2 rounded-lg border border-primary/20 shadow-lg text-[10px] space-y-1 flex flex-col pointer-events-none">
+                        <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-primary" /><span>Filho Selecionado</span></div>
+                        <div className="flex items-center gap-2"><div className="w-2 h-2 rounded-full bg-slate-400" /><span>Outros Irmãos</span></div>
+                    </div>
+
                     {!API_KEY ? (
                         <div className="text-center p-4">
                             <p className="font-semibold text-lg">Mapa Indisponível</p>
@@ -682,27 +733,23 @@ export default function ParentTrackingPage() {
                             gestureHandling={'greedy'}
                             className="w-full h-full"
                         >
-                           <ParentRouteMap 
-                                busLocation={displayLocation}
-                                student={student}
-                                school={school}
-                                routePolyline={route?.polyline}
+                           <ParentMultiRouteMap 
+                                allStudents={students || []}
+                                allRoutes={allRoutes || []}
+                                allLocations={allLocations || []}
+                                allSchools={allSchools || []}
+                                selectedStudentId={selectedStudentId}
                                 recenterTrigger={recenterTrigger}
                            />
-                           {!displayLocation && !isLocationLoading && (
-                                <div className="w-full h-full flex items-center justify-center text-muted-foreground bg-secondary">
-                                    Aguardando localização da van...
-                                </div>
-                            )}
                         </GoogleMap>
                         </APIProvider>
                     )}
                   </div>
                 </CardContent>
               </Card>
-              <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground justify-center">
+              <div className="mt-4 flex items-center gap-2 text-xs text-muted-foreground justify-center bg-secondary/30 p-2 rounded-full">
                   <ShieldCheck className="h-4 w-4 text-green-500" />
-                  <span>Por segurança, você vê apenas o trajeto da van e a localização do seu filho.</span>
+                  <span>Segurança Guardian: Visualização inteligente baseada em bounds familiares.</span>
               </div>
             </TabsContent>
           </Tabs>
