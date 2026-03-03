@@ -7,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays } from 'lucide-react';
+import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { formatDistanceToNow } from 'date-fns';
@@ -24,6 +24,7 @@ const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 export default function PendingRegistrationsPage() {
   const { data: registrations, isLoading } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
   const { data: schools } = useMockCollection('schools');
+  const { data: existingParents } = useMockCollection('parents');
   const { updateDoc, addDoc } = useMockData();
   const { toast } = useToast();
 
@@ -57,6 +58,33 @@ export default function PendingRegistrationsPage() {
     try {
         const address = reg.address || {};
         
+        // 1. Inteligência Anti-Duplicidade: Checar se o pai já existe
+        const parentMatch = existingParents?.find(p => 
+            (p.cpf && reg.documentData?.cpf && p.cpf.replace(/\D/g, '') === reg.documentData.cpf.replace(/\D/g, '')) ||
+            (p.email.toLowerCase() === reg.email.toLowerCase())
+        );
+
+        let parentIdToUse;
+        if (parentMatch) {
+            parentIdToUse = parentMatch.id;
+            toast({ title: "Responsável reconhecido", description: `Vinculando novo aluno ao cadastro de ${parentMatch.name}.` });
+        } else {
+            const newParentId = `parent-${Date.now()}`;
+            addDoc('parents', {
+                id: newParentId,
+                userId: reg.userId || `user-gen-${Date.now()}`, 
+                name: editableParentName,
+                email: reg.email,
+                phone: reg.phone,
+                cpf: reg.documentData?.cpf,
+                rg: reg.documentData?.rg,
+                ...address,
+                active: true
+            });
+            parentIdToUse = newParentId;
+        }
+
+        // 2. Geocodificação Automática
         let latitude = 0;
         let longitude = 0;
         if (address.street && address.city) {
@@ -70,24 +98,11 @@ export default function PendingRegistrationsPage() {
             }
         }
 
-        const newParentId = `parent-${Date.now()}`;
-        
-        addDoc('parents', {
-            id: newParentId,
-            userId: reg.userId || `user-gen-${Date.now()}`, 
-            name: editableParentName,
-            email: reg.email,
-            phone: reg.phone,
-            cpf: reg.documentData?.cpf,
-            rg: reg.documentData?.rg,
-            ...address,
-            active: true
-        });
-
+        // 3. Criar Aluno vinculado ao pai correto (novo ou existente)
         addDoc('students', {
             name: reg.studentName,
             schoolId: reg.schoolId,
-            parentId: newParentId, 
+            parentId: parentIdToUse, 
             shift: 'Manhã', 
             status: 'aguardando',
             ...address,
@@ -104,7 +119,7 @@ export default function PendingRegistrationsPage() {
 
         toast({ 
             title: "Solicitação Aprovada!", 
-            description: `Responsável (${editableParentName}) e Aluno integrados com sucesso.` 
+            description: `Cadastro de ${reg.studentName} integrado com sucesso.` 
         });
         setSelectedReg(null);
     } catch (e) {
@@ -155,9 +170,19 @@ export default function PendingRegistrationsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {registrations.map((reg) => (
+                      {registrations.map((reg) => {
+                        const isExisting = existingParents?.some(p => 
+                            (p.cpf && reg.documentData?.cpf && p.cpf.replace(/\D/g, '') === reg.documentData.cpf.replace(/\D/g, '')) ||
+                            (p.email.toLowerCase() === reg.email.toLowerCase())
+                        );
+                        return (
                         <TableRow key={reg.id}>
-                          <TableCell className="font-medium">{reg.parentName}</TableCell>
+                          <TableCell className="font-medium">
+                              <div className="flex items-center gap-2">
+                                {reg.parentName}
+                                {isExisting && <Badge variant="secondary" className="text-[10px] bg-primary/10 text-primary border-primary/20"><Users className="h-3 w-3 mr-1"/> Irmão</Badge>}
+                              </div>
+                          </TableCell>
                           <TableCell>{reg.studentName}</TableCell>
                           <TableCell>{schoolsMap.get(reg.schoolId) || 'N/A'}</TableCell>
                           <TableCell className="text-xs text-muted-foreground">
@@ -169,7 +194,7 @@ export default function PendingRegistrationsPage() {
                             </Button>
                           </TableCell>
                         </TableRow>
-                      ))}
+                      )})}
                     </TableBody>
                   </Table>
                 </div>

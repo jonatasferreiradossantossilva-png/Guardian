@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -29,13 +30,14 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState } from 'react';
-import { useMockData } from '@/hooks/use-mock-data';
-import { Copy, Loader2, HeartPulse, CalendarDays, Search, Sparkles, MapPin } from 'lucide-react';
+import { useEffect, useState, useMemo, useRef } from 'react';
+import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
+import { Copy, Loader2, HeartPulse, CalendarDays, Search, Sparkles, MapPin, Camera, User, Users } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Textarea } from '@/components/ui/textarea';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 const SERIE_OPTIONS = [
     "Berçário / Maternal",
@@ -77,6 +79,7 @@ const formSchema = z.object({
   active: z.boolean().default(true),
   serie: z.string().optional(),
   turma: z.string().optional(),
+  photoUrl: z.string().optional(),
 });
 
 type StudentFormValues = z.infer<typeof formSchema>;
@@ -95,7 +98,7 @@ type Parent = {
 };
 
 interface StudentFormProps {
-  student?: { id: string; monthlyFee?: number; preferredPaymentDay?: number } & Partial<StudentFormValues>;
+  student?: { id: string; monthlyFee?: number; preferredPaymentDay?: number; photoUrl?: string } & Partial<StudentFormValues>;
   schools: School[];
   parents: Parent[];
   onFormSubmit: () => void;
@@ -121,6 +124,7 @@ const defaultValues: StudentFormValues = {
   active: true,
   serie: '',
   turma: '',
+  photoUrl: '',
 };
 
 export function StudentForm({
@@ -131,10 +135,13 @@ export function StudentForm({
 }: StudentFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useMockData();
+  const { data: allStudents } = useMockCollection('students');
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const form = useForm<StudentFormValues>({
     resolver: zodResolver(formSchema),
@@ -143,6 +150,26 @@ export function StudentForm({
 
   const zipCode = form.watch('zipCode');
   const parentId = form.watch('parentId');
+  const currentPhoto = form.watch('photoUrl');
+
+  // Herança de Irmãos Inteligente
+  const siblings = useMemo(() => {
+      if (!parentId || !allStudents) return [];
+      return allStudents.filter(s => s.parentId === parentId && s.id !== student?.id);
+  }, [parentId, allStudents, student?.id]);
+
+  const handleCopyFromSibling = (sibling: any) => {
+      form.setValue('zipCode', sibling.zipCode || '');
+      form.setValue('street', sibling.street || '');
+      form.setValue('number', sibling.number || '');
+      form.setValue('complement', sibling.complement || '');
+      form.setValue('neighborhood', sibling.neighborhood || '');
+      form.setValue('city', sibling.city || '');
+      form.setValue('state', sibling.state || '');
+      form.setValue('latitude', sibling.latitude);
+      form.setValue('longitude', sibling.longitude);
+      toast({ title: `Dados copiados de ${sibling.name}!`, description: "Endereço e GPS preenchidos." });
+  };
 
   const handleSmartSearch = async () => {
     if (!searchQuery.trim()) return;
@@ -173,6 +200,20 @@ export function StudentForm({
     } finally {
         setIsSearching(false);
     }
+  };
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        form.setValue('photoUrl', reader.result as string);
+        setIsUploading(false);
+        toast({ title: "Identificação Visual Capturada!" });
+    };
+    reader.readAsDataURL(file);
   };
 
   useEffect(() => {
@@ -226,6 +267,7 @@ export function StudentForm({
         active: student.active ?? true,
         serie: student.serie || '',
         turma: student.turma || '',
+        photoUrl: student.photoUrl || '',
       });
     } else {
       form.reset(defaultValues);
@@ -290,6 +332,32 @@ export function StudentForm({
       
       <ScrollArea className="flex-1">
         <div className="px-6 py-4 space-y-6">
+          
+          {/* Identificação Visual */}
+          <div className="flex flex-col items-center gap-4 py-4 border rounded-lg bg-secondary/10">
+            <div className="relative group">
+                <Avatar className="h-32 w-32 border-4 border-background shadow-xl">
+                    <AvatarImage src={currentPhoto} style={{ objectFit: 'cover' }} />
+                    <AvatarFallback className="bg-secondary text-primary"><User className="h-16 w-16" /></AvatarFallback>
+                </Avatar>
+                <button 
+                    type="button"
+                    onClick={() => fileInputRef.current?.click()}
+                    className="absolute inset-0 flex items-center justify-center bg-black/40 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                    <Camera className="text-white h-8 w-8" />
+                </button>
+            </div>
+            <div className="text-center space-y-1">
+                <Button type="button" variant="outline" size="sm" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                    {isUploading ? <Loader2 className="animate-spin mr-2 h-4 w-4"/> : <Camera className="mr-2 h-4 w-4" />}
+                    {currentPhoto ? 'Trocar Foto do Aluno' : 'Capturar Foto do Aluno'}
+                </Button>
+                <p className="text-[10px] text-muted-foreground italic">Exibida no checklist do motorista para segurança.</p>
+            </div>
+            <input type="file" accept="image/*" capture="environment" ref={fileInputRef} className="hidden" onChange={handleFileChange} />
+          </div>
+
           <div className="bg-primary/5 p-4 rounded-lg border border-primary/20 space-y-3">
             <div className="flex items-center gap-2 text-primary font-semibold text-sm">
                 <Sparkles className="h-4 w-4" />
@@ -307,9 +375,6 @@ export function StudentForm({
                     {isSearching ? <Loader2 className="h-4 w-4 animate-spin" /> : <Search className="h-4 w-4" />}
                 </Button>
             </div>
-            <p className="text-[10px] text-muted-foreground italic leading-tight">
-                Dica: A busca inteligente preenche endereço completo e coordenadas GPS.
-            </p>
           </div>
 
           <Form {...form}>
@@ -346,6 +411,29 @@ export function StudentForm({
                   </FormItem>
                 )}
               />
+
+              {/* Seletor de Herança de Irmãos */}
+              {siblings.length > 0 && (
+                  <div className="p-3 bg-primary/10 border border-primary/20 rounded-md space-y-2">
+                      <p className="text-[10px] font-bold uppercase text-primary flex items-center gap-2">
+                          <Users className="h-3 w-3" /> Irmão(s) detectado(s):
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                          {siblings.map(sibling => (
+                              <Button 
+                                key={sibling.id} 
+                                type="button" 
+                                variant="outline" 
+                                size="sm" 
+                                className="h-7 text-[10px] bg-background"
+                                onClick={() => handleCopyFromSibling(sibling)}
+                              >
+                                  Copiar dados de {sibling.name.split(' ')[0]}
+                              </Button>
+                          ))}
+                      </div>
+                  </div>
+              )}
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <FormField

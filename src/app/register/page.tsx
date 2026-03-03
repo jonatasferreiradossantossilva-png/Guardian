@@ -1,9 +1,10 @@
+
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays, Info } from 'lucide-react';
+import { Camera, CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, Sparkles, User, MapPin, CalendarDays, Info, Users } from 'lucide-react';
 import { extractDocumentData, type ExtractDocumentDataOutput } from '@/ai/flows/extract-document-data';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -66,7 +67,6 @@ export default function PublicRegistrationPage() {
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Garante que a cada mudança de passo, a tela role para o topo
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
@@ -124,7 +124,6 @@ export default function PublicRegistrationPage() {
   };
 
   const handleFinalSubmit = () => {
-    // Verificação rigorosa de todos os campos obrigatórios, incluindo endereço completo
     if (
         !extractedData?.name || 
         !email || 
@@ -174,6 +173,16 @@ export default function PublicRegistrationPage() {
     });
 
     setStep('success');
+  };
+
+  const handleRegisterSibling = () => {
+      // Loop inteligente: Mantém dados do pai e endereço, limpa apenas do aluno
+      setStudentName('');
+      setSelectedSchoolId('');
+      setStudentSerie('');
+      setStudentTurma('');
+      setStep('confirm');
+      toast({ title: "Pronto para o próximo!", description: "Dados do responsável preservados para agilizar." });
   };
 
   return (
@@ -443,9 +452,16 @@ export default function PublicRegistrationPage() {
                         <h2 className="text-2xl font-bold">Solicitação Enviada!</h2>
                         <p className="text-muted-foreground text-sm leading-relaxed">Recebemos seus dados e endereço. O gestor analisará a viabilidade da rota e entrará em contato.</p>
                     </div>
-                    <Button asChild variant="outline" className="w-full">
-                        <Link href="/">Voltar para o Início</Link>
-                    </Button>
+                    
+                    <div className="flex flex-col gap-3 pt-4">
+                        <Button className="w-full h-12" onClick={handleRegisterSibling}>
+                            <Users className="mr-2 h-5 w-5" />
+                            Cadastrar Outro Filho
+                        </Button>
+                        <Button asChild variant="outline" className="w-full h-12">
+                            <Link href="/">Voltar para o Início</Link>
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
         )}
