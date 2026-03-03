@@ -3,123 +3,123 @@
   "placeholderImages": [
     {
       "id": "ob-1-invite",
-      "description": "Gestor enviando convite",
-      "imageUrl": "https://picsum.photos/seed/ob1/600/400",
+      "description": "Gestor enviando convite via WhatsApp",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_1",
       "imageHint": "whatsapp invite"
     },
     {
       "id": "ob-2-received",
-      "description": "Pai recebendo link no WhatsApp",
-      "imageUrl": "https://picsum.photos/seed/ob2/600/400",
+      "description": "Pai recebendo o link no celular",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_2",
       "imageHint": "whatsapp message"
     },
     {
       "id": "ob-3-welcome",
-      "description": "Tela de boas-vindas do cadastro",
-      "imageUrl": "https://picsum.photos/seed/ob3/600/400",
+      "description": "Boas-vindas ao sistema de cadastro",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_3",
       "imageHint": "mobile welcome"
     },
     {
       "id": "ob-4-scan",
-      "description": "Scanner de documento via IA",
-      "imageUrl": "https://picsum.photos/seed/ob4/600/400",
+      "description": "Leitura inteligente do documento (OCR)",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_4",
       "imageHint": "document scan"
     },
     {
       "id": "ob-5-review",
-      "description": "Pai revisando dados da IA",
-      "imageUrl": "https://picsum.photos/seed/ob5/600/400",
+      "description": "Pai revisando os dados extraídos",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_5",
       "imageHint": "data review"
     },
     {
       "id": "ob-6-address",
-      "description": "Preenchimento de endereço",
-      "imageUrl": "https://picsum.photos/seed/ob6/600/400",
-      "imageHint": "address form"
+      "description": "Definição do endereço de embarque",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_6",
+      "imageHint": "address setup"
     },
     {
       "id": "ob-7-school",
-      "description": "Seleção da escola de destino",
-      "imageUrl": "https://picsum.photos/seed/ob7/600/400",
-      "imageHint": "school select"
+      "description": "Seleção da escola na base nacional",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_7",
+      "imageHint": "school search"
     },
     {
       "id": "ob-8-finance",
-      "description": "Preferências financeiras",
-      "imageUrl": "https://picsum.photos/seed/ob8/600/400",
+      "description": "Preferências de pagamento do responsável",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_8",
       "imageHint": "finance options"
     },
     {
       "id": "ob-9-health",
-      "description": "Alertas de saúde e cuidados",
-      "imageUrl": "https://picsum.photos/seed/ob9/600/400",
+      "description": "Alertas de saúde críticos para o motorista",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_9",
       "imageHint": "health alerts"
     },
     {
       "id": "ob-10-done-parent",
-      "description": "Sucesso no cadastro (Pai)",
-      "imageUrl": "https://picsum.photos/seed/ob10/600/400",
-      "imageHint": "success screen"
+      "description": "Sucesso no cadastro do lado do pai",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_10",
+      "imageHint": "registration success"
     },
     {
       "id": "ob-11-notification",
-      "description": "Notificação de nova solicitação",
-      "imageUrl": "https://picsum.photos/seed/ob11/600/400",
-      "imageHint": "admin notification"
+      "description": "Gestor recebe aviso de nova solicitação",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_11",
+      "imageHint": "admin alert"
     },
     {
       "id": "ob-12-triagem",
-      "description": "Área de triagem do gestor",
-      "imageUrl": "https://picsum.photos/seed/ob12/600/400",
+      "description": "Lista de triagem inteligente do gestor",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_12",
       "imageHint": "triage list"
     },
     {
       "id": "ob-13-review-triagem",
-      "description": "Revisão dos dados capturados",
-      "imageUrl": "https://picsum.photos/seed/ob13/600/400",
-      "imageHint": "triage review"
+      "description": "Revisão detalhada e validação GPS",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_13",
+      "imageHint": "triage details"
     },
     {
       "id": "ob-14-set-price",
-      "description": "Definição de mensalidade e vencimento",
-      "imageUrl": "https://picsum.photos/seed/ob14/600/400",
-      "imageHint": "price setup"
+      "description": "Definição de mensalidade e contrato",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_14",
+      "imageHint": "price config"
     },
     {
       "id": "ob-15-approve",
-      "description": "Aprovação final do aluno",
-      "imageUrl": "https://picsum.photos/seed/ob15/600/400",
-      "imageHint": "approval button"
+      "description": "Aprovação final e integração à frota",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_15",
+      "imageHint": "approve button"
     },
     {
       "id": "ob-16-contract",
-      "description": "Contrato gerado automaticamente",
-      "imageUrl": "https://picsum.photos/seed/ob16/600/400",
+      "description": "Visualização do contrato gerado pela IA",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_16",
       "imageHint": "digital contract"
     },
     {
       "id": "ob-17-accept",
-      "description": "Aceite digital do pai",
-      "imageUrl": "https://picsum.photos/seed/ob17/600/400",
-      "imageHint": "contract accepted"
+      "description": "Aceite jurídico digital do responsável",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_17",
+      "imageHint": "contract sign"
     },
     {
       "id": "ob-18-route-setup",
-      "description": "Montagem do itinerário",
-      "imageUrl": "https://picsum.photos/seed/ob18/600/400",
-      "imageHint": "route build"
+      "description": "Montagem do itinerário da rota",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_18",
+      "imageHint": "route building"
     },
     {
       "id": "ob-19-optimize",
-      "description": "Otimização via IA",
-      "imageUrl": "https://picsum.photos/seed/ob19/600/400",
-      "imageHint": "ai optimization"
+      "description": "Otimização lógica via Inteligência Artificial",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_19",
+      "imageHint": "ai path"
     },
     {
       "id": "ob-20-live",
-      "description": "Rota ativa e monitorada",
-      "imageUrl": "https://picsum.photos/seed/ob20/600/400",
-      "imageHint": "live tracking"
+      "description": "Operação ativa com monitoramento real",
+      "imageUrl": "https://drive.google.com/uc?export=view&id=ID_DA_FOTO_20",
+      "imageHint": "live monitoring"
     }
   ]
 }
