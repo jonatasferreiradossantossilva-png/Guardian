@@ -551,9 +551,12 @@ export function StudentForm({
               </div>
 
               <div className="border-t pt-4 mt-4 bg-destructive/5 p-4 rounded-lg">
-                 <p className="text-sm font-bold flex items-center gap-2 mb-3 text-destructive">
-                    <HeartPulse className="h-4 w-4" /> Alertas de Saúde e Cuidados
-                 </p>
+                 <div className="mb-3">
+                    <p className="text-sm font-bold flex items-center gap-2 text-destructive">
+                        <HeartPulse className="h-4 w-4" /> Alertas de Saúde e Cuidados
+                    </p>
+                    <p className="text-[10px] text-muted-foreground mt-1 italic">Caso o aluno não possua condições especiais, não é necessário selecionar nenhuma opção.</p>
+                 </div>
                  
                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-4">
                     {HEALTH_CATEGORIES.map((cat) => (

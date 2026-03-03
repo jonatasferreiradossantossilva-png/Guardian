@@ -525,7 +525,10 @@ export default function PublicRegistrationPage() {
                         <HeartPulse className="h-5 w-5" />
                         <CardTitle className="text-lg">Saúde e Cuidados</CardTitle>
                     </div>
-                    <CardDescription>Estes alertas aparecerão para o motorista no momento do embarque para garantir a segurança.</CardDescription>
+                    <CardDescription>
+                        Estes alertas aparecerão para o motorista no momento do embarque.
+                        <span className="block mt-1 font-medium text-foreground/70 italic">Caso o aluno não possua condições especiais, basta não selecionar nada e finalizar.</span>
+                    </CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Selecione alertas críticos:</p>
@@ -555,8 +558,9 @@ export default function PublicRegistrationPage() {
 
                     <div className="space-y-2 pt-4 border-t">
                         <Label className="text-xs">Observações Adicionais (Opcional)</Label>
+                        <span className="block text-[10px] text-muted-foreground mb-1 italic">Detalhes sobre alergias, dosagens ou cuidados específicos.</span>
                         <Textarea 
-                            placeholder="Descreva detalhes importantes (ex: tipo de alergia, dosagem de medicação ou cuidados específicos...)"
+                            placeholder="Descreva detalhes importantes..."
                             value={medicalNote}
                             onChange={e => setMedicalNote(e.target.value)}
                             className="bg-muted/30"
