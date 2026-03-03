@@ -1,18 +1,20 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Info, Users, Smartphone } from 'lucide-react';
+import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Info, Users, Smartphone, Camera, Sparkles, RefreshCw, AlertTriangle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
+import { extractDocumentData } from '@/ai/flows/extract-document-data';
 import Link from 'next/link';
 
-type Step = 'welcome' | 'form' | 'success';
+type Step = 'welcome' | 'scan' | 'review' | 'form' | 'success';
 
 const SERIE_OPTIONS = [
     "Berçário / Maternal",
@@ -36,10 +38,12 @@ const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 
 export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
+  const [isProcessing, setIsProcessing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const { toast } = useToast();
   const { addDoc } = useMockData();
   const { data: schools } = useMockCollection('schools');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Form states - Responsible
   const [parentName, setParentName] = useState('');
@@ -69,6 +73,40 @@ export default function PublicRegistrationPage() {
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }, [step]);
 
+  // OCR Logic
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsProcessing(true);
+    const reader = new FileReader();
+    reader.onloadend = async () => {
+        try {
+            const base64 = reader.result as string;
+            const result = await extractDocumentData({ photoDataUri: base64 });
+            
+            setParentName(result.name);
+            setParentCpf(result.cpf);
+            setParentRg(result.rg);
+            setParentBirthDate(result.birthDate.split('/').reverse().join('-')); // YYYY-MM-DD
+            
+            setStep('review');
+            toast({ title: "Leitura concluída!", description: "Por favor, revise se os dados estão corretos." });
+        } catch (error: any) {
+            toast({ 
+                title: "Falha na leitura automática", 
+                description: "Não conseguimos ler os dados. Você pode preencher manualmente.", 
+                variant: "destructive" 
+            });
+            setStep('form');
+        } finally {
+            setIsProcessing(false);
+        }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // CEP Auto-fill
   useEffect(() => {
     const cleanedCep = zipCode.replace(/\D/g, '');
     if (cleanedCep.length === 8) {
@@ -83,8 +121,6 @@ export default function PublicRegistrationPage() {
             setCity(data.localidade || '');
             setState(data.uf || '');
             toast({ title: "CEP localizado!", description: "Endereço atualizado automaticamente." });
-          } else {
-            toast({ title: "CEP não encontrado", variant: "destructive" });
           }
         } catch (e) {
           console.error("Erro ao buscar CEP:", e);
@@ -97,25 +133,8 @@ export default function PublicRegistrationPage() {
   }, [zipCode, toast]);
 
   const handleFinalSubmit = () => {
-    if (
-        !parentName || 
-        !parentCpf ||
-        !email || 
-        !phone || 
-        !studentName || 
-        !selectedSchoolId || 
-        !zipCode || 
-        !street || 
-        !number || 
-        !neighborhood || 
-        !city || 
-        !state
-    ) {
-        toast({ 
-            title: "Campos obrigatórios", 
-            description: "Por favor, preencha todos os campos do responsável, aluno e endereço completo.", 
-            variant: "destructive" 
-        });
+    if (!parentName || !parentCpf || !email || !phone || !studentName || !selectedSchoolId || !zipCode || !street || !number) {
+        toast({ title: "Campos obrigatórios", description: "Por favor, preencha os dados básicos do responsável, aluno e endereço.", variant: "destructive" });
         return;
     }
 
@@ -130,38 +149,26 @@ export default function PublicRegistrationPage() {
         preferredPaymentDay: Number(preferredPaymentDay),
         status: 'pending_approval',
         createdAt: new Date().toISOString(),
-        address: {
-            zipCode,
-            street,
-            number,
-            complement,
-            neighborhood,
-            city,
-            state
-        },
-        documentData: {
-            cpf: parentCpf,
-            rg: parentRg,
-            birthDate: parentBirthDate
-        }
+        address: { zipCode, street, number, complement, neighborhood, city, state },
+        documentData: { cpf: parentCpf, rg: parentRg, birthDate: parentBirthDate }
     });
 
     setStep('success');
   };
 
   const handleRegisterSibling = () => {
-      // Manten os dados do pai e endereço, limpa apenas do aluno
       setStudentName('');
       setSelectedSchoolId('');
       setStudentSerie('');
       setStudentTurma('');
       setStep('form');
-      toast({ title: "Pronto para o próximo!", description: "Dados do responsável preservados para agilizar." });
+      toast({ title: "Dados do responsável preservados!", description: "Agilizando o cadastro do próximo filho." });
   };
 
   return (
     <div className="min-h-screen bg-secondary/30 flex items-center justify-center p-4">
       <div className="max-w-md w-full">
+        
         {step === 'welcome' && (
           <Card className="shadow-2xl border-primary/20">
             <CardHeader className="text-center">
@@ -174,17 +181,17 @@ export default function PublicRegistrationPage() {
             <CardContent className="space-y-6">
                 <div className="space-y-4">
                     <div className="flex items-start gap-3">
-                        <div className="bg-primary/20 p-2 rounded-lg mt-1"><FileText className="h-4 w-4 text-primary" /></div>
+                        <div className="bg-primary/20 p-2 rounded-lg mt-1"><Smartphone className="h-4 w-4 text-primary" /></div>
                         <div>
-                            <p className="font-semibold text-sm">Dados do Responsável</p>
-                            <p className="text-xs text-muted-foreground">Informações para o contrato e contato.</p>
+                            <p className="font-semibold text-sm">Leitura via IA</p>
+                            <p className="text-xs text-muted-foreground">Tire uma foto do seu documento (RG ou CNH) para preenchimento automático.</p>
                         </div>
                     </div>
                     <div className="flex items-start gap-3">
-                        <div className="bg-primary/20 p-2 rounded-lg mt-1"><User className="h-4 w-4 text-primary" /></div>
+                        <div className="bg-primary/20 p-2 rounded-lg mt-1"><MapPin className="h-4 w-4 text-primary" /></div>
                         <div>
-                            <p className="font-semibold text-sm">Dados do Aluno</p>
-                            <p className="text-xs text-muted-foreground">Nome, escola e endereço de coleta.</p>
+                            <p className="font-semibold text-sm">Endereço de Coleta</p>
+                            <p className="text-xs text-muted-foreground">O local exato onde a van deve buscar a criança.</p>
                         </div>
                     </div>
                 </div>
@@ -193,20 +200,113 @@ export default function PublicRegistrationPage() {
                     <p className="text-[10px] text-muted-foreground leading-tight">Seus dados estão protegidos por criptografia e serão usados exclusivamente para a formalização do contrato.</p>
                 </div>
             </CardContent>
-            <CardHeader>
-              <Button className="w-full h-12 text-lg" onClick={() => setStep('form')}>
-                Começar Cadastro
+            <CardFooter className="flex flex-col gap-2">
+              <Button className="w-full h-12 text-lg" onClick={() => setStep('scan')}>
+                Usar Leitura Automática
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
-            </CardHeader>
+              <Button variant="ghost" className="w-full text-xs text-muted-foreground" onClick={() => setStep('form')}>
+                Pular e preencher manualmente
+              </Button>
+            </CardFooter>
           </Card>
+        )}
+
+        {step === 'scan' && (
+            <Card className="shadow-2xl border-primary/20">
+                <CardHeader className="text-center">
+                    <CardTitle>Capturar Documento</CardTitle>
+                    <CardDescription>Utilize seu RG ou CNH original para agilizar o processo.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6">
+                    <div className="aspect-[3/2] bg-muted/50 rounded-xl border-2 border-dashed border-primary/20 flex flex-col items-center justify-center text-center p-6 relative overflow-hidden">
+                        {isProcessing ? (
+                            <div className="flex flex-col items-center gap-4 animate-in fade-in duration-500">
+                                <Loader2 className="h-12 w-12 animate-spin text-primary" />
+                                <div className="space-y-1">
+                                    <p className="font-bold text-primary flex items-center justify-center gap-2">
+                                        <Sparkles className="h-4 w-4" /> Analisando Dados...
+                                    </p>
+                                    <p className="text-xs text-muted-foreground">Mapeando campos oficiais do documento</p>
+                                </div>
+                            </div>
+                        ) : (
+                            <>
+                                <div className="absolute inset-4 border-2 border-primary/10 rounded-lg pointer-events-none" />
+                                <Camera className="h-12 w-12 text-primary/40 mb-4" />
+                                <p className="text-sm font-medium text-muted-foreground">Posicione o documento no centro e evite reflexos.</p>
+                            </>
+                        )}
+                    </div>
+                    
+                    <div className="space-y-3">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                            <Badge variant="outline" className="h-5">DICA</Badge>
+                            <span>Remova o plástico do documento se houver muito brilho.</span>
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2">
+                    <input type="file" accept="image/*" capture="environment" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
+                    <Button className="w-full h-12" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}>
+                        <Camera className="mr-2 h-5 w-5" />
+                        Tirar Foto Agora
+                    </Button>
+                    <Button variant="ghost" onClick={() => setStep('welcome')} disabled={isProcessing}>Voltar</Button>
+                </CardFooter>
+            </Card>
+        )}
+
+        {step === 'review' && (
+            <Card className="shadow-2xl border-primary/20 animate-in slide-in-from-bottom-4 duration-500">
+                <CardHeader className="bg-primary/5 border-b">
+                    <div className="flex items-center gap-2 text-primary">
+                        <Sparkles className="h-5 w-5" />
+                        <CardTitle className="text-lg">Revisar Dados Extraídos</CardTitle>
+                    </div>
+                    <CardDescription>A IA conseguiu capturar estes campos. Ajuste se necessário.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-4 pt-6">
+                    <div className="space-y-2">
+                        <Label>Nome Completo</Label>
+                        <Input value={parentName} onChange={e => setParentName(e.target.value)} className="font-bold border-primary/30" />
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                            <Label>CPF</Label>
+                            <Input value={parentCpf} onChange={e => setParentCpf(e.target.value)} />
+                        </div>
+                        <div className="space-y-2">
+                            <Label>RG</Label>
+                            <Input value={parentRg} onChange={e => setParentRg(e.target.value)} />
+                        </div>
+                    </div>
+                    <div className="space-y-2">
+                        <Label>Data de Nascimento</Label>
+                        <Input type="date" value={parentBirthDate} onChange={e => setParentBirthDate(e.target.value)} />
+                    </div>
+                    <Alert className="bg-amber-500/10 text-amber-600 border-amber-500/20 py-2">
+                        <AlertTriangle className="h-4 w-4" />
+                        <AlertDescription className="text-[10px]">Confirme se os números do CPF e RG estão 100% corretos para o contrato.</AlertDescription>
+                    </Alert>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-2 border-t pt-6 bg-muted/20 rounded-b-xl">
+                    <Button className="w-full h-12" onClick={() => setStep('form')}>
+                        Dados Confirmados
+                        <ArrowRight className="ml-2 h-5 w-5" />
+                    </Button>
+                    <Button variant="ghost" className="text-xs" onClick={() => setStep('scan')}>
+                        <RefreshCw className="mr-2 h-3 w-3" /> Tentar foto novamente
+                    </Button>
+                </CardFooter>
+            </Card>
         )}
 
         {step === 'form' && (
           <Card className="shadow-2xl border-primary/20 flex flex-col h-[90vh]">
             <CardHeader className="border-b bg-muted/30 shrink-0">
-              <CardTitle className="text-lg">Formulário de Inscrição</CardTitle>
-              <CardDescription>Preencha os campos abaixo com atenção.</CardDescription>
+              <CardTitle className="text-lg">Finalizar Inscrição</CardTitle>
+              <CardDescription>Complete com seus dados de contato e endereço.</CardDescription>
             </CardHeader>
             
             <ScrollArea className="flex-1">
@@ -214,24 +314,9 @@ export default function PublicRegistrationPage() {
                     
                     <div className="space-y-4">
                         <p className="text-sm font-bold flex items-center gap-2">
-                            <FileText className="h-4 w-4 text-primary" /> Dados do Responsável
+                            <FileText className="h-4 w-4 text-primary" /> Contato do Responsável
                         </p>
-                        <div className="space-y-2">
-                            <Label>Seu Nome Completo</Label>
-                            <Input value={parentName} onChange={e => setParentName(e.target.value)} placeholder="Como no documento" />
-                        </div>
                         
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label>CPF</Label>
-                                <Input value={parentCpf} onChange={e => setParentCpf(e.target.value)} placeholder="000.000.000-00" />
-                            </div>
-                            <div className="space-y-2">
-                                <Label>RG</Label>
-                                <Input value={parentRg} onChange={e => setParentRg(e.target.value)} placeholder="00.000.000-0" />
-                            </div>
-                        </div>
-
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>E-mail</Label>
@@ -241,10 +326,6 @@ export default function PublicRegistrationPage() {
                                 <Label>WhatsApp</Label>
                                 <Input placeholder="(11) 90000-0000" value={phone} onChange={e => setPhone(e.target.value)} />
                             </div>
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Data de Nascimento</Label>
-                            <Input type="date" value={parentBirthDate} onChange={e => setParentBirthDate(e.target.value)} />
                         </div>
                     </div>
 
@@ -287,28 +368,9 @@ export default function PublicRegistrationPage() {
                                     <Input placeholder="Cidade" value={city} onChange={e => setCity(e.target.value)} />
                                 </div>
                             </div>
-                            <div className="space-y-2">
-                                <Label>Estado (UF)</Label>
-                                <Input placeholder="UF" value={state} onChange={e => setState(e.target.value)} />
-                            </div>
                         </div>
                     </div>
                     
-                    <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                            <CalendarDays className="h-4 w-4 text-primary" /> Preferências Financeiras
-                        </p>
-                        <div className="space-y-2">
-                            <Label>Dia de Vencimento (Desejado)</Label>
-                            <Select onValueChange={setPreferredPaymentDay} value={preferredPaymentDay}>
-                                <SelectTrigger><SelectValue placeholder="Selecione o dia..." /></SelectTrigger>
-                                <SelectContent>
-                                    {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
                             <User className="h-4 w-4 text-primary" /> Dados do Aluno
@@ -352,7 +414,7 @@ export default function PublicRegistrationPage() {
                     <Button className="w-full h-12 text-base font-bold" onClick={handleFinalSubmit}>
                         Finalizar Inscrição
                     </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('welcome')}>
+                    <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('review')}>
                         Voltar
                     </Button>
                 </div>
