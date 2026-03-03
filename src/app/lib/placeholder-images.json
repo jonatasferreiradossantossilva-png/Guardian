@@ -26,98 +26,98 @@
       "imageHint": "document scan"
     },
     {
-      "id": "ob-5-review",
-      "description": "Revisão dos dados de identidade lidos pela IA",
+      "id": "ob-5-identity",
+      "description": "Dados de Identidade (Nome, CPF e RG)",
       "imageUrl": "https://lh3.googleusercontent.com/d/1LLASPQgatNoSbuMA4bcB1MQ-2gZQbxi1",
-      "imageHint": "data review"
+      "imageHint": "identity data"
     },
     {
-      "id": "ob-6-address",
-      "description": "Definição detalhada do endereço de embarque",
+      "id": "ob-6-contact",
+      "description": "Informações de E-mail e WhatsApp",
       "imageUrl": "https://lh3.googleusercontent.com/d/1fa1_ijDaaGLK3X8yhl7Xa-uQzxC6peig",
+      "imageHint": "contact info"
+    },
+    {
+      "id": "ob-7-address",
+      "description": "Definição do Endereço de Embarque",
+      "imageUrl": "https://lh3.googleusercontent.com/d/13aN71i_tSlEnMK9khmC5IbmrysqNc2x2",
       "imageHint": "address setup"
     },
     {
-      "id": "ob-7-school",
-      "description": "Seleção da escola na base nacional Guardian",
-      "imageUrl": "https://lh3.googleusercontent.com/d/13aN71i_tSlEnMK9khmC5IbmrysqNc2x2",
+      "id": "ob-8-school",
+      "description": "Seleção da Escola de Destino",
+      "imageUrl": "https://lh3.googleusercontent.com/d/13IQX0_YHwUpcJ9paTQgde2Xc5Kf7-gj1",
       "imageHint": "school search"
     },
     {
-      "id": "ob-8-class",
-      "description": "Preenchimento de série e turma do aluno",
-      "imageUrl": "https://lh3.googleusercontent.com/d/13IQX0_YHwUpcJ9paTQgde2Xc5Kf7-gj1",
-      "imageHint": "student info"
-    },
-    {
-      "id": "ob-9-finance",
-      "description": "Configuração de preferências financeiras",
+      "id": "ob-9-class",
+      "description": "Informações de Série e Turma",
       "imageUrl": "https://lh3.googleusercontent.com/d/1XO4__DPeZitE3Wvm2DU1vP2zcLr8QMsi",
-      "imageHint": "finance options"
+      "imageHint": "student class"
     },
     {
-      "id": "ob-10-summary",
-      "description": "Revisão geral do formulário pré-saúde",
+      "id": "ob-10-finance",
+      "description": "Configuração do Plano Financeiro",
       "imageUrl": "https://lh3.googleusercontent.com/d/1g8xxyNPuQqTWeD3YUuVxhA0Z6jTDz6p-",
+      "imageHint": "finance setup"
+    },
+    {
+      "id": "ob-11-summary",
+      "description": "Revisão Geral do Cadastro",
+      "imageUrl": "https://lh3.googleusercontent.com/d/1MzIhmo9OhMkyyIkhiW5FylBu8IrWEKjv",
       "imageHint": "form review"
     },
     {
-      "id": "ob-11-health",
-      "description": "Preenchimento da parte médica e alertas críticos",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1MzIhmo9OhMkyyIkhiW5FylBu8IrWEKjv",
+      "id": "ob-12-health",
+      "description": "Alertas de Saúde e Cuidados",
+      "imageUrl": "https://lh3.googleusercontent.com/d/1-o5B8hK8OdGI9Lt23h_a3dUw_YTkNmQW",
       "imageHint": "health alerts"
     },
     {
-      "id": "ob-12-done",
-      "description": "Cadastro enviado com sucesso para triagem",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1-o5B8hK8OdGI9Lt23h_a3dUw_YTkNmQW",
-      "imageHint": "registration success"
-    },
-    {
-      "id": "ob-13-notification",
-      "description": "Aviso push no celular do gestor",
+      "id": "ob-13-done",
+      "description": "Cadastro Finalizado com Sucesso",
       "imageUrl": "https://lh3.googleusercontent.com/d/1DliIkJSN4tU84tYv_V1KNwyTI1cSXBF-",
-      "imageHint": "admin alert"
+      "imageHint": "success screen"
     },
     {
-      "id": "ob-14-triage",
-      "description": "Visualização do novo aluno na lista de triagem",
+      "id": "ob-14-notification",
+      "description": "Notificação Push para o Gestor",
       "imageUrl": "https://lh3.googleusercontent.com/d/1xpdobdVQtGsANQZByzvh4h3CK6kK2jbI",
+      "imageHint": "admin notification"
+    },
+    {
+      "id": "ob-15-triage",
+      "description": "Visualização na Lista de Triagem",
+      "imageUrl": "https://picsum.photos/seed/ob15/800/600",
       "imageHint": "triage list"
     },
     {
-      "id": "ob-15-gps",
-      "description": "Validação de coordenadas GPS e endereços",
-      "imageUrl": "https://picsum.photos/seed/ob15/800/600",
+      "id": "ob-16-gps",
+      "description": "Validação de Coordenadas GPS",
+      "imageUrl": "https://picsum.photos/seed/ob16/800/600",
       "imageHint": "gps map"
     },
     {
-      "id": "ob-16-price",
-      "description": "Definição de mensalidade e geração de contrato",
-      "imageUrl": "https://picsum.photos/seed/ob16/800/600",
-      "imageHint": "price config"
-    },
-    {
       "id": "ob-17-sign",
-      "description": "Aceite digital do contrato pelo responsável",
+      "description": "Aceite Digital do Contrato",
       "imageUrl": "https://picsum.photos/seed/ob17/800/600",
       "imageHint": "contract sign"
     },
     {
       "id": "ob-18-itinerary",
-      "description": "Montagem do itinerário da nova rota",
+      "description": "Montagem do Itinerário da Rota",
       "imageUrl": "https://picsum.photos/seed/ob18/800/600",
       "imageHint": "route building"
     },
     {
       "id": "ob-19-optimization",
-      "description": "Cálculo da rota mais curta via Inteligência Artificial",
+      "description": "Otimização via Inteligência Artificial",
       "imageUrl": "https://picsum.photos/seed/ob19/800/600",
       "imageHint": "ai path"
     },
     {
       "id": "ob-20-live",
-      "description": "Van monitorada em tempo real na rua",
+      "description": "Van em Rota com Tracking Real",
       "imageUrl": "https://picsum.photos/seed/ob20/800/600",
       "imageHint": "live monitoring"
     }
