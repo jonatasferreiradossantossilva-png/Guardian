@@ -46,6 +46,8 @@ const HEALTH_CATEGORIES = [
     { id: 'Neuro', label: 'TEA / TDAH / Neurodiversidade', icon: <Brain className="h-4 w-4" /> },
 ];
 
+const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+
 export default function PublicRegistrationPage() {
   const [step, setStep] = useState<Step>('welcome');
   const [isProcessing, setIsProcessing] = useState(false);
@@ -332,7 +334,30 @@ export default function PublicRegistrationPage() {
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
                     
+                    {/* Dados de Identidade do Responsável (Caso manual ou ajuste) */}
                     <div className="space-y-4">
+                        <p className="text-sm font-bold flex items-center gap-2 text-primary">
+                            <User className="h-4 w-4" /> Identificação do Responsável
+                        </p>
+                        <div className="space-y-4">
+                            <div className="space-y-2">
+                                <Label>Nome Completo do Responsável</Label>
+                                <Input placeholder="Conforme documento" value={parentName} onChange={e => setParentName(e.target.value)} />
+                            </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label>CPF</Label>
+                                    <Input placeholder="000.000.000-00" value={parentCpf} onChange={e => setParentCpf(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>RG</Label>
+                                    <Input placeholder="00.000.000-0" value={parentRg} onChange={e => setParentRg(e.target.value)} />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-4 border-t pt-6">
                         <p className="text-sm font-bold flex items-center gap-2 text-primary">
                             <FileText className="h-4 w-4" /> Contato do Responsável
                         </p>
@@ -393,7 +418,7 @@ export default function PublicRegistrationPage() {
                     
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
-                            <User className="h-4 w-4" /> Dados do Aluno
+                            <Users className="h-4 w-4" /> Dados do Aluno
                         </p>
                         <div className="space-y-4">
                             <div className="space-y-2">
@@ -481,7 +506,7 @@ export default function PublicRegistrationPage() {
                     <div className="space-y-2 pt-4 border-t">
                         <Label className="text-xs">Observações Adicionais (Opcional)</Label>
                         <Textarea 
-                            placeholder="Descreva detalhes importantes (ex: tipo de alergia, dosagem de bombinha, etc.)"
+                            placeholder="Descreva detalhes importantes (ex: tipo de alergia, dosagem de medicação ou cuidados específicos...)"
                             value={medicalNote}
                             onChange={e => setMedicalNote(e.target.value)}
                             className="bg-muted/30"
