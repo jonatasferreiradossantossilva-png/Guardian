@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, memo, useCallback } from 'react';
@@ -51,6 +50,7 @@ interface Student {
   shift: Shift;
   schoolId: string;
   medicalNote?: string;
+  medicalConditions?: string[];
   street?: string;
   number?: string;
   neighborhood?: string;
@@ -96,9 +96,10 @@ interface StudentCardProps {
 const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: StudentCardProps) => {
   const isFinished = student.status === 'desembarcado' || student.status.startsWith('ausente');
   const { toast } = useToast();
+  const hasAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
   return (
-    <Card className={cn("transition-opacity", isFinished && "opacity-60")}>
+    <Card className={cn("transition-opacity", isFinished && "opacity-60", hasAlert && !isFinished && "border-destructive/30")}>
       <CardContent className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4 flex-1">
             <div title={statusText[student.status]}>{statusIconMap[student.status]}</div>
@@ -107,9 +108,9 @@ const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: St
                     <span className={cn("font-medium", isFinished && "line-through text-muted-foreground")}>
                     {student.name}
                     </span>
-                    {student.medicalNote && (
+                    {hasAlert && (
                         <Badge variant="destructive" className="h-5 w-5 p-0 flex items-center justify-center animate-pulse cursor-help" title="Alerta Médico" onClick={() => {
-                            toast({ title: `Cuidados: ${student.name}`, description: student.medicalNote });
+                            toast({ title: `Cuidados: ${student.name}`, description: student.medicalNote || `Condições: ${student.medicalConditions?.join(', ')}`, duration: 6000 });
                         }}>
                             <HeartPulse className="h-3 w-3" />
                         </Badge>
@@ -126,7 +127,7 @@ const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: St
                     </Button>
                 </div>
                 <p className="text-xs text-muted-foreground truncate">
-                    {student.street ? `${student.street}, ${student.number} - ${student.neighborhood}` : 'Endereço indisponível'}
+                    {student.street ? `${student.street}, ${student.number} - ${student.neighborhood}` : 'Endereço de embarque indisponível'}
                 </p>
             </div>
         </div>

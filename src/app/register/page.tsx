@@ -14,7 +14,9 @@ import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { extractDocumentData } from '@/ai/flows/extract-document-data';
 import { Checkbox } from '@/components/ui/checkbox';
+import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 type Step = 'welcome' | 'scan' | 'review' | 'form' | 'health' | 'success';
 
@@ -355,7 +357,7 @@ export default function PublicRegistrationPage() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="space-y-2 sm:col-span-1">
-                                    <Label>CEP</Label>
+                                    <Label>CEP de Embarque</Label>
                                     <div className="relative">
                                         <Input placeholder="00000-000" value={zipCode} onChange={e => setZipCode(e.target.value)} />
                                         {isFetchingCep && <Loader2 className="absolute right-2 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
@@ -429,12 +431,12 @@ export default function PublicRegistrationPage() {
 
             <CardFooter className="border-t p-6 shrink-0 bg-background">
                 <div className="flex flex-col w-full gap-2">
-                    <Button className="w-full h-12 text-base font-bold" onClick={() => setStep('health')}>
-                        Continuar para Saúde
+                    <Button className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90" onClick={() => setStep('health')}>
+                        Próximo: Informações de Saúde
                         <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                     <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('review')}>
-                        Voltar
+                        Voltar para Identificação
                     </Button>
                 </div>
             </CardFooter>
@@ -448,7 +450,7 @@ export default function PublicRegistrationPage() {
                         <HeartPulse className="h-5 w-5" />
                         <CardTitle className="text-lg">Saúde e Cuidados</CardTitle>
                     </div>
-                    <CardDescription>Estes alertas aparecerão para o motorista no momento do embarque.</CardDescription>
+                    <CardDescription>Estes alertas aparecerão para o motorista no momento do embarque para garantir a segurança.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
                     <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Selecione alertas críticos:</p>
@@ -487,10 +489,10 @@ export default function PublicRegistrationPage() {
                     </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2 border-t pt-6 bg-muted/20">
-                    <Button className="w-full h-12 text-base font-bold" onClick={handleFinalSubmit}>
+                    <Button className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-700" onClick={handleFinalSubmit}>
                         Finalizar e Enviar Cadastro
                     </Button>
-                    <Button variant="ghost" className="text-xs" onClick={() => setStep('form')}>Voltar</Button>
+                    <Button variant="ghost" className="text-xs" onClick={() => setStep('form')}>Voltar para Endereço</Button>
                 </CardFooter>
             </Card>
         )}

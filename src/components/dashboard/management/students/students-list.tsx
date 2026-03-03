@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -11,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Search, Loader2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Search, Loader2, HeartPulse } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -56,6 +55,8 @@ type Student = {
   active?: boolean;
   serie?: string;
   turma?: string;
+  medicalNote?: string;
+  medicalConditions?: string[];
 };
 type School = { id: string; name: string };
 type Parent = { id: string; name: string };
@@ -233,15 +234,27 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                   </TableRow>
                 )}
                 {!isLoading && paginatedStudents && paginatedStudents.length > 0 ? (
-                  paginatedStudents.map((student) => (
+                  paginatedStudents.map((student) => {
+                    const hasAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
+                    return (
                     <TableRow key={student.id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
-                          <Avatar>
+                          <Avatar className="relative">
                             <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
                             <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            {hasAlert && (
+                                <div className="absolute -top-1 -right-1 bg-destructive rounded-full p-0.5 border border-background shadow-sm animate-pulse">
+                                    <HeartPulse className="h-2.5 w-2.5 text-white" />
+                                </div>
+                            )}
                           </Avatar>
-                          <span className="font-medium">{student.name}</span>
+                          <div className="flex flex-col">
+                            <span className="font-medium flex items-center gap-1.5">
+                                {student.name}
+                                {hasAlert && <HeartPulse className="h-3.5 w-3.5 text-destructive" />}
+                            </span>
+                          </div>
                         </div>
                       </TableCell>
                       <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
@@ -260,7 +273,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                             </Button>
                       </TableCell>
                     </TableRow>
-                  ))
+                  )})
                 ) : (
                   !isLoading && (
                     <TableRow>
@@ -278,16 +291,29 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
             {isLoading && <p className="text-center py-10">Carregando...</p>}
             {!isLoading && paginatedStudents && paginatedStudents.length > 0 ? (
               <div className="space-y-4">
-                {paginatedStudents.map((student) => (
-                  <Card key={student.id} className="overflow-hidden">
+                {paginatedStudents.map((student) => {
+                  const hasAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
+                  return (
+                  <Card key={student.id} className={cn("overflow-hidden", hasAlert && "border-destructive/20")}>
                     <div className="p-4">
                         <div className="flex items-start justify-between">
                         <div className="flex items-center gap-3">
-                            <Avatar>
+                            <Avatar className="relative">
                                 <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} alt={student.name} />
                                 <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                {hasAlert && (
+                                    <div className="absolute -top-1 -right-1 bg-destructive rounded-full p-0.5 border border-background shadow-sm animate-pulse">
+                                        <HeartPulse className="h-2.5 w-2.5 text-white" />
+                                    </div>
+                                )}
                             </Avatar>
-                            <p className="font-medium">{student.name}</p>
+                            <div className="flex flex-col">
+                                <p className="font-medium flex items-center gap-1.5">
+                                    {student.name}
+                                    {hasAlert && <HeartPulse className="h-3.5 w-3.5 text-destructive" />}
+                                </p>
+                                {hasAlert && <p className="text-[10px] text-destructive font-bold uppercase">Atenção Médica</p>}
+                            </div>
                             </div>
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
@@ -324,7 +350,7 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                         </Button>
                     </CardFooter>
                   </Card>
-                ))}
+                )})}
               </div>
             ) : (
               !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum aluno encontrado.</p>
