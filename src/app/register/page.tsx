@@ -191,8 +191,8 @@ export default function PublicRegistrationPage() {
                     <div className="flex items-start gap-3">
                         <div className="bg-primary/20 p-2 rounded-lg mt-1"><MapPin className="h-4 w-4 text-primary" /></div>
                         <div>
-                            <p className="font-semibold text-sm">Endereço de Coleta</p>
-                            <p className="text-xs text-muted-foreground">O local exato onde a van deve buscar a criança.</p>
+                            <p className="font-semibold text-sm">Endereço de Embarque</p>
+                            <p className="text-xs text-muted-foreground">O local exato onde a van deve buscar a criança diariamente.</p>
                         </div>
                     </div>
                 </div>
@@ -335,7 +335,7 @@ export default function PublicRegistrationPage() {
 
                     <div className="border-t pt-6">
                         <p className="text-sm font-bold mb-4 flex items-center gap-2">
-                            <MapPin className="h-4 w-4 text-primary" /> Endereço de Coleta
+                            <MapPin className="h-4 w-4 text-primary" /> Endereço de Embarque
                         </p>
                         
                         <div className="space-y-4">

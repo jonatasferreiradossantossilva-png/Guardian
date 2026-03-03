@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -266,7 +265,7 @@ export default function PendingRegistrationsPage() {
                             </div>
                             <div className="p-4 bg-muted/20 rounded-lg border border-dashed">
                                 <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground mb-3 flex items-center gap-2">
-                                  <MapPinIcon className="h-3 w-3" /> Endereço de Coleta
+                                  <MapPinIcon className="h-3 w-3" /> Endereço de Embarque
                                 </p>
                                 <div className="space-y-3">
                                     <Detail label="Rua" value={`${selectedReg.address?.street}, ${selectedReg.address?.number}`} />

@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -469,7 +468,7 @@ export function StudentForm({
 
               <div className="border-t pt-4 mt-4">
                  <div className="flex justify-between items-center mb-2">
-                    <p className="text-sm font-medium flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço de Coleta</p>
+                    <p className="text-sm font-medium flex items-center gap-2"><MapPin className="h-4 w-4" /> Endereço de Embarque</p>
                     <Button type="button" variant="outline" size="sm" onClick={handleCopyAddress} disabled={!parentId}>
                         <Copy className="mr-2 h-3 w-3"/> Usar do responsável
                     </Button>
