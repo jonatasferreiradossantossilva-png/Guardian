@@ -34,7 +34,6 @@ import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { useMockCollection } from '@/hooks/use-mock-data';
 
-// --- FASE 1: SLIDES DE APRESENTAÇÃO (JORNADA COMPLETA) ---
 const introSlides = [
   { title: "1. Convite WhatsApp", description: "O gestor compartilha o link exclusivo de cadastro com o pai via WhatsApp.", icon: <Share2 />, imageId: "ob-1-invite" },
   { title: "2. Link Recebido", description: "O pai recebe o convite e clica para iniciar o processo sem burocracia.", icon: <MessageSquare />, imageId: "ob-2-received" },
@@ -67,7 +66,6 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
   const [view, setView] = useState<'presentation' | 'checklist'>('presentation');
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  // Inteligência de Progresso: Verifica dados reais no mock
   const { data: schools } = useMockCollection('schools');
   const { data: drivers } = useMockCollection('drivers');
   const { data: routes } = useMockCollection('routes');
@@ -88,7 +86,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
       icon: <Share2 className="w-8 h-8" />,
       link: "/dashboard",
       linkText: "Copiar Link de Convite",
-      isDone: false // Sempre manual
+      isDone: false 
     },
     {
       title: "Gestão: Triagem",
@@ -157,7 +155,6 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
   const currentData = view === 'presentation' ? introSlides[currentIndex] : configSteps[currentIndex];
   const totalSteps = view === 'presentation' ? introSlides.length : configSteps.length;
   
-  // Cálculo de progresso visual (0-100%)
   const progress = view === 'presentation' 
     ? ((currentIndex + 1) / introSlides.length) * 50 
     : 50 + ((currentIndex + 1) / configSteps.length) * 50;
@@ -172,7 +169,6 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
     <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden border-primary/20 shadow-2xl">
         
-        {/* Header Visual */}
         <div className={cn(
             "p-0 flex flex-col items-center justify-center border-b transition-all duration-500 overflow-hidden",
             view === 'presentation' ? "bg-black h-[350px]" : "bg-secondary/20 h-40"
@@ -184,10 +180,10 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                         alt={currentImageData.description}
                         fill
                         unoptimized
-                        className="object-cover"
+                        className="object-contain"
                         data-ai-hint={currentImageData.imageHint}
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent" />
                     <div className="absolute bottom-4 left-6 flex items-center gap-3 text-white">
                         <div className="p-3 rounded-full bg-primary text-primary-foreground shadow-lg">
                             {currentData.icon}
@@ -218,7 +214,6 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
             )}
         </div>
 
-        {/* Content Body */}
         <div className="p-6 space-y-6">
             <div className="space-y-2 min-h-[80px]">
                 {view === 'checklist' && (
@@ -234,7 +229,6 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                 </DialogDescription>
             </div>
 
-            {/* Step Progress */}
             <div className="space-y-2">
                 <div className="flex justify-between text-[9px] font-black text-muted-foreground uppercase tracking-[0.2em]">
                     <span>{view === 'presentation' ? "Apresentação do Produto" : "Implementação Prática"}</span>
@@ -243,7 +237,6 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                 <Progress value={progress} className="h-1.5" />
             </div>
             
-            {/* Action Button */}
             {view === 'checklist' ? (
                 <Button asChild className="w-full h-14 text-base font-bold shadow-lg shadow-primary/20">
                     <Link href={(currentData as any).link}>
@@ -259,7 +252,6 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
             )}
         </div>
 
-        {/* Footer Navigation */}
         <DialogFooter className="p-4 bg-muted/30 flex-row justify-between border-t gap-2 sm:gap-0">
           <Button 
             variant="ghost" 
