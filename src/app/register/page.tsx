@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useRef, useEffect } from 'react';
@@ -111,10 +110,10 @@ export default function PublicRegistrationPage() {
         const result = await extractDocumentData({ photoDataUri: base64 });
         setExtractedData(result);
         setStep('confirm');
-        toast({ title: "Documento Lido!", description: "Confira os dados abaixo." });
+        toast({ title: "Documento Lido!", description: "Confira seus dados de identidade." });
       } catch (e) {
         toast({ title: "Falha na leitura", description: "Por favor, preencha manualmente.", variant: "destructive" });
-        setExtractedData({ name: '', cpf: '', rg: '', birthDate: '', address: '' });
+        setExtractedData({ name: '', cpf: '', rg: '', birthDate: '' });
         setStep('confirm');
       } finally {
         setIsProcessing(false);
@@ -246,7 +245,7 @@ export default function PublicRegistrationPage() {
                                 <p className="font-bold text-primary flex items-center justify-center gap-2">
                                     <Sparkles className="h-4 w-4" /> Inteligência Analisando...
                                 </p>
-                                <p className="text-xs text-muted-foreground px-4 text-center">Extraindo dados do seu documento.</p>
+                                <p className="text-xs text-muted-foreground px-4 text-center">Extraindo dados de identidade.</p>
                             </div>
                         </div>
                     ) : (
@@ -281,7 +280,7 @@ export default function PublicRegistrationPage() {
                 <CheckCircle className="text-green-500 h-5 w-5" />
                 Confirme seus Dados
               </CardTitle>
-              <CardDescription>A IA detectou estes dados. Ajuste se necessário.</CardDescription>
+              <CardDescription>A IA detectou estes dados de identidade. Ajuste se necessário.</CardDescription>
             </CardHeader>
             
             <ScrollArea className="flex-1">

@@ -1,10 +1,7 @@
 'use server';
 /**
- * @fileOverview Fluxo de IA para extração de dados de documentos (OCR Inteligente).
- * 
- * - extractDocumentData - Analisa foto de RG/CNH e extrai dados cadastrais.
- * - ExtractDocumentDataInput - URI da imagem em base64.
- * - ExtractDocumentDataOutput - JSON estruturado com os dados do documento.
+ * @fileOverview Fluxo de IA especializado na extração de dados de identidade brasileira (RG/CNH).
+ * Foco exclusivo em Nome, CPF, RG e Data de Nascimento para máxima precisão.
  */
 
 import { ai } from '@/ai/genkit';
@@ -16,11 +13,10 @@ const ExtractDocumentDataInputSchema = z.object({
 export type ExtractDocumentDataInput = z.infer<typeof ExtractDocumentDataInputSchema>;
 
 const ExtractDocumentDataOutputSchema = z.object({
-  name: z.string().describe("Nome completo encontrado no documento."),
-  cpf: z.string().describe("Número do CPF."),
-  rg: z.string().describe("Número do RG."),
-  birthDate: z.string().describe("Data de nascimento (formato DD/MM/AAAA)."),
-  address: z.string().optional().describe("Endereço completo (se disponível na CNH)."),
+  name: z.string().describe("Nome completo exatamente como consta no documento."),
+  cpf: z.string().describe("Apenas os dígitos do CPF."),
+  rg: z.string().describe("Apenas os dígitos do RG (incluindo o dígito verificador se houver)."),
+  birthDate: z.string().describe("Data de nascimento no formato DD/MM/AAAA."),
 });
 export type ExtractDocumentDataOutput = z.infer<typeof ExtractDocumentDataOutputSchema>;
 
@@ -33,11 +29,17 @@ const prompt = ai.definePrompt({
   model: 'googleai/gemini-1.5-flash',
   input: { schema: ExtractDocumentDataInputSchema },
   output: { schema: ExtractDocumentDataOutputSchema },
-  prompt: `Você é um assistente especializado em extração de dados de documentos de identificação brasileiros (RG e CNH).
-Analise a imagem fornecida e extraia as informações solicitadas com o máximo de precisão. 
-Se algum campo não for legível ou não existir no documento, deixe a string vazia.
+  prompt: `Você é um assistente de visão computacional especialista em documentos de identidade brasileiros (RG e CNH).
+Analise a imagem fornecida e extraia APENAS as informações de identificação civil solicitadas.
 
-IMPORTANTE: Se for uma CNH, tente extrair o endereço que costuma constar no verso ou observações.
+DIRETRIZES TÉCNICAS:
+1. FOCO TOTAL: Ignore marcas d'água, brasões da república, assinaturas e nomes de pais (filiação).
+2. NOME: Extraia o nome completo. Se houver abreviações óbvias e você conseguir ler o nome completo em outro campo, prefira a versão completa.
+3. CPF: Retorne apenas os 11 dígitos numéricos.
+4. RG: Retorne o número do registro geral sem pontos ou traços.
+5. DATA DE NASCIMENTO: Formate estritamente como DD/MM/AAAA.
+
+IMPORTANTE: Não tente extrair endereços, observações ou categorias de habilitação. Se um campo não estiver legível, retorne uma string vazia.
 
 Documento: {{media url=photoDataUri}}`,
 });
@@ -51,11 +53,11 @@ const extractDocumentDataFlow = ai.defineFlow(
   async input => {
     try {
         const { output } = await prompt(input);
-        if (!output) throw new Error("A IA não conseguiu ler o documento.");
+        if (!output) throw new Error("A IA não conseguiu identificar os campos básicos do documento.");
         return output;
     } catch (error) {
-        console.error("Erro no OCR de documento:", error);
-        throw new Error("Falha ao processar imagem do documento.");
+        console.error("Erro no OCR especializado:", error);
+        throw new Error("Falha na leitura automática. Por favor, preencha os dados manualmente.");
     }
   }
 );
