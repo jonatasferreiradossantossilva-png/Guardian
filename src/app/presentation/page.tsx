@@ -35,7 +35,8 @@ import {
     Smartphone,
     ClipboardCheck,
     Navigation,
-    FileText
+    FileText,
+    BellRing
 } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
@@ -109,7 +110,35 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* Slide 3: Comparison with Market */}
+            {/* Slide 3: Smart Alerts & Multi-Child (NEW STRATEGIC SLIDE) */}
+            <Slide>
+                <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Sparkles className="inline-block text-primary h-12 w-12 mr-4" />Segurança Contextual: Alerta de 800m</h2>
+                <div className="grid md:grid-cols-2 gap-12 items-center">
+                    <div className="space-y-8">
+                        <div className="bg-primary/5 p-6 rounded-xl border border-primary/20 relative overflow-hidden">
+                            <div className="absolute -right-4 -top-4 opacity-10"><BellRing size={120} /></div>
+                            <h3 className="text-xl font-bold text-primary mb-2 flex items-center gap-2">
+                                <BellRing className="h-5 w-5" /> Alerta de Proximidade Real
+                            </h3>
+                            <p className="text-sm text-muted-foreground">Diferente de apps que rastreiam o tempo todo, o Guardian dispara um alerta push apenas quando a van entra no <strong>raio de 800m</strong> da residência. Economia de bateria e foco total no momento certo.</p>
+                        </div>
+                        <div className="bg-blue-500/5 p-6 rounded-xl border border-blue-500/20 relative overflow-hidden">
+                            <div className="absolute -right-4 -top-4 opacity-10"><Users size={120} /></div>
+                            <h3 className="text-xl font-bold text-blue-500 mb-2 flex items-center gap-2">
+                                <Users className="h-5 w-5" /> Gestão Multi-filhos
+                            </h3>
+                            <p className="text-sm text-muted-foreground">Consolidamos a jornada de todos os filhos em uma única tela. O pai cadastra o primeiro, e o Guardian <strong>herda automaticamente</strong> o endereço e as preferências para os irmãos, eliminando a redigitação.</p>
+                        </div>
+                    </div>
+                    <Card className="p-8 border-dashed border-primary/40 bg-secondary/10 text-center flex flex-col justify-center gap-4">
+                        <div className="mx-auto bg-primary/20 p-4 rounded-full"><Smartphone className="text-primary h-12 w-12" /></div>
+                        <h4 className="font-bold text-lg">Interface Unificada</h4>
+                        <p className="text-xs text-muted-foreground italic">"O pai não precisa trocar de login ou tela. Ele vê a Van do Enzo chegando na escola e a Van da Valentina saindo de casa simultaneamente."</p>
+                    </Card>
+                </div>
+            </Slide>
+
+            {/* Slide 4: Comparison with Market */}
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Guardian vs. Mercado Tradicional</h2>
                 <div className="grid md:grid-cols-2 gap-8 w-full">
@@ -134,7 +163,7 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* Slide 4: 17-Step Zero Friction Journey (THE BIG NEW ADDITION) */}
+            {/* Slide 5: 17-Step Zero Friction Journey */}
             <Slide>
                  <Badge className="mb-4 bg-primary text-primary-foreground">O GRANDE DIFERENCIAL</Badge>
                  <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">Onboarding em 17 Passos: Do Convite ao Contrato</h2>
@@ -143,7 +172,7 @@ export default function PresentationPage() {
                     <ProcessStep icon={<Sparkles />} label="Leitura via IA" />
                     <ProcessStep icon={<MapPinned />} label="GPS Validado" />
                     <ProcessStep icon={<School />} label="Base de Escolas" />
-                    <ProcessStep icon={<Search />} label="Triagem Automática" />
+                    <ProcessStep icon={<Users />} label="Multi-filhos" />
                     <ProcessStep icon={<FileText />} label="Contrato Digital" />
                  </div>
                  <p className="mt-12 text-center text-xl text-muted-foreground max-w-4xl">
@@ -152,7 +181,7 @@ export default function PresentationPage() {
                  </p>
             </Slide>
 
-            {/* Slide 5: Big Data & Knowledge Base */}
+            {/* Slide 6: Big Data & Knowledge Base */}
             <Slide>
                  <h2 className="text-4xl md:text-5xl font-bold text-center mb-12"><Database className="inline-block text-primary h-12 w-12 mr-4" />Big Data & Cadastro Zero Fricção</h2>
                  <div className="w-full bg-background/50 border border-primary/20 rounded-xl p-8 backdrop-blur-sm shadow-2xl">
@@ -182,7 +211,7 @@ export default function PresentationPage() {
                  </div>
             </Slide>
 
-            {/* Slide 6: Proof of ROI */}
+            {/* Slide 7: Proof of ROI */}
             <Slide>
                 <h2 className="text-4xl md:text-5xl font-bold text-center mb-12">
                     <BarChart className="inline-block text-primary h-12 w-12 mr-4" />

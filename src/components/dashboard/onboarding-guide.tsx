@@ -31,7 +31,8 @@ import {
   User,
   MapPin,
   GraduationCap,
-  Mail
+  Mail,
+  BellRing
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
@@ -50,10 +51,10 @@ const introSlides = [
   { title: "10. Plano Financeiro", description: "Configuração do vencimento e preferências de cobrança do responsável.", icon: <DollarSign />, imageId: "ob-10-finance" },
   { title: "11. Revisão do Cadastro", description: "O pai revisa todo o formulário preenchido antes de prosseguir para a parte médica.", icon: <ClipboardCheck />, imageId: "ob-11-summary" },
   { title: "12. Alertas de Saúde", description: "Informações sobre alergias ou cuidados especiais que aparecerão no embarque.", icon: <HeartPulse />, imageId: "ob-12-health" },
-  { title: "13. Cadastro Enviado", description: "O pai finaliza o fluxo e os dados são enviados instantaneamente para o gestor.", icon: <Check />, imageId: "ob-13-done" },
+  { title: "13. Cadastro & Multi-filhos", description: "Cadastro enviado! O pai pode cadastrar o próximo filho aproveitando o mesmo endereço.", icon: <Users />, imageId: "ob-13-done" },
   { title: "14. Alerta para o Gestor", description: "O administrador recebe um aviso push informando que há uma nova solicitação.", icon: <Smartphone />, imageId: "ob-14-notification" },
   { title: "15. Lista de Triagem", description: "O gestor visualiza a nova solicitação pronta para iniciar o cadastro da rota.", icon: <Search />, imageId: "ob-15-triage" },
-  { title: "16. Validação de Rota", description: "A IA valida a viabilidade e sugere o melhor motorista para o novo aluno.", icon: <Navigation />, imageId: "ob-16-gps" },
+  { title: "16. Inteligência GPS", description: "Ativação do Alerta de Proximidade (800m) e validação da telemetria da rota.", icon: <BellRing />, imageId: "ob-16-gps" },
   { title: "17. Aceite do Contrato", description: "Após a definição da rota, o contrato é gerado e assinado digitalmente.", icon: <FileText />, imageId: "ob-17-sign" }
 ];
 
