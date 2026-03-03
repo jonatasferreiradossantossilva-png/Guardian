@@ -183,6 +183,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
                         src={currentImageData.imageUrl} 
                         alt={currentImageData.description}
                         fill
+                        unoptimized
                         className="object-cover"
                         data-ai-hint={currentImageData.imageHint}
                     />
