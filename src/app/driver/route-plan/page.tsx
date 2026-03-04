@@ -234,11 +234,17 @@ export default function DriverRoutePlanPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row h-screen overflow-hidden">
         {!isOnline && <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm absolute top-0 left-0 right-0 z-[2000]"><WifiOff className="h-4 w-4 inline mr-2" />Offline.</div>}
         
-        <div className="w-full md:w-[400px] flex flex-col border-r bg-card overflow-y-auto">
-            <div className="p-4 border-b flex items-center justify-between">
-                <h1 className="font-bold text-xl flex items-center gap-2"><Bus className="text-primary"/> Guardian Equipe</h1>
+        {/* Left Action Panel */}
+        <div className="w-full md:w-[400px] flex flex-col border-r bg-card overflow-y-auto shrink-0 shadow-xl z-10">
+            <div className="p-4 border-b flex items-center justify-between bg-muted/30">
+                <div className="flex items-center gap-2">
+                    <div className="p-2 rounded-lg bg-primary/10">
+                        <Bus className="text-primary h-5 w-5"/>
+                    </div>
+                    <h1 className="font-bold text-xl">Guardian Equipe</h1>
+                </div>
                 <div className="flex gap-2">
-                    <Button variant="outline" size="icon" asChild><Link href="/driver/messages"><MessageSquare /></Link></Button>
+                    <Button variant="outline" size="icon" asChild><Link href="/driver/messages"><MessageSquare className="h-4 w-4" /></Link></Button>
                     <Link href="/"><Button variant="ghost" size="sm">Sair</Button></Link>
                 </div>
             </div>
@@ -246,52 +252,114 @@ export default function DriverRoutePlanPage() {
             <div className="p-4 flex-1">
                 {driverProfile?.status === 'inativo' ? (
                     <Card className="shadow-lg border-primary/20">
-                        <CardHeader><CardTitle>Iniciar Viagem</CardTitle><CardDescription>Escolha a rota e o turno de trabalho.</CardDescription></CardHeader>
+                        <CardHeader>
+                            <CardTitle>Iniciar Viagem</CardTitle>
+                            <CardDescription>Configure a rota para começar a transmitir seu GPS.</CardDescription>
+                        </CardHeader>
                         <CardContent className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Rota</Label>
-                                <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}><SelectTrigger><SelectValue /></SelectTrigger><SelectContent>{routes?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent></Select>
+                                <Label>Selecione a Rota</Label>
+                                <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
+                                    <SelectTrigger><SelectValue /></SelectTrigger>
+                                    <SelectContent>{routes?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent>
+                                </Select>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
-                                <RadioGroup value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)}>
+                                <div className="space-y-2">
                                     <Label>Turno</Label>
-                                    <div className="flex items-center space-x-2 p-2 border rounded-md"><RadioGroupItem value="Manhã" id="m"/><Label htmlFor="m">Manhã</Label></div>
-                                    <div className="flex items-center space-x-2 p-2 border rounded-md"><RadioGroupItem value="Tarde" id="t"/><Label htmlFor="t">Tarde</Label></div>
-                                </RadioGroup>
-                                <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as any)}>
-                                    <Label>Viagem</Label>
-                                    <div className="flex items-center space-x-2 p-2 border rounded-md"><RadioGroupItem value="ida" id="i"/><Label htmlFor="i">Ida</Label></div>
-                                    <div className="flex items-center space-x-2 p-2 border rounded-md"><RadioGroupItem value="volta" id="v"/><Label htmlFor="v">Volta</Label></div>
-                                </RadioGroup>
+                                    <RadioGroup value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)} className="grid grid-cols-1 gap-2">
+                                        <div className="flex items-center space-x-2 p-2 border rounded-md cursor-pointer hover:bg-secondary/50">
+                                            <RadioGroupItem value="Manhã" id="shift-m"/>
+                                            <Label htmlFor="shift-m" className="flex-1 cursor-pointer">Manhã</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2 p-2 border rounded-md cursor-pointer hover:bg-secondary/50">
+                                            <RadioGroupItem value="Tarde" id="shift-t"/>
+                                            <Label htmlFor="shift-t" className="flex-1 cursor-pointer">Tarde</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Sentido</Label>
+                                    <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as any)} className="grid grid-cols-1 gap-2">
+                                        <div className="flex items-center space-x-2 p-2 border rounded-md cursor-pointer hover:bg-secondary/50">
+                                            <RadioGroupItem value="ida" id="dir-i"/>
+                                            <Label htmlFor="dir-i" className="flex-1 cursor-pointer font-medium">Ida</Label>
+                                        </div>
+                                        <div className="flex items-center space-x-2 p-2 border rounded-md cursor-pointer hover:bg-secondary/50">
+                                            <RadioGroupItem value="volta" id="dir-v"/>
+                                            <Label htmlFor="dir-v" className="flex-1 cursor-pointer font-medium">Volta</Label>
+                                        </div>
+                                    </RadioGroup>
+                                </div>
                             </div>
                         </CardContent>
-                        <CardFooter><Button className="w-full h-12 text-lg" onClick={() => { updateDoc('drivers', driverId, { status: 'em_rota' }); sessionStorage.setItem('activeRouteId', selectedRouteIdForStart); setActiveRouteId(selectedRouteIdForStart); }}><Play className="mr-2" />Iniciar Operação</Button></CardFooter>
+                        <CardFooter>
+                            <Button className="w-full h-12 text-lg font-bold" onClick={() => { 
+                                updateDoc('drivers', driverId, { status: 'em_rota' }); 
+                                sessionStorage.setItem('activeRouteId', selectedRouteIdForStart); 
+                                sessionStorage.setItem('startOdometer', vehicle?.currentOdometer?.toString() || '0');
+                                setActiveRouteId(selectedRouteIdForStart); 
+                            }}>
+                                <Play className="mr-2" /> Iniciar Operação
+                            </Button>
+                        </CardFooter>
                     </Card>
                 ) : (
                     <div className="space-y-4">
                         {!activeStop ? (
                             <Card className="text-center p-8 bg-green-500/10 border-green-500/30">
-                                <CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4"/>
-                                <CardTitle>Tudo Pronto!</CardTitle>
-                                <p className="text-sm text-muted-foreground mt-2">Você concluiu todas as paradas desta rota.</p>
-                                <Button variant="destructive" className="mt-6 w-full h-12" onClick={handleEndRoute}><Square className="mr-2 h-4 w-4"/> Finalizar Viagem</Button>
+                                <div className="mx-auto w-20 h-20 rounded-full bg-green-500/20 flex items-center justify-center mb-4">
+                                    <CheckCircle className="h-12 w-12 text-green-500"/>
+                                </div>
+                                <CardTitle className="text-xl">Itinerário Concluído!</CardTitle>
+                                <p className="text-sm text-muted-foreground mt-2 px-4">Todas as paradas foram realizadas com sucesso.</p>
+                                <Button variant="destructive" className="mt-8 w-full h-14 text-lg font-bold shadow-lg" onClick={handleEndRoute}>
+                                    <Square className="mr-2 h-5 w-5 fill-current"/> Finalizar Viagem
+                                </Button>
                             </Card>
                         ) : activeStop.type === 'student' ? (
-                            <NextStopCard student={activeStop.data as Student} onStatusChange={handleStatusChange} onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} direction={selectedDirection} onScanQrCode={() => setIsScannerOpen(true)} />
+                            <NextStopCard 
+                                student={activeStop.data as Student} 
+                                onStatusChange={handleStatusChange} 
+                                onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
+                                direction={selectedDirection} 
+                                onScanQrCode={() => setIsScannerOpen(true)} 
+                            />
                         ) : (
-                            <NextStopSchoolCard school={activeStop.data as SchoolData} onDropOff={() => { orderedStops.filter(s => s.type === 'student' && s.data.status === 'a_bordo').forEach(s => updateDoc('students', s.id, { status: 'desembarcado' })); toast({ title: "Alunos Desembarçados!" }); }} />
+                            <NextStopSchoolCard 
+                                school={activeStop.data as SchoolData} 
+                                onDropOff={() => { 
+                                    orderedStops.filter(s => s.type === 'student' && s.data.status === 'a_bordo').forEach(s => updateDoc('students', s.id, { status: 'desembarcado' })); 
+                                    toast({ title: "Alunos Desembarcados!", description: "Status de todos os alunos atualizado para a escola." }); 
+                                }} 
+                            />
                         )}
 
                         {upcomingStops.length > 0 && (
                             <div className="mt-6">
-                                <h3 className="text-xs font-bold uppercase tracking-widest text-muted-foreground mb-3 px-1">Próximas Paradas ({upcomingStops.length})</h3>
+                                <h3 className="text-[10px] font-bold uppercase tracking-[0.2em] text-muted-foreground mb-3 px-1 flex items-center gap-2">
+                                    <div className="h-1 w-1 rounded-full bg-primary" /> Próximas Paradas ({upcomingStops.length})
+                                </h3>
                                 <div className="space-y-2">
                                     {upcomingStops.slice(0, 3).map((stop, idx) => (
-                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/30 opacity-70">
-                                            {stop.type === 'student' ? <Avatar className="h-8 w-8"><AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar> : <School className="h-5 w-5 text-muted-foreground"/>}
-                                            <span className="text-sm font-medium truncate">{stop.data.name}</span>
+                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border bg-muted/20 opacity-80">
+                                            {stop.type === 'student' ? (
+                                                <Avatar className="h-8 w-8 border border-background shadow-sm">
+                                                    <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/>
+                                                    <AvatarFallback>S</AvatarFallback>
+                                                </Avatar>
+                                            ) : (
+                                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-destructive/10 text-destructive">
+                                                    <School className="h-4 w-4" />
+                                                </div>
+                                            )}
+                                            <span className="text-sm font-medium truncate flex-1">{stop.data.name}</span>
+                                            <Badge variant="ghost" className="text-[9px] uppercase">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
                                         </div>
                                     ))}
+                                    {upcomingStops.length > 3 && (
+                                        <p className="text-[10px] text-center text-muted-foreground italic">+ {upcomingStops.length - 3} outras paradas</p>
+                                    )}
                                 </div>
                             </div>
                         )}
@@ -300,21 +368,30 @@ export default function DriverRoutePlanPage() {
             </div>
             
             {driverProfile?.status !== 'inativo' && (
-                <div className="p-4 border-t bg-muted/20">
+                <div className="p-4 border-t bg-muted/20 space-y-2">
                     <Dialog>
-                        <DialogTrigger asChild><Button variant="outline" className="w-full text-destructive border-destructive/20 hover:bg-destructive/10"><Siren className="mr-2 h-4 w-4"/> Relatar Incidente</Button></DialogTrigger>
+                        <DialogTrigger asChild>
+                            <Button variant="outline" className="w-full h-12 text-destructive border-destructive/20 hover:bg-destructive/10 hover:text-destructive">
+                                <Siren className="mr-2 h-5 w-5 animate-pulse"/> Relatar Incidente Crítico
+                            </Button>
+                        </DialogTrigger>
                         <ReportIncidentForm onFormSubmit={() => {}} />
                     </Dialog>
                 </div>
             )}
         </div>
 
+        {/* Right Map Panel */}
         <div className="flex-1 relative bg-secondary/10">
-            <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-4 left-4 z-[1000] bg-background/80 shadow-md border-primary/20"><LocateFixed className="text-primary"/></Button>
+            <div className="absolute top-4 left-4 z-[1000] flex flex-col gap-2">
+                <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="bg-background/90 shadow-md border-primary/20 hover:bg-background">
+                    <LocateFixed className="text-primary h-5 w-5"/>
+                </Button>
+            </div>
             
             <SmartMap 
                 center={{ lat: driverLocation?.latitude || -23.55, lng: driverLocation?.longitude || -46.63 }}
-                zoom={14}
+                zoom={15}
                 stops={orderedStops}
                 driverLocation={driverLocation}
                 routePolyline={route?.polyline}
@@ -325,8 +402,23 @@ export default function DriverRoutePlanPage() {
             </SmartMap>
         </div>
 
-        {isModalOpen && selectedStudentForModal && <AuthorizedContactsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} studentId={selectedStudentForModal.id} studentName={selectedStudentForModal.name} />}
-        <QrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanSuccess={(id) => { handleStatusChange(id, selectedDirection === 'ida' ? 'a_bordo' : 'desembarcado'); setIsScannerOpen(false); }} />
+        {/* Modals */}
+        {isModalOpen && selectedStudentForModal && (
+            <AuthorizedContactsModal 
+                isOpen={isModalOpen} 
+                onClose={() => setIsModalOpen(false)} 
+                studentId={selectedStudentForModal.id} 
+                studentName={selectedStudentForModal.name} 
+            />
+        )}
+        <QrScannerModal 
+            isOpen={isScannerOpen} 
+            onClose={() => setIsScannerOpen(false)} 
+            onScanSuccess={(id) => { 
+                handleStatusChange(id, selectedDirection === 'ida' ? 'a_bordo' : 'desembarcado'); 
+                setIsScannerOpen(false); 
+            }} 
+        />
     </div>
   );
 }
@@ -336,34 +428,61 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
   return (
-    <Card className={cn("w-full shadow-lg border-primary/30", hasMedicalAlert && "ring-2 ring-destructive")}>
-      <CardHeader className="pb-2">
-        <div className="flex justify-between items-center mb-2">
-            <Badge variant="outline" className="text-[10px] font-bold tracking-widest uppercase">Próximo Aluno</Badge>
-            {hasMedicalAlert && <Badge variant="destructive" className="animate-pulse"><HeartPulse className="h-3 w-3 mr-1" /> ALERTA MÉDICO</Badge>}
+    <Card className={cn("w-full shadow-2xl border-primary/30", hasMedicalAlert && "ring-2 ring-destructive border-destructive/50 bg-destructive/5")}>
+      <CardHeader className="pb-3 border-b bg-muted/10">
+        <div className="flex justify-between items-center mb-3">
+            <Badge variant="outline" className="text-[10px] font-bold tracking-[0.2em] uppercase bg-background">Próxima Parada</Badge>
+            {hasMedicalAlert && (
+                <Badge variant="destructive" className="animate-pulse shadow-lg font-black tracking-tighter">
+                    <HeartPulse className="h-3 w-3 mr-1" /> ALERTA MÉDICO
+                </Badge>
+            )}
         </div>
-        <CardTitle className="flex items-center gap-3 text-2xl">
-            <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-sm">
+        <div className="flex items-center gap-4">
+            <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-md">
                 <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
-                <AvatarFallback>{student.name[0]}</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">{student.name[0]}</AvatarFallback>
             </Avatar>
-            <div className="flex-grow">
-                <span className="block truncate">{student.name}</span>
-                <span className="text-sm font-medium text-muted-foreground">{student.street}, {student.number}</span>
+            <div className="flex-grow min-w-0">
+                <CardTitle className="text-xl truncate leading-none mb-1">{student.name}</CardTitle>
+                <div className="flex items-center gap-1.5 text-muted-foreground">
+                    <MapPin className="h-3 w-3 shrink-0" />
+                    <span className="text-xs font-medium truncate">{student.street}, {student.number}</span>
+                </div>
             </div>
-        </CardTitle>
+        </div>
       </CardHeader>
-      <CardContent className="grid grid-cols-2 gap-2 pt-4">
-        {isGoing ? (
-            <Button size="lg" className="bg-green-600 hover:bg-green-700 h-14" onClick={() => onStatusChange(student.id, 'a_bordo')}><CheckCircle className="mr-2" /> Embarcou</Button>
-        ) : (
-            <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-14" onClick={() => onStatusChange(student.id, 'desembarcado')}><CheckCircle className="mr-2" /> Desembarcou</Button>
+      
+      <CardContent className="pt-6 space-y-4">
+        <div className="grid grid-cols-2 gap-3">
+            {isGoing ? (
+                <Button size="lg" className="bg-green-600 hover:bg-green-700 h-16 text-lg font-black shadow-lg" onClick={() => onStatusChange(student.id, 'a_bordo')}>
+                    <CheckCircle className="mr-2 h-6 w-6" /> EMBARCOU
+                </Button>
+            ) : (
+                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-16 text-lg font-black shadow-lg" onClick={() => onStatusChange(student.id, 'desembarcado')}>
+                    <CheckCircle className="mr-2 h-6 w-6" /> DESEMBARCOU
+                </Button>
+            )}
+            <Button size="lg" variant="destructive" className="h-16 text-lg font-black shadow-lg" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
+                <XCircle className="mr-2 h-6 w-6" /> AUSENTE
+            </Button>
+        </div>
+        
+        {hasMedicalAlert && student.medicalNote && (
+            <div className="p-3 rounded-md bg-destructive/10 border border-destructive/20 text-xs italic text-destructive font-medium leading-relaxed">
+                "{student.medicalNote}"
+            </div>
         )}
-        <Button size="lg" variant="destructive" className="h-14" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}><XCircle className="mr-2" /> Ausente</Button>
       </CardContent>
-      <CardFooter className="grid grid-cols-2 gap-2">
-           <Button variant="outline" className="h-10 text-xs" onClick={onScanQrCode}><QrCode className="mr-2 h-4 w-4" /> Escanear QR</Button>
-           <Button variant="outline" className="h-10 text-xs" onClick={() => onOpenAuthorizedModal(student)}><IdCard className="mr-2 h-4 w-4"/> Ver Autorizados</Button>
+
+      <CardFooter className="grid grid-cols-2 gap-3 pt-2 bg-muted/10 rounded-b-lg border-t">
+           <Button variant="secondary" className="h-12 text-sm font-bold shadow-sm" onClick={onScanQrCode}>
+               <QrCode className="mr-2 h-5 w-5" /> Escanear QR
+           </Button>
+           <Button variant="secondary" className="h-12 text-sm font-bold shadow-sm" onClick={() => onOpenAuthorizedModal(student)}>
+               <IdCard className="mr-2 h-5 w-5"/> Autorizados
+           </Button>
       </CardFooter>
     </Card>
   );
@@ -371,15 +490,47 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
 
 function NextStopSchoolCard({ school, onDropOff }: { school: SchoolData, onDropOff: (id: string) => void }) {
     return (
-        <Card className="w-full shadow-lg border-destructive/20 bg-destructive/5">
-          <CardHeader>
-            <Badge variant="outline" className="w-fit mb-2">Parada Final</Badge>
-            <CardTitle className="flex items-center gap-3 text-2xl">
-                <div className="flex items-center justify-center h-14 w-14 rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20"><School className="h-7 w-7" /></div>
-                <span>{school.name}</span>
-            </CardTitle>
+        <Card className="w-full shadow-2xl border-destructive/30 bg-destructive/5 overflow-hidden">
+          <CardHeader className="bg-destructive/10 border-b">
+            <Badge variant="destructive" className="w-fit mb-3 font-bold">DESTINO ESCOLAR</Badge>
+            <div className="flex items-center gap-4">
+                <div className="flex items-center justify-center h-16 w-16 rounded-full bg-background border-4 border-destructive/20 text-destructive shadow-lg">
+                    <School className="h-8 w-8" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <CardTitle className="text-2xl truncate leading-tight">{school.name}</CardTitle>
+                    <p className="text-xs text-muted-foreground font-medium uppercase tracking-widest mt-1">Ponto de Desembarque</p>
+                </div>
+            </div>
           </CardHeader>
-          <CardContent><Button size="lg" className="w-full h-14 bg-destructive hover:bg-destructive/90 text-lg font-bold" onClick={() => onDropOff(school.id)}><Bus className="mr-2 h-6 w-6" /> Desembarcar Todos</Button></CardContent>
+          <CardContent className="pt-8">
+            <Button size="lg" className="w-full h-20 bg-destructive hover:bg-destructive/90 text-xl font-black shadow-xl" onClick={() => onDropOff(school.id)}>
+                <Bus className="mr-3 h-8 w-8" /> DESEMBARCAR TODOS
+            </Button>
+          </CardContent>
+          <CardFooter className="justify-center pb-6">
+              <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">Confirme apenas ao parar no portão da escola</p>
+          </CardFooter>
         </Card>
     );
 }
+
+function MapPin(props: any) {
+    return (
+      <svg
+        {...props}
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      >
+        <path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z" />
+        <circle cx="12" cy="10" r="3" />
+      </svg>
+    )
+  }
