@@ -239,10 +239,17 @@ export default function ParentTrackingPage() {
   const handleConfirmPresence = () => { if (student) { updateDoc('students', student.id, { status: 'aguardando' }); toast({ title: "Presença Confirmada!" }); } };
 
   const handleShareTrip = useCallback(() => {
-    if (!student || !displayLocation) return;
+    if (!student || !displayLocation) {
+        toast({
+            title: "Localização indisponível",
+            description: "Aguardando sinal GPS do motorista para compartilhar.",
+            variant: "destructive"
+        });
+        return;
+    }
     const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${displayLocation.latitude},${displayLocation.longitude}&destination=${student.latitude},${student.longitude}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`Acompanhe a van de ${student.name}: ${mapLink}`)}`, '_blank');
-  }, [student, displayLocation]);
+  }, [student, displayLocation, toast]);
 
   const isLoading = areParentsLoading || areStudentsLoading;
   const isAbsent = student?.status.startsWith('ausente');
@@ -313,10 +320,14 @@ export default function ParentTrackingPage() {
                             <Button variant="outline" className="w-full mt-4 border-destructive/20 text-destructive" onClick={() => setIsAbsenceDialogOpen(true)}><XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje</Button>
                         )}
                     </CardContent>
-                    <CardFooter className="justify-center border-t py-4"><Button variant="ghost" size="sm" onClick={handleShareTrip} className="text-xs gap-2"><Share2 className="h-4 w-4" /> Compartilhar Localização</Button></CardFooter>
+                    <CardFooter className="justify-center border-t py-4">
+                        <Button variant="ghost" size="sm" onClick={handleShareTrip} className="text-xs gap-2">
+                            <Share2 className="h-4 w-4" /> Compartilhar Localização
+                        </Button>
+                    </CardFooter>
                 </Card>
 
-                {/* Shortcut Grid (6 original features) */}
+                {/* Shortcut Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/qrcode"><QrCode className="h-6 w-6 text-primary" /><span>QR Code</span></Link></Button>
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/requests"><RouteIcon className="h-6 w-6 text-primary" /><span>Viagens Avulsas</span></Link></Button>
