@@ -203,7 +203,7 @@ export default function DriverRoutePlanPage() {
 
   const { activeStop, upcomingStops } = useMemo(() => {
     if (!orderedStops || driverProfile?.status !== 'em_rota') return { activeStop: null, upcomingStops: [] };
-    let nextStopIndex = selectedDirection === 'ida' ? orderedStops.findIndex(s => s.type === 'student' ? s.data.status === 'aguardando' : true) : orderedStops.findIndex(s => s.type === 'school' ? orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'aguardando') : s.data.status === 'a_bordo');
+    let nextStopIndex = selectedDirection === 'ida' ? orderedStops.findIndex(s => s.type === 'student' ? s.data.status === 'aguardando' : true) : orderedStops.findIndex(s => s.type === 'school' ? orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'a_bordo') : s.data.status === 'a_bordo');
     if (nextStopIndex === -1) return { activeStop: null, upcomingStops: [] };
     return { activeStop: orderedStops[nextStopIndex], upcomingStops: orderedStops.slice(nextStopIndex + 1) };
   }, [orderedStops, driverProfile?.status, selectedDirection]);
