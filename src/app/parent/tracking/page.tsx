@@ -7,8 +7,8 @@ import {
   useMockData,
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
-import { AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, Sparkles, BellRing, Megaphone, Info, RefreshCw, FileText } from "lucide-react";
+import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
+import { Bus, MessageCircle, School, CheckCircle, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ChevronRight, Home, Megaphone, FileText, HeartPulse } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -29,7 +29,6 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
-
 
 interface Student {
   id: string;
@@ -135,21 +134,21 @@ function JourneyTimeline({ status, direction }: { status: Student['status'], dir
     if (status.startsWith('ausente')) return null;
 
     const steps = isIda 
-        ? [{ label: "Casa", icon: Home, active: true, completed: isOnBoard || isArrived }, { label: "Van", icon: Bus, active: isOnBoard || isArrived, completed: isArrived }, { label: "Escola", icon: School, active: isArrived, completed: false }]
-        : [{ label: "Escola", icon: School, active: true, completed: isOnBoard || isArrived }, { label: "Van", icon: Bus, active: isOnBoard || isArrived, completed: isArrived }, { label: "Casa", icon: Home, active: isArrived, completed: false }];
+        ? [{ label: "Casa", icon: Home, active: true }, { label: "Van", icon: Bus, active: isOnBoard || isArrived }, { label: "Escola", icon: School, active: isArrived }]
+        : [{ label: "Escola", icon: School, active: true }, { label: "Van", icon: Bus, active: isOnBoard || isArrived }, { label: "Casa", icon: Home, active: isArrived }];
 
     return (
         <div className="py-6 px-4">
             <div className="relative flex justify-between items-center w-full max-w-xs mx-auto">
                 <div className="absolute top-1/2 left-0 w-full h-0.5 bg-muted -translate-y-1/2 z-0">
-                    <div className={cn("h-full transition-all duration-500 ease-in-out", isIda ? "bg-primary" : "bg-orange-500")} style={{ width: isArrived ? '100%' : isOnBoard ? '50%' : '0%' }}/>
+                    <div className={cn("h-full transition-all duration-500", isIda ? "bg-primary" : "bg-orange-500")} style={{ width: isArrived ? '100%' : isOnBoard ? '50%' : '0%' }}/>
                 </div>
                 {steps.map((step, idx) => (
                     <div key={idx} className="relative z-10 flex flex-col items-center gap-2">
-                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center border-2 transition-all duration-300 shadow-sm", step.active ? (isIda ? "bg-primary border-primary text-primary-foreground" : "bg-orange-500 border-orange-500 text-white") : "bg-background border-muted text-muted-foreground")}>
+                        <div className={cn("w-10 h-10 rounded-full flex items-center justify-center border-2 shadow-sm", step.active ? (isIda ? "bg-primary border-primary text-primary-foreground" : "bg-orange-500 border-orange-500 text-white") : "bg-background border-muted text-muted-foreground")}>
                             <step.icon className="h-5 w-5" />
                         </div>
-                        <span className={cn("text-[10px] font-bold uppercase tracking-wider", step.active ? "text-foreground" : "text-muted-foreground")}>{step.label}</span>
+                        <span className={cn("text-[10px] font-bold uppercase", step.active ? "text-foreground" : "text-muted-foreground")}>{step.label}</span>
                     </div>
                 ))}
             </div>
@@ -185,7 +184,6 @@ export default function ParentTrackingPage() {
   const { data: allRoutes } = useMockCollection("routes");
   const { data: allLocations } = useMockCollection("locations");
   const { data: allSchools } = useMockCollection("schools");
-  const { data: config } = useMockCollection('config');
 
   useEffect(() => { if (students?.length && !selectedStudentId) handleStudentSelect(students[0].id); }, [students, selectedStudentId]);
 
@@ -196,7 +194,6 @@ export default function ParentTrackingPage() {
   
   const route = useMemo(() => allRoutes?.find(r => r.id === student?.routeId), [allRoutes, student]);
   const displayLocation = useMemo(() => allLocations?.find(l => l.id === route?.driverId), [allLocations, route]);
-  const school = useMemo(() => allSchools?.find(s => s.id === student?.schoolId), [allSchools, student]);
   const { data: announcements } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
   const latestAnnouncement = useMemo(() => announcements?.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0], [announcements]);
 
@@ -220,13 +217,11 @@ export default function ParentTrackingPage() {
 
   const handleShareTrip = useCallback(() => {
     if (!student || !displayLocation) return;
-    const busCoords = { lat: displayLocation.latitude, lng: displayLocation.longitude };
-    const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${busCoords.lat},${busCoords.lng}&destination=${student.latitude},${student.longitude}`;
+    const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${displayLocation.latitude},${displayLocation.longitude}&destination=${student.latitude},${student.longitude}`;
     window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`Acompanhe a van de ${student.name}: ${mapLink}`)}`, '_blank');
   }, [student, displayLocation]);
 
   const isLoading = areParentsLoading || areStudentsLoading;
-  const isScalingMode = config?.[0]?.scaling_mode ?? false;
   const isAbsent = student?.status.startsWith('ausente');
   const journeyDirection = (route?.direction as 'ida' | 'volta') || 'ida';
 
@@ -240,7 +235,6 @@ export default function ParentTrackingPage() {
   return (
     <div className={cn("min-h-screen p-4 space-y-6", journeyDirection === 'ida' ? "bg-background" : "bg-orange-50/10")}>
       <div className="max-w-4xl mx-auto space-y-6">
-        {/* Header e Seleção de Aluno */}
         <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold italic">Guardian</h1>
             <Link href="/"><Button variant="ghost">Sair</Button></Link>
@@ -249,7 +243,7 @@ export default function ParentTrackingPage() {
         {students && students.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {students.map((s) => (
-                    <button key={s.id} onClick={() => handleStudentSelect(s.id)} className={cn("flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0", selectedStudentId === s.id ? "bg-primary border-primary text-primary-foreground shadow-md" : "bg-card border-muted text-muted-foreground hover:border-primary/50")}>
+                    <button key={s.id} onClick={() => handleStudentSelect(s.id)} className={cn("flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0", selectedStudentId === s.id ? "bg-primary border-primary text-primary-foreground shadow-md" : "bg-card border-muted text-muted-foreground")}>
                         <Avatar className="h-6 w-6"><AvatarImage src={`https://picsum.photos/seed/student-${s.id}/40/40`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                         <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
                     </button>
@@ -258,12 +252,11 @@ export default function ParentTrackingPage() {
         )}
 
         {latestAnnouncement && (
-            <Link href="/parent/mural" className={cn("block p-3 rounded-lg border-2 animate-in fade-in", latestAnnouncement.priority === 'high' ? "bg-destructive/10 border-destructive text-destructive" : "bg-primary/10 border-primary/20 text-primary")}>
+            <Link href="/parent/mural" className={cn("block p-3 rounded-lg border-2", latestAnnouncement.priority === 'high' ? "bg-destructive/10 border-destructive text-destructive" : "bg-primary/10 border-primary/20 text-primary")}>
                 <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Megaphone className="h-5 w-5" /><div className="min-w-0"><p className="font-bold text-sm truncate">{latestAnnouncement.title}</p></div></div><ChevronRight className="h-4 w-4" /></div>
             </Link>
         )}
 
-        {/* Status da Jornada */}
         <Card className="border-2 shadow-xl overflow-hidden">
             <CardHeader className="bg-primary/5 border-b pb-4">
                 <div className="flex items-center gap-4">
@@ -282,7 +275,6 @@ export default function ParentTrackingPage() {
             <CardFooter className="justify-center border-t py-4"><Button variant="ghost" size="sm" onClick={handleShareTrip} className="text-xs gap-2"><Share2 className="h-4 w-4" /> Compartilhar Localização</Button></CardFooter>
         </Card>
 
-        {/* Mapa Integrado */}
         <Card className="h-[400px] border-2 shadow-2xl overflow-hidden relative">
             <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-3 left-3 z-[1000] bg-background/80"><LocateFixed className="h-5 w-5 text-primary" /></Button>
             <SmartMap center={{ lat: student?.latitude || -23.55, lng: student?.longitude || -46.63 }} zoom={13} stops={smartStops} driverLocation={displayLocation} routePolyline={route?.polyline} recenterTrigger={recenterTrigger}>
@@ -290,7 +282,6 @@ export default function ParentTrackingPage() {
             </SmartMap>
         </Card>
 
-        {/* Menu de Gestão */}
         <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2"><Link href="/parent/qrcode"><QrCode className="h-6 w-6 text-primary" /><span>QR Code</span></Link></Button>
             <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2"><Link href="/parent/requests"><RouteIcon className="h-6 w-6 text-primary" /><span>Viagens Extras</span></Link></Button>

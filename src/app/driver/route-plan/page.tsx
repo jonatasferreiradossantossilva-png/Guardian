@@ -10,34 +10,19 @@ import {
   CardFooter,
 } from '@/components/ui/card';
 import {
-  List,
   Bus,
-  User,
   Loader2,
-  AlertTriangle,
   MessageSquare,
   IdCard,
   School,
-  Navigation,
   Play,
-  Pause,
   Square,
   CheckCircle,
   XCircle,
   Siren,
-  Share2,
-  ArrowLeft,
-  MapPin,
-  ListTree,
   LocateFixed,
   WifiOff,
   QrCode,
-  Users,
-  Check,
-  X,
-  Sparkles,
-  AlertOctagon,
-  RefreshCw,
   HeartPulse,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -53,15 +38,11 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle } from '@/components/ui/alert-dialog';
 import { cn } from '@/lib/utils';
 import { RoutePolyline } from '@/components/shared/route-polyline';
 import { SmartMap } from '@/components/shared/smart-map';
-import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
-import { routingGeoapify } from '@/ai/flows/routing-geoapify';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { ReportIncidentForm } from '@/components/dashboard/report-incident-form';
-
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente_ida' | 'ausente_volta' | 'ausente_dia_todo';
@@ -79,11 +60,6 @@ interface Student {
   street?: string;
   number?: string;
   neighborhood?: string;
-  city?: string;
-  state?: string;
-  active?: boolean;
-  serie?: string;
-  turma?: string;
 }
 
 interface SchoolData {
@@ -91,8 +67,6 @@ interface SchoolData {
   name: string;
   latitude: number;
   longitude: number;
-  street?: string;
-  number?: string;
 }
 
 type Stop = {
@@ -260,7 +234,6 @@ export default function DriverRoutePlanPage() {
     <div className="min-h-screen bg-background text-foreground flex flex-col md:flex-row h-screen overflow-hidden">
         {!isOnline && <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm absolute top-0 left-0 right-0 z-[2000]"><WifiOff className="h-4 w-4 inline mr-2" />Offline.</div>}
         
-        {/* Lado Esquerdo: Lista e Ações */}
         <div className="w-full md:w-[400px] flex flex-col border-r bg-card overflow-y-auto">
             <div className="p-4 border-b flex items-center justify-between">
                 <h1 className="font-bold text-xl flex items-center gap-2"><Bus className="text-primary"/> Guardian Equipe</h1>
@@ -336,7 +309,6 @@ export default function DriverRoutePlanPage() {
             )}
         </div>
 
-        {/* Lado Direito: Mapa Fullscreen */}
         <div className="flex-1 relative bg-secondary/10">
             <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-4 left-4 z-[1000] bg-background/80 shadow-md border-primary/20"><LocateFixed className="text-primary"/></Button>
             
