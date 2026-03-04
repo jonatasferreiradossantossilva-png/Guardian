@@ -9,7 +9,28 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
-import { Bus, MessageCircle, School, CheckCircle, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ChevronRight, Home, Megaphone, FileText, HeartPulse, Map as MapIcon, Activity, Info } from "lucide-react";
+import { 
+    Bus, 
+    MessageCircle, 
+    School, 
+    CheckCircle, 
+    Share2, 
+    LocateFixed, 
+    QrCode, 
+    XCircle, 
+    DollarSign, 
+    Users, 
+    Route as RouteIcon, 
+    ChevronRight, 
+    Home, 
+    Megaphone, 
+    FileText, 
+    HeartPulse, 
+    Map as MapIcon, 
+    Activity, 
+    Info,
+    Loader2
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -229,7 +250,10 @@ export default function ParentTrackingPage() {
 
   const smartStops = useMemo(() => {
       if (!students) return [];
-      return students.map(s => [{ id: `s-${s.id}`, type: 'student', data: s }, { id: `sch-${s.schoolId}`, type: 'school', data: allSchools?.find(sch => sch.id === s.schoolId) }]).flat().filter(Boolean);
+      return students.map(s => [
+          { id: `s-${s.id}`, type: 'student', data: s }, 
+          { id: `sch-${s.schoolId}`, type: 'school', data: allSchools?.find(sch => sch.id === s.schoolId) }
+      ]).flat().filter(Boolean);
   }, [students, allSchools]);
 
   if (isLoading) return <div className="flex items-center justify-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
@@ -242,6 +266,7 @@ export default function ParentTrackingPage() {
             <Link href="/"><Button variant="ghost">Sair</Button></Link>
         </div>
 
+        {/* Multi-child selector */}
         {students && students.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {students.map((s) => (
@@ -253,12 +278,14 @@ export default function ParentTrackingPage() {
             </div>
         )}
 
+        {/* Latest Announcement Highlight */}
         {latestAnnouncement && (
             <Link href="/parent/mural" className={cn("block p-3 rounded-lg border-2", latestAnnouncement.priority === 'high' ? "bg-destructive/10 border-destructive text-destructive" : "bg-primary/10 border-primary/20 text-primary")}>
                 <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Megaphone className="h-5 w-5" /><div className="min-w-0"><p className="font-bold text-sm truncate">{latestAnnouncement.title}</p></div></div><ChevronRight className="h-4 w-4" /></div>
             </Link>
         )}
 
+        {/* Tabs System */}
         <Tabs defaultValue="jornada" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="jornada" className="gap-2">
@@ -269,6 +296,7 @@ export default function ParentTrackingPage() {
                 </TabsTrigger>
             </TabsList>
 
+            {/* TAB 1: JOURNEY STATUS & ACTIONS */}
             <TabsContent value="jornada" className="space-y-6 animate-in fade-in duration-300">
                 <Card className="border-2 shadow-xl overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b pb-4">
@@ -288,6 +316,7 @@ export default function ParentTrackingPage() {
                     <CardFooter className="justify-center border-t py-4"><Button variant="ghost" size="sm" onClick={handleShareTrip} className="text-xs gap-2"><Share2 className="h-4 w-4" /> Compartilhar Localização</Button></CardFooter>
                 </Card>
 
+                {/* Shortcut Grid (6 original features) */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/qrcode"><QrCode className="h-6 w-6 text-primary" /><span>QR Code</span></Link></Button>
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/requests"><RouteIcon className="h-6 w-6 text-primary" /><span>Viagens Avulsas</span></Link></Button>
@@ -298,11 +327,25 @@ export default function ParentTrackingPage() {
                 </div>
             </TabsContent>
 
+            {/* TAB 2: LIVE MAP */}
             <TabsContent value="mapa" className="animate-in fade-in duration-300">
                 <Card className="h-[500px] border-2 shadow-2xl overflow-hidden relative">
                     <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-3 left-3 z-[1000] bg-background/80 shadow-sm border-primary/20"><LocateFixed className="h-5 w-5 text-primary" /></Button>
-                    <SmartMap center={{ lat: student?.latitude || -23.55, lng: student?.longitude || -46.63 }} zoom={13} stops={smartStops} driverLocation={displayLocation} routePolyline={route?.polyline} recenterTrigger={recenterTrigger}>
-                        <GoogleMapMarkers allStudents={students || []} allRoutes={allRoutes || []} allLocations={allLocations || []} allSchools={allSchools || []} selectedStudentId={selectedStudentId} />
+                    <SmartMap 
+                        center={{ lat: student?.latitude || -23.55, lng: student?.longitude || -46.63 }} 
+                        zoom={13} 
+                        stops={smartStops} 
+                        driverLocation={displayLocation} 
+                        routePolyline={route?.polyline} 
+                        recenterTrigger={recenterTrigger}
+                    >
+                        <GoogleMapMarkers 
+                            allStudents={students || []} 
+                            allRoutes={allRoutes || []} 
+                            allLocations={allLocations || []} 
+                            allSchools={allSchools || []} 
+                            selectedStudentId={selectedStudentId} 
+                        />
                     </SmartMap>
                 </Card>
                 <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/10 flex items-start gap-3">
@@ -313,6 +356,7 @@ export default function ParentTrackingPage() {
         </Tabs>
       </div>
 
+      {/* Absence Dialog */}
       <AlertDialog open={isAbsenceDialogOpen} onOpenChange={setIsAbsenceDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>Informar Falta</AlertDialogTitle></AlertDialogHeader>
