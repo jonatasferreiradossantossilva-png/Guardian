@@ -276,13 +276,13 @@ export default function DriverRoutePlanPage() {
         const student = studentsMap.get(id);
         const school = schoolsMap.get(id);
         if (student && student.active !== false) {
-             if (direction === 'ida' && student.status.startsWith('ausente')) return null;
-             if (direction === 'volta' && (student.status === 'ausente_volta' || student.status === 'ausente_dia_todo')) return null;
+             if (selectedDirection === 'ida' && student.status.startsWith('ausente')) return null;
+             if (selectedDirection === 'volta' && (student.status === 'ausente_volta' || student.status === 'ausente_dia_todo')) return null;
              if (student.shift === 'Integral' || student.shift === selectedShift) return { id, type: 'student', data: student as Student };
         } else if (school) return { id, type: 'school', data: school as SchoolData };
         return null;
     }).filter((s): s is Stop => s !== null);
-  }, [route?.studentIds, allStudents, schools, selectedShift, selectedDirection]);
+  }, [route?.studentIds, allStudents, schools, selectedShift, selectedDirection, studentsMap, schoolsMap]);
 
   const { activeStop, upcomingStops } = useMemo(() => {
     if (!orderedStops || driverProfile?.status !== 'em_rota') return { activeStop: null, upcomingStops: [] };
@@ -336,7 +336,7 @@ export default function DriverRoutePlanPage() {
                     <div className="max-w-md mx-auto space-y-4">
                         {!activeStop ? <Card className="text-center p-8"><CheckCircle className="h-16 w-16 text-green-500 mx-auto mb-4"/><CardTitle>Concluído!</CardTitle><Button variant="destructive" className="mt-6 w-full" onClick={handleEndRoute}>Finalizar</Button></Card> : 
                         activeStop.type === 'student' ? <NextStopCard student={activeStop.data as Student} onStatusChange={handleStatusChange} onNavigate={() => {}} onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} direction={selectedDirection} onShareRoute={() => {}} onScanQrCode={() => setIsScannerOpen(true)} details={activeStop.data.name} /> : 
-                        <NextStopSchoolCard school={activeStop.data as SchoolData} onDropOff={() => { orderedStops.filter(s => s.type === 'student' && s.data.status === 'a_bordo').forEach(s => updateDoc('students', s.id, { status: 'desembarcado' })); toast({ title: "Desembarcados!" }); }} onNavigate={() => {}} onShareRoute={() => {}} />}
+                        <NextStopSchoolCard school={activeStop.data as SchoolData} onDropOff={() => { orderedStops.filter(s => s.type === 'student' && s.data.status === 'a_bordo').forEach(s => updateDoc('students', s.id, { status: 'desembarcado' })); toast({ title: "Desembarçados!" }); }} onNavigate={() => {}} onShareRoute={() => {}} />}
                     </div>
                 )}
             </TabsContent>
