@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useMemo, useState, useEffect, useCallback } from "react";
@@ -9,7 +8,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { AdvancedMarker, useMap, Pin } from "@vis.gl/react-google-maps";
-import { MapPin, Bus, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, Sparkles, BellRing, Megaphone, Info, RefreshCw } from "lucide-react";
+import { MapPin, Bus, MessageCircle, AlertTriangle, Loader2, School, CheckCircle, Activity, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ShieldCheck, ChevronRight, Home, Sparkles, BellRing, Megaphone, Info, RefreshCw, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -427,7 +426,7 @@ export default function ParentTrackingPage() {
                     </Card>
                  )}
 
-                 <Card className={cn("border-2 transition-all shadow-xl overflow-hidden", journeyDirection === 'ida' ? "border-primary/20" : "border-orange-500/20")}>
+                 <Card className={cn("border-2 transition-all shadow-xl overflow-hidden", journeyDirection === 'ida' ? "border-primary/20" : "border-orange-50/20")}>
                     <CardHeader className={cn("pb-2", journeyDirection === 'ida' ? "bg-primary/5" : "bg-orange-500/5")}>
                         <div className="flex justify-between items-start">
                             <div className="flex items-center gap-4">
