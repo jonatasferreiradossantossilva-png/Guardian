@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Import Leaflet CSS */
+@import 'leaflet/dist/leaflet.css';
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -82,4 +85,19 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Fix for Leaflet dark mode visibility */
+.leaflet-container {
+  background: hsl(var(--background)) !important;
+}
+
+.dark .leaflet-tile {
+  filter: brightness(0.6) invert(1) contrast(3) hue-rotate(200deg) saturate(0.3) brightness(0.7);
+}
+
+.leaflet-control-zoom a {
+  background-color: hsl(var(--card)) !important;
+  color: hsl(var(--foreground)) !important;
+  border-color: hsl(var(--border)) !important;
 }

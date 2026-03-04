@@ -5,6 +5,9 @@
  */
 
 export const initialMockData = {
+    config: [
+        { id: "global", scaling_mode: false } // False: Usa Google Maps para todos. True: Usa OSM para os pais.
+    ],
     users: [
         { id: "user-admin-1", name: "Admin Guardian", email: "admin@guardian.com", profile: 'gestor', active: true },
         { id: "user-motorista-2", name: "Mariana Costa", email: "mariana.costa@rotasegura.com", profile: 'motorista', active: true },
