@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -505,6 +506,25 @@ function BoardingChecklist({
     )
 }
 
+// Haversine formula to calculate distance between two lat/lng points in KM
+function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: number, lng: number}) {
+  if (!coords1 || !coords2) return Infinity;
+  const toRad = (x: number) => (x * Math.PI) / 180;
+  const R = 6371; // Earth radius in km
+
+  const dLat = toRad(coords2.lat - coords1.lat);
+  const dLon = toRad(coords2.lng - coords1.lng);
+  const lat1 = toRad(coords1.lat);
+  const lat2 = toRad(coords1.lat);
+
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c;
+}
+
 
 export default function DriverRoutePlanPage() {
   const { updateDoc, setDoc, addDoc } = useMockData();
@@ -558,8 +578,10 @@ export default function DriverRoutePlanPage() {
   const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
   const { data: vehicle } = useMockDoc('vehicles', driverProfile?.vehicleId);
 
-  // --- Real-time Movement & Odometer Simulation ---
+  // --- Real-time Scalable Telemetry (Throttling & Delta Movement) ---
   const locRef = useRef(driverLocation);
+  const lastSyncRef = useRef({ time: Date.now(), lat: 0, lng: 0 });
+  
   useEffect(() => { locRef.current = driverLocation; }, [driverLocation]);
 
   useEffect(() => {
@@ -569,24 +591,35 @@ export default function DriverRoutePlanPage() {
         const currentLoc = locRef.current;
         if (!currentLoc) return;
 
-        // Simula uma pequena variação de posição para o pai ver movimento
+        // Simula uma pequena variação de posição
         const jitterLat = (Math.random() - 0.5) * 0.0004; 
         const jitterLng = (Math.random() - 0.5) * 0.0004;
-        
-        // 1. Atualizar Localização
-        setDoc(`locations/${driverId}`, {
-            latitude: currentLoc.latitude + jitterLat,
-            longitude: currentLoc.longitude + jitterLng,
-            timestamp: new Date().toISOString()
-        });
+        const newLat = currentLoc.latitude + jitterLat;
+        const newLng = currentLoc.longitude + jitterLng;
 
-        // 2. Simular Incremento de Odômetro (Preditiva)
-        const kmIncrement = 0.1;
-        updateDoc('vehicles', vehicle.id, {
-            currentOdometer: (vehicle.currentOdometer || 0) + kmIncrement
-        });
+        // --- Lógica de Escala (Projeto Zero Custo) ---
+        const lastSync = lastSyncRef.current;
+        const distMoved = haversineDistance({lat: lastSync.lat, lng: lastSync.lng}, {lat: newLat, lng: newLng});
+        const timePassed = (Date.now() - lastSync.time) / 1000;
 
-    }, 10000); 
+        // Só atualiza o Firestore se a van se moveu > 30m ou se passou > 30s (Garante cota gratuita)
+        if (distMoved > 0.03 || timePassed > 30) {
+            setDoc(`locations/${driverId}`, {
+                latitude: newLat,
+                longitude: newLng,
+                timestamp: new Date().toISOString()
+            });
+            
+            lastSyncRef.current = { time: Date.now(), lat: newLat, lng: newLng };
+
+            // Simular Incremento de Odômetro (Preditiva)
+            const kmIncrement = distMoved > 0 ? distMoved : 0.1;
+            updateDoc('vehicles', vehicle.id, {
+                currentOdometer: (vehicle.currentOdometer || 0) + kmIncrement
+            });
+        }
+
+    }, 10000); // Checagem local rápida, mas escrita lenta
 
     return () => clearInterval(interval);
   }, [driverProfile?.status, driverId, vehicle?.id, setDoc, updateDoc]);

@@ -1,8 +1,19 @@
+
 # Guardian - Inteligência para Transporte Escolar
 
 O Guardian é uma plataforma de inteligência operacional para transporte escolar que utiliza IA Generativa e Telemetria de alta precisão para otimizar frotas, reduzir custos e aumentar a segurança.
 
-## 🚀 Funcionalidades por Módulo
+## 🚀 Arquitetura de Custo Zero e Alta Escala (100+ Vans)
+
+O Guardian foi desenhado para escalar com custo operacional de software próximo a zero, mesmo em frotas de grande porte, utilizando uma abordagem híbrida e estratégica:
+
+1. **Mapas & Visualização Inteligente:** Google Maps JS API (utilizando o crédito gratuito mensal de $200). Para frotas acima de 100 vans, o sistema prioriza o uso de mapas estáticos e Leaflet no portal dos pais para garantir que a cota gratuita nunca seja excedida.
+2. **Roteirização Híbrida (Fatiamento):** Geoapify (OpenStreetMap) com lógica de fatiamento de waypoints para contornar limites do plano gratuito. Conseguimos traçar rotas complexas de 20+ alunos sem custos de API.
+3. **Telemetria por Delta (Escala 100+):** O motorista não envia posição fixa. O Guardian só registra a localização no Firebase se a van se mover mais de 30 metros ou após 30 segundos. Isso permite gerenciar 100 vans simultâneas dentro da cota gratuita de banco de dados (20k escritas/dia).
+4. **Geocodificação Híbrida:** ViaCEP para preenchimento de endereços e Base INEP Proprietária (190k registros) para evitar chamadas de API pagas do Google Geocoding.
+5. **Cálculo de Proximidade Local:** Implementação local da Fórmula de Haversine para alertas de 800m e ETAs, eliminando custos com Google Distance Matrix. Matemática pura no navegador do usuário.
+
+## 🛠️ Funcionalidades por Módulo
 
 ### 1. Camada de Inteligência Artificial (Genkit + Gemini)
 - **OCR de Documentos:** Extração automática de dados de RG e CNH para cadastro instantâneo de pais e responsáveis.
@@ -30,16 +41,6 @@ O Guardian é uma plataforma de inteligência operacional para transporte escola
 - **Gestão Multi-filhos:** Controle de todos os filhos em uma única tela, com herança de dados para novos cadastros (mesmo endereço/responsável).
 - **Comunicado de Ausência:** Aviso imediato ao motorista em caso de falta do aluno, permitindo a re-otimização da rota.
 - **Assinatura de Contrato:** Visualização e aceite jurídico do contrato de serviço diretamente pelo app.
-
-## 🛠️ Arquitetura Técnica & Estratégia Custo Zero (API Efficiency)
-
-O Guardian foi desenhado para escalar com custo operacional de software próximo a zero, utilizando uma abordagem híbrida:
-
-1. **Mapas & Visualização:** Google Maps JS API (utilizando o crédito gratuito mensal de $200).
-2. **Roteirização Híbrida:** Geoapify (OpenStreetMap) com lógica de fatiamento de waypoints para contornar limites do plano gratuito.
-3. **Geocodificação Inteligente:** ViaCEP para preenchimento de endereços e Base INEP Proprietária (190k registros) para evitar chamadas de API pagas.
-4. **Cálculo de Proximidade:** Implementação local da Fórmula de Haversine para alertas de 800m e ETAs, eliminando custos com Google Distance Matrix.
-5. **Backend Real-time:** Firebase Firestore para telemetria com persistência offline e Firebase Auth.
 
 ---
 *Guardian - A jornada do seu filho, protegida em tempo real.*
