@@ -9,7 +9,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
-import { Bus, MessageCircle, School, CheckCircle, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ChevronRight, Home, Megaphone, FileText, HeartPulse, Map as MapIcon, Activity } from "lucide-react";
+import { Bus, MessageCircle, School, CheckCircle, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ChevronRight, Home, Megaphone, FileText, HeartPulse, Map as MapIcon, Activity, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
