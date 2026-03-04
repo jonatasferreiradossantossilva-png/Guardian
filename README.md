@@ -31,16 +31,15 @@ O Guardian é uma plataforma de inteligência operacional para transporte escola
 - **Comunicado de Ausência:** Aviso imediato ao motorista em caso de falta do aluno, permitindo a re-otimização da rota.
 - **Assinatura de Contrato:** Visualização e aceite jurídico do contrato de serviço diretamente pelo app.
 
-### 5. Onboarding e Crescimento
-- **Jornada de 17 Passos:** Guia visual interativo com prints reais que ensina o uso do sistema do convite ao contrato.
-- **Página de Cadastro Público:** Link exclusivo (/register) para convidar pais, com fluxo de cadastro zero fricção via IA.
+## 🛠️ Arquitetura Técnica & Estratégia Custo Zero (API Efficiency)
 
-## 🛠️ Arquitetura Técnica
-- **Frontend:** Next.js 15 (App Router), React 19, Tailwind CSS.
-- **Componentes:** ShadCN UI (Radix UI).
-- **Backend:** Firebase Firestore (Tempo real) e Firebase Auth.
-- **IA:** Google Genkit com Gemini 1.5 Flash.
-- **Mapas:** Google Maps API (Visualização) e Geoapify (Roteirização Custo Zero).
+O Guardian foi desenhado para escalar com custo operacional de software próximo a zero, utilizando uma abordagem híbrida:
+
+1. **Mapas & Visualização:** Google Maps JS API (utilizando o crédito gratuito mensal de $200).
+2. **Roteirização Híbrida:** Geoapify (OpenStreetMap) com lógica de fatiamento de waypoints para contornar limites do plano gratuito.
+3. **Geocodificação Inteligente:** ViaCEP para preenchimento de endereços e Base INEP Proprietária (190k registros) para evitar chamadas de API pagas.
+4. **Cálculo de Proximidade:** Implementação local da Fórmula de Haversine para alertas de 800m e ETAs, eliminando custos com Google Distance Matrix.
+5. **Backend Real-time:** Firebase Firestore para telemetria com persistência offline e Firebase Auth.
 
 ---
 *Guardian - A jornada do seu filho, protegida em tempo real.*
