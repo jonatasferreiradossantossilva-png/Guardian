@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect, useCallback } from "react";
@@ -8,7 +9,7 @@ import {
 } from "@/hooks/use-mock-data";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
-import { Bus, MessageCircle, School, CheckCircle, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ChevronRight, Home, Megaphone, FileText, HeartPulse } from "lucide-react";
+import { Bus, MessageCircle, School, CheckCircle, Share2, LocateFixed, QrCode, XCircle, DollarSign, Users, Route as RouteIcon, ChevronRight, Home, Megaphone, FileText, HeartPulse, Map as MapIcon, Activity } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
@@ -29,6 +30,7 @@ import {
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 interface Student {
   id: string;
@@ -257,39 +259,58 @@ export default function ParentTrackingPage() {
             </Link>
         )}
 
-        <Card className="border-2 shadow-xl overflow-hidden">
-            <CardHeader className="bg-primary/5 border-b pb-4">
-                <div className="flex items-center gap-4">
-                    <Avatar className="h-16 w-16 border-2 border-background shadow-md"><AvatarImage src={`https://picsum.photos/seed/student-${student?.id}/100/100`} /><AvatarFallback>{student?.name[0]}</AvatarFallback></Avatar>
-                    <div><CardTitle className="text-xl">Olá, {parent?.name.split(' ')[0]}</CardTitle><CardDescription className="font-medium text-foreground/80">Jornada de {student?.name}</CardDescription></div>
+        <Tabs defaultValue="jornada" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+                <TabsTrigger value="jornada" className="gap-2">
+                    <Activity className="h-4 w-4" /> Jornada
+                </TabsTrigger>
+                <TabsTrigger value="mapa" className="gap-2">
+                    <MapIcon className="h-4 w-4" /> Mapa
+                </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="jornada" className="space-y-6 animate-in fade-in duration-300">
+                <Card className="border-2 shadow-xl overflow-hidden">
+                    <CardHeader className="bg-primary/5 border-b pb-4">
+                        <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16 border-2 border-background shadow-md"><AvatarImage src={`https://picsum.photos/seed/student-${student?.id}/100/100`} /><AvatarFallback>{student?.name[0]}</AvatarFallback></Avatar>
+                            <div><CardTitle className="text-xl">Olá, {parent?.name.split(' ')[0]}</CardTitle><CardDescription className="font-medium text-foreground/80">Jornada de {student?.name}</CardDescription></div>
+                        </div>
+                    </CardHeader>
+                    <CardContent className="pt-6">
+                        <JourneyTimeline status={student?.status || 'aguardando'} direction={journeyDirection} />
+                        {isAbsent ? (
+                            <Button variant="secondary" className="w-full mt-4" onClick={handleConfirmPresence}><CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença</Button>
+                        ) : (
+                            <Button variant="outline" className="w-full mt-4 border-destructive/20 text-destructive" onClick={() => setIsAbsenceDialogOpen(true)}><XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje</Button>
+                        )}
+                    </CardContent>
+                    <CardFooter className="justify-center border-t py-4"><Button variant="ghost" size="sm" onClick={handleShareTrip} className="text-xs gap-2"><Share2 className="h-4 w-4" /> Compartilhar Localização</Button></CardFooter>
+                </Card>
+
+                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/qrcode"><QrCode className="h-6 w-6 text-primary" /><span>QR Code</span></Link></Button>
+                    <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/requests"><RouteIcon className="h-6 w-6 text-primary" /><span>Viagens Avulsas</span></Link></Button>
+                    <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/messages"><MessageCircle className="h-6 w-6 text-primary" /><span>Mensagens</span></Link></Button>
+                    <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/contract"><FileText className="h-6 w-6 text-primary" /><span>Contrato</span></Link></Button>
+                    <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/authorized"><Users className="h-6 w-6 text-primary" /><span>Autorizados</span></Link></Button>
+                    <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/financial"><DollarSign className="h-6 w-6 text-primary" /><span>Financeiro</span></Link></Button>
                 </div>
-            </CardHeader>
-            <CardContent className="pt-6">
-                <JourneyTimeline status={student?.status || 'aguardando'} direction={journeyDirection} />
-                {isAbsent ? (
-                    <Button variant="secondary" className="w-full mt-4" onClick={handleConfirmPresence}><CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença</Button>
-                ) : (
-                    <Button variant="outline" className="w-full mt-4 border-destructive/20 text-destructive" onClick={() => setIsAbsenceDialogOpen(true)}><XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje</Button>
-                )}
-            </CardContent>
-            <CardFooter className="justify-center border-t py-4"><Button variant="ghost" size="sm" onClick={handleShareTrip} className="text-xs gap-2"><Share2 className="h-4 w-4" /> Compartilhar Localização</Button></CardFooter>
-        </Card>
+            </TabsContent>
 
-        <Card className="h-[400px] border-2 shadow-2xl overflow-hidden relative">
-            <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-3 left-3 z-[1000] bg-background/80"><LocateFixed className="h-5 w-5 text-primary" /></Button>
-            <SmartMap center={{ lat: student?.latitude || -23.55, lng: student?.longitude || -46.63 }} zoom={13} stops={smartStops} driverLocation={displayLocation} routePolyline={route?.polyline} recenterTrigger={recenterTrigger}>
-                <GoogleMapMarkers allStudents={students || []} allRoutes={allRoutes || []} allLocations={allLocations || []} allSchools={allSchools || []} selectedStudentId={selectedStudentId} />
-            </SmartMap>
-        </Card>
-
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-            <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2"><Link href="/parent/qrcode"><QrCode className="h-6 w-6 text-primary" /><span>QR Code</span></Link></Button>
-            <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2"><Link href="/parent/requests"><RouteIcon className="h-6 w-6 text-primary" /><span>Viagens Extras</span></Link></Button>
-            <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2"><Link href="/parent/messages"><MessageCircle className="h-6 w-6 text-primary" /><span>Mensagens</span></Link></Button>
-            <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2"><Link href="/parent/contract"><FileText className="h-6 w-6 text-primary" /><span>Contrato</span></Link></Button>
-            <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2"><Link href="/parent/authorized"><Users className="h-6 w-6 text-primary" /><span>Autorizados</span></Link></Button>
-            <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2"><Link href="/parent/financial"><DollarSign className="h-6 w-6 text-primary" /><span>Financeiro</span></Link></Button>
-        </div>
+            <TabsContent value="mapa" className="animate-in fade-in duration-300">
+                <Card className="h-[500px] border-2 shadow-2xl overflow-hidden relative">
+                    <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-3 left-3 z-[1000] bg-background/80 shadow-sm border-primary/20"><LocateFixed className="h-5 w-5 text-primary" /></Button>
+                    <SmartMap center={{ lat: student?.latitude || -23.55, lng: student?.longitude || -46.63 }} zoom={13} stops={smartStops} driverLocation={displayLocation} routePolyline={route?.polyline} recenterTrigger={recenterTrigger}>
+                        <GoogleMapMarkers allStudents={students || []} allRoutes={allRoutes || []} allLocations={allLocations || []} allSchools={allSchools || []} selectedStudentId={selectedStudentId} />
+                    </SmartMap>
+                </Card>
+                <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/10 flex items-start gap-3">
+                    <Info className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+                    <p className="text-xs text-muted-foreground leading-relaxed">O mapa exibe a localização em tempo real da van vinculada à rota de <strong>{student?.name}</strong>. As atualizações ocorrem a cada 30 segundos ou 30 metros de deslocamento.</p>
+                </div>
+            </TabsContent>
+        </Tabs>
       </div>
 
       <AlertDialog open={isAbsenceDialogOpen} onOpenChange={setIsAbsenceDialogOpen}>
