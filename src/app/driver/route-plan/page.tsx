@@ -265,6 +265,14 @@ export default function DriverRoutePlanPage() {
         const currentLoc = locRef.current;
         const startPoint = currentLoc ? `${currentLoc.latitude},${currentLoc.longitude}` : undefined;
         
+        // Reset universal: Localiza e reseta TODOS os alunos da rota no banco para garantir checklist limpo antes de otimizar
+        route.studentIds.forEach(id => {
+            const s = studentsMap.get(id);
+            if (s) {
+                updateDoc('students', id, { status: 'aguardando' });
+            }
+        });
+
         const studentStops = orderedStops.filter(s => s.type === 'student').map(s => ({
             id: s.id,
             name: s.data.name,
@@ -277,14 +285,6 @@ export default function DriverRoutePlanPage() {
             name: sch.name,
             address: `${sch.street}, ${sch.number}`
         }));
-
-        // Reset universal: Localiza e reseta TODOS os alunos da rota no banco para garantir checklist limpo
-        route.studentIds.forEach(id => {
-            const s = studentsMap.get(id);
-            if (s) {
-                updateDoc('students', id, { status: 'aguardando' });
-            }
-        });
 
         const result = await optimizeSchoolVanRoute({
             students: studentStops,
@@ -335,6 +335,7 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
+    // Auto-encerramento apenas se não houver mais paradas pendentes no final da jornada
     if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -351,7 +352,9 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
-      if (upcomingStops.length === 0) {
+      // BLINDAGEM: No sentido 'volta', após o embarque na escola, ainda temos as casas dos alunos. 
+      // O encerramento automático só deve ocorrer se for o Ponto Final (escola na ida ou última casa na volta)
+      if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
   }, [selectedDirection, studentsAtCurrentStop, updateDoc, toast, upcomingStops.length, handleEndRoute]);
