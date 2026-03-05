@@ -26,14 +26,10 @@ import {
   HeartPulse,
   MapPin,
   Activity,
-  ChevronRight,
-  Sparkles,
   Navigation,
-  RotateCcw,
+  Pause,
   Users,
   Check,
-  Pause,
-  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -248,6 +244,33 @@ export default function DriverRoutePlanPage() {
       );
   }, [activeStop, allStudents, selectedDirection, selectedShift]);
 
+  const handleEndRoute = useCallback(() => {
+      if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
+      const startOdo = Number(sessionStorage.getItem('startOdometer') || vehicle.currentOdometer);
+      const actualDistance = Math.max(0, (vehicle.currentOdometer || 0) - startOdo);
+      const savingsKm = Number((actualDistance * 0.15).toFixed(1)); 
+      const fuelSaved = Number(((savingsKm / 8) * 6.00).toFixed(2));
+      
+      addDoc('trip_history', { 
+          date: new Date().toISOString().split('T')[0], 
+          routeName: route.name, 
+          plannedKm: 15, 
+          actualKm: Number(actualDistance.toFixed(1)), 
+          driverName: driverProfile.name, 
+          savingsKm, 
+          fuelSaved 
+      });
+
+      updateDoc('drivers', driverId, { status: 'inativo' });
+      sessionStorage.removeItem('activeRouteId');
+      setActiveRouteId(null);
+      
+      toast({ 
+          title: "Viagem Encerrada!", 
+          description: `Retornando à tela inicial. Economia: R$ ${fuelSaved.toFixed(2)}.` 
+      });
+  }, [driverId, allStudents, route, vehicle, driverProfile, updateDoc, addDoc, toast]);
+
   const handleStartRoute = async () => {
     if (!route || !driverProfile) return;
     setIsOptimizing(true);
@@ -304,7 +327,12 @@ export default function DriverRoutePlanPage() {
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
-  }, [updateDoc, toast]);
+    
+    // Auto-finish logic: if this was the last home stop in Volta
+    if (selectedDirection === 'volta' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
+        setTimeout(handleEndRoute, 2000);
+    }
+  }, [updateDoc, toast, selectedDirection, upcomingStops.length, handleEndRoute]);
 
   const handleSchoolAction = useCallback((schoolId: string) => {
       const isIda = selectedDirection === 'ida';
@@ -316,34 +344,12 @@ export default function DriverRoutePlanPage() {
           title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!", 
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
-  }, [selectedDirection, studentsAtCurrentStop, updateDoc, toast]);
 
-  const handleEndRoute = useCallback(() => {
-      if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
-      const startOdo = Number(sessionStorage.getItem('startOdometer') || vehicle.currentOdometer);
-      const actualDistance = Math.max(0, (vehicle.currentOdometer || 0) - startOdo);
-      const savingsKm = Number((actualDistance * 0.15).toFixed(1)); 
-      const fuelSaved = Number(((savingsKm / 8) * 6.00).toFixed(2));
-      
-      addDoc('trip_history', { 
-          date: new Date().toISOString().split('T')[0], 
-          routeName: route.name, 
-          plannedKm: 15, 
-          actualKm: Number(actualDistance.toFixed(1)), 
-          driverName: driverProfile.name, 
-          savingsKm, 
-          fuelSaved 
-      });
-
-      updateDoc('drivers', driverId, { status: 'inativo' });
-      sessionStorage.removeItem('activeRouteId');
-      setActiveRouteId(null);
-      
-      toast({ 
-          title: "Viagem Encerrada!", 
-          description: `Retornando à tela inicial. Economia: R$ ${fuelSaved.toFixed(2)}.` 
-      });
-  }, [driverId, allStudents, route, vehicle, driverProfile, updateDoc, addDoc, toast]);
+      // Auto-finish logic: if this was the school stop in Ida and no more students waiting
+      if (isIda && upcomingStops.length === 0) {
+          setTimeout(handleEndRoute, 2000);
+      }
+  }, [selectedDirection, studentsAtCurrentStop, updateDoc, toast, upcomingStops.length, handleEndRoute]);
 
   const handlePauseToggle = useCallback(() => {
       const isPaused = driverProfile?.status === 'pausa';
@@ -361,56 +367,56 @@ export default function DriverRoutePlanPage() {
         
         {driverProfile?.status === 'inativo' ? (
             <div className="flex-1 flex items-center justify-center p-4">
-                <Card className="max-w-md w-full shadow-2xl border-primary">
+                <Card className="max-w-md w-full shadow-2xl border-primary border-2">
                     <CardHeader className="text-center">
                         <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 border-2 border-primary/20">
                             <Bus className="text-primary h-8 w-8" />
                         </div>
-                        <CardTitle className="text-primary">Configurar Viagem</CardTitle>
-                        <CardDescription>Selecione os parâmetros da sua jornada de hoje.</CardDescription>
+                        <CardTitle className="text-primary text-2xl font-black italic">Guardian</CardTitle>
+                        <CardDescription className="font-bold">Configure sua jornada operacional.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <Label className="font-bold">Selecione a Rota</Label>
+                            <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Selecione a Rota</Label>
                             <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
-                                <SelectTrigger className="h-10 border-primary/20"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-12 border-primary/30 font-bold text-base"><SelectValue /></SelectTrigger>
                                 <SelectContent>{routes?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="font-bold">Turno</Label>
+                                <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Turno</Label>
                                 <RadioGroup value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)} className="grid grid-cols-1 gap-2">
-                                    <div className="flex items-center space-x-2 p-3 border rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="Manhã" id="shift-m"/>
-                                        <Label htmlFor="shift-m" className="flex-1 cursor-pointer font-medium text-sm">Manhã</Label>
+                                        <Label htmlFor="shift-m" className="flex-1 cursor-pointer font-bold text-sm">Manhã</Label>
                                     </div>
-                                    <div className="flex items-center space-x-2 p-3 border rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="Tarde" id="shift-t"/>
-                                        <Label htmlFor="shift-t" className="flex-1 cursor-pointer font-medium text-sm">Tarde</Label>
+                                        <Label htmlFor="shift-t" className="flex-1 cursor-pointer font-bold text-sm">Tarde</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
                             <div className="space-y-2">
-                                <Label className="font-bold">Sentido</Label>
+                                <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Sentido</Label>
                                 <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as any)} className="grid grid-cols-1 gap-2">
-                                    <div className="flex items-center space-x-2 p-3 border rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="ida" id="dir-i"/>
-                                        <Label htmlFor="dir-i" className="flex-1 cursor-pointer font-medium text-sm">Ida</Label>
+                                        <Label htmlFor="dir-i" className="flex-1 cursor-pointer font-bold text-sm">Ida</Label>
                                     </div>
-                                    <div className="flex items-center space-x-2 p-3 border rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="volta" id="dir-v"/>
-                                        <Label htmlFor="dir-v" className="flex-1 cursor-pointer font-medium text-sm">Volta</Label>
+                                        <Label htmlFor="dir-v" className="flex-1 cursor-pointer font-bold text-sm">Volta</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-3 pt-4 border-t">
-                        <Button className="w-full h-12 font-bold shadow-lg bg-primary hover:bg-primary/90 text-white" onClick={handleStartRoute} disabled={isOptimizing}>
-                            {isOptimizing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Otimizando...</> : <><Play className="mr-2 h-4 w-4" /> Iniciar Rota Agora</>}
+                        <Button className="w-full h-14 font-black text-lg shadow-xl bg-primary hover:bg-primary/90 text-white" onClick={handleStartRoute} disabled={isOptimizing}>
+                            {isOptimizing ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> OTIMIZANDO...</> : <><Play className="mr-2 h-5 w-5 fill-current" /> INICIAR VIAGEM</>}
                         </Button>
-                        <Link href="/" className="w-full"><Button variant="ghost" className="w-full">Voltar ao Início</Button></Link>
+                        <Link href="/" className="w-full"><Button variant="ghost" className="w-full font-bold text-muted-foreground">Voltar ao Login</Button></Link>
                     </CardFooter>
                 </Card>
             </div>
@@ -420,18 +426,18 @@ export default function DriverRoutePlanPage() {
                     <div className="flex items-center gap-3">
                         <Bus className="text-primary h-6 w-6" />
                         <div>
-                            <h1 className="font-bold text-lg leading-tight text-foreground">{route?.name}</h1>
+                            <h1 className="font-black text-lg leading-tight text-foreground uppercase truncate max-w-[180px]">{route?.name}</h1>
                             <p className="text-[10px] text-primary uppercase font-black tracking-widest">{selectedShift} • {selectedDirection === 'ida' ? 'Sentido Escola' : 'Sentido Casa'}</p>
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Button variant={driverProfile?.status === 'pausa' ? 'default' : 'outline'} size="icon" onClick={handlePauseToggle} className="border-primary/20">
-                            {driverProfile?.status === 'pausa' ? <Play className="h-4 w-4 fill-current"/> : <Pause className="h-4 w-4" />}
+                        <Button variant={driverProfile?.status === 'pausa' ? 'default' : 'outline'} size="icon" onClick={handlePauseToggle} className="border-primary/20 h-10 w-10">
+                            {driverProfile?.status === 'pausa' ? <Play className="h-5 w-5 fill-current text-white"/> : <Pause className="h-5 w-5" />}
                         </Button>
-                        <Button variant="outline" size="icon" asChild className="border-primary/20"><Link href="/driver/messages"><MessageSquare className="h-4 w-4 text-primary" /></Link></Button>
+                        <Button variant="outline" size="icon" asChild className="border-primary/20 h-10 w-10"><Link href="/driver/messages"><MessageSquare className="h-5 w-5 text-primary" /></Link></Button>
                         <Dialog>
                             <DialogTrigger asChild>
-                                <Button variant="destructive" size="icon"><Siren className="h-4 w-4 animate-pulse"/></Button>
+                                <Button variant="destructive" size="icon" className="h-10 w-10 shadow-lg shadow-destructive/20"><Siren className="h-5 w-5 animate-pulse"/></Button>
                             </DialogTrigger>
                             <ReportIncidentForm onFormSubmit={() => {}} />
                         </Dialog>
@@ -440,34 +446,34 @@ export default function DriverRoutePlanPage() {
 
                 <Tabs defaultValue="itinerario" className="flex-1 flex flex-col overflow-hidden">
                     <div className="px-4 bg-muted/30 border-b">
-                        <TabsList className="grid w-full grid-cols-2">
-                            <TabsTrigger value="itinerario" className="gap-2 font-bold data-[state=active]:text-primary"><Activity className="h-4 w-4" /> Itinerário</TabsTrigger>
-                            <TabsTrigger value="mapa" className="gap-2 font-bold data-[state=active]:text-primary"><LocateFixed className="h-4 w-4" /> Mapa ao Vivo</TabsTrigger>
+                        <TabsList className="grid w-full grid-cols-2 h-12">
+                            <TabsTrigger value="itinerario" className="gap-2 font-black text-xs uppercase data-[state=active]:text-primary"><Activity className="h-4 w-4" /> Itinerário</TabsTrigger>
+                            <TabsTrigger value="mapa" className="gap-2 font-black text-xs uppercase data-[state=active]:text-primary"><LocateFixed className="h-4 w-4" /> Mapa ao Vivo</TabsTrigger>
                         </TabsList>
                     </div>
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden animate-in fade-in duration-300">
                         <ScrollArea className="h-full">
-                            <div className="p-4 space-y-6">
+                            <div className="p-4 space-y-6 pb-20">
                                 {driverProfile?.status === 'pausa' && (
-                                    <div className="p-4 rounded-lg bg-amber-500/10 border-2 border-amber-500/30 text-amber-600 flex gap-3">
+                                    <div className="p-4 rounded-lg bg-amber-500/10 border-2 border-amber-500/30 text-amber-600 flex gap-3 animate-pulse">
                                         <Pause className="h-5 w-5 shrink-0" />
                                         <div>
-                                            <p className="font-bold text-sm">Viagem Pausada</p>
-                                            <p className="text-xs">Retome no botão superior para voltar a enviar sua posição GPS.</p>
+                                            <p className="font-black text-sm uppercase">Viagem Pausada</p>
+                                            <p className="text-xs font-medium">GPS e Telemetria em modo stand-by.</p>
                                         </div>
                                     </div>
                                 )}
 
                                 {!activeStop ? (
-                                    <Card className="text-center p-10 bg-green-500/10 border-green-500/30 flex flex-col justify-center">
+                                    <Card className="text-center p-10 bg-green-500/10 border-green-500/30 flex flex-col justify-center border-2">
                                         <div className="mx-auto w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
                                             <CheckCircle className="h-14 w-14 text-green-500"/>
                                         </div>
-                                        <CardTitle className="text-2xl font-bold">Todas as Paradas Concluídas!</CardTitle>
-                                        <p className="text-muted-foreground mt-2 max-w-xs mx-auto">Itinerário finalizado com sucesso. Você pode encerrar a viagem agora.</p>
-                                        <Button variant="destructive" className="mt-10 w-full h-12 text-lg font-bold shadow-xl" onClick={handleEndRoute}>
-                                            <Square className="mr-3 h-5 w-5 fill-current"/> Finalizar Operação
+                                        <CardTitle className="text-2xl font-black text-green-600 uppercase">Fim de Rota!</CardTitle>
+                                        <p className="text-muted-foreground mt-2 max-w-xs mx-auto font-bold">Todos os alunos foram processados com sucesso.</p>
+                                        <Button variant="destructive" className="mt-10 w-full h-14 text-lg font-black shadow-xl" onClick={handleEndRoute}>
+                                            <Square className="mr-3 h-5 w-5 fill-current"/> FINALIZAR OPERAÇÃO
                                         </Button>
                                     </Card>
                                 ) : activeStop.type === 'student' ? (
@@ -485,7 +491,7 @@ export default function DriverRoutePlanPage() {
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Próximas Paradas ({upcomingStops.length})</h3>
                                                 <div className="space-y-2">
                                                     {upcomingStops.slice(0, 5).map((stop, idx) => (
-                                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border bg-card shadow-sm">
+                                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
                                                             {stop.type === 'student' ? (
                                                                 <Avatar className="h-8 w-8 border shadow-sm">
                                                                     <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/>
@@ -496,7 +502,7 @@ export default function DriverRoutePlanPage() {
                                                                     <School className="h-4 w-4" />
                                                                 </div>
                                                             )}
-                                                            <span className="text-sm font-bold truncate flex-1 text-foreground">{stop.data.name}</span>
+                                                            <span className="text-sm font-black truncate flex-1 text-foreground">{stop.data.name}</span>
                                                             <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-tighter">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
                                                         </div>
                                                     ))}
@@ -519,8 +525,8 @@ export default function DriverRoutePlanPage() {
                     </TabsContent>
 
                     <TabsContent value="mapa" className="flex-1 relative animate-in fade-in duration-300">
-                        <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-4 left-4 z-[1000] bg-background shadow-md border-primary/20">
-                            <LocateFixed className="text-primary h-5 w-5"/>
+                        <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-4 left-4 z-[1000] bg-background shadow-xl border-primary/30 h-12 w-12">
+                            <LocateFixed className="text-primary h-6 w-6"/>
                         </Button>
                         <SmartMap 
                             center={{ lat: driverLocation?.latitude || -23.55, lng: driverLocation?.longitude || -46.63 }}
@@ -567,30 +573,30 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   };
 
   return (
-    <Card className={cn("w-full shadow-lg border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
+    <Card className={cn("w-full shadow-2xl border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
       <CardHeader className="pb-3 border-b bg-muted/10">
         <div className="flex justify-between items-center mb-3">
-            <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase bg-background border-primary/20 text-primary">Parada Atual</Badge>
+            <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase bg-background border-primary/30 text-primary">Parada Atual</Badge>
             {hasMedicalAlert && (
-                <Badge variant="destructive" className="animate-pulse font-black tracking-tighter">
+                <Badge variant="destructive" className="animate-pulse font-black tracking-tighter shadow-lg">
                     <HeartPulse className="h-3 w-3 mr-1" /> CUIDADO MÉDICO
                 </Badge>
             )}
         </div>
         <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 border-2 border-primary shadow-md">
+            <Avatar className="h-20 w-20 border-2 border-primary shadow-xl">
                 <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
-                <AvatarFallback className="bg-primary/10 text-primary text-2xl font-bold">{student.name[0]}</AvatarFallback>
+                <AvatarFallback className="bg-primary/10 text-primary text-3xl font-black">{student.name[0]}</AvatarFallback>
             </Avatar>
             <div className="flex-grow min-w-0">
-                <CardTitle className="text-xl font-bold truncate leading-none mb-1 text-foreground">{student.name}</CardTitle>
-                <div className="flex items-center gap-1.5 text-muted-foreground">
-                    <MapPin className="h-3 w-3 shrink-0 text-primary" />
-                    <span className="text-xs font-bold truncate">{student.street}, {student.number}</span>
+                <CardTitle className="text-xl font-black truncate leading-none mb-1 text-foreground uppercase tracking-tight">{student.name}</CardTitle>
+                <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
+                    <MapPin className="h-4 w-4 shrink-0 text-primary" />
+                    <span className="text-xs font-black truncate text-foreground/80">{student.street}, {student.number}</span>
                 </div>
             </div>
-            <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-12 w-12 border-primary/20 hover:bg-primary/10">
-                <Navigation className="h-6 w-6 text-primary" />
+            <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-14 w-14 border-primary/30 hover:bg-primary/10 shadow-md">
+                <Navigation className="h-7 w-7 text-primary" />
             </Button>
         </div>
       </CardHeader>
@@ -598,37 +604,38 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
       <CardContent className="pt-6 space-y-4">
         <div className="grid grid-cols-2 gap-3">
             {isGoing ? (
-                <Button size="default" className="bg-green-600 hover:bg-green-700 h-12 font-black text-white shadow-md" onClick={() => onStatusChange(student.id, 'a_bordo')}>
+                <Button size="default" className="bg-green-600 hover:bg-green-700 h-14 font-black text-white shadow-xl text-sm" onClick={() => onStatusChange(student.id, 'a_bordo')}>
                     <CheckCircle className="mr-2 h-5 w-5" /> EMBARCOU
                 </Button>
             ) : (
-                <Button size="default" className="bg-blue-600 hover:bg-blue-700 h-12 font-black text-white shadow-md" onClick={() => onStatusChange(student.id, 'desembarcado')}>
+                <Button size="default" className="bg-blue-600 hover:bg-blue-700 h-14 font-black text-white shadow-xl text-sm" onClick={() => onStatusChange(student.id, 'desembarcado')}>
                     <CheckCircle className="mr-2 h-5 w-5" /> DESEMBARCOU
                 </Button>
             )}
-            <Button size="default" variant="destructive" className="h-12 font-black shadow-md" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
+            <Button size="default" variant="destructive" className="h-14 font-black shadow-xl text-sm" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
                 <XCircle className="mr-2 h-5 w-5" /> AUSENTE
             </Button>
         </div>
         
         {hasMedicalAlert && student.medicalNote && (
-            <div className="p-4 rounded-md bg-destructive/10 border-2 border-destructive/20 text-sm italic text-destructive font-black leading-tight">
-                "{student.medicalNote}"
+            <div className="p-4 rounded-md bg-destructive/10 border-2 border-destructive/20 text-sm italic text-destructive font-black leading-tight flex gap-3">
+                <HeartPulse className="h-5 w-5 shrink-0" />
+                <span>"{student.medicalNote}"</span>
             </div>
         )}
       </CardContent>
 
       <CardFooter className="flex flex-col gap-3 pt-3 bg-muted/10 rounded-b-lg border-t">
            <div className="grid grid-cols-2 gap-3 w-full">
-                <Button variant="secondary" className="h-10 text-[10px] font-black uppercase tracking-widest border border-primary/10" onClick={onScanQrCode}>
-                    <QrCode className="mr-2 h-4 w-4 text-primary" /> QR Code
+                <Button variant="secondary" className="h-12 text-[10px] font-black uppercase tracking-widest border-2 border-primary/10 bg-background hover:bg-primary/5" onClick={onScanQrCode}>
+                    <QrCode className="mr-2 h-5 w-5 text-primary" /> QR Code
                 </Button>
-                <Button variant="secondary" className="h-10 text-[10px] font-black uppercase tracking-widest border border-primary/10" onClick={() => onOpenAuthorizedModal(student)}>
-                    <IdCard className="mr-2 h-4 w-4 text-primary"/> Autorizados
+                <Button variant="secondary" className="h-12 text-[10px] font-black uppercase tracking-widest border-2 border-primary/10 bg-background hover:bg-primary/5" onClick={() => onOpenAuthorizedModal(student)}>
+                    <IdCard className="mr-2 h-5 w-5 text-primary"/> Autorizados
                 </Button>
            </div>
-           <Button variant="ghost" size="sm" className="w-full text-destructive text-[10px] font-bold" onClick={onEndEarly}>
-               <Square className="mr-2 h-3 w-3 fill-current" /> ENCERRAR VIAGEM AGORA
+           <Button variant="ghost" size="sm" className="w-full text-destructive text-[10px] font-black uppercase tracking-widest py-4" onClick={onEndEarly}>
+               <Square className="mr-2 h-3 w-3 fill-current" /> Encerrar Viagem Manualmente
            </Button>
       </CardFooter>
     </Card>
@@ -644,68 +651,68 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                 <div className="mx-auto w-16 h-16 rounded-full bg-background border-4 border-primary/20 text-primary shadow-lg flex items-center justify-center mb-2">
                     <School className="h-8 w-8" />
                 </div>
-                <Badge className="w-fit mx-auto mb-1 font-black uppercase tracking-widest text-[10px] bg-primary text-white">{isIda ? 'Ponto de Desembarque' : 'Ponto de Embarque'}</Badge>
-                <CardTitle className="text-2xl font-bold truncate text-foreground">{school.name}</CardTitle>
+                <Badge className="w-fit mx-auto mb-1 font-black uppercase tracking-widest text-[10px] bg-primary text-white shadow-md">{isIda ? 'Ponto de Desembarque' : 'Ponto de Embarque'}</Badge>
+                <CardTitle className="text-2xl font-black truncate text-foreground uppercase tracking-tight">{school.name}</CardTitle>
               </CardHeader>
               <CardContent className="p-4 space-y-4">
-                <div className="flex justify-between items-center bg-muted/20 p-3 rounded-lg border border-dashed">
+                <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg border-2 border-dashed border-primary/20">
                     <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                        <Users className="h-3 w-3 text-primary" /> Checklist ({students.length})
+                        <Users className="h-4 w-4 text-primary" /> Checklist ({students.length})
                     </p>
-                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-[10px] h-8 font-black text-white" onClick={onAction}>
-                        <Bus className="mr-1 h-4 w-4" /> {isIda ? 'DESEMBARQUE COLETIVO' : 'EMBARQUE COLETIVO'}
+                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-[10px] h-10 font-black text-white shadow-lg" onClick={onAction}>
+                        <CheckCircle className="mr-2 h-4 w-4" /> {isIda ? 'DESEMBARQUE COLETIVO' : 'EMBARQUE COLETIVO'}
                     </Button>
                 </div>
                 
-                <div className="space-y-2">
+                <div className="space-y-3">
                     {students.length > 0 ? (
                         students.map((s) => (
-                            <div key={s.id} className="flex items-center gap-3 p-2 rounded-lg border-2 bg-background group hover:border-primary transition-all">
-                                <Avatar className="h-10 w-10 border-2 border-primary/10 shrink-0">
+                            <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border-2 bg-background group hover:border-primary transition-all shadow-sm">
+                                <Avatar className="h-12 w-12 border-2 border-primary/10 shrink-0">
                                     <AvatarImage src={`https://picsum.photos/seed/student-${s.id}/100/100`} />
                                     <AvatarFallback>{s.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-xs font-black truncate flex items-center gap-2 text-foreground">
+                                    <p className="text-sm font-black truncate flex items-center gap-2 text-foreground uppercase">
                                         {s.name}
-                                        {((s.medicalConditions?.length || 0) > 0 || s.medicalNote) && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" />}
+                                        {((s.medicalConditions?.length || 0) > 0 || s.medicalNote) && <HeartPulse className="h-4 w-4 text-destructive animate-pulse" />}
                                     </p>
-                                    <p className="text-[9px] text-primary font-bold uppercase tracking-tight">{s.status}</p>
+                                    <p className="text-[9px] text-primary font-black uppercase tracking-widest opacity-70">{s.status}</p>
                                 </div>
-                                <div className="flex gap-1 shrink-0">
+                                <div className="flex gap-2 shrink-0">
                                     <Button 
                                         size="icon" 
                                         variant="outline" 
-                                        className="h-8 w-8 text-green-600 border-green-200"
+                                        className="h-10 w-10 text-green-600 border-green-200 bg-green-50 shadow-sm"
                                         onClick={() => onStatusChange(s.id, isIda ? 'desembarcado' : 'a_bordo')}
                                     >
-                                        <Check className="h-4 w-4" />
+                                        <Check className="h-5 w-5" />
                                     </Button>
                                     <Button 
                                         size="icon" 
                                         variant="outline" 
-                                        className="h-8 w-8 text-destructive border-red-200"
+                                        className="h-10 w-10 text-destructive border-red-200 bg-red-50 shadow-sm"
                                         onClick={() => onStatusChange(s.id, isIda ? 'ausente_ida' : 'ausente_volta')}
                                     >
-                                        <XCircle className="h-4 w-4" />
+                                        <XCircle className="h-5 w-5" />
                                     </Button>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="text-center py-6">
-                            <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                            <p className="text-xs font-bold text-muted-foreground">Todos os alunos processados.</p>
+                        <div className="text-center py-10 bg-muted/10 rounded-xl border-2 border-dashed">
+                            <CheckCircle className="h-12 w-12 text-green-500 mx-auto mb-3 opacity-50" />
+                            <p className="text-sm font-black text-muted-foreground uppercase tracking-widest">Todos processados</p>
                         </div>
                     )}
                 </div>
               </CardContent>
               <CardFooter className="p-4 border-t bg-muted/10 flex flex-col gap-3">
                 <p className="text-[9px] text-center text-muted-foreground uppercase font-black tracking-[0.2em] w-full">
-                    Confirme cada embarque individualmente ou use o botão coletivo.
+                    A telemetria detectou chegada na escola.
                 </p>
-                <Button variant="ghost" size="sm" className="w-full text-destructive text-[10px] font-bold" onClick={onEndEarly}>
-                    <Square className="mr-2 h-3 w-3 fill-current" /> ENCERRAR VIAGEM AGORA
+                <Button variant="ghost" size="sm" className="w-full text-destructive text-[10px] font-black uppercase tracking-widest" onClick={onEndEarly}>
+                    <Square className="mr-2 h-3 w-3 fill-current" /> Finalizar Operação Agora
                 </Button>
               </CardFooter>
             </Card>
