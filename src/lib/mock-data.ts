@@ -1,8 +1,8 @@
 
 // @ts-nocheck
 /**
- * @fileOverview Dados iniciais para o protótipo do Guardian.
- * Centraliza todas as coleções do banco de dados para simulação operacional e administrativa.
+ * @fileOverview Dados iniciais blindados para o protótipo do Guardian.
+ * Configurado para 4 cenários: Manhã (Ida/Volta) e Tarde (Ida/Volta).
  */
 
 export const initialMockData = {
@@ -13,8 +13,6 @@ export const initialMockData = {
         { id: "user-admin-1", name: "Admin Guardian", email: "admin@guardian.com", profile: 'gestor', active: true },
         { id: "user-motorista-4", name: "Juliano Castro", email: "juliano.castro@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", profile: 'pai', active: true },
-        { id: "user-pai-2", name: "Joao Costa", email: "joao.costa@email.com", profile: 'pai', active: true },
-        { id: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", profile: 'pai', active: true },
         { id: "user-monitor-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", profile: 'monitor', active: true },
     ],
     schools: [
@@ -37,16 +35,14 @@ export const initialMockData = {
         { id: "kb-1", name: "Colégio Amos", city: "Carapicuíba", state: "SP", street: "Av. Inocêncio Seráfico", number: "2000", neighborhood: "Centro", zipCode: "06320-290", latitude: -23.5234, longitude: -46.8345 },
         { id: "kb-2", name: "Colégio Albert Einstein", city: "Carapicuíba", state: "SP", street: "Rua Rui Barbosa", number: "150", neighborhood: "Vila Dirce", zipCode: "06333-000", latitude: -23.5345, longitude: -46.8456 },
         { id: "kb-3", name: "E.E. Maria de Lourdes Teixeira", city: "Carapicuíba", state: "SP", street: "Av. Brasil", number: "500", neighborhood: "Cohab", zipCode: "06325-000", latitude: -23.5456, longitude: -46.8567 },
-        { id: "kb-4", name: "Colégio Adventista de Carapicuíba", city: "Carapicuíba", state: "SP", street: "Rua Haiti", number: "88", neighborhood: "Vila Silviânia", zipCode: "06321-510", latitude: -23.5212, longitude: -46.8312 },
-        { id: "kb-5", name: "E.E. Deputado Salomão Jorge", city: "Carapicuíba", state: "SP", street: "Rua Diadema", number: "10", neighborhood: "Jardim Planalto", zipCode: "06361-100", latitude: -23.5512, longitude: -46.8612 }
     ],
     parents: [
         { id: "parent-1", userId: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", phone: "11987654321", active: true },
-        { id: "parent-2", userId: "user-pai-2", name: "Joao Costa", email: "joao.costa@email.com", phone: "11912345678", active: true },
-        { id: "parent-3", userId: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", phone: "11999998888", active: true },
+        { id: "parent-2", userId: "user-gen-2", name: "Carlos Magno", email: "carlos@email.com", phone: "11911112222", active: true },
+        { id: "parent-3", userId: "user-gen-3", name: "Carla Dias", email: "carla@email.com", phone: "11933334444", active: true },
     ],
     students: [
-        // MANHÃ (15 ALUNOS) - Alvos da Rota 01
+        // MANHÃ (15 ALUNOS)
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5585, longitude: -46.6605, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP" },
@@ -63,7 +59,7 @@ export const initialMockData = {
         { id: "student-14", name: "Bianca Viana", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6700, street: "Rua Peru", number: "200", city: "São Paulo", state: "SP" },
         { id: "student-15", name: "Rafael Guimarães", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5710, longitude: -46.6710, street: "Rua Argentina", number: "300", city: "São Paulo", state: "SP" },
 
-        // TARDE (4 ALUNOS) - Alvos da Rota 02
+        // TARDE (4 ALUNOS)
         { id: "student-16", name: "Tiago Silva", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5800, longitude: -46.6800, street: "Rua Tabapuã", number: "500", city: "São Paulo", state: "SP" },
         { id: "student-17", name: "Manuela Ferro", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5810, longitude: -46.6810, street: "Rua Joaquim Floriano", number: "600", city: "São Paulo", state: "SP" },
         { id: "student-18", name: "Ricardo Dias", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5820, longitude: -46.6820, street: "Av. Brigadeiro Faria Lima", number: "1200", city: "São Paulo", state: "SP" },
@@ -88,8 +84,7 @@ export const initialMockData = {
                 "student-6", "student-7", "student-8", "student-9", "student-10",
                 "student-11", "student-12", "student-13", "student-14", "student-15"
             ],
-            lastOptimizedAt: "2024-08-05T08:00:00Z",
-            polyline: ""
+            lastOptimizedAt: "2024-08-05T08:00:00Z"
         },
         {
             id: "route-2",
@@ -101,36 +96,19 @@ export const initialMockData = {
                 "school-1",
                 "student-16", "student-17", "student-18", "student-19"
             ],
-            lastOptimizedAt: "",
-            polyline: ""
+            lastOptimizedAt: ""
         }
     ],
     locations: {
         "driver-1": { latitude: -23.5500, longitude: -46.6300, timestamp: new Date().toISOString() }
     },
     contract_templates: [
-        { 
-            id: "template-1", 
-            name: "Modelo Básico - Transporte", 
-            content: "CONTRATO BÁSICO DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}\nALUNO(A): {{aluno_nome}}\n\nVALOR MENSAL: R$ {{valor_mensalidade}}\n\nEste contrato estabelece as normas básicas de convivência e horários.",
-            createdAt: new Date().toISOString()
-        },
-        { 
-            id: "template-2", 
-            name: "Modelo Completo - 2024", 
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - VERSÃO COMPLETA\n\nCLÁUSULA 1ª: DO OBJETO\nO presente contrato tem como objeto o transporte diário do(a) aluno(a) {{aluno_nome}}.\n\nCLÁUSULA 2ª: DO RESPONSÁVEL\nO(A) Sr(a) {{responsavel_nome}}, portador do CPF {{responsavel_cpf}}, compromete-se com o pagamento pontual.\n\nGerado via Guardian em: {{data_geracao}}",
-            createdAt: new Date().toISOString()
-        }
+        { id: "template-1", name: "Modelo Básico", content: "CONTRATO BÁSICO DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}\nALUNO(A): {{aluno_nome}}\n\nVALOR: R$ {{valor_mensalidade}}", createdAt: new Date().toISOString() },
+        { id: "template-2", name: "Modelo Completo", content: "CONTRATO COMPLETO - PRESTAÇÃO DE SERVIÇOS\n\nResponsável: {{responsavel_nome}}\nCPF: {{responsavel_cpf}}\nAluno: {{aluno_nome}}\n\nGerado em: {{data_geracao}}", createdAt: new Date().toISOString() }
     ],
     contracts: [],
-    invoices: [
-        { id: "inv-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: "2024-08-10", status: "paid" },
-        { id: "inv-2", studentId: "student-2", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: "2024-08-10", status: "pending" }
-    ],
-    expenses: [
-        { id: "exp-1", description: "Diesel S10 - Posto Shell", amount: 350.50, date: "2024-08-01", category: "Combustível" },
-        { id: "exp-2", description: "Troca de Óleo", amount: 890.00, date: "2024-08-03", category: "Manutenção" }
-    ],
+    invoices: [],
+    expenses: [],
     predefined_messages: [
         { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
         { id: "pm-2", text: "A van está chegando na escola.", for: "driver" }
@@ -139,8 +117,5 @@ export const initialMockData = {
     trip_requests: [],
     pending_registrations: [],
     announcements: [],
-    trip_history: [
-        { id: "th-1", date: "2024-08-04", routeName: "Rota Centro", plannedKm: 18.5, actualKm: 15.2, savingsKm: 3.3, fuelSaved: 24.75, driverName: "Juliano Castro" },
-        { id: "th-2", date: "2024-08-05", routeName: "Rota Centro", plannedKm: 18.5, actualKm: 14.8, savingsKm: 3.7, fuelSaved: 27.75, driverName: "Juliano Castro" }
-    ]
+    trip_history: []
 };
