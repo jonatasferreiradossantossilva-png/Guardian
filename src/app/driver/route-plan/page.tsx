@@ -53,9 +53,9 @@ import { SmartMap } from '@/components/shared/smart-map';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { ReportIncidentForm } from '@/components/dashboard/report-incident-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ScrollArea } from '@/components/ui/scroll-area';
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { routingGeoapify } from '@/ai/flows/routing-geoapify';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente_ida' | 'ausente_volta' | 'ausente_dia_todo';
@@ -394,7 +394,7 @@ export default function DriverRoutePlanPage() {
                 </Card>
             </div>
         ) : (
-            <div className="flex-1 flex flex-col">
+            <div className="flex-1 flex flex-col overflow-hidden">
                 <div className="p-4 border-b bg-primary/10 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-3">
                         <Bus className="text-primary h-6 w-6" />
@@ -560,16 +560,16 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
       <CardContent className="pt-6 space-y-4">
         <div className="grid grid-cols-2 gap-3">
             {isGoing ? (
-                <Button size="default" className="bg-green-600 hover:bg-green-700 h-14 font-black text-white shadow-md" onClick={() => onStatusChange(student.id, 'a_bordo')}>
-                    <CheckCircle className="mr-2 h-6 w-6" /> EMBARCOU
+                <Button size="default" className="bg-green-600 hover:bg-green-700 h-12 font-black text-white shadow-md" onClick={() => onStatusChange(student.id, 'a_bordo')}>
+                    <CheckCircle className="mr-2 h-5 w-5" /> EMBARCOU
                 </Button>
             ) : (
-                <Button size="default" className="bg-blue-600 hover:bg-blue-700 h-14 font-black text-white shadow-md" onClick={() => onStatusChange(student.id, 'desembarcado')}>
-                    <CheckCircle className="mr-2 h-6 w-6" /> DESEMBARCOU
+                <Button size="default" className="bg-blue-600 hover:bg-blue-700 h-12 font-black text-white shadow-md" onClick={() => onStatusChange(student.id, 'desembarcado')}>
+                    <CheckCircle className="mr-2 h-5 w-5" /> DESEMBARCOU
                 </Button>
             )}
-            <Button size="default" variant="destructive" className="h-14 font-black shadow-md" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
-                <XCircle className="mr-2 h-6 w-6" /> AUSENTE
+            <Button size="default" variant="destructive" className="h-12 font-black shadow-md" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
+                <XCircle className="mr-2 h-5 w-5" /> AUSENTE
             </Button>
         </div>
         
@@ -581,11 +581,11 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
       </CardContent>
 
       <CardFooter className="grid grid-cols-2 gap-3 pt-3 bg-muted/10 rounded-b-lg border-t">
-           <Button variant="secondary" className="h-12 text-xs font-black uppercase tracking-widest border border-primary/10" onClick={onScanQrCode}>
-               <QrCode className="mr-2 h-5 w-5 text-primary" /> QR Code
+           <Button variant="secondary" className="h-10 text-[10px] font-black uppercase tracking-widest border border-primary/10" onClick={onScanQrCode}>
+               <QrCode className="mr-2 h-4 w-4 text-primary" /> QR Code
            </Button>
-           <Button variant="secondary" className="h-12 text-xs font-black uppercase tracking-widest border border-primary/10" onClick={() => onOpenAuthorizedModal(student)}>
-               <IdCard className="mr-2 h-5 w-5 text-primary"/> Autorizados
+           <Button variant="secondary" className="h-10 text-[10px] font-black uppercase tracking-widest border border-primary/10" onClick={() => onOpenAuthorizedModal(student)}>
+               <IdCard className="mr-2 h-4 w-4 text-primary"/> Autorizados
            </Button>
       </CardFooter>
     </Card>
@@ -613,7 +613,7 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                 </Button>
             </div>
             
-            <ScrollArea className="flex-1 px-4">
+            <ScrollArea className="flex-1 px-4 min-h-0">
                 <div className="py-4 space-y-3">
                     {students.length > 0 ? (
                         students.map((s) => (
