@@ -55,6 +55,7 @@ import { ReportIncidentForm } from '@/components/dashboard/report-incident-form'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { routingGeoapify } from '@/ai/flows/routing-geoapify';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente_ida' | 'ausente_volta' | 'ausente_dia_todo';
