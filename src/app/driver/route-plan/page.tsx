@@ -267,7 +267,7 @@ export default function DriverRoutePlanPage() {
         const currentLoc = locRef.current;
         const startPoint = currentLoc ? `${currentLoc.latitude},${currentLoc.longitude}` : undefined;
         
-        // Reset universal de status para os alunos da rota escolhida
+        // Reset universal de status para todos os alunos da rota
         route.studentIds.forEach(id => {
             if (studentsMap.has(id)) {
                 updateDoc('students', id, { status: 'aguardando' });
@@ -337,7 +337,6 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
-    // Auto-encerramento se for a última parada residencial na IDA ou VOLTA
     if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -354,7 +353,6 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
-      // Na VOLTA, o embarque coletivo é o INÍCIO. Na IDA, é o FIM se não houver mais escolas.
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
