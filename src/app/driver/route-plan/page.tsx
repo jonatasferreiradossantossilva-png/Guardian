@@ -422,62 +422,64 @@ export default function DriverRoutePlanPage() {
                         </TabsList>
                     </div>
 
-                    <TabsContent value="itinerario" className="flex-1 flex flex-col p-4 space-y-4 overflow-hidden animate-in fade-in duration-300">
-                        {!activeStop ? (
-                            <Card className="text-center p-10 bg-green-500/10 border-green-500/30 flex-1 flex flex-col justify-center overflow-y-auto">
-                                <div className="mx-auto w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
-                                    <CheckCircle className="h-14 w-14 text-green-500"/>
-                                </div>
-                                <CardTitle className="text-2xl font-bold">Todas as Paradas Concluídas!</CardTitle>
-                                <p className="text-muted-foreground mt-2 max-w-xs mx-auto">Itinerário finalizado com sucesso. Você pode encerrar a viagem agora.</p>
-                                <Button variant="destructive" className="mt-10 w-full h-12 text-lg font-bold shadow-xl" onClick={handleEndRoute}>
-                                    <Square className="mr-3 h-5 w-5 fill-current"/> Finalizar Operação
-                                </Button>
-                            </Card>
-                        ) : activeStop.type === 'student' ? (
-                            <ScrollArea className="flex-1 pr-2">
-                                <div className="space-y-6 pb-10">
-                                    <NextStopCard 
-                                        student={activeStop.data as Student} 
-                                        onStatusChange={handleStatusChange} 
-                                        onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
-                                        direction={selectedDirection} 
-                                        onScanQrCode={() => setIsScannerOpen(true)} 
-                                    />
-                                    {upcomingStops.length > 0 && (
-                                        <div className="space-y-3">
-                                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Próximas Paradas ({upcomingStops.length})</h3>
-                                            <div className="space-y-2">
-                                                {upcomingStops.slice(0, 5).map((stop, idx) => (
-                                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border bg-card shadow-sm">
-                                                        {stop.type === 'student' ? (
-                                                            <Avatar className="h-8 w-8 border shadow-sm">
-                                                                <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/>
-                                                                <AvatarFallback>S</AvatarFallback>
-                                                            </Avatar>
-                                                        ) : (
-                                                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-destructive text-white">
-                                                                <School className="h-4 w-4" />
-                                                            </div>
-                                                        )}
-                                                        <span className="text-sm font-bold truncate flex-1 text-foreground">{stop.data.name}</span>
-                                                        <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-tighter">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
-                                                    </div>
-                                                ))}
-                                            </div>
+                    <TabsContent value="itinerario" className="flex-1 overflow-hidden animate-in fade-in duration-300">
+                        <ScrollArea className="h-full">
+                            <div className="p-4 space-y-6">
+                                {!activeStop ? (
+                                    <Card className="text-center p-10 bg-green-500/10 border-green-500/30 flex flex-col justify-center">
+                                        <div className="mx-auto w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
+                                            <CheckCircle className="h-14 w-14 text-green-500"/>
                                         </div>
-                                    )}
-                                </div>
-                            </ScrollArea>
-                        ) : (
-                            <NextStopSchoolCard 
-                                school={activeStop.data as SchoolData} 
-                                direction={selectedDirection}
-                                onAction={() => handleSchoolAction(activeStop.id)} 
-                                students={studentsAtCurrentStop}
-                                onStatusChange={handleStatusChange}
-                            />
-                        )}
+                                        <CardTitle className="text-2xl font-bold">Todas as Paradas Concluídas!</CardTitle>
+                                        <p className="text-muted-foreground mt-2 max-w-xs mx-auto">Itinerário finalizado com sucesso. Você pode encerrar a viagem agora.</p>
+                                        <Button variant="destructive" className="mt-10 w-full h-12 text-lg font-bold shadow-xl" onClick={handleEndRoute}>
+                                            <Square className="mr-3 h-5 w-5 fill-current"/> Finalizar Operação
+                                        </Button>
+                                    </Card>
+                                ) : activeStop.type === 'student' ? (
+                                    <div className="space-y-6">
+                                        <NextStopCard 
+                                            student={activeStop.data as Student} 
+                                            onStatusChange={handleStatusChange} 
+                                            onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
+                                            direction={selectedDirection} 
+                                            onScanQrCode={() => setIsScannerOpen(true)} 
+                                        />
+                                        {upcomingStops.length > 0 && (
+                                            <div className="space-y-3">
+                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Próximas Paradas ({upcomingStops.length})</h3>
+                                                <div className="space-y-2">
+                                                    {upcomingStops.slice(0, 5).map((stop, idx) => (
+                                                        <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border bg-card shadow-sm">
+                                                            {stop.type === 'student' ? (
+                                                                <Avatar className="h-8 w-8 border shadow-sm">
+                                                                    <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/>
+                                                                    <AvatarFallback>S</AvatarFallback>
+                                                                </Avatar>
+                                                            ) : (
+                                                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-destructive text-white">
+                                                                    <School className="h-4 w-4" />
+                                                                </div>
+                                                            )}
+                                                            <span className="text-sm font-bold truncate flex-1 text-foreground">{stop.data.name}</span>
+                                                            <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-tighter">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
+                                    </div>
+                                ) : (
+                                    <NextStopSchoolCard 
+                                        school={activeStop.data as SchoolData} 
+                                        direction={selectedDirection}
+                                        onAction={() => handleSchoolAction(activeStop.id)} 
+                                        students={studentsAtCurrentStop}
+                                        onStatusChange={handleStatusChange}
+                                    />
+                                )}
+                            </div>
+                        </ScrollArea>
                     </TabsContent>
 
                     <TabsContent value="mapa" className="flex-1 relative animate-in fade-in duration-300">
@@ -595,26 +597,26 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
 function NextStopSchoolCard({ school, direction, onAction, students, onStatusChange }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, students: Student[], onStatusChange: (id: string, status: StudentStatus) => void }) {
     const isIda = direction === 'ida';
     return (
-        <Card className="w-full shadow-2xl border-primary border-2 bg-card overflow-hidden flex-1 flex flex-col">
-          <CardHeader className="text-center pb-4 shrink-0 bg-primary/10 border-b">
-            <div className="mx-auto w-16 h-16 rounded-full bg-background border-4 border-primary/20 text-primary shadow-lg flex items-center justify-center mb-2">
-                <School className="h-8 w-8" />
-            </div>
-            <Badge className="w-fit mx-auto mb-1 font-black uppercase tracking-widest text-[10px] bg-primary text-white">{isIda ? 'Ponto de Desembarque' : 'Ponto de Embarque'}</Badge>
-            <CardTitle className="text-2xl font-bold truncate text-foreground">{school.name}</CardTitle>
-          </CardHeader>
-          <CardContent className="flex-1 overflow-hidden flex flex-col p-0">
-            <div className="p-4 bg-muted/20 border-b shrink-0 flex justify-between items-center">
-                <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
-                    <Users className="h-3 w-3 text-primary" /> Checklist de Bordo ({students.length})
-                </p>
-                <Button size="sm" className="bg-primary hover:bg-primary/90 text-[10px] h-8 font-black text-white" onClick={onAction}>
-                    <Bus className="mr-1 h-4 w-4" /> {isIda ? 'DESEMBARQUE COLETIVO' : 'EMBARQUE COLETIVO'}
-                </Button>
-            </div>
-            
-            <ScrollArea className="flex-1 px-4 min-h-0">
-                <div className="py-4 space-y-3">
+        <div className="space-y-6">
+            <Card className="w-full shadow-2xl border-primary border-2 bg-card overflow-hidden">
+              <CardHeader className="text-center pb-4 bg-primary/10 border-b">
+                <div className="mx-auto w-16 h-16 rounded-full bg-background border-4 border-primary/20 text-primary shadow-lg flex items-center justify-center mb-2">
+                    <School className="h-8 w-8" />
+                </div>
+                <Badge className="w-fit mx-auto mb-1 font-black uppercase tracking-widest text-[10px] bg-primary text-white">{isIda ? 'Ponto de Desembarque' : 'Ponto de Embarque'}</Badge>
+                <CardTitle className="text-2xl font-bold truncate text-foreground">{school.name}</CardTitle>
+              </CardHeader>
+              <CardContent className="p-4 space-y-4">
+                <div className="flex justify-between items-center bg-muted/20 p-3 rounded-lg border border-dashed">
+                    <p className="text-[10px] font-black text-muted-foreground uppercase tracking-[0.2em] flex items-center gap-2">
+                        <Users className="h-3 w-3 text-primary" /> Checklist ({students.length})
+                    </p>
+                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-[10px] h-8 font-black text-white" onClick={onAction}>
+                        <Bus className="mr-1 h-4 w-4" /> {isIda ? 'DESEMBARQUE COLETIVO' : 'EMBARQUE COLETIVO'}
+                    </Button>
+                </div>
+                
+                <div className="space-y-3">
                     {students.length > 0 ? (
                         students.map((s) => (
                             <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border-2 bg-background group hover:border-primary transition-all">
@@ -658,15 +660,15 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                         </div>
                     )}
                 </div>
-            </ScrollArea>
-          </CardContent>
-          <CardFooter className="p-4 border-t bg-muted/10 shrink-0">
-            <p className="text-[9px] text-center text-muted-foreground uppercase font-black tracking-[0.2em] w-full">
-                {isIda 
-                    ? 'Confirme o desembarque de cada aluno individualmente ou use o botão coletivo acima.' 
-                    : 'Confira a foto do aluno antes de autorizar a entrada na van.'}
-            </p>
-          </CardFooter>
-        </Card>
+              </CardContent>
+              <CardFooter className="p-4 border-t bg-muted/10">
+                <p className="text-[9px] text-center text-muted-foreground uppercase font-black tracking-[0.2em] w-full">
+                    {isIda 
+                        ? 'Confirme o desembarque de cada aluno individualmente ou use o botão coletivo.' 
+                        : 'Confira a foto do aluno antes de autorizar a entrada na van.'}
+                </p>
+              </CardFooter>
+            </Card>
+        </div>
     );
 }
