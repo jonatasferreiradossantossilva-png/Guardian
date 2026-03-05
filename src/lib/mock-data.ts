@@ -48,12 +48,12 @@ export const initialMockData = {
         { id: "parent-3", userId: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", phone: "11999998888", active: true },
     ],
     students: [
-        // CENÁRIO APRESENTAÇÃO: Ana Pereira (parent-1) tem 2 filhos apenas.
+        // Ana Pereira (parent-1) com 2 filhos conforme solicitado
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         
-        // Outros 13 alunos distribuídos para outros pais simulados
-        { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", monthlyFee: 450 },
+        // Outros alunos para outros pais
+        { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP" },
         { id: "student-4", name: "Lucas Melo", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6610, street: "Rua Haddock Lobo", number: "200", city: "São Paulo", state: "SP" },
         { id: "student-5", name: "Mariana Lima", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5620, longitude: -46.6620, street: "Rua Bela Cintra", number: "300", city: "São Paulo", state: "SP" },
         { id: "student-6", name: "Pedro Rocha", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5630, longitude: -46.6630, street: "Rua Consolação", number: "400", city: "São Paulo", state: "SP" },

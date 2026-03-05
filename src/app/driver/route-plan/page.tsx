@@ -278,10 +278,11 @@ export default function DriverRoutePlanPage() {
             address: `${sch.street}, ${sch.number}`
         }));
 
-        // Reset student status to ensure checklist is ready
-        orderedStops.forEach(s => {
-            if (s.type === 'student') {
-                updateDoc('students', s.id, { status: 'aguardando' });
+        // Reset universal: Localiza e reseta TODOS os alunos da rota no banco para garantir checklist limpo
+        route.studentIds.forEach(id => {
+            const s = studentsMap.get(id);
+            if (s) {
+                updateDoc('students', id, { status: 'aguardando' });
             }
         });
 
@@ -299,7 +300,6 @@ export default function DriverRoutePlanPage() {
             return ent ? { lat: ent.latitude, lng: ent.longitude } : null;
         }).filter(Boolean) as {lat: number, lng: number}[];
 
-        // BLINDAGEM TÉCNICA: Só chama o routing se houver pelo menos 2 pontos (origem/destino)
         let polylineData = "";
         if (waypoints.length >= 2) {
             try {
@@ -335,7 +335,6 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
-    // Auto-return to home after last goal in IDA/VOLTA
     if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
