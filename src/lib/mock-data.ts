@@ -48,11 +48,11 @@ export const initialMockData = {
         { id: "parent-3", userId: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", phone: "11999998888", active: true },
     ],
     students: [
-        // Filhos da Ana Pereira (Cenário de Apresentação: 2 filhos)
+        // CENÁRIO APRESENTAÇÃO: Ana Pereira (parent-1) tem 2 filhos apenas.
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         
-        // Outros 13 alunos para completar a carga de 15 da rota
+        // Outros 13 alunos para completar a carga de 15 da rota (distribuídos para outros pais)
         { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", monthlyFee: 450 },
         { id: "student-4", name: "Lucas Melo", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6610, street: "Rua Haddock Lobo", number: "200", city: "São Paulo", state: "SP" },
         { id: "student-5", name: "Mariana Lima", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5620, longitude: -46.6620, street: "Rua Bela Cintra", number: "300", city: "São Paulo", state: "SP" },
@@ -96,8 +96,14 @@ export const initialMockData = {
     contract_templates: [
         { 
             id: "template-1", 
-            name: "Contrato de Transporte Escolar 2024", 
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE\n\nCONTRATANTE: {{responsavel_nome}}, portador do CPF {{responsavel_cpf}}.\nALUNO(A): {{aluno_nome}}.\nESCOLA: {{escola_nome}}.\n\nVALOR MENSAL: R$ {{valor_mensalidade}}\n\nAs partes concordam com os termos de segurança e horários estabelecidos pela plataforma Guardian.\n\nGerado em: {{data_geracao}}",
+            name: "Modelo Básico - Transporte", 
+            content: "CONTRATO BÁSICO DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}\nALUNO(A): {{aluno_nome}}\nESCOLA: {{escola_nome}}\n\nVALOR MENSAL: R$ {{valor_mensalidade}}\n\nEste contrato estabelece as normas básicas de segurança e pontualidade.\n\nGerado em: {{data_geracao}}",
+            createdAt: new Date().toISOString()
+        },
+        { 
+            id: "template-2", 
+            name: "Modelo Completo - 2024", 
+            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - VERSÃO COMPLETA\n\nCLÁUSULA 1ª: DO OBJETO\nO presente contrato tem como objeto o transporte do(a) aluno(a) {{aluno_nome}} para a instituição {{escola_nome}}.\n\nCLÁUSULA 2ª: DO RESPONSÁVEL\nO(A) Sr(a) {{responsavel_nome}}, portador do CPF {{responsavel_cpf}}, compromete-se com o pagamento de R$ {{valor_mensalidade}} mensais.\n\nCLÁUSULA 3ª: DAS OBRIGAÇÕES\nO transportador compromete-se a manter o veículo em perfeitas condições de higiene e segurança, conforme telemetria Guardian.\n\nGerado via Guardian em: {{data_geracao}}",
             createdAt: new Date().toISOString()
         }
     ],
