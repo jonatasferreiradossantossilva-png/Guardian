@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -33,6 +32,7 @@ import {
   Navigation,
   RotateCcw,
   Users,
+  Check,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -233,7 +233,6 @@ export default function DriverRoutePlanPage() {
     return { activeStop: orderedStops[nextStopIndex], upcomingStops: orderedStops.slice(nextStopIndex + 1) };
   }, [orderedStops, driverProfile?.status, selectedDirection]);
 
-  // Inteligência de conferência: Alunos vinculados à parada atual (se for escola)
   const studentsAtCurrentStop = useMemo(() => {
       if (!activeStop || activeStop.type !== 'school' || !allStudents) return [];
       const isIda = selectedDirection === 'ida';
@@ -472,7 +471,8 @@ export default function DriverRoutePlanPage() {
                                 school={activeStop.data as SchoolData} 
                                 direction={selectedDirection}
                                 onAction={() => handleSchoolAction(activeStop.id)} 
-                                studentNames={studentsAtCurrentStop.map(s => s.name)}
+                                students={studentsAtCurrentStop}
+                                onStatusChange={handleStatusChange}
                             />
                         )}
                     </TabsContent>
@@ -589,44 +589,79 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   );
 }
 
-function NextStopSchoolCard({ school, direction, onAction, studentNames }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, studentNames: string[] }) {
+function NextStopSchoolCard({ school, direction, onAction, students, onStatusChange }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, students: Student[], onStatusChange: (id: string, status: StudentStatus) => void }) {
     const isIda = direction === 'ida';
     return (
-        <Card className="w-full shadow-2xl border-destructive/30 bg-destructive/5 overflow-hidden flex-1 flex flex-col justify-center">
-          <CardHeader className="text-center pb-4">
-            <div className="mx-auto w-20 h-20 rounded-full bg-background border-4 border-destructive/20 text-destructive shadow-lg flex items-center justify-center mb-4">
-                <School className="h-10 w-10" />
+        <Card className="w-full shadow-2xl border-destructive/30 bg-destructive/5 overflow-hidden flex-1 flex flex-col">
+          <CardHeader className="text-center pb-4 shrink-0 bg-muted/10 border-b">
+            <div className="mx-auto w-16 h-16 rounded-full bg-background border-4 border-destructive/20 text-destructive shadow-lg flex items-center justify-center mb-2">
+                <School className="h-8 w-8" />
             </div>
-            <Badge variant="destructive" className="w-fit mx-auto mb-2 font-bold uppercase tracking-widest">{isIda ? 'Ponto de Desembarque' : 'Ponto de Embarque'}</Badge>
-            <CardTitle className="text-2xl truncate">{school.name}</CardTitle>
+            <Badge variant="destructive" className="w-fit mx-auto mb-1 font-bold uppercase tracking-widest text-[10px]">{isIda ? 'Ponto de Desembarque' : 'Ponto de Embarque'}</Badge>
+            <CardTitle className="text-xl truncate">{school.name}</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
-            {studentNames.length > 0 && (
-                <div className="p-4 bg-background/50 rounded-lg border border-dashed border-destructive/20">
-                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
-                        <Users className="h-3 w-3" /> Alunos para {isIda ? 'Desembarcar' : 'Embarcar'} ({studentNames.length})
-                    </p>
-                    <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
-                        {studentNames.map((name, i) => (
-                            <div key={i} className="text-xs font-medium py-1 border-b border-destructive/10 last:border-0 flex items-center gap-2">
-                                <div className="w-1 h-1 rounded-full bg-destructive/40" />
-                                {name}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
-
-            <Button size="lg" className="w-full h-20 bg-destructive hover:bg-destructive/90 text-xl font-bold shadow-xl" onClick={onAction}>
-                <Bus className="mr-4 h-8 w-8" /> {isIda ? 'CONFIRMAR DESEMBARQUE' : 'INICIAR EMBARQUE ESCOLA'}
-            </Button>
+          <CardContent className="flex-1 overflow-hidden flex flex-col p-0">
+            <div className="p-4 bg-background/50 border-b shrink-0 flex justify-between items-center">
+                <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest flex items-center gap-2">
+                    <Users className="h-3 w-3" /> Checklist de Bordo ({students.length})
+                </p>
+                <Button size="sm" className="bg-destructive hover:bg-destructive/90 text-[10px] h-7 font-bold" onClick={onAction}>
+                    <Bus className="mr-1 h-3 w-3" /> {isIda ? 'DESEMBARQUE COLETIVO' : 'EMBARQUE COLETIVO'}
+                </Button>
+            </div>
             
-            <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest px-4">
-                {isIda 
-                    ? 'Clique apenas quando todos os alunos estiverem seguros no portão.' 
-                    : 'Ao clicar, todos os alunos listados acima serão marcados como a bordo.'}
-            </p>
+            <ScrollArea className="flex-1 px-4">
+                <div className="py-4 space-y-3">
+                    {students.length > 0 ? (
+                        students.map((s) => (
+                            <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border bg-background group hover:border-primary/30 transition-all">
+                                <Avatar className="h-10 w-10 border-2 border-muted shrink-0">
+                                    <AvatarImage src={`https://picsum.photos/seed/student-${s.id}/100/100`} />
+                                    <AvatarFallback>{s.name[0]}</AvatarFallback>
+                                </Avatar>
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-bold truncate flex items-center gap-2">
+                                        {s.name}
+                                        {((s.medicalConditions?.length || 0) > 0 || s.medicalNote) && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" />}
+                                    </p>
+                                    <p className="text-[10px] text-muted-foreground uppercase">{s.status}</p>
+                                </div>
+                                <div className="flex gap-1 shrink-0">
+                                    <Button 
+                                        size="icon" 
+                                        variant="outline" 
+                                        className="h-8 w-8 text-green-600 border-green-200 hover:bg-green-50"
+                                        onClick={() => onStatusChange(s.id, isIda ? 'desembarcado' : 'a_bordo')}
+                                    >
+                                        <Check className="h-4 w-4" />
+                                    </Button>
+                                    <Button 
+                                        size="icon" 
+                                        variant="outline" 
+                                        className="h-8 w-8 text-destructive border-red-200 hover:bg-red-50"
+                                        onClick={() => onStatusChange(s.id, isIda ? 'ausente_ida' : 'ausente_volta')}
+                                    >
+                                        <XCircle className="h-4 w-4" />
+                                    </Button>
+                                </div>
+                            </div>
+                        ))
+                    ) : (
+                        <div className="text-center py-10 opacity-40">
+                            <CheckCircle className="h-10 w-10 mx-auto mb-2" />
+                            <p className="text-xs">Todos os alunos processados.</p>
+                        </div>
+                    )}
+                </div>
+            </ScrollArea>
           </CardContent>
+          <CardFooter className="p-4 border-t bg-muted/5 shrink-0">
+            <p className="text-[9px] text-center text-muted-foreground uppercase font-bold tracking-widest w-full">
+                {isIda 
+                    ? 'Confirme o desembarque de cada aluno individualmente ou use o botão coletivo acima.' 
+                    : 'Confira a foto do aluno antes de autorizar a entrada na van.'}
+            </p>
+          </CardFooter>
         </Card>
     );
 }
