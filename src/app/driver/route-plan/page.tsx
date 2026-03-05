@@ -32,6 +32,7 @@ import {
   RotateCcw,
   Users,
   Check,
+  Pause,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -329,6 +330,12 @@ export default function DriverRoutePlanPage() {
       toast({ title: "Rota Finalizada!", description: `Economia estimada: R$ ${fuelSaved.toFixed(2)}.` });
   }, [driverId, allStudents, route, vehicle, driverProfile, updateDoc, addDoc, toast]);
 
+  const handlePauseToggle = useCallback(() => {
+      const isPaused = driverProfile?.status === 'pausa';
+      updateDoc('drivers', driverId, { status: isPaused ? 'em_rota' : 'pausa' });
+      toast({ title: isPaused ? 'Viagem Retomada!' : 'Viagem Pausada', description: isPaused ? 'GPS e Telemetria ativos.' : 'GPS em modo stand-by.' });
+  }, [driverProfile?.status, driverId, updateDoc, toast]);
+
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
 
   if (isLoading) return <div className="flex items-center justify-center h-screen"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -403,6 +410,9 @@ export default function DriverRoutePlanPage() {
                         </div>
                     </div>
                     <div className="flex gap-2">
+                        <Button variant={driverProfile?.status === 'pausa' ? 'default' : 'outline'} size="icon" onClick={handlePauseToggle} className="border-primary/20">
+                            {driverProfile?.status === 'pausa' ? <Play className="h-4 w-4 fill-current"/> : <Pause className="h-4 w-4" />}
+                        </Button>
                         <Button variant="outline" size="icon" asChild className="border-primary/20"><Link href="/driver/messages"><MessageSquare className="h-4 w-4 text-primary" /></Link></Button>
                         <Dialog>
                             <DialogTrigger asChild>
@@ -424,6 +434,14 @@ export default function DriverRoutePlanPage() {
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden animate-in fade-in duration-300">
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-6">
+                                {driverProfile?.status === 'pausa' && (
+                                    <Alert className="bg-amber-500/10 border-amber-500/30 text-amber-600">
+                                        <Pause className="h-4 w-4" />
+                                        <AlertTitle className="font-bold">Viagem Pausada</AlertTitle>
+                                        <AlertDescription>Retome a viagem no botão superior para voltar a enviar sua posição GPS aos pais.</AlertDescription>
+                                    </Alert>
+                                )}
+
                                 {!activeStop ? (
                                     <Card className="text-center p-10 bg-green-500/10 border-green-500/30 flex flex-col justify-center">
                                         <div className="mx-auto w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
@@ -443,6 +461,7 @@ export default function DriverRoutePlanPage() {
                                             onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
                                             direction={selectedDirection} 
                                             onScanQrCode={() => setIsScannerOpen(true)} 
+                                            onEndEarly={handleEndRoute}
                                         />
                                         {upcomingStops.length > 0 && (
                                             <div className="space-y-3">
@@ -475,6 +494,7 @@ export default function DriverRoutePlanPage() {
                                         onAction={() => handleSchoolAction(activeStop.id)} 
                                         students={studentsAtCurrentStop}
                                         onStatusChange={handleStatusChange}
+                                        onEndEarly={handleEndRoute}
                                     />
                                 )}
                             </div>
@@ -521,7 +541,7 @@ export default function DriverRoutePlanPage() {
   );
 }
 
-function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, direction, onScanQrCode }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onScanQrCode: () => void }) {
+function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, direction, onScanQrCode, onEndEarly }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onScanQrCode: () => void, onEndEarly: () => void }) {
   const isGoing = direction === 'ida';
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
@@ -581,19 +601,24 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
         )}
       </CardContent>
 
-      <CardFooter className="grid grid-cols-2 gap-3 pt-3 bg-muted/10 rounded-b-lg border-t">
-           <Button variant="secondary" className="h-10 text-[10px] font-black uppercase tracking-widest border border-primary/10" onClick={onScanQrCode}>
-               <QrCode className="mr-2 h-4 w-4 text-primary" /> QR Code
-           </Button>
-           <Button variant="secondary" className="h-10 text-[10px] font-black uppercase tracking-widest border border-primary/10" onClick={() => onOpenAuthorizedModal(student)}>
-               <IdCard className="mr-2 h-4 w-4 text-primary"/> Autorizados
+      <CardFooter className="flex flex-col gap-3 pt-3 bg-muted/10 rounded-b-lg border-t">
+           <div className="grid grid-cols-2 gap-3 w-full">
+                <Button variant="secondary" className="h-10 text-[10px] font-black uppercase tracking-widest border border-primary/10" onClick={onScanQrCode}>
+                    <QrCode className="mr-2 h-4 w-4 text-primary" /> QR Code
+                </Button>
+                <Button variant="secondary" className="h-10 text-[10px] font-black uppercase tracking-widest border border-primary/10" onClick={() => onOpenAuthorizedModal(student)}>
+                    <IdCard className="mr-2 h-4 w-4 text-primary"/> Autorizados
+                </Button>
+           </div>
+           <Button variant="ghost" size="sm" className="w-full text-destructive text-[10px] font-bold" onClick={onEndEarly}>
+               <Square className="mr-2 h-3 w-3 fill-current" /> ENCERRAR VIAGEM AGORA
            </Button>
       </CardFooter>
     </Card>
   );
 }
 
-function NextStopSchoolCard({ school, direction, onAction, students, onStatusChange }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, students: Student[], onStatusChange: (id: string, status: StudentStatus) => void }) {
+function NextStopSchoolCard({ school, direction, onAction, students, onStatusChange, onEndEarly }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, students: Student[], onStatusChange: (id: string, status: StudentStatus) => void, onEndEarly: () => void }) {
     const isIda = direction === 'ida';
     return (
         <div className="space-y-6">
@@ -615,59 +640,68 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                     </Button>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {students.length > 0 ? (
                         students.map((s) => (
-                            <div key={s.id} className="flex items-center gap-3 p-3 rounded-lg border-2 bg-background group hover:border-primary transition-all">
-                                <Avatar className="h-12 w-12 border-2 border-primary/10 shrink-0">
+                            <div key={s.id} className="flex items-center gap-3 p-2 rounded-lg border-2 bg-background group hover:border-primary transition-all">
+                                <Avatar className="h-10 w-10 border-2 border-primary/10 shrink-0">
                                     <AvatarImage src={`https://picsum.photos/seed/student-${s.id}/100/100`} />
                                     <AvatarFallback>{s.name[0]}</AvatarFallback>
                                 </Avatar>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-black truncate flex items-center gap-2 text-foreground">
+                                    <p className="text-xs font-black truncate flex items-center gap-2 text-foreground">
                                         {s.name}
-                                        {((s.medicalConditions?.length || 0) > 0 || s.medicalNote) && <HeartPulse className="h-4 w-4 text-destructive animate-pulse" />}
+                                        {((s.medicalConditions?.length || 0) > 0 || s.medicalNote) && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" />}
                                     </p>
-                                    <p className="text-[10px] text-primary font-bold uppercase tracking-tight">{s.status}</p>
+                                    <p className="text-[9px] text-primary font-bold uppercase tracking-tight">{s.status}</p>
                                 </div>
                                 <div className="flex gap-1 shrink-0">
                                     <Button 
                                         size="icon" 
                                         variant="outline" 
-                                        className="h-10 w-10 text-green-600 border-green-200 hover:bg-green-50 hover:border-green-500"
+                                        className="h-8 w-8 text-green-600 border-green-200"
                                         onClick={() => onStatusChange(s.id, isIda ? 'desembarcado' : 'a_bordo')}
                                     >
-                                        <Check className="h-5 w-5" />
+                                        <Check className="h-4 w-4" />
                                     </Button>
                                     <Button 
                                         size="icon" 
                                         variant="outline" 
-                                        className="h-10 w-10 text-destructive border-red-200 hover:bg-red-50 hover:border-red-500"
+                                        className="h-8 w-8 text-destructive border-red-200"
                                         onClick={() => onStatusChange(s.id, isIda ? 'ausente_ida' : 'ausente_volta')}
                                     >
-                                        <XCircle className="h-5 w-5" />
+                                        <XCircle className="h-4 w-4" />
                                     </Button>
                                 </div>
                             </div>
                         ))
                     ) : (
-                        <div className="text-center py-10">
-                            <div className="bg-green-500/10 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 border-2 border-green-500/20">
-                                <CheckCircle className="h-8 w-8 text-green-500" />
-                            </div>
-                            <p className="text-sm font-bold text-muted-foreground">Todos os alunos processados.</p>
+                        <div className="text-center py-6">
+                            <CheckCircle className="h-8 w-8 text-green-500 mx-auto mb-2" />
+                            <p className="text-xs font-bold text-muted-foreground">Todos os alunos processados.</p>
                         </div>
                     )}
                 </div>
               </CardContent>
-              <CardFooter className="p-4 border-t bg-muted/10">
+              <CardFooter className="p-4 border-t bg-muted/10 flex flex-col gap-3">
                 <p className="text-[9px] text-center text-muted-foreground uppercase font-black tracking-[0.2em] w-full">
-                    {isIda 
-                        ? 'Confirme o desembarque de cada aluno individualmente ou use o botão coletivo.' 
-                        : 'Confira a foto do aluno antes de autorizar a entrada na van.'}
+                    Confirme cada embarque individualmente ou use o botão coletivo.
                 </p>
+                <Button variant="ghost" size="sm" className="w-full text-destructive text-[10px] font-bold" onClick={onEndEarly}>
+                    <Square className="mr-2 h-3 w-3 fill-current" /> ENCERRAR VIAGEM AGORA
+                </Button>
               </CardFooter>
             </Card>
         </div>
     );
+}
+
+function Alert({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <div className={cn("p-4 rounded-lg border flex gap-3", className)}>{children}</div>;
+}
+function AlertTitle({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <h5 className={cn("leading-none tracking-tight", className)}>{children}</h5>;
+}
+function AlertDescription({ children, className }: { children: React.ReactNode, className?: string }) {
+    return <div className={cn("text-sm", className)}>{children}</div>;
 }
