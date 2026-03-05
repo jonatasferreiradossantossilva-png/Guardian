@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useTransition } from "react";
 import { Loader2, Shield, Car, Users, ClipboardCheck } from "lucide-react";
 import { useAuth, initiateAnonymousSignIn } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -31,7 +31,6 @@ const formSchema = z.object({
   }),
 });
 
-// FIXED: Updated 'pai' to point to Ana Pereira (user-pai-1) who has 2 children for multi-child validation
 const profileToMockIdMap = {
     'gestor': 'user-admin-1',
     'motorista': 'user-motorista-4',
@@ -44,6 +43,7 @@ export function LoginForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const auth = useAuth();
 
   useEffect(() => {
@@ -66,7 +66,6 @@ export function LoginForm() {
     if (auth) {
       initiateAnonymousSignIn(auth);
     } else {
-        console.error("Auth service not available");
         setIsLoading(false);
         return;
     }
@@ -119,7 +118,7 @@ export function LoginForm() {
                 <FormItem className="space-y-3">
                   <FormLabel className="text-base font-semibold">Selecione seu perfil:</FormLabel>
                   <RadioGroup
-                    onValueChange={field.onChange}
+                    onValueChange={(val) => startTransition(() => field.onChange(val))}
                     value={field.value}
                     className="grid grid-cols-1 sm:grid-cols-2 gap-2"
                   >

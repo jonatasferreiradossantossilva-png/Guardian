@@ -1,6 +1,7 @@
+
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from 'react';
 import {
   Card,
   CardContent,
@@ -152,6 +153,7 @@ export default function DriverRoutePlanPage() {
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [isPending, startTransition] = useTransition();
   const isOnline = useOnlineStatus();
 
   useEffect(() => {
@@ -291,6 +293,13 @@ export default function DriverRoutePlanPage() {
             address: `${sch.street}, ${sch.number}`
         }));
 
+        // Resetar status dos alunos para garantir que o checklist apareça na Volta
+        orderedStops.forEach(s => {
+            if (s.type === 'student') {
+                updateDoc('students', s.id, { status: 'aguardando' });
+            }
+        });
+
         const result = await optimizeSchoolVanRoute({
             students: studentStops,
             schools: schoolStops,
@@ -328,7 +337,6 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
-    // Auto-finish logic: if this was the last home stop in Volta
     if (selectedDirection === 'volta' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -345,7 +353,6 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
-      // Auto-finish logic: if this was the school stop in Ida and no more students waiting
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
@@ -386,7 +393,7 @@ export default function DriverRoutePlanPage() {
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Turno</Label>
-                                <RadioGroup value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)} className="grid grid-cols-1 gap-2">
+                                <RadioGroup value={selectedShift} onValueChange={(v) => startTransition(() => setSelectedShift(v as Shift))} className="grid grid-cols-1 gap-2">
                                     <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="Manhã" id="shift-m"/>
                                         <Label htmlFor="shift-m" className="flex-1 cursor-pointer font-bold text-sm">Manhã</Label>
@@ -399,7 +406,7 @@ export default function DriverRoutePlanPage() {
                             </div>
                             <div className="space-y-2">
                                 <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Sentido</Label>
-                                <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as any)} className="grid grid-cols-1 gap-2">
+                                <RadioGroup value={selectedDirection} onValueChange={(v) => startTransition(() => setSelectedDirection(v as any))} className="grid grid-cols-1 gap-2">
                                     <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="ida" id="dir-i"/>
                                         <Label htmlFor="dir-i" className="flex-1 cursor-pointer font-bold text-sm">Ida</Label>
