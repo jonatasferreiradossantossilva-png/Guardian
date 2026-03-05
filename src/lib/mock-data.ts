@@ -104,6 +104,10 @@ export const initialMockData = {
         { id: "student-14", name: "Matheus Solano", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5340, longitude: -46.8340, street: "Rua Principal", number: "200", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
         { id: "student-15", name: "Nicole Bahls", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5345, longitude: -46.8345, street: "Av Inocêncio", number: "500", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
         { id: "student-16", name: "Otávio Mesquita", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5350, longitude: -46.8350, street: "Rua do Sol", number: "33", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-17", name: "Vanessa Camargo", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5355, longitude: -46.8355, street: "Rua do Horizonte", number: "44", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-18", name: "Roberto Carlos", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5360, longitude: -46.8360, street: "Rua da Música", number: "1", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-19", name: "Ana Maria", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5365, longitude: -46.8365, street: "Rua da Cozinha", number: "15", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
+        { id: "student-20", name: "Fausto Silva", schoolId: "school-3", parentId: "parent-4", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5370, longitude: -46.8370, street: "Rua do Domingo", number: "7", neighborhood: "Vila Silviania", city: "Carapicuíba", state: "SP", zipCode: "06321-000", monthlyFee: 380, preferredPaymentDay: 10 },
     ],
     drivers: [
         { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo", vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 },
@@ -111,7 +115,7 @@ export const initialMockData = {
     ],
     vehicles: [
         { id: "vehicle-1", model: "Mercedes Sprinter", licensePlate: "BRA2E19", capacity: 15, active: true, currentOdometer: 45200, lastMaintenanceOdometer: 40000, maintenanceInterval: 10000 },
-        { id: "vehicle-2", model: "Renault Master", licensePlate: "KLU4J22", capacity: 20, active: true, currentOdometer: 12000, lastMaintenanceOdometer: 10000, maintenanceInterval: 10000 }
+        { id: "vehicle-2", model: "Renault Master", licensePlate: "KLU4J22", capacity: 25, active: true, currentOdometer: 12000, lastMaintenanceOdometer: 10000, maintenanceInterval: 10000 }
     ],
     routes: [
         {
@@ -134,6 +138,7 @@ export const initialMockData = {
             studentIds: [
                 "student-5", "student-8", "student-9", "student-10", "student-11", 
                 "student-12", "student-13", "student-14", "student-15", "student-16", 
+                "student-17", "student-18", "student-19", "student-20",
                 "school-3"
             ],
             lastOptimizedAt: "",
