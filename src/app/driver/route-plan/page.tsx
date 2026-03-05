@@ -265,7 +265,7 @@ export default function DriverRoutePlanPage() {
         const currentLoc = locRef.current;
         const startPoint = currentLoc ? `${currentLoc.latitude},${currentLoc.longitude}` : undefined;
         
-        // Reset universal: Localiza e reseta TODOS os alunos da rota no banco para garantir checklist limpo antes de otimizar
+        // Reset universal de checklist
         route.studentIds.forEach(id => {
             const s = studentsMap.get(id);
             if (s) {
@@ -306,7 +306,7 @@ export default function DriverRoutePlanPage() {
                 const routing = await routingGeoapify({ waypoints });
                 polylineData = routing.polyline;
             } catch (routingErr) {
-                console.warn("Falha ao gerar traçado visual, prosseguindo apenas com itinerário:", routingErr);
+                console.warn("Falha ao gerar traçado visual", routingErr);
             }
         }
 
@@ -321,7 +321,7 @@ export default function DriverRoutePlanPage() {
         sessionStorage.setItem('activeRouteId', route.id);
         setActiveRouteId(route.id);
         
-        toast({ title: "IA: Rota Otimizada!", description: "Itinerário ajustado com base na sua posição atual." });
+        toast({ title: "IA: Rota Otimizada!", description: "Itinerário ajustado via GPS." });
     } catch (e) {
         console.error(e);
         updateDoc('drivers', driverId, { status: 'em_rota' });
@@ -353,7 +353,6 @@ export default function DriverRoutePlanPage() {
       });
 
       // BLINDAGEM: No sentido 'volta', após o embarque na escola, ainda temos as casas dos alunos. 
-      // O encerramento automático só deve ocorrer se for o Ponto Final (escola na ida ou última casa na volta)
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
@@ -362,7 +361,7 @@ export default function DriverRoutePlanPage() {
   const handlePauseToggle = useCallback(() => {
       const isPaused = driverProfile?.status === 'pausa';
       updateDoc('drivers', driverId, { status: isPaused ? 'em_rota' : 'pausa' });
-      toast({ title: isPaused ? 'Viagem Retomada!' : 'Viagem Pausada', description: isPaused ? 'GPS e Telemetria ativos.' : 'GPS em modo stand-by.' });
+      toast({ title: isPaused ? 'Viagem Retomada!' : 'Viagem Pausada' });
   }, [driverProfile?.status, driverId, updateDoc, toast]);
 
   const isLoading = areDriversLoading || isRouteLoading || areStudentsLoading || areSchoolsLoading;
