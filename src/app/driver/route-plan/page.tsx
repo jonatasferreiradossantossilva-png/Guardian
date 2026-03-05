@@ -580,79 +580,81 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   };
 
   return (
-    <Card className={cn("w-full shadow-2xl border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
-      <CardHeader className="pb-3 border-b bg-muted/10">
-        <div className="flex justify-between items-center mb-3">
-            <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase bg-background border-primary/30 text-primary">Parada Atual</Badge>
-            {hasMedicalAlert && (
-                <Badge variant="destructive" className="animate-pulse font-black tracking-tighter shadow-lg">
-                    <HeartPulse className="h-3 w-3 mr-1" /> CUIDADO MÉDICO
-                </Badge>
-            )}
-        </div>
-        <div className="flex items-center gap-4">
-            <Avatar className="h-20 w-20 border-2 border-primary shadow-xl">
-                <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
-                <AvatarFallback className="bg-primary/10 text-primary text-3xl font-black">{student.name[0]}</AvatarFallback>
-            </Avatar>
-            <div className="flex-grow min-w-0">
-                <CardTitle className="text-xl font-black truncate leading-none mb-1 text-foreground uppercase tracking-tight">{student.name}</CardTitle>
-                <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
-                    <MapPin className="h-4 w-4 shrink-0 text-primary" />
-                    <span className="text-xs font-black truncate text-foreground/80">{student.street}, {student.number}</span>
+    <div className="w-full">
+        <Card className={cn("w-full shadow-2xl border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
+        <CardHeader className="pb-3 border-b bg-muted/10">
+            <div className="flex justify-between items-center mb-3">
+                <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase bg-background border-primary/30 text-primary">Parada Atual</Badge>
+                {hasMedicalAlert && (
+                    <Badge variant="destructive" className="animate-pulse font-black tracking-tighter shadow-lg">
+                        <HeartPulse className="h-3 w-3 mr-1" /> CUIDADO MÉDICO
+                    </Badge>
+                )}
+            </div>
+            <div className="flex items-center gap-4">
+                <Avatar className="h-20 w-20 border-2 border-primary shadow-xl">
+                    <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
+                    <AvatarFallback className="bg-primary/10 text-primary text-3xl font-black">{student.name[0]}</AvatarFallback>
+                </Avatar>
+                <div className="flex-grow min-w-0">
+                    <CardTitle className="text-xl font-black truncate leading-none mb-1 text-foreground uppercase tracking-tight">{student.name}</CardTitle>
+                    <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
+                        <MapPin className="h-4 w-4 shrink-0 text-primary" />
+                        <span className="text-xs font-black truncate text-foreground/80">{student.street}, {student.number}</span>
+                    </div>
                 </div>
+                <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-14 w-14 border-primary/30 hover:bg-primary/10 shadow-md bg-background">
+                    <Navigation className="h-7 w-7 text-primary" />
+                </Button>
             </div>
-            <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-14 w-14 border-primary/30 hover:bg-primary/10 shadow-md bg-background">
-                <Navigation className="h-7 w-7 text-primary" />
-            </Button>
-        </div>
-      </CardHeader>
-      
-      <CardContent className="pt-6 space-y-4">
-        <div className="grid grid-cols-2 gap-3">
-            {isGoing ? (
-                <Button size="default" className="bg-green-600 hover:bg-green-700 h-14 font-black text-white shadow-xl text-sm" onClick={() => onStatusChange(student.id, 'a_bordo')}>
-                    <CheckCircle className="mr-2 h-5 w-5" /> EMBARCOU
-                </Button>
-            ) : (
-                <Button size="default" className="bg-blue-600 hover:bg-blue-700 h-14 font-black text-white shadow-xl text-sm" onClick={() => onStatusChange(student.id, 'desembarcado')}>
-                    <CheckCircle className="mr-2 h-5 w-5" /> DESEMBARCOU
-                </Button>
-            )}
-            <Button size="default" variant="destructive" className="h-14 font-black shadow-xl text-sm" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
-                <XCircle className="mr-2 h-5 w-5" /> AUSENTE
-            </Button>
-        </div>
+        </CardHeader>
         
-        {hasMedicalAlert && student.medicalNote && (
-            <div className="p-4 rounded-md bg-destructive/10 border-2 border-destructive/20 text-sm italic text-destructive font-black leading-tight flex gap-3">
-                <HeartPulse className="h-5 w-5 shrink-0" />
-                <span>"{student.medicalNote}"</span>
+        <CardContent className="pt-6 space-y-4">
+            <div className="grid grid-cols-2 gap-3">
+                {isGoing ? (
+                    <Button size="default" className="bg-green-600 hover:bg-green-700 h-14 font-black text-white shadow-xl text-sm" onClick={() => onStatusChange(student.id, 'a_bordo')}>
+                        <CheckCircle className="mr-2 h-5 w-5" /> EMBARCOU
+                    </Button>
+                ) : (
+                    <Button size="default" className="bg-blue-600 hover:bg-blue-700 h-14 font-black text-white shadow-xl text-sm" onClick={() => onStatusChange(student.id, 'desembarcado')}>
+                        <CheckCircle className="mr-2 h-5 w-5" /> DESEMBARCOU
+                    </Button>
+                )}
+                <Button size="default" variant="destructive" className="h-14 font-black shadow-xl text-sm" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
+                    <XCircle className="mr-2 h-5 w-5" /> AUSENTE
+                </Button>
             </div>
-        )}
-      </CardContent>
+            
+            {hasMedicalAlert && student.medicalNote && (
+                <div className="p-4 rounded-md bg-destructive/10 border-2 border-destructive/20 text-sm italic text-destructive font-black leading-tight flex gap-3">
+                    <HeartPulse className="h-5 w-5 shrink-0" />
+                    <span>"{student.medicalNote}"</span>
+                </div>
+            )}
+        </CardContent>
 
-      <CardFooter className="flex flex-col gap-3 pt-3 bg-muted/10 rounded-b-lg border-t">
-           <div className="grid grid-cols-2 gap-3 w-full">
-                <Button variant="secondary" className="h-12 text-[10px] font-black uppercase tracking-widest border-2 border-primary/10 bg-background hover:bg-primary/5" onClick={onScanQrCode}>
-                    <QrCode className="mr-2 h-5 w-5 text-primary" /> QR Code
-                </Button>
-                <Button variant="secondary" className="h-12 text-[10px] font-black uppercase tracking-widest border-2 border-primary/10 bg-background hover:bg-primary/5" onClick={() => onOpenAuthorizedModal(student)}>
-                    <IdCard className="mr-2 h-5 w-5 text-primary"/> Autorizados
-                </Button>
-           </div>
-           <Button variant="ghost" size="sm" className="w-full text-destructive text-[10px] font-black uppercase tracking-widest py-4" onClick={onEndEarly}>
-               <Square className="mr-2 h-3 w-3 fill-current" /> Encerrar Viagem Manualmente
-           </Button>
-      </CardFooter>
-    </Card>
+        <CardFooter className="flex flex-col gap-3 pt-3 bg-muted/10 rounded-b-lg border-t">
+            <div className="grid grid-cols-2 gap-3 w-full">
+                    <Button variant="secondary" className="h-12 text-[10px] font-black uppercase tracking-widest border-2 border-primary/10 bg-background hover:bg-primary/5" onClick={onScanQrCode}>
+                        <QrCode className="mr-2 h-5 w-5 text-primary" /> QR Code
+                    </Button>
+                    <Button variant="secondary" className="h-12 text-[10px] font-black uppercase tracking-widest border-2 border-primary/10 bg-background hover:bg-primary/5" onClick={() => onOpenAuthorizedModal(student)}>
+                        <IdCard className="mr-2 h-5 w-5 text-primary"/> Autorizados
+                    </Button>
+            </div>
+            <Button variant="ghost" size="sm" className="w-full text-destructive text-[10px] font-black uppercase tracking-widest py-4" onClick={onEndEarly}>
+                <Square className="mr-2 h-3 w-3 fill-current" /> Encerrar Viagem Manualmente
+            </Button>
+        </CardFooter>
+        </Card>
+    </div>
   );
 }
 
 function NextStopSchoolCard({ school, direction, onAction, students, onStatusChange, onEndEarly }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, students: Student[], onStatusChange: (id: string, status: StudentStatus) => void, onEndEarly: () => void }) {
     const isIda = direction === 'ida';
     return (
-        <div className="space-y-6">
+        <div className="w-full space-y-6">
             <Card className="w-full shadow-2xl border-primary border-2 bg-card overflow-hidden">
               <CardHeader className="text-center pb-4 bg-primary/10 border-b">
                 <div className="mx-auto w-16 h-16 rounded-full bg-background border-4 border-primary/20 text-primary shadow-lg flex items-center justify-center mb-2">

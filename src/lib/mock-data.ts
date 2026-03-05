@@ -48,18 +48,16 @@ export const initialMockData = {
         { id: "parent-3", userId: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", phone: "11999998888", active: true },
     ],
     students: [
-        // CENÁRIO PAU (ANA PEREIRA) - 2 FILHOS - TURNO MANHÃ
+        // CENÁRIO MANHÃ (15 ALUNOS PARA TESTE DE CARGA)
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        
-        // OUTROS ALUNOS MANHÃ (TOTALIZANDO 15 PARA TESTE DE CARGA ROTA 01)
+        { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5585, longitude: -46.6605, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP" },
         { id: "student-4", name: "Lucas Melo", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6610, street: "Rua Haddock Lobo", number: "200", city: "São Paulo", state: "SP" },
         { id: "student-5", name: "Mariana Lima", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5620, longitude: -46.6620, street: "Rua Bela Cintra", number: "300", city: "São Paulo", state: "SP" },
         { id: "student-6", name: "Pedro Rocha", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5630, longitude: -46.6630, street: "Rua Consolação", number: "400", city: "São Paulo", state: "SP" },
         { id: "student-7", name: "Julia Santos", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5640, longitude: -46.6640, street: "Rua Peixoto Gomide", number: "500", city: "São Paulo", state: "SP" },
         { id: "student-8", name: "Gabriel Dias", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6650, street: "Rua Oscar Freire", number: "50", city: "São Paulo", state: "SP" },
-        { id: "student-9", name: "Gustavo Alencar", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6650, street: "Rua Pamplona", number: "600", city: "São Paulo", state: "SP" },
+        { id: "student-9", name: "Gustavo Alencar", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5655, longitude: -46.6655, street: "Rua Pamplona", number: "600", city: "São Paulo", state: "SP" },
         { id: "student-10", name: "Sofia Braga", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5660, longitude: -46.6660, street: "Alameda Santos", number: "700", city: "São Paulo", state: "SP" },
         { id: "student-11", name: "Thiago Mendes", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5670, longitude: -46.6670, street: "Rua Estados Unidos", number: "800", city: "São Paulo", state: "SP" },
         { id: "student-12", name: "Larissa Faria", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5680, longitude: -46.6680, street: "Rua Colômbia", number: "900", city: "São Paulo", state: "SP" },
@@ -67,9 +65,11 @@ export const initialMockData = {
         { id: "student-14", name: "Bianca Viana", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6700, street: "Rua Peru", number: "200", city: "São Paulo", state: "SP" },
         { id: "student-15", name: "Rafael Guimarães", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5710, longitude: -46.6710, street: "Rua Argentina", number: "300", city: "São Paulo", state: "SP" },
 
-        // ALUNOS TURNO TARDE (ROTA 02)
+        // CENÁRIO TARDE (ROTAS OPERACIONAIS)
         { id: "student-16", name: "Tiago Silva", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5800, longitude: -46.6800, street: "Rua Tabapuã", number: "500", city: "São Paulo", state: "SP" },
         { id: "student-17", name: "Manuela Ferro", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5810, longitude: -46.6810, street: "Rua Joaquim Floriano", number: "600", city: "São Paulo", state: "SP" },
+        { id: "student-18", name: "Ricardo Dias", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5820, longitude: -46.6820, street: "Av. Brigadeiro Faria Lima", number: "1200", city: "São Paulo", state: "SP" },
+        { id: "student-19", name: "Heloísa Santos", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5830, longitude: -46.6830, street: "Rua Iguatemi", number: "300", city: "São Paulo", state: "SP" },
     ],
     drivers: [
         { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo", vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 }
@@ -80,7 +80,7 @@ export const initialMockData = {
     routes: [
         {
             id: "route-1",
-            name: "Rota Centro - Manhã (15 Alunos)",
+            name: "Rota Centro - Manhã",
             driverId: "driver-1",
             monitorId: "user-monitor-1",
             shift: "Manhã",
@@ -95,13 +95,13 @@ export const initialMockData = {
         },
         {
             id: "route-2",
-            name: "Rota Bairro - Tarde",
+            name: "Rota Sul - Tarde",
             driverId: "driver-1",
             monitorId: "user-monitor-1",
             shift: "Tarde",
             studentIds: [
                 "school-1",
-                "student-16", "student-17"
+                "student-16", "student-17", "student-18", "student-19"
             ],
             lastOptimizedAt: "",
             polyline: ""
