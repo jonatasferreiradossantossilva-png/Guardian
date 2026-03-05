@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -31,6 +32,7 @@ import {
   Sparkles,
   Navigation,
   RotateCcw,
+  Users,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -217,9 +219,6 @@ export default function DriverRoutePlanPage() {
   const { activeStop, upcomingStops } = useMemo(() => {
     if (!orderedStops || driverProfile?.status !== 'em_rota') return { activeStop: null, upcomingStops: [] };
     
-    // Inteligência de Sentido:
-    // Na IDA: Próximo é o primeiro aluno 'aguardando' ou a primeira escola.
-    // Na VOLTA: Próximo é a escola (enquanto houver aluno 'aguardando') ou primeiro aluno 'a_bordo'.
     const nextStopIndex = orderedStops.findIndex(s => {
         if (selectedDirection === 'ida') {
             if (s.type === 'student') return s.data.status === 'aguardando';
@@ -233,6 +232,20 @@ export default function DriverRoutePlanPage() {
     if (nextStopIndex === -1) return { activeStop: null, upcomingStops: [] };
     return { activeStop: orderedStops[nextStopIndex], upcomingStops: orderedStops.slice(nextStopIndex + 1) };
   }, [orderedStops, driverProfile?.status, selectedDirection]);
+
+  // Inteligência de conferência: Alunos vinculados à parada atual (se for escola)
+  const studentsAtCurrentStop = useMemo(() => {
+      if (!activeStop || activeStop.type !== 'school' || !allStudents) return [];
+      const isIda = selectedDirection === 'ida';
+      const targetStatus = isIda ? 'a_bordo' : 'aguardando';
+      
+      return allStudents.filter(s => 
+          s.schoolId === activeStop.id && 
+          s.status === targetStatus &&
+          (s.shift === 'Integral' || s.shift === selectedShift) &&
+          s.active !== false
+      );
+  }, [activeStop, allStudents, selectedDirection, selectedShift]);
 
   const handleStartRoute = async () => {
     if (!route || !driverProfile) return;
@@ -254,7 +267,6 @@ export default function DriverRoutePlanPage() {
             address: `${sch.street}, ${sch.number}`
         }));
 
-        // IA recalcula a sequência com base no ponto de partida real
         const result = await optimizeSchoolVanRoute({
             students: studentStops,
             schools: schoolStops,
@@ -296,21 +308,14 @@ export default function DriverRoutePlanPage() {
   const handleSchoolAction = useCallback((schoolId: string) => {
       const isIda = selectedDirection === 'ida';
       const targetStatus = isIda ? 'desembarcado' : 'a_bordo';
-      const sourceStatus = isIda ? 'a_bordo' : 'aguardando';
       
-      const studentsToUpdate = orderedStops.filter(s => 
-          s.type === 'student' && 
-          s.data.schoolId === schoolId && 
-          s.data.status === sourceStatus
-      );
-
-      studentsToUpdate.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
+      studentsAtCurrentStop.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
       
       toast({ 
           title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!", 
-          description: `${studentsToUpdate.length} alunos processados na escola.` 
+          description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
-  }, [selectedDirection, orderedStops, updateDoc, toast]);
+  }, [selectedDirection, studentsAtCurrentStop, updateDoc, toast]);
 
   const handleEndRoute = useCallback(() => {
       if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
@@ -467,6 +472,7 @@ export default function DriverRoutePlanPage() {
                                 school={activeStop.data as SchoolData} 
                                 direction={selectedDirection}
                                 onAction={() => handleSchoolAction(activeStop.id)} 
+                                studentNames={studentsAtCurrentStop.map(s => s.name)}
                             />
                         )}
                     </TabsContent>
@@ -583,25 +589,42 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   );
 }
 
-function NextStopSchoolCard({ school, direction, onAction }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void }) {
+function NextStopSchoolCard({ school, direction, onAction, studentNames }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, studentNames: string[] }) {
     const isIda = direction === 'ida';
     return (
         <Card className="w-full shadow-2xl border-destructive/30 bg-destructive/5 overflow-hidden flex-1 flex flex-col justify-center">
-          <CardHeader className="text-center pb-8">
+          <CardHeader className="text-center pb-4">
             <div className="mx-auto w-20 h-20 rounded-full bg-background border-4 border-destructive/20 text-destructive shadow-lg flex items-center justify-center mb-4">
                 <School className="h-10 w-10" />
             </div>
             <Badge variant="destructive" className="w-fit mx-auto mb-2 font-bold uppercase tracking-widest">{isIda ? 'Ponto de Desembarque' : 'Ponto de Embarque'}</Badge>
             <CardTitle className="text-2xl truncate">{school.name}</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-6">
+            {studentNames.length > 0 && (
+                <div className="p-4 bg-background/50 rounded-lg border border-dashed border-destructive/20">
+                    <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <Users className="h-3 w-3" /> Alunos para {isIda ? 'Desembarcar' : 'Embarcar'} ({studentNames.length})
+                    </p>
+                    <div className="grid grid-cols-1 gap-1 max-h-32 overflow-y-auto pr-2 custom-scrollbar">
+                        {studentNames.map((name, i) => (
+                            <div key={i} className="text-xs font-medium py-1 border-b border-destructive/10 last:border-0 flex items-center gap-2">
+                                <div className="w-1 h-1 rounded-full bg-destructive/40" />
+                                {name}
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            )}
+
             <Button size="lg" className="w-full h-20 bg-destructive hover:bg-destructive/90 text-xl font-bold shadow-xl" onClick={onAction}>
-                <Bus className="mr-4 h-8 w-8" /> {isIda ? 'CHEGAMOS NA ESCOLA' : 'INICIAR EMBARQUE ESCOLA'}
+                <Bus className="mr-4 h-8 w-8" /> {isIda ? 'CONFIRMAR DESEMBARQUE' : 'INICIAR EMBARQUE ESCOLA'}
             </Button>
-            <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest mt-6 px-4">
+            
+            <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest px-4">
                 {isIda 
-                    ? 'Clique no botão apenas quando todos os alunos estiverem seguros no portão.' 
-                    : 'Ao clicar, todos os alunos desta escola serão marcados como a bordo.'}
+                    ? 'Clique apenas quando todos os alunos estiverem seguros no portão.' 
+                    : 'Ao clicar, todos os alunos listados acima serão marcados como a bordo.'}
             </p>
           </CardContent>
         </Card>
