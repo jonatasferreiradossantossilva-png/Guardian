@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais para o protótipo do Guardian.
@@ -37,24 +38,31 @@ export const initialMockData = {
     ],
     school_knowledge_base: [],
     parents: [
-        { id: "parent-1", userId: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", phone: "11987654321", active: true }
+        { id: "parent-1", userId: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", phone: "11987654321", active: true },
+        { id: "parent-2", userId: "user-pai-2", name: "João Costa", email: "joao.costa@email.com", phone: "11912345678", active: true },
+        { id: "parent-3", userId: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", phone: "11999998888", active: true },
     ],
     students: [
+        // Filhos da Ana (Filtro do Pai mostrará 2)
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Academias", number: "10", city: "São Paulo", state: "SP", zipCode: "05445-010", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-2", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-3", name: "Gabriel Dias", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6650, street: "Rua Oscar Freire", number: "50", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-4", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Academias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-5", name: "Lucas Melo", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6610, street: "Rua Haddock Lobo", number: "200", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-6", name: "Mariana Lima", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5620, longitude: -46.6620, street: "Rua Bela Cintra", number: "300", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-7", name: "Pedro Rocha", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5630, longitude: -46.6630, street: "Rua Consolação", number: "400", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-8", name: "Julia Santos", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5640, longitude: -46.6640, street: "Rua Peixoto Gomide", number: "500", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-9", name: "Gustavo Alencar", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6650, street: "Rua Pamplona", number: "600", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-10", name: "Sofia Braga", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5660, longitude: -46.6660, street: "Alameda Santos", number: "700", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-11", name: "Thiago Mendes", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5670, longitude: -46.6670, street: "Rua Estados Unidos", number: "800", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-12", name: "Larissa Faria", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5680, longitude: -46.6680, street: "Rua Colômbia", number: "900", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-13", name: "Felipe Azevedo", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5690, longitude: -46.6690, street: "Rua Chile", number: "100", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-14", name: "Bianca Viana", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6700, street: "Rua Peru", number: "200", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
-        { id: "student-15", name: "Rafael Guimarães", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5710, longitude: -46.6710, street: "Rua Argentina", number: "300", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        
+        // Outros alunos (João Costa)
+        { id: "student-2", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-5", name: "Lucas Melo", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6610, street: "Rua Haddock Lobo", number: "200", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-6", name: "Mariana Lima", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5620, longitude: -46.6620, street: "Rua Bela Cintra", number: "300", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-7", name: "Pedro Rocha", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5630, longitude: -46.6630, street: "Rua Consolação", number: "400", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-8", name: "Julia Santos", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5640, longitude: -46.6640, street: "Rua Peixoto Gomide", number: "500", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+
+        // Outros alunos (Carla Dias)
+        { id: "student-3", name: "Gabriel Dias", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6650, street: "Rua Oscar Freire", number: "50", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-9", name: "Gustavo Alencar", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6650, street: "Rua Pamplona", number: "600", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-10", name: "Sofia Braga", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5660, longitude: -46.6660, street: "Alameda Santos", number: "700", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-11", name: "Thiago Mendes", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5670, longitude: -46.6670, street: "Rua Estados Unidos", number: "800", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-12", name: "Larissa Faria", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5680, longitude: -46.6680, street: "Rua Colômbia", number: "900", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-13", name: "Felipe Azevedo", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5690, longitude: -46.6690, street: "Rua Chile", number: "100", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-14", name: "Bianca Viana", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6700, street: "Rua Peru", number: "200", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        { id: "student-15", name: "Rafael Guimarães", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5710, longitude: -46.6710, street: "Rua Argentina", number: "300", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
     ],
     drivers: [
         { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo", vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 }
@@ -85,8 +93,8 @@ export const initialMockData = {
     incidents: [],
     invoices: [
         { id: "inv-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: "2024-08-10", status: "paid" },
-        { id: "inv-2", studentId: "student-2", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: "2024-08-10", status: "pending" },
-        { id: "inv-3", studentId: "student-3", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: "2024-08-10", status: "overdue" }
+        { id: "inv-2", studentId: "student-2", parentUserId: "user-pai-2", description: "Mensalidade Agosto", amount: 450, dueDate: "2024-08-10", status: "pending" },
+        { id: "inv-3", studentId: "student-3", parentUserId: "user-pai-3", description: "Mensalidade Agosto", amount: 450, dueDate: "2024-08-10", status: "overdue" }
     ],
     expenses: [
         { id: "exp-1", description: "Diesel S10 - Posto Shell", amount: 350.50, date: "2024-08-01", category: "Combustível" },

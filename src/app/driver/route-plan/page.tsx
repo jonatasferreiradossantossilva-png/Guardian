@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from 'react';
@@ -30,6 +31,7 @@ import {
   Pause,
   Users,
   Check,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -246,31 +248,15 @@ export default function DriverRoutePlanPage() {
   }, [activeStop, allStudents, selectedDirection, selectedShift]);
 
   const handleEndRoute = useCallback(() => {
-      if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
-      const startOdo = Number(sessionStorage.getItem('startOdometer') || vehicle.currentOdometer);
-      const actualDistance = Math.max(0, (vehicle.currentOdometer || 0) - startOdo);
-      const savingsKm = Number((actualDistance * 0.15).toFixed(1)); 
-      const fuelSaved = Number(((savingsKm / 8) * 6.00).toFixed(2));
-      
-      addDoc('trip_history', { 
-          date: new Date().toISOString().split('T')[0], 
-          routeName: route.name, 
-          plannedKm: 15, 
-          actualKm: Number(actualDistance.toFixed(1)), 
-          driverName: driverProfile.name, 
-          savingsKm, 
-          fuelSaved 
-      });
-
       updateDoc('drivers', driverId, { status: 'inativo' });
       sessionStorage.removeItem('activeRouteId');
       setActiveRouteId(null);
       
       toast({ 
           title: "Viagem Encerrada!", 
-          description: `Retornando à tela inicial. Economia: R$ ${fuelSaved.toFixed(2)}.` 
+          description: `Retornando à tela inicial.` 
       });
-  }, [driverId, allStudents, route, vehicle, driverProfile, updateDoc, addDoc, toast]);
+  }, [driverId, updateDoc, toast]);
 
   const handleStartRoute = async () => {
     if (!route || !driverProfile) return;
@@ -292,12 +278,14 @@ export default function DriverRoutePlanPage() {
             address: `${sch.street}, ${sch.number}`
         }));
 
-        // Resetar status dos alunos para garantir que o checklist apareça na Volta
-        orderedStops.forEach(s => {
-            if (s.type === 'student') {
-                updateDoc('students', s.id, { status: 'aguardando' });
-            }
-        });
+        // Resetar status dos alunos ao iniciar VOLTA para garantir o checklist limpo
+        if (selectedDirection === 'volta') {
+            orderedStops.forEach(s => {
+                if (s.type === 'student') {
+                    updateDoc('students', s.id, { status: 'aguardando' });
+                }
+            });
+        }
 
         const result = await optimizeSchoolVanRoute({
             students: studentStops,
@@ -319,7 +307,6 @@ export default function DriverRoutePlanPage() {
         updateDoc('drivers', driverId, { status: 'em_rota' });
         
         sessionStorage.setItem('activeRouteId', route.id);
-        sessionStorage.setItem('startOdometer', vehicle?.currentOdometer?.toString() || '0');
         setActiveRouteId(route.id);
         
         toast({ title: "IA: Rota Otimizada!", description: "Itinerário ajustado com base na sua posição atual." });
@@ -336,6 +323,7 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
+    // Auto-encerramento ao finalizar o último aluno na Volta
     if (selectedDirection === 'volta' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -352,6 +340,7 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
+      // Auto-encerramento ao finalizar na escola na Ida
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
@@ -379,13 +368,13 @@ export default function DriverRoutePlanPage() {
                             <Bus className="text-primary h-8 w-8" />
                         </div>
                         <CardTitle className="text-primary text-2xl font-black italic">Guardian</CardTitle>
-                        <CardDescription className="font-bold">Configure sua jornada operacional.</CardDescription>
+                        <CardDescription className="font-bold text-foreground/80">Configure sua jornada operacional.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
                             <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Selecione a Rota</Label>
                             <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
-                                <SelectTrigger className="h-12 border-primary/30 font-bold text-base"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-12 border-primary/30 font-bold text-base bg-background"><SelectValue /></SelectTrigger>
                                 <SelectContent>{routes?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
@@ -393,11 +382,11 @@ export default function DriverRoutePlanPage() {
                             <div className="space-y-2">
                                 <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Turno</Label>
                                 <RadioGroup value={selectedShift} onValueChange={(v) => startTransition(() => setSelectedShift(v as Shift))} className="grid grid-cols-1 gap-2">
-                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors bg-background">
                                         <RadioGroupItem value="Manhã" id="shift-m"/>
                                         <Label htmlFor="shift-m" className="flex-1 cursor-pointer font-bold text-sm">Manhã</Label>
                                     </div>
-                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors bg-background">
                                         <RadioGroupItem value="Tarde" id="shift-t"/>
                                         <Label htmlFor="shift-t" className="flex-1 cursor-pointer font-bold text-sm">Tarde</Label>
                                     </div>
@@ -406,11 +395,11 @@ export default function DriverRoutePlanPage() {
                             <div className="space-y-2">
                                 <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Sentido</Label>
                                 <RadioGroup value={selectedDirection} onValueChange={(v) => startTransition(() => setSelectedDirection(v as any))} className="grid grid-cols-1 gap-2">
-                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors bg-background">
                                         <RadioGroupItem value="ida" id="dir-i"/>
                                         <Label htmlFor="dir-i" className="flex-1 cursor-pointer font-bold text-sm">Ida</Label>
                                     </div>
-                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
+                                    <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors bg-background">
                                         <RadioGroupItem value="volta" id="dir-v"/>
                                         <Label htmlFor="dir-v" className="flex-1 cursor-pointer font-bold text-sm">Volta</Label>
                                     </div>
@@ -418,7 +407,7 @@ export default function DriverRoutePlanPage() {
                             </div>
                         </div>
                     </CardContent>
-                    <CardFooter className="flex flex-col gap-3 pt-4 border-t">
+                    <CardFooter className="flex flex-col gap-3 pt-4 border-t bg-muted/10">
                         <Button className="w-full h-14 font-black text-lg shadow-xl bg-primary hover:bg-primary/90 text-white" onClick={handleStartRoute} disabled={isOptimizing}>
                             {isOptimizing ? <><Loader2 className="mr-2 h-5 w-5 animate-spin"/> OTIMIZANDO...</> : <><Play className="mr-2 h-5 w-5 fill-current" /> INICIAR VIAGEM</>}
                         </Button>
@@ -437,10 +426,10 @@ export default function DriverRoutePlanPage() {
                         </div>
                     </div>
                     <div className="flex gap-2">
-                        <Button variant={driverProfile?.status === 'pausa' ? 'default' : 'outline'} size="icon" onClick={handlePauseToggle} className="border-primary/20 h-10 w-10">
-                            {driverProfile?.status === 'pausa' ? <Play className="h-5 w-5 fill-current text-white"/> : <Pause className="h-5 w-5" />}
+                        <Button variant={driverProfile?.status === 'pausa' ? 'default' : 'outline'} size="icon" onClick={handlePauseToggle} className="border-primary/30 h-10 w-10 bg-background">
+                            {driverProfile?.status === 'pausa' ? <Play className="h-5 w-5 fill-current text-white"/> : <Pause className="h-5 w-5 text-primary" />}
                         </Button>
-                        <Button variant="outline" size="icon" asChild className="border-primary/20 h-10 w-10"><Link href="/driver/messages"><MessageSquare className="h-5 w-5 text-primary" /></Link></Button>
+                        <Button variant="outline" size="icon" asChild className="border-primary/30 h-10 w-10 bg-background"><Link href="/driver/messages"><MessageSquare className="h-5 w-5 text-primary" /></Link></Button>
                         <Dialog>
                             <DialogTrigger asChild>
                                 <Button variant="destructive" size="icon" className="h-10 w-10 shadow-lg shadow-destructive/20"><Siren className="h-5 w-5 animate-pulse"/></Button>
@@ -477,7 +466,7 @@ export default function DriverRoutePlanPage() {
                                             <CheckCircle className="h-14 w-14 text-green-500"/>
                                         </div>
                                         <CardTitle className="text-2xl font-black text-green-600 uppercase">Fim de Rota!</CardTitle>
-                                        <p className="text-muted-foreground mt-2 max-w-xs mx-auto font-bold">Todos os alunos foram processados com sucesso.</p>
+                                        <p className="text-muted-foreground mt-2 max-w-xs mx-auto font-bold">Todos os alunos foram processados.</p>
                                         <Button variant="destructive" className="mt-10 w-full h-14 text-lg font-black shadow-xl" onClick={handleEndRoute}>
                                             <Square className="mr-3 h-5 w-5 fill-current"/> FINALIZAR OPERAÇÃO
                                         </Button>
@@ -601,7 +590,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                     <span className="text-xs font-black truncate text-foreground/80">{student.street}, {student.number}</span>
                 </div>
             </div>
-            <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-14 w-14 border-primary/30 hover:bg-primary/10 shadow-md">
+            <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-14 w-14 border-primary/30 hover:bg-primary/10 shadow-md bg-background">
                 <Navigation className="h-7 w-7 text-primary" />
             </Button>
         </div>
