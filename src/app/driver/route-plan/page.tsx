@@ -98,7 +98,7 @@ const GoogleMapMarkers = ({ driverLocation, stops, routePolyline }: { driverLoca
         {routePolyline && <RoutePolyline geoJsonPath={routePolyline} />}
         {driverLocation && (
             <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição" zIndex={10}>
-                 <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff"><Bus /></Pin>
+                 <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff"><Bus className="h-4 w-4"/></Pin>
             </AdvancedMarker>
         )}
         {stops.map((stop) => {
@@ -116,7 +116,7 @@ const GoogleMapMarkers = ({ driverLocation, stops, routePolyline }: { driverLoca
                             </Avatar>
                         </Pin>
                     ) : (
-                        <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff"><School /></Pin>
+                        <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff"><School className="h-4 w-4" /></Pin>
                     )}
                 </AdvancedMarker>
             );
@@ -165,7 +165,6 @@ export default function DriverRoutePlanPage() {
   const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
   const { data: vehicle } = useMockDoc('vehicles', driverProfile?.vehicleId);
 
-  // Telemetria por Delta: 30 metros ou 30 segundos
   const locRef = useRef(driverLocation);
   const lastSyncRef = useRef({ time: Date.now(), lat: 0, lng: 0 });
   useEffect(() => { locRef.current = driverLocation; }, [driverLocation]);
@@ -221,7 +220,6 @@ export default function DriverRoutePlanPage() {
     return { activeStop: orderedStops[nextStopIndex], upcomingStops: orderedStops.slice(nextStopIndex + 1) };
   }, [orderedStops, driverProfile?.status, selectedDirection]);
 
-  // Pulo do Gato: Re-otimização Instantânea com Gemini no Início
   const handleStartRoute = async () => {
     if (!route || !driverProfile) return;
     setIsOptimizing(true);
@@ -250,7 +248,6 @@ export default function DriverRoutePlanPage() {
             optimizationMode: 'flexible'
         });
 
-        // Atualiza a ordem e o traçado
         const newIds = result.optimizedStops.map(s => s.id);
         const waypoints = result.optimizedStops.map(s => {
             const ent = studentsMap.get(s.id) || schoolsMap.get(s.id);
@@ -285,7 +282,7 @@ export default function DriverRoutePlanPage() {
       if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
       const startOdo = Number(sessionStorage.getItem('startOdometer') || vehicle.currentOdometer);
       const actualDistance = vehicle.currentOdometer - startOdo;
-      const savingsKm = Math.max(0, actualDistance * 0.15); // Simulação de ROI
+      const savingsKm = Math.max(0, actualDistance * 0.15); 
       const fuelSaved = (savingsKm / 8) * 6.00;
       addDoc('trip_history', { date: new Date().toISOString().split('T')[0], routeName: route.name, plannedKm: 15, actualKm: Number(actualDistance.toFixed(1)), driverName: driverProfile.name, savingsKm: Number(savingsKm.toFixed(1)), fuelSaved: Number(fuelSaved.toFixed(2)) });
       updateDoc('drivers', driverId, { status: 'inativo' });
@@ -306,7 +303,7 @@ export default function DriverRoutePlanPage() {
             <div className="flex-1 flex items-center justify-center p-4">
                 <Card className="max-w-md w-full shadow-2xl border-primary/20">
                     <CardHeader className="text-center">
-                        <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4">
+                        <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 border-2 border-primary/20">
                             <Bus className="text-primary h-8 w-8" />
                         </div>
                         <CardTitle>Configurar Viagem</CardTitle>
@@ -316,7 +313,7 @@ export default function DriverRoutePlanPage() {
                         <div className="space-y-2">
                             <Label>Selecione a Rota</Label>
                             <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
-                                <SelectTrigger className="h-12"><SelectValue /></SelectTrigger>
+                                <SelectTrigger className="h-10"><SelectValue /></SelectTrigger>
                                 <SelectContent>{routes?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent>
                             </Select>
                         </div>
@@ -350,8 +347,8 @@ export default function DriverRoutePlanPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-3 pt-4 border-t">
-                        <Button className="w-full h-14 text-lg font-bold shadow-lg" onClick={handleStartRoute} disabled={isOptimizing}>
-                            {isOptimizing ? <><Loader2 className="mr-2 h-6 w-6 animate-spin"/> Otimizando...</> : <><Play className="mr-2 h-6 w-6" /> Iniciar Rota Agora</>}
+                        <Button className="w-full h-12 font-bold shadow-lg" onClick={handleStartRoute} disabled={isOptimizing}>
+                            {isOptimizing ? <><Loader2 className="mr-2 h-4 w-4 animate-spin"/> Otimizando...</> : <><Play className="mr-2 h-4 w-4" /> Iniciar Rota Agora</>}
                         </Button>
                         <Link href="/" className="w-full"><Button variant="ghost" className="w-full">Voltar ao Início</Button></Link>
                     </CardFooter>
@@ -394,8 +391,8 @@ export default function DriverRoutePlanPage() {
                                 </div>
                                 <CardTitle className="text-2xl">Todas as Paradas Concluídas!</CardTitle>
                                 <p className="text-muted-foreground mt-2 max-w-xs mx-auto">Itinerário finalizado com sucesso. Você pode encerrar a viagem agora.</p>
-                                <Button variant="destructive" className="mt-10 w-full h-16 text-xl font-bold shadow-xl" onClick={handleEndRoute}>
-                                    <Square className="mr-3 h-6 w-6 fill-current"/> Finalizar Operação
+                                <Button variant="destructive" className="mt-10 w-full h-12 text-lg font-bold shadow-xl" onClick={handleEndRoute}>
+                                    <Square className="mr-3 h-5 w-5 fill-current"/> Finalizar Operação
                                 </Button>
                             </Card>
                         ) : activeStop.type === 'student' ? (
@@ -462,7 +459,6 @@ export default function DriverRoutePlanPage() {
             </div>
         )}
 
-        {/* Modals */}
         {isModalOpen && selectedStudentForModal && (
             <AuthorizedContactsModal 
                 isOpen={isModalOpen} 
@@ -492,7 +488,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   };
 
   return (
-    <Card className={cn("w-full shadow-xl border-primary/30", hasMedicalAlert && "ring-2 ring-destructive border-destructive/50 bg-destructive/5")}>
+    <Card className={cn("w-full shadow-lg border-primary/30", hasMedicalAlert && "ring-2 ring-destructive border-destructive/50 bg-destructive/5")}>
       <CardHeader className="pb-3 border-b bg-muted/10">
         <div className="flex justify-between items-center mb-3">
             <Badge variant="outline" className="text-[10px] font-bold tracking-[0.2em] uppercase bg-background">Parada Atual</Badge>
@@ -503,19 +499,19 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
             )}
         </div>
         <div className="flex items-center gap-4">
-            <Avatar className="h-16 w-16 border-2 border-primary/20 shadow-md">
+            <Avatar className="h-14 w-14 border-2 border-primary/20 shadow-md">
                 <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
                 <AvatarFallback className="bg-primary/10 text-primary text-xl font-bold">{student.name[0]}</AvatarFallback>
             </Avatar>
             <div className="flex-grow min-w-0">
-                <CardTitle className="text-xl truncate leading-none mb-1">{student.name}</CardTitle>
+                <CardTitle className="text-lg truncate leading-none mb-1">{student.name}</CardTitle>
                 <div className="flex items-center gap-1.5 text-muted-foreground">
                     <MapPin className="h-3 w-3 shrink-0" />
-                    <span className="text-xs font-medium truncate">{student.street}, {student.number}</span>
+                    <span className="text-[10px] font-medium truncate">{student.street}, {student.number}</span>
                 </div>
             </div>
-            <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-12 w-12 border-primary/20">
-                <Navigation className="h-6 w-6 text-primary" />
+            <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-10 w-10 border-primary/20">
+                <Navigation className="h-5 w-5 text-primary" />
             </Button>
         </div>
       </CardHeader>
@@ -523,16 +519,16 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
       <CardContent className="pt-6 space-y-4">
         <div className="grid grid-cols-2 gap-3">
             {isGoing ? (
-                <Button size="lg" className="bg-green-600 hover:bg-green-700 h-16 text-lg font-black" onClick={() => onStatusChange(student.id, 'a_bordo')}>
-                    <CheckCircle className="mr-2 h-6 w-6" /> EMBARCOU
+                <Button size="default" className="bg-green-600 hover:bg-green-700 h-12 font-bold" onClick={() => onStatusChange(student.id, 'a_bordo')}>
+                    <CheckCircle className="mr-2 h-5 w-5" /> EMBARCOU
                 </Button>
             ) : (
-                <Button size="lg" className="bg-blue-600 hover:bg-blue-700 h-16 text-lg font-black" onClick={() => onStatusChange(student.id, 'desembarcado')}>
-                    <CheckCircle className="mr-2 h-6 w-6" /> DESEMBARCOU
+                <Button size="default" className="bg-blue-600 hover:bg-blue-700 h-12 font-bold" onClick={() => onStatusChange(student.id, 'desembarcado')}>
+                    <CheckCircle className="mr-2 h-5 w-5" /> DESEMBARCOU
                 </Button>
             )}
-            <Button size="lg" variant="destructive" className="h-16 text-lg font-black" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
-                <XCircle className="mr-2 h-6 w-6" /> AUSENTE
+            <Button size="default" variant="destructive" className="h-12 font-bold" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}>
+                <XCircle className="mr-2 h-5 w-5" /> AUSENTE
             </Button>
         </div>
         
@@ -544,11 +540,11 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
       </CardContent>
 
       <CardFooter className="grid grid-cols-2 gap-3 pt-2 bg-muted/10 rounded-b-lg border-t">
-           <Button variant="secondary" className="h-12 text-sm font-bold" onClick={onScanQrCode}>
-               <QrCode className="mr-2 h-5 w-5" /> QR Code
+           <Button variant="secondary" className="h-10 text-xs font-bold" onClick={onScanQrCode}>
+               <QrCode className="mr-2 h-4 w-4" /> QR Code
            </Button>
-           <Button variant="secondary" className="h-12 text-sm font-bold" onClick={() => onOpenAuthorizedModal(student)}>
-               <IdCard className="mr-2 h-5 w-5"/> Autorizados
+           <Button variant="secondary" className="h-10 text-xs font-bold" onClick={() => onOpenAuthorizedModal(student)}>
+               <IdCard className="mr-2 h-4 w-4"/> Autorizados
            </Button>
       </CardFooter>
     </Card>
@@ -566,10 +562,10 @@ function NextStopSchoolCard({ school, onDropOff }: { school: SchoolData, onDropO
             <CardTitle className="text-2xl truncate">{school.name}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button size="lg" className="w-full h-24 bg-destructive hover:bg-destructive/90 text-2xl font-black shadow-xl" onClick={() => onDropOff(school.id)}>
-                <Bus className="mr-4 h-10 w-10" /> CHEGAMOS NA ESCOLA
+            <Button size="lg" className="w-full h-20 bg-destructive hover:bg-destructive/90 text-xl font-bold shadow-xl" onClick={() => onDropOff(school.id)}>
+                <Bus className="mr-4 h-8 w-8" /> CHEGAMOS NA ESCOLA
             </Button>
-            <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest mt-6">Clique no botão apenas quando todos os alunos estiverem seguros no portão.</p>
+            <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest mt-6 px-4">Clique no botão apenas quando todos os alunos estiverem seguros no portão.</p>
           </CardContent>
         </Card>
     );
