@@ -278,7 +278,7 @@ export default function DriverRoutePlanPage() {
             address: `${sch.street}, ${sch.number}`
         }));
 
-        // Resetar status dos alunos ao iniciar VOLTA para garantir o checklist limpo
+        // CRITICAL: Reset student status to 'aguardando' when starting a VOLTA trip to ensure clean checklist
         if (selectedDirection === 'volta') {
             orderedStops.forEach(s => {
                 if (s.type === 'student') {
@@ -323,7 +323,7 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
-    // Auto-encerramento ao finalizar o último aluno na Volta
+    // Auto-return to home after last drop-off in VOLTA
     if (selectedDirection === 'volta' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -340,7 +340,7 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
-      // Auto-encerramento ao finalizar na escola na Ida
+      // Auto-return to home after drop-off at school in IDA
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
