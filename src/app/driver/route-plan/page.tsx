@@ -142,7 +142,7 @@ function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: n
 }
 
 export default function DriverRoutePlanPage() {
-  const { updateDoc, setDoc, addDoc } = useMockData();
+  const { updateDoc, setDoc } = useMockData();
   const { toast } = useToast();
   
   const [mockUserId, setMockUserId] = useState<string | null>(null);
@@ -337,6 +337,7 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
+    // Auto-encerramento apenas se não houver mais paradas e a ação for um desembarque/ausência
     if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -353,6 +354,7 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
+      // Só encerra automaticamente na IDA se for o último ponto (a escola)
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }

@@ -13,7 +13,7 @@ export const initialMockData = {
         { id: "user-admin-1", name: "Admin Guardian", email: "admin@guardian.com", profile: 'gestor', active: true },
         { id: "user-motorista-4", name: "Juliano Castro", email: "juliano.castro@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", profile: 'pai', active: true },
-        { id: "user-pai-2", name: "João Costa", email: "joao.costa@email.com", profile: 'pai', active: true },
+        { id: "user-pai-2", name: "Joao Costa", email: "joao.costa@email.com", profile: 'pai', active: true },
         { id: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", profile: 'pai', active: true },
         { id: "user-monitor-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", profile: 'monitor', active: true },
     ],
@@ -42,11 +42,11 @@ export const initialMockData = {
     ],
     parents: [
         { id: "parent-1", userId: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", phone: "11987654321", active: true },
-        { id: "parent-2", userId: "user-pai-2", name: "João Costa", email: "joao.costa@email.com", phone: "11912345678", active: true },
+        { id: "parent-2", userId: "user-pai-2", name: "Joao Costa", email: "joao.costa@email.com", phone: "11912345678", active: true },
         { id: "parent-3", userId: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", phone: "11999998888", active: true },
     ],
     students: [
-        // MANHÃ (15 ALUNOS)
+        // MANHÃ (15 ALUNOS) - Alvos da Rota 01
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5585, longitude: -46.6605, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP" },
@@ -63,7 +63,7 @@ export const initialMockData = {
         { id: "student-14", name: "Bianca Viana", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6700, street: "Rua Peru", number: "200", city: "São Paulo", state: "SP" },
         { id: "student-15", name: "Rafael Guimarães", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5710, longitude: -46.6710, street: "Rua Argentina", number: "300", city: "São Paulo", state: "SP" },
 
-        // TARDE (4 ALUNOS)
+        // TARDE (4 ALUNOS) - Alvos da Rota 02
         { id: "student-16", name: "Tiago Silva", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5800, longitude: -46.6800, street: "Rua Tabapuã", number: "500", city: "São Paulo", state: "SP" },
         { id: "student-17", name: "Manuela Ferro", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5810, longitude: -46.6810, street: "Rua Joaquim Floriano", number: "600", city: "São Paulo", state: "SP" },
         { id: "student-18", name: "Ricardo Dias", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5820, longitude: -46.6820, street: "Av. Brigadeiro Faria Lima", number: "1200", city: "São Paulo", state: "SP" },
@@ -78,7 +78,7 @@ export const initialMockData = {
     routes: [
         {
             id: "route-1",
-            name: "Rota Matinal - 15 Alunos",
+            name: "Rota 01 - Manhã (15 Alunos)",
             driverId: "driver-1",
             monitorId: "user-monitor-1",
             shift: "Manhã",
@@ -93,7 +93,7 @@ export const initialMockData = {
         },
         {
             id: "route-2",
-            name: "Rota Vespertina - 4 Alunos",
+            name: "Rota 02 - Tarde (4 Alunos)",
             driverId: "driver-1",
             monitorId: "user-monitor-1",
             shift: "Tarde",
@@ -132,7 +132,8 @@ export const initialMockData = {
         { id: "exp-2", description: "Troca de Óleo", amount: 890.00, date: "2024-08-03", category: "Manutenção" }
     ],
     predefined_messages: [
-        { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" }
+        { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
+        { id: "pm-2", text: "A van está chegando na escola.", for: "driver" }
     ],
     authorized_pickups: [],
     trip_requests: [],

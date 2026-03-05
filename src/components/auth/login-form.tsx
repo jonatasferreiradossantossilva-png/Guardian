@@ -15,7 +15,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { useState, useEffect, useTransition } from "react";
+import { useState, useEffect } from "react";
 import { Loader2, Shield, Car, Users, ClipboardCheck } from "lucide-react";
 import { useAuth, initiateAnonymousSignIn } from "@/firebase";
 import { useToast } from "@/hooks/use-toast";
@@ -43,7 +43,6 @@ export function LoginForm() {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const auth = useAuth();
 
   useEffect(() => {
@@ -118,8 +117,8 @@ export function LoginForm() {
                 <FormItem className="space-y-3">
                   <FormLabel className="text-base font-semibold">Selecione seu perfil:</FormLabel>
                   <RadioGroup
-                    onValueChange={(val) => startTransition(() => field.onChange(val))}
-                    value={field.value}
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
                     className="grid grid-cols-1 sm:grid-cols-2 gap-2"
                   >
                     <div 

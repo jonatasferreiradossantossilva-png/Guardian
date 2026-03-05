@@ -170,7 +170,7 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
                          <Edit className="mr-2 h-4 w-4" /> Editar
                        </Button>
                        <Button variant="outline" size="sm" className="flex-1" onClick={() => handleDuplicate(template)}>
-                         <Copy className="mr-2 h-4 w-4" /> Clonar
+                         <Copy className="mr-2 h-4 w-4" /> Duplicar
                        </Button>
                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(template)}>
                          <Trash2 className="mr-2 h-4 w-4" /> Deletar
