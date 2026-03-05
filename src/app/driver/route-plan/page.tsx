@@ -44,6 +44,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Label as RawLabel } from '@/components/ui/label';
 import { useOnlineStatus } from '@/hooks/use-online-status';
 import { QrScannerModal } from '@/components/shared/qr-scanner-modal';
 import { cn } from '@/lib/utils';
@@ -209,9 +210,10 @@ export default function DriverRoutePlanPage() {
         const student = studentsMap.get(id);
         const school = schoolsMap.get(id);
         if (student && student.active !== false) {
+             if (student.shift !== 'Integral' && student.shift !== selectedShift) return null;
              if (selectedDirection === 'ida' && student.status.startsWith('ausente')) return null;
              if (selectedDirection === 'volta' && (student.status === 'ausente_volta' || student.status === 'ausente_dia_todo')) return null;
-             if (student.shift === 'Integral' || student.shift === selectedShift) return { id, type: 'student', data: student as Student };
+             return { id, type: 'student', data: student as Student };
         } else if (school) return { id, type: 'school', data: school as SchoolData };
         return null;
     }).filter((s): s is Stop => s !== null);
@@ -265,10 +267,9 @@ export default function DriverRoutePlanPage() {
         const currentLoc = locRef.current;
         const startPoint = currentLoc ? `${currentLoc.latitude},${currentLoc.longitude}` : undefined;
         
-        // Reset universal de checklist
+        // Reset universal de checklist para os alunos DAQUELA rota
         route.studentIds.forEach(id => {
-            const s = studentsMap.get(id);
-            if (s) {
+            if (studentsMap.has(id)) {
                 updateDoc('students', id, { status: 'aguardando' });
             }
         });
@@ -335,7 +336,7 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
-    // Auto-encerramento apenas se não houver mais paradas pendentes no final da jornada
+    // Auto-encerramento se for a última parada
     if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -352,7 +353,7 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
-      // BLINDAGEM: No sentido 'volta', após o embarque na escola, ainda temos as casas dos alunos. 
+      // NO sentido 'volta', após o embarque na escola, ainda temos as casas dos alunos. 
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
@@ -384,7 +385,7 @@ export default function DriverRoutePlanPage() {
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Selecione a Rota</Label>
+                            <RawLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Selecione a Rota</RawLabel>
                             <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
                                 <SelectTrigger className="h-12 border-primary/30 font-bold text-base bg-background"><SelectValue /></SelectTrigger>
                                 <SelectContent>{routes?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent>
@@ -392,28 +393,28 @@ export default function DriverRoutePlanPage() {
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Turno</Label>
+                                <RawLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Turno</RawLabel>
                                 <RadioGroup value={selectedShift} onValueChange={(v) => startTransition(() => setSelectedShift(v as Shift))} className="grid grid-cols-1 gap-2">
                                     <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors bg-background">
                                         <RadioGroupItem value="Manhã" id="shift-m"/>
-                                        <Label htmlFor="shift-m" className="flex-1 cursor-pointer font-bold text-sm">Manhã</Label>
+                                        <RawLabel htmlFor="shift-m" className="flex-1 cursor-pointer font-bold text-sm">Manhã</RawLabel>
                                     </div>
                                     <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors bg-background">
                                         <RadioGroupItem value="Tarde" id="shift-t"/>
-                                        <Label htmlFor="shift-t" className="flex-1 cursor-pointer font-bold text-sm">Tarde</Label>
+                                        <RawLabel htmlFor="shift-t" className="flex-1 cursor-pointer font-bold text-sm">Tarde</RawLabel>
                                     </div>
                                 </RadioGroup>
                             </div>
                             <div className="space-y-2">
-                                <Label className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Sentido</Label>
+                                <RawLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Sentido</RawLabel>
                                 <RadioGroup value={selectedDirection} onValueChange={(v) => startTransition(() => setSelectedDirection(v as any))} className="grid grid-cols-1 gap-2">
                                     <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors bg-background">
                                         <RadioGroupItem value="ida" id="dir-i"/>
-                                        <Label htmlFor="dir-i" className="flex-1 cursor-pointer font-bold text-sm">Ida</Label>
+                                        <RawLabel htmlFor="dir-i" className="flex-1 cursor-pointer font-bold text-sm">Ida</RawLabel>
                                     </div>
                                     <div className="flex items-center space-x-2 p-3 border-2 rounded-md cursor-pointer hover:bg-primary/5 transition-colors bg-background">
                                         <RadioGroupItem value="volta" id="dir-v"/>
-                                        <Label htmlFor="dir-v" className="flex-1 cursor-pointer font-bold text-sm">Volta</Label>
+                                        <RawLabel htmlFor="dir-v" className="flex-1 cursor-pointer font-bold text-sm">Volta</RawLabel>
                                     </div>
                                 </RadioGroup>
                             </div>
