@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -26,7 +27,6 @@ import {
   HeartPulse,
   MapPin,
   Activity,
-  Info,
   ChevronRight,
   Sparkles,
   Navigation,
@@ -99,7 +99,7 @@ const statusText: Record<StudentStatus, string> = {
 
 const GoogleMapMarkers = ({ driverLocation, stops, routePolyline }: { driverLocation: any, stops: Stop[], routePolyline?: string }) => (
     <>
-        {routePolyline && <RoutePolyline geoJsonPath={routePolyline} />}
+        {routePolyline && <RoutePolyline geoJsonPath={routePolyline} strokeColor="#2ab0c1" />}
         {driverLocation && (
             <AdvancedMarker position={{ lat: driverLocation.latitude, lng: driverLocation.longitude }} title="Sua Posição" zIndex={10}>
                  <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff"><Bus className="h-4 w-4"/></Pin>
@@ -362,11 +362,11 @@ export default function DriverRoutePlanPage() {
                                 <RadioGroup value={selectedShift} onValueChange={(v) => setSelectedShift(v as Shift)} className="grid grid-cols-1 gap-2">
                                     <div className="flex items-center space-x-2 p-3 border rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="Manhã" id="shift-m"/>
-                                        <Label htmlFor="shift-m" className="flex-1 cursor-pointer font-medium">Manhã</Label>
+                                        <Label htmlFor="shift-m" className="flex-1 cursor-pointer font-medium text-sm">Manhã</Label>
                                     </div>
                                     <div className="flex items-center space-x-2 p-3 border rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="Tarde" id="shift-t"/>
-                                        <Label htmlFor="shift-t" className="flex-1 cursor-pointer font-medium">Tarde</Label>
+                                        <Label htmlFor="shift-t" className="flex-1 cursor-pointer font-medium text-sm">Tarde</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
@@ -375,11 +375,11 @@ export default function DriverRoutePlanPage() {
                                 <RadioGroup value={selectedDirection} onValueChange={(v) => setSelectedDirection(v as any)} className="grid grid-cols-1 gap-2">
                                     <div className="flex items-center space-x-2 p-3 border rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="ida" id="dir-i"/>
-                                        <Label htmlFor="dir-i" className="flex-1 cursor-pointer font-medium">Ida</Label>
+                                        <Label htmlFor="dir-i" className="flex-1 cursor-pointer font-medium text-sm">Ida</Label>
                                     </div>
                                     <div className="flex items-center space-x-2 p-3 border rounded-md cursor-pointer hover:bg-primary/5 transition-colors">
                                         <RadioGroupItem value="volta" id="dir-v"/>
-                                        <Label htmlFor="dir-v" className="flex-1 cursor-pointer font-medium">Volta</Label>
+                                        <Label htmlFor="dir-v" className="flex-1 cursor-pointer font-medium text-sm">Volta</Label>
                                     </div>
                                 </RadioGroup>
                             </div>
@@ -422,9 +422,9 @@ export default function DriverRoutePlanPage() {
                         </TabsList>
                     </div>
 
-                    <TabsContent value="itinerario" className="flex-1 flex flex-col p-4 space-y-4 overflow-y-auto animate-in fade-in duration-300">
+                    <TabsContent value="itinerario" className="flex-1 flex flex-col p-4 space-y-4 overflow-hidden animate-in fade-in duration-300">
                         {!activeStop ? (
-                            <Card className="text-center p-10 bg-green-500/10 border-green-500/30 flex-1 flex flex-col justify-center">
+                            <Card className="text-center p-10 bg-green-500/10 border-green-500/30 flex-1 flex flex-col justify-center overflow-y-auto">
                                 <div className="mx-auto w-24 h-24 rounded-full bg-green-500/20 flex items-center justify-center mb-6">
                                     <CheckCircle className="h-14 w-14 text-green-500"/>
                                 </div>
@@ -435,38 +435,40 @@ export default function DriverRoutePlanPage() {
                                 </Button>
                             </Card>
                         ) : activeStop.type === 'student' ? (
-                            <div className="space-y-6">
-                                <NextStopCard 
-                                    student={activeStop.data as Student} 
-                                    onStatusChange={handleStatusChange} 
-                                    onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
-                                    direction={selectedDirection} 
-                                    onScanQrCode={() => setIsScannerOpen(true)} 
-                                />
-                                {upcomingStops.length > 0 && (
-                                    <div className="space-y-3">
-                                        <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Próximas Paradas ({upcomingStops.length})</h3>
-                                        <div className="space-y-2">
-                                            {upcomingStops.slice(0, 5).map((stop, idx) => (
-                                                <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border bg-card shadow-sm">
-                                                    {stop.type === 'student' ? (
-                                                        <Avatar className="h-8 w-8 border shadow-sm">
-                                                            <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/>
-                                                            <AvatarFallback>S</AvatarFallback>
-                                                        </Avatar>
-                                                    ) : (
-                                                        <div className="flex items-center justify-center h-8 w-8 rounded-full bg-destructive text-white">
-                                                            <School className="h-4 w-4" />
-                                                        </div>
-                                                    )}
-                                                    <span className="text-sm font-bold truncate flex-1 text-foreground">{stop.data.name}</span>
-                                                    <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-tighter">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
-                                                </div>
-                                            ))}
+                            <ScrollArea className="flex-1 pr-2">
+                                <div className="space-y-6 pb-10">
+                                    <NextStopCard 
+                                        student={activeStop.data as Student} 
+                                        onStatusChange={handleStatusChange} 
+                                        onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
+                                        direction={selectedDirection} 
+                                        onScanQrCode={() => setIsScannerOpen(true)} 
+                                    />
+                                    {upcomingStops.length > 0 && (
+                                        <div className="space-y-3">
+                                            <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Próximas Paradas ({upcomingStops.length})</h3>
+                                            <div className="space-y-2">
+                                                {upcomingStops.slice(0, 5).map((stop, idx) => (
+                                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border bg-card shadow-sm">
+                                                        {stop.type === 'student' ? (
+                                                            <Avatar className="h-8 w-8 border shadow-sm">
+                                                                <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/>
+                                                                <AvatarFallback>S</AvatarFallback>
+                                                            </Avatar>
+                                                        ) : (
+                                                            <div className="flex items-center justify-center h-8 w-8 rounded-full bg-destructive text-white">
+                                                                <School className="h-4 w-4" />
+                                                            </div>
+                                                        )}
+                                                        <span className="text-sm font-bold truncate flex-1 text-foreground">{stop.data.name}</span>
+                                                        <Badge variant="secondary" className="text-[9px] font-black uppercase tracking-tighter">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
-                                    </div>
-                                )}
-                            </div>
+                                    )}
+                                </div>
+                            </ScrollArea>
                         ) : (
                             <NextStopSchoolCard 
                                 school={activeStop.data as SchoolData} 
