@@ -278,14 +278,12 @@ export default function DriverRoutePlanPage() {
             address: `${sch.street}, ${sch.number}`
         }));
 
-        // CRITICAL: Reset student status to 'aguardando' when starting a VOLTA trip to ensure clean checklist
-        if (selectedDirection === 'volta') {
-            orderedStops.forEach(s => {
-                if (s.type === 'student') {
-                    updateDoc('students', s.id, { status: 'aguardando' });
-                }
-            });
-        }
+        // Reset student status to ensure checklist is ready
+        orderedStops.forEach(s => {
+            if (s.type === 'student') {
+                updateDoc('students', s.id, { status: 'aguardando' });
+            }
+        });
 
         const result = await optimizeSchoolVanRoute({
             students: studentStops,
@@ -323,11 +321,11 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
-    // Auto-return to home after last drop-off in VOLTA
-    if (selectedDirection === 'volta' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
+    // Auto-return to home after last goal in IDA/VOLTA
+    if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
-  }, [updateDoc, toast, selectedDirection, upcomingStops.length, handleEndRoute]);
+  }, [updateDoc, toast, upcomingStops.length, handleEndRoute]);
 
   const handleSchoolAction = useCallback((schoolId: string) => {
       const isIda = selectedDirection === 'ida';
@@ -340,8 +338,7 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
-      // Auto-return to home after drop-off at school in IDA
-      if (isIda && upcomingStops.length === 0) {
+      if (upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
   }, [selectedDirection, studentsAtCurrentStop, updateDoc, toast, upcomingStops.length, handleEndRoute]);
