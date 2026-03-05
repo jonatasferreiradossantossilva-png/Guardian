@@ -1,4 +1,3 @@
-
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais para o protótipo do Guardian.
