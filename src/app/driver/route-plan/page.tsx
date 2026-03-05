@@ -33,6 +33,7 @@ import {
   Users,
   Check,
   Pause,
+  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -320,14 +321,28 @@ export default function DriverRoutePlanPage() {
   const handleEndRoute = useCallback(() => {
       if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
       const startOdo = Number(sessionStorage.getItem('startOdometer') || vehicle.currentOdometer);
-      const actualDistance = vehicle.currentOdometer - startOdo;
-      const savingsKm = Math.max(0, actualDistance * 0.15); 
-      const fuelSaved = (savingsKm / 8) * 6.00;
-      addDoc('trip_history', { date: new Date().toISOString().split('T')[0], routeName: route.name, plannedKm: 15, actualKm: Number(actualDistance.toFixed(1)), driverName: driverProfile.name, savingsKm: Number(savingsKm.toFixed(1)), fuelSaved: Number(fuelSaved.toFixed(2)) });
+      const actualDistance = Math.max(0, (vehicle.currentOdometer || 0) - startOdo);
+      const savingsKm = Number((actualDistance * 0.15).toFixed(1)); 
+      const fuelSaved = Number(((savingsKm / 8) * 6.00).toFixed(2));
+      
+      addDoc('trip_history', { 
+          date: new Date().toISOString().split('T')[0], 
+          routeName: route.name, 
+          plannedKm: 15, 
+          actualKm: Number(actualDistance.toFixed(1)), 
+          driverName: driverProfile.name, 
+          savingsKm, 
+          fuelSaved 
+      });
+
       updateDoc('drivers', driverId, { status: 'inativo' });
       sessionStorage.removeItem('activeRouteId');
       setActiveRouteId(null);
-      toast({ title: "Rota Finalizada!", description: `Economia estimada: R$ ${fuelSaved.toFixed(2)}.` });
+      
+      toast({ 
+          title: "Viagem Encerrada!", 
+          description: `Retornando à tela inicial. Economia: R$ ${fuelSaved.toFixed(2)}.` 
+      });
   }, [driverId, allStudents, route, vehicle, driverProfile, updateDoc, addDoc, toast]);
 
   const handlePauseToggle = useCallback(() => {
@@ -435,11 +450,13 @@ export default function DriverRoutePlanPage() {
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-6">
                                 {driverProfile?.status === 'pausa' && (
-                                    <Alert className="bg-amber-500/10 border-amber-500/30 text-amber-600">
-                                        <Pause className="h-4 w-4" />
-                                        <AlertTitle className="font-bold">Viagem Pausada</AlertTitle>
-                                        <AlertDescription>Retome a viagem no botão superior para voltar a enviar sua posição GPS aos pais.</AlertDescription>
-                                    </Alert>
+                                    <div className="p-4 rounded-lg bg-amber-500/10 border-2 border-amber-500/30 text-amber-600 flex gap-3">
+                                        <Pause className="h-5 w-5 shrink-0" />
+                                        <div>
+                                            <p className="font-bold text-sm">Viagem Pausada</p>
+                                            <p className="text-xs">Retome no botão superior para voltar a enviar sua posição GPS.</p>
+                                        </div>
+                                    </div>
                                 )}
 
                                 {!activeStop ? (
@@ -694,14 +711,4 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
             </Card>
         </div>
     );
-}
-
-function Alert({ children, className }: { children: React.ReactNode, className?: string }) {
-    return <div className={cn("p-4 rounded-lg border flex gap-3", className)}>{children}</div>;
-}
-function AlertTitle({ children, className }: { children: React.ReactNode, className?: string }) {
-    return <h5 className={cn("leading-none tracking-tight", className)}>{children}</h5>;
-}
-function AlertDescription({ children, className }: { children: React.ReactNode, className?: string }) {
-    return <div className={cn("text-sm", className)}>{children}</div>;
 }
