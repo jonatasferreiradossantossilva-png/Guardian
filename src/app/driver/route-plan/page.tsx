@@ -267,7 +267,7 @@ export default function DriverRoutePlanPage() {
         const currentLoc = locRef.current;
         const startPoint = currentLoc ? `${currentLoc.latitude},${currentLoc.longitude}` : undefined;
         
-        // Reset universal de checklist para os alunos DAQUELA rota
+        // Reset universal de status para os alunos da rota escolhida
         route.studentIds.forEach(id => {
             if (studentsMap.has(id)) {
                 updateDoc('students', id, { status: 'aguardando' });
@@ -287,42 +287,43 @@ export default function DriverRoutePlanPage() {
             address: `${sch.street}, ${sch.number}`
         }));
 
-        const result = await optimizeSchoolVanRoute({
-            students: studentStops,
-            schools: schoolStops,
-            startAddress: startPoint,
-            direction: selectedDirection,
-            optimizationMode: 'flexible'
-        });
+        if (studentStops.length >= 2) {
+            const result = await optimizeSchoolVanRoute({
+                students: studentStops,
+                schools: schoolStops,
+                startAddress: startPoint,
+                direction: selectedDirection,
+                optimizationMode: 'flexible'
+            });
 
-        const newIds = result.optimizedStops.map(s => s.id);
-        const waypoints = result.optimizedStops.map(s => {
-            const ent = studentsMap.get(s.id) || schoolsMap.get(s.id);
-            return ent ? { lat: ent.latitude, lng: ent.longitude } : null;
-        }).filter(Boolean) as {lat: number, lng: number}[];
+            const newIds = result.optimizedStops.map(s => s.id);
+            const waypoints = result.optimizedStops.map(s => {
+                const ent = studentsMap.get(s.id) || schoolsMap.get(s.id);
+                return ent ? { lat: ent.latitude, lng: ent.longitude } : null;
+            }).filter(Boolean) as {lat: number, lng: number}[];
 
-        let polylineData = "";
-        if (waypoints.length >= 2) {
-            try {
-                const routing = await routingGeoapify({ waypoints });
-                polylineData = routing.polyline;
-            } catch (routingErr) {
-                console.warn("Falha ao gerar traçado visual", routingErr);
+            let polylineData = "";
+            if (waypoints.length >= 2) {
+                try {
+                    const routing = await routingGeoapify({ waypoints });
+                    polylineData = routing.polyline;
+                } catch (routingErr) {
+                    console.warn("Falha ao gerar traçado visual", routingErr);
+                }
             }
-        }
 
-        updateDoc('routes', route.id, { 
-            studentIds: newIds, 
-            polyline: polylineData, 
-            lastOptimizedAt: new Date().toISOString() 
-        });
+            updateDoc('routes', route.id, { 
+                studentIds: newIds, 
+                polyline: polylineData, 
+                lastOptimizedAt: new Date().toISOString() 
+            });
+        }
         
         updateDoc('drivers', driverId, { status: 'em_rota' });
-        
         sessionStorage.setItem('activeRouteId', route.id);
         setActiveRouteId(route.id);
         
-        toast({ title: "IA: Rota Otimizada!", description: "Itinerário ajustado via GPS." });
+        toast({ title: "Viagem Iniciada!", description: "Itinerário configurado." });
     } catch (e) {
         console.error(e);
         updateDoc('drivers', driverId, { status: 'em_rota' });
@@ -336,7 +337,7 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
     
-    // Auto-encerramento se for a última parada
+    // Auto-encerramento se for a última parada residencial na IDA ou VOLTA
     if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -353,7 +354,7 @@ export default function DriverRoutePlanPage() {
           description: `${studentsAtCurrentStop.length} alunos processados na escola.` 
       });
 
-      // NO sentido 'volta', após o embarque na escola, ainda temos as casas dos alunos. 
+      // Na VOLTA, o embarque coletivo é o INÍCIO. Na IDA, é o FIM se não houver mais escolas.
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
@@ -381,11 +382,11 @@ export default function DriverRoutePlanPage() {
                             <Bus className="text-primary h-8 w-8" />
                         </div>
                         <CardTitle className="text-primary text-2xl font-black italic">Guardian</CardTitle>
-                        <CardDescription className="font-bold text-foreground/80">Configure sua jornada operacional.</CardDescription>
+                        <CardDescription className="font-bold text-foreground/80">Selecione sua jornada operacional.</CardDescription>
                     </CardHeader>
                     <CardContent className="space-y-6">
                         <div className="space-y-2">
-                            <RawLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Selecione a Rota</RawLabel>
+                            <RawLabel className="font-black uppercase text-[10px] tracking-widest text-muted-foreground">Rota</RawLabel>
                             <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
                                 <SelectTrigger className="h-12 border-primary/30 font-bold text-base bg-background"><SelectValue /></SelectTrigger>
                                 <SelectContent>{routes?.map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}</SelectContent>
@@ -479,7 +480,7 @@ export default function DriverRoutePlanPage() {
                                             <CheckCircle className="h-14 w-14 text-green-500"/>
                                         </div>
                                         <CardTitle className="text-2xl font-black text-green-600 uppercase">Fim de Rota!</CardTitle>
-                                        <p className="text-muted-foreground mt-2 max-w-xs mx-auto font-bold">Todos os alunos foram processados.</p>
+                                        <p className="text-muted-foreground mt-2 max-w-xs mx-auto font-bold">Jornada concluída com sucesso.</p>
                                         <Button variant="destructive" className="mt-10 w-full h-14 text-lg font-black shadow-xl" onClick={handleEndRoute}>
                                             <Square className="mr-3 h-5 w-5 fill-current"/> FINALIZAR OPERAÇÃO
                                         </Button>

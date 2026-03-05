@@ -11,8 +11,6 @@ export const initialMockData = {
     ],
     users: [
         { id: "user-admin-1", name: "Admin Guardian", email: "admin@guardian.com", profile: 'gestor', active: true },
-        { id: "user-motorista-2", name: "Mariana Costa", email: "mariana.costa@rotasegura.com", profile: 'motorista', active: true },
-        { id: "user-motorista-3", name: "Roberto Almeida", email: "roberto.almeida@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-motorista-4", name: "Juliano Castro", email: "juliano.castro@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", profile: 'pai', active: true },
         { id: "user-pai-2", name: "João Costa", email: "joao.costa@email.com", profile: 'pai', active: true },
@@ -48,9 +46,11 @@ export const initialMockData = {
         { id: "parent-3", userId: "user-pai-3", name: "Carla Dias", email: "carla.dias@email.com", phone: "11999998888", active: true },
     ],
     students: [
-        // CENÁRIO MANHÃ (15 ALUNOS)
+        // CENÁRIO MANHÃ (15 ALUNOS) - Ana Pereira (Parent-1) tem apenas 2 filhos
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5585, longitude: -46.6605, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10 },
+        
+        // Outros 13 alunos da manhã vinculados ao João Costa (Parent-2)
         { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP" },
         { id: "student-4", name: "Lucas Melo", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6610, street: "Rua Haddock Lobo", number: "200", city: "São Paulo", state: "SP" },
         { id: "student-5", name: "Mariana Lima", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5620, longitude: -46.6620, street: "Rua Bela Cintra", number: "300", city: "São Paulo", state: "SP" },
@@ -65,7 +65,7 @@ export const initialMockData = {
         { id: "student-14", name: "Bianca Viana", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6700, street: "Rua Peru", number: "200", city: "São Paulo", state: "SP" },
         { id: "student-15", name: "Rafael Guimarães", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5710, longitude: -46.6710, street: "Rua Argentina", number: "300", city: "São Paulo", state: "SP" },
 
-        // CENÁRIO TARDE (4 ALUNOS)
+        // CENÁRIO TARDE (4 ALUNOS) - Vinculados à Carla Dias (Parent-3)
         { id: "student-16", name: "Tiago Silva", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5800, longitude: -46.6800, street: "Rua Tabapuã", number: "500", city: "São Paulo", state: "SP" },
         { id: "student-17", name: "Manuela Ferro", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5810, longitude: -46.6810, street: "Rua Joaquim Floriano", number: "600", city: "São Paulo", state: "SP" },
         { id: "student-18", name: "Ricardo Dias", schoolId: "school-1", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5820, longitude: -46.6820, street: "Av. Brigadeiro Faria Lima", number: "1200", city: "São Paulo", state: "SP" },
@@ -114,13 +114,13 @@ export const initialMockData = {
         { 
             id: "template-1", 
             name: "Modelo Básico - Transporte", 
-            content: "CONTRATO BÁSICO DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}\nALUNO(A): {{aluno_nome}}\nESCOLA: {{escola_nome}}\n\nVALOR MENSAL: R$ {{valor_mensalidade}}\n\nEste contrato estabelece as normas básicas de segurança e pontualidade.\n\nGerado em: {{data_geracao}}",
+            content: "CONTRATO BÁSICO DE TRANSPORTE ESCOLAR\n\nCONTRATANTE: {{responsavel_nome}}\nALUNO(A): {{aluno_nome}}\n\nVALOR MENSAL: R$ {{valor_mensalidade}}\n\nEste contrato estabelece as normas básicas.",
             createdAt: new Date().toISOString()
         },
         { 
             id: "template-2", 
             name: "Modelo Completo - 2024", 
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - VERSÃO COMPLETA\n\nCLÁUSULA 1ª: DO OBJETO\nO presente contrato tem como objeto o transporte do(a) aluno(a) {{aluno_nome}} para a instituição {{escola_nome}}.\n\nCLÁUSULA 2ª: DO RESPONSÁVEL\nO(A) Sr(a) {{responsavel_nome}}, portador do CPF {{responsavel_cpf}}, compromete-se com o pagamento de R$ {{valor_mensalidade}} mensais.\n\nCLÁUSULA 3ª: DAS OBRIGAÇÕES\nO transportador compromete-se a manter o veículo em perfeitas condições de higiene e segurança, conforme telemetria Guardian.\n\nGerado via Guardian em: {{data_geracao}}",
+            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - VERSÃO COMPLETA\n\nCLÁUSULA 1ª: DO OBJETO\nO presente contrato tem como objeto o transporte do(a) aluno(a) {{aluno_nome}}.\n\nCLÁUSULA 2ª: DO RESPONSÁVEL\nO(A) Sr(a) {{responsavel_nome}}, portador do CPF {{responsavel_cpf}}, compromete-se com o pagamento de R$ {{valor_mensalidade}}.\n\nGerado via Guardian em: {{data_geracao}}",
             createdAt: new Date().toISOString()
         }
     ],
