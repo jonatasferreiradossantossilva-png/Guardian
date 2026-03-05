@@ -30,6 +30,7 @@ import {
   ChevronRight,
   Sparkles,
   Navigation,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -215,7 +216,20 @@ export default function DriverRoutePlanPage() {
 
   const { activeStop, upcomingStops } = useMemo(() => {
     if (!orderedStops || driverProfile?.status !== 'em_rota') return { activeStop: null, upcomingStops: [] };
-    let nextStopIndex = selectedDirection === 'ida' ? orderedStops.findIndex(s => s.type === 'student' ? s.data.status === 'aguardando' : true) : orderedStops.findIndex(s => s.type === 'school' ? orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'a_bordo') : s.data.status === 'a_bordo');
+    
+    // Inteligência de Sentido:
+    // Na IDA: Próximo é o primeiro aluno 'aguardando' ou a primeira escola.
+    // Na VOLTA: Próximo é a escola (enquanto houver aluno 'aguardando') ou primeiro aluno 'a_bordo'.
+    const nextStopIndex = orderedStops.findIndex(s => {
+        if (selectedDirection === 'ida') {
+            if (s.type === 'student') return s.data.status === 'aguardando';
+            return orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'a_bordo');
+        } else {
+            if (s.type === 'school') return orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'aguardando');
+            return s.data.status === 'a_bordo';
+        }
+    });
+
     if (nextStopIndex === -1) return { activeStop: null, upcomingStops: [] };
     return { activeStop: orderedStops[nextStopIndex], upcomingStops: orderedStops.slice(nextStopIndex + 1) };
   }, [orderedStops, driverProfile?.status, selectedDirection]);
@@ -240,6 +254,7 @@ export default function DriverRoutePlanPage() {
             address: `${sch.street}, ${sch.number}`
         }));
 
+        // IA recalcula a sequência com base no ponto de partida real
         const result = await optimizeSchoolVanRoute({
             students: studentStops,
             schools: schoolStops,
@@ -277,6 +292,25 @@ export default function DriverRoutePlanPage() {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
   }, [updateDoc, toast]);
+
+  const handleSchoolAction = useCallback((schoolId: string) => {
+      const isIda = selectedDirection === 'ida';
+      const targetStatus = isIda ? 'desembarcado' : 'a_bordo';
+      const sourceStatus = isIda ? 'a_bordo' : 'aguardando';
+      
+      const studentsToUpdate = orderedStops.filter(s => 
+          s.type === 'student' && 
+          s.data.schoolId === schoolId && 
+          s.data.status === sourceStatus
+      );
+
+      studentsToUpdate.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
+      
+      toast({ 
+          title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!", 
+          description: `${studentsToUpdate.length} alunos processados na escola.` 
+      });
+  }, [selectedDirection, orderedStops, updateDoc, toast]);
 
   const handleEndRoute = useCallback(() => {
       if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
@@ -431,10 +465,8 @@ export default function DriverRoutePlanPage() {
                         ) : (
                             <NextStopSchoolCard 
                                 school={activeStop.data as SchoolData} 
-                                onDropOff={() => { 
-                                    orderedStops.filter(s => s.type === 'student' && s.data.status === 'a_bordo').forEach(s => updateDoc('students', s.id, { status: 'desembarcado' })); 
-                                    toast({ title: "Desembarque Coletivo!", description: "Status atualizado para todos os alunos." }); 
-                                }} 
+                                direction={selectedDirection}
+                                onAction={() => handleSchoolAction(activeStop.id)} 
                             />
                         )}
                     </TabsContent>
@@ -551,21 +583,26 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   );
 }
 
-function NextStopSchoolCard({ school, onDropOff }: { school: SchoolData, onDropOff: (id: string) => void }) {
+function NextStopSchoolCard({ school, direction, onAction }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void }) {
+    const isIda = direction === 'ida';
     return (
         <Card className="w-full shadow-2xl border-destructive/30 bg-destructive/5 overflow-hidden flex-1 flex flex-col justify-center">
           <CardHeader className="text-center pb-8">
             <div className="mx-auto w-20 h-20 rounded-full bg-background border-4 border-destructive/20 text-destructive shadow-lg flex items-center justify-center mb-4">
                 <School className="h-10 w-10" />
             </div>
-            <Badge variant="destructive" className="w-fit mx-auto mb-2 font-bold uppercase tracking-widest">Ponto de Desembarque</Badge>
+            <Badge variant="destructive" className="w-fit mx-auto mb-2 font-bold uppercase tracking-widest">{isIda ? 'Ponto de Desembarque' : 'Ponto de Embarque'}</Badge>
             <CardTitle className="text-2xl truncate">{school.name}</CardTitle>
           </CardHeader>
           <CardContent>
-            <Button size="lg" className="w-full h-20 bg-destructive hover:bg-destructive/90 text-xl font-bold shadow-xl" onClick={() => onDropOff(school.id)}>
-                <Bus className="mr-4 h-8 w-8" /> CHEGAMOS NA ESCOLA
+            <Button size="lg" className="w-full h-20 bg-destructive hover:bg-destructive/90 text-xl font-bold shadow-xl" onClick={onAction}>
+                <Bus className="mr-4 h-8 w-8" /> {isIda ? 'CHEGAMOS NA ESCOLA' : 'INICIAR EMBARQUE ESCOLA'}
             </Button>
-            <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest mt-6 px-4">Clique no botão apenas quando todos os alunos estiverem seguros no portão.</p>
+            <p className="text-[10px] text-center text-muted-foreground uppercase font-bold tracking-widest mt-6 px-4">
+                {isIda 
+                    ? 'Clique no botão apenas quando todos os alunos estiverem seguros no portão.' 
+                    : 'Ao clicar, todos os alunos desta escola serão marcados como a bordo.'}
+            </p>
           </CardContent>
         </Card>
     );
