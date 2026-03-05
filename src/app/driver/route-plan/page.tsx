@@ -28,6 +28,8 @@ import {
   Activity,
   Info,
   ChevronRight,
+  Sparkles,
+  Navigation,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -48,6 +50,8 @@ import { SmartMap } from '@/components/shared/smart-map';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { ReportIncidentForm } from '@/components/dashboard/report-incident-form';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
+import { routingGeoapify } from '@/ai/flows/routing-geoapify';
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente_ida' | 'ausente_volta' | 'ausente_dia_todo';
@@ -129,14 +133,16 @@ function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: n
   const lat1 = toRad(coords1.lat);
   const lat2 = toRad(coords1.lat);
   const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
-  return R * (2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)));
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
 }
 
 export default function DriverRoutePlanPage() {
   const { updateDoc, setDoc, addDoc } = useMockData();
+  const { toast } = useToast();
+  
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null);
-  const { toast } = useToast();
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
   const [selectedStudentForModal, setSelectedStudentForModal] = useState<Student | null>(null);
@@ -144,6 +150,7 @@ export default function DriverRoutePlanPage() {
   const [selectedDirection, setSelectedDirection] = useState<'ida' | 'volta'>('ida');
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
   const [recenterTrigger, setRecenterTrigger] = useState(0);
+  const [isOptimizing, setIsOptimizing] = useState(false);
   const isOnline = useOnlineStatus();
 
   useEffect(() => {
@@ -158,6 +165,7 @@ export default function DriverRoutePlanPage() {
   const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
   const { data: vehicle } = useMockDoc('vehicles', driverProfile?.vehicleId);
 
+  // Telemetria por Delta: 30 metros ou 30 segundos
   const locRef = useRef(driverLocation);
   const lastSyncRef = useRef({ time: Date.now(), lat: 0, lng: 0 });
   useEffect(() => { locRef.current = driverLocation; }, [driverLocation]);
@@ -213,6 +221,61 @@ export default function DriverRoutePlanPage() {
     return { activeStop: orderedStops[nextStopIndex], upcomingStops: orderedStops.slice(nextStopIndex + 1) };
   }, [orderedStops, driverProfile?.status, selectedDirection]);
 
+  // Pulo do Gato: Re-otimização Instantânea com Gemini no Início
+  const handleStartRoute = async () => {
+    if (!route || !driverProfile) return;
+    setIsOptimizing(true);
+    try {
+        const currentLoc = locRef.current;
+        const startPoint = currentLoc ? `${currentLoc.latitude},${currentLoc.longitude}` : undefined;
+        
+        const studentStops = orderedStops.filter(s => s.type === 'student').map(s => ({
+            id: s.id,
+            name: s.data.name,
+            address: `${(s.data as Student).street}, ${(s.data as Student).number}`,
+            schoolId: (s.data as Student).schoolId
+        }));
+
+        const schoolStops = schools.filter(sch => studentStops.some(s => s.schoolId === sch.id)).map(sch => ({
+            id: sch.id,
+            name: sch.name,
+            address: `${sch.street}, ${sch.number}`
+        }));
+
+        const result = await optimizeSchoolVanRoute({
+            students: studentStops,
+            schools: schoolStops,
+            startAddress: startPoint,
+            direction: selectedDirection,
+            optimizationMode: 'flexible'
+        });
+
+        // Atualiza a ordem e o traçado
+        const newIds = result.optimizedStops.map(s => s.id);
+        const waypoints = result.optimizedStops.map(s => {
+            const ent = studentsMap.get(s.id) || schoolsMap.get(s.id);
+            return ent ? { lat: ent.latitude, lng: ent.longitude } : null;
+        }).filter(Boolean) as {lat: number, lng: number}[];
+
+        const routing = await routingGeoapify({ waypoints });
+
+        updateDoc('routes', route.id, { studentIds: newIds, polyline: routing.polyline, lastOptimizedAt: new Date().toISOString() });
+        updateDoc('drivers', driverId, { status: 'em_rota' });
+        
+        sessionStorage.setItem('activeRouteId', route.id);
+        sessionStorage.setItem('startOdometer', vehicle?.currentOdometer?.toString() || '0');
+        setActiveRouteId(route.id);
+        
+        toast({ title: "IA: Rota Otimizada!", description: "Itinerário ajustado com base na sua posição atual." });
+    } catch (e) {
+        console.error(e);
+        updateDoc('drivers', driverId, { status: 'em_rota' });
+        setActiveRouteId(route.id);
+    } finally {
+        setIsOptimizing(false);
+    }
+  };
+
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
     toast({ title: 'Status Atualizado', description: `O aluno foi marcado como ${statusText[newStatus]}.` });
@@ -222,9 +285,9 @@ export default function DriverRoutePlanPage() {
       if (!driverId || !allStudents || !route || !vehicle || !driverProfile) return;
       const startOdo = Number(sessionStorage.getItem('startOdometer') || vehicle.currentOdometer);
       const actualDistance = vehicle.currentOdometer - startOdo;
-      const savingsKm = Math.max(0, actualDistance * 0.15);
+      const savingsKm = Math.max(0, actualDistance * 0.15); // Simulação de ROI
       const fuelSaved = (savingsKm / 8) * 6.00;
-      addDoc('trip_history', { date: new Date().toISOString().split('T')[0], routeName: route.name, plannedKm: route.plannedDistanceKm || 10, actualKm: Number(actualDistance.toFixed(1)), driverName: driverProfile.name, savingsKm: Number(savingsKm.toFixed(1)), fuelSaved: Number(fuelSaved.toFixed(2)) });
+      addDoc('trip_history', { date: new Date().toISOString().split('T')[0], routeName: route.name, plannedKm: 15, actualKm: Number(actualDistance.toFixed(1)), driverName: driverProfile.name, savingsKm: Number(savingsKm.toFixed(1)), fuelSaved: Number(fuelSaved.toFixed(2)) });
       updateDoc('drivers', driverId, { status: 'inativo' });
       sessionStorage.removeItem('activeRouteId');
       setActiveRouteId(null);
@@ -287,13 +350,8 @@ export default function DriverRoutePlanPage() {
                         </div>
                     </CardContent>
                     <CardFooter className="flex flex-col gap-3 pt-4 border-t">
-                        <Button className="w-full h-14 text-lg font-bold shadow-lg" onClick={() => { 
-                            updateDoc('drivers', driverId, { status: 'em_rota' }); 
-                            sessionStorage.setItem('activeRouteId', selectedRouteIdForStart); 
-                            sessionStorage.setItem('startOdometer', vehicle?.currentOdometer?.toString() || '0');
-                            setActiveRouteId(selectedRouteIdForStart); 
-                        }}>
-                            <Play className="mr-2 h-6 w-6" /> Iniciar Rota Agora
+                        <Button className="w-full h-14 text-lg font-bold shadow-lg" onClick={handleStartRoute} disabled={isOptimizing}>
+                            {isOptimizing ? <><Loader2 className="mr-2 h-6 w-6 animate-spin"/> Otimizando...</> : <><Play className="mr-2 h-6 w-6" /> Iniciar Rota Agora</>}
                         </Button>
                         <Link href="/" className="w-full"><Button variant="ghost" className="w-full">Voltar ao Início</Button></Link>
                     </CardFooter>
@@ -429,6 +487,10 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   const isGoing = direction === 'ida';
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
+  const handleNavigate = () => {
+      window.open(`https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`, '_blank');
+  };
+
   return (
     <Card className={cn("w-full shadow-xl border-primary/30", hasMedicalAlert && "ring-2 ring-destructive border-destructive/50 bg-destructive/5")}>
       <CardHeader className="pb-3 border-b bg-muted/10">
@@ -452,6 +514,9 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                     <span className="text-xs font-medium truncate">{student.street}, {student.number}</span>
                 </div>
             </div>
+            <Button variant="outline" size="icon" onClick={handleNavigate} className="shrink-0 h-12 w-12 border-primary/20">
+                <Navigation className="h-6 w-6 text-primary" />
+            </Button>
         </div>
       </CardHeader>
       
