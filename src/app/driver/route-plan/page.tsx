@@ -299,9 +299,23 @@ export default function DriverRoutePlanPage() {
             return ent ? { lat: ent.latitude, lng: ent.longitude } : null;
         }).filter(Boolean) as {lat: number, lng: number}[];
 
-        const routing = await routingGeoapify({ waypoints });
+        // BLINDAGEM TÉCNICA: Só chama o routing se houver pelo menos 2 pontos (origem/destino)
+        let polylineData = "";
+        if (waypoints.length >= 2) {
+            try {
+                const routing = await routingGeoapify({ waypoints });
+                polylineData = routing.polyline;
+            } catch (routingErr) {
+                console.warn("Falha ao gerar traçado visual, prosseguindo apenas com itinerário:", routingErr);
+            }
+        }
 
-        updateDoc('routes', route.id, { studentIds: newIds, polyline: routing.polyline, lastOptimizedAt: new Date().toISOString() });
+        updateDoc('routes', route.id, { 
+            studentIds: newIds, 
+            polyline: polylineData, 
+            lastOptimizedAt: new Date().toISOString() 
+        });
+        
         updateDoc('drivers', driverId, { status: 'em_rota' });
         
         sessionStorage.setItem('activeRouteId', route.id);

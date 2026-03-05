@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useMemo, useState, useEffect, useCallback } from "react";
@@ -202,7 +203,11 @@ export default function ParentTrackingPage() {
 
   const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", mockUserId ? [{ field: "userId", op: "==", value: mockUserId }] : undefined);
   const parent = useMemo(() => (parents && parents.length > 0 ? parents[0] : null), [parents]);
-  const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", parent ? [{ field: "parentId", op: "==", value: parent.id }] : undefined);
+  
+  // BLINDAGEM: Se não tiver parentId, passa um filtro impossível para não retornar tudo
+  const studentFilter = useMemo(() => parent ? [{ field: "parentId", op: "==", value: parent.id }] : [{ field: "id", op: "==", value: "none" }], [parent]);
+  const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", studentFilter);
+  
   const { data: allRoutes } = useMockCollection("routes");
   const { data: allLocations } = useMockCollection("locations");
   const { data: allSchools } = useMockCollection("schools");
