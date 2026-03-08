@@ -20,7 +20,6 @@ import { useToast } from '@/hooks/use-toast';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { Building2, Save, MapPin, Phone, Mail, Loader2, User, QrCode, CreditCard } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
   companyName: z.string().min(3, { message: 'Nome da empresa deve ter pelo menos 3 caracteres.' }),
@@ -169,7 +168,7 @@ export function CompanyForm() {
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
                         <Mail className="h-3 w-3" /> E-mail Institucional
-                    </Label>
+                    </FormLabel>
                     <FormControl>
                         <Input placeholder="contato@empresa.com.br" {...field} />
                     </FormControl>

@@ -35,7 +35,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Sparkles, QrCode, Loader2 } from 'lucide-react';
+import { Sparkles, QrCode } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
@@ -137,7 +137,6 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     }
 
     let generatedContent = template.content;
-    
     const fullPaymentPattern = /via: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}/g;
     
     if (generatedContent.match(fullPaymentPattern)) {
