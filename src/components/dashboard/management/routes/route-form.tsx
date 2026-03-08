@@ -33,8 +33,6 @@ import {
     ShieldCheck, 
     Zap,
     Route as RouteIcon,
-    GraduationCap,
-    Clock,
     MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -269,8 +267,8 @@ export function RouteForm({
       
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
         <div className="p-6 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-10">
-                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO (FIXA EM 400PX) */}
+            <div className="grid grid-cols-1 md:grid-cols-[380px_1fr] gap-8">
+                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO */}
                 <div className="space-y-8">
                     <div className="space-y-4 bg-muted/20 p-5 rounded-xl border border-dashed">
                         <div className="space-y-2">
@@ -297,9 +295,9 @@ export function RouteForm({
 
                     <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Escolas Atendidas</Label>
-                        <div className="flex flex-wrap gap-3 p-4 border-2 rounded-xl bg-background shadow-sm">
+                        <div className="flex flex-wrap gap-2 p-3 border-2 rounded-xl bg-background shadow-sm">
                             {schools.map(school => (
-                                <div key={school.id} className="flex items-center space-x-2 bg-secondary/30 px-3 py-2 rounded-lg border">
+                                <div key={school.id} className="flex items-center space-x-2 bg-secondary/30 px-2 py-1.5 rounded-lg border">
                                     <Checkbox 
                                         id={`sch-${school.id}`} 
                                         checked={selectedSchoolIds.includes(school.id)} 
@@ -308,50 +306,44 @@ export function RouteForm({
                                             setIsOptimized(false);
                                         }} 
                                     />
-                                    <Label htmlFor={`sch-${school.id}`} className="text-xs cursor-pointer font-bold uppercase tracking-tight">{school.name}</Label>
+                                    <Label htmlFor={`sch-${school.id}`} className="text-[10px] cursor-pointer font-bold uppercase tracking-tight">{school.name}</Label>
                                 </div>
                             ))}
                         </div>
                     </div>
 
                     {selectedSchoolIds.length >= 2 && (
-                        <div className="space-y-4 p-6 bg-primary/5 rounded-2xl border-2 border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                        <div className="space-y-4 p-5 bg-primary/5 rounded-2xl border-2 border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
                             <div className="space-y-1">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
                                     <Zap className="h-4 w-4" /> Inteligência Guardian
                                 </Label>
-                                <h3 className="text-base font-black uppercase italic tracking-tight">Como a IA deve organizar os alunos?</h3>
+                                <h3 className="text-xs font-black uppercase italic tracking-tight">Estratégia de Roteirização</h3>
                             </div>
                             
-                            <RadioGroup value={optimizationMode} onValueChange={(v) => { setOptimizationMode(v as any); setIsOptimized(false); }} className="grid grid-cols-1 gap-4">
+                            <RadioGroup value={optimizationMode} onValueChange={(v) => { setOptimizationMode(v as any); setIsOptimized(false); }} className="grid grid-cols-1 gap-3">
                                 <div className={cn(
-                                    "relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md bg-background",
-                                    optimizationMode === 'safe' ? "border-primary ring-1 ring-primary/20" : "border-border opacity-70"
+                                    "relative flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all bg-background",
+                                    optimizationMode === 'safe' ? "border-primary shadow-sm" : "border-border opacity-70"
                                 )} onClick={() => setOptimizationMode('safe')}>
                                     <div className="mt-1"><RadioGroupItem value="safe" id="safe" /></div>
-                                    <div className="space-y-1.5 flex-1 pr-4">
-                                        <div className="flex items-center gap-2">
-                                            <ShieldCheck className="h-4 w-4 text-primary" />
-                                            <Label htmlFor="safe" className="font-black text-sm uppercase cursor-pointer">Priorizar Embarque (Segurança Total)</Label>
-                                        </div>
-                                        <p className="text-[11px] text-muted-foreground leading-relaxed italic">
-                                            A van embarca todos os alunos de todas as escolas antes de iniciar qualquer desembarque. Ideal para conferência de lotação completa.
+                                    <div className="space-y-1 flex-1">
+                                        <Label htmlFor="safe" className="font-black text-[10px] uppercase cursor-pointer">Segurança Total (Coletar todos)</Label>
+                                        <p className="text-[9px] text-muted-foreground leading-tight italic">
+                                            Embarca todos antes de iniciar qualquer desembarque.
                                         </p>
                                     </div>
                                 </div>
 
                                 <div className={cn(
-                                    "relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md bg-background",
-                                    optimizationMode === 'flexible' ? "border-amber-500 ring-1 ring-amber-500/20" : "border-border opacity-70"
+                                    "relative flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all bg-background",
+                                    optimizationMode === 'flexible' ? "border-amber-500 shadow-sm" : "border-border opacity-70"
                                 )} onClick={() => setOptimizationMode('flexible')}>
                                     <div className="mt-1"><RadioGroupItem value="flexible" id="flexible" /></div>
-                                    <div className="space-y-1.5 flex-1 pr-4">
-                                        <div className="flex items-center gap-2">
-                                            <Zap className="h-4 w-4 text-amber-500" />
-                                            <Label htmlFor="flexible" className="font-black text-sm uppercase text-amber-600 cursor-pointer">Entrega por Proximidade (Mais Agilidade)</Label>
-                                        </div>
-                                        <p className="text-[11px] text-muted-foreground leading-relaxed italic">
-                                            A IA sugere deixar os alunos assim que estiverem próximos da escola. Reduz drasticamente o tempo das crianças no veículo.
+                                    <div className="space-y-1 flex-1">
+                                        <Label htmlFor="flexible" className="font-black text-[10px] uppercase text-amber-600 cursor-pointer">Máxima Agilidade (Entrega Rápida)</Label>
+                                        <p className="text-[9px] text-muted-foreground leading-tight italic">
+                                            Desembarca assim que estiver próximo da escola.
                                         </p>
                                     </div>
                                 </div>
@@ -366,31 +358,31 @@ export function RouteForm({
                                 <div className="relative">
                                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                     <input 
-                                        placeholder="Filtrar por nome do aluno..." 
+                                        placeholder="Buscar aluno..." 
                                         value={studentSearch} 
                                         onChange={e => setStudentSearch(e.target.value)} 
-                                        className="h-10 border-none focus-visible:ring-0 shadow-none bg-transparent text-sm outline-none w-full pl-9" 
+                                        className="h-9 border-none focus-visible:ring-0 shadow-none bg-transparent text-sm outline-none w-full pl-9" 
                                     />
                                 </div>
                             </div>
-                            <div className="max-h-[400px] overflow-y-auto">
+                            <div className="max-h-[300px] overflow-y-auto">
                                 {availableStudents.length > 0 ? (
                                     availableStudents.map(s => (
-                                        <div key={s.id} className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-primary/5 transition-colors group">
+                                        <div key={s.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-primary/5 transition-colors group">
                                             <div className="min-w-0">
-                                                <p className="text-sm font-black uppercase group-hover:text-primary transition-colors">{s.name}</p>
-                                                <p className="text-[10px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name} • {formatStudentAbbrev(s)}</p>
+                                                <p className="text-xs font-black uppercase truncate group-hover:text-primary transition-colors">{s.name}</p>
+                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name}</p>
                                             </div>
-                                            <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}>
-                                                <PlusCircle className="h-6 w-6" />
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}>
+                                                <PlusCircle className="h-5 w-5" />
                                             </Button>
                                         </div>
                                     ))
                                 ) : (
-                                    <div key="empty-students" className="p-12 text-center text-muted-foreground">
-                                        <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
-                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40 leading-tight">
-                                            Selecione escolas e turno <br/> para visualizar os alunos
+                                    <div key="empty-students" className="p-8 text-center text-muted-foreground">
+                                        <Users className="h-8 w-8 mx-auto mb-2 opacity-20" />
+                                        <p className="text-[9px] font-black uppercase tracking-widest opacity-40 leading-tight">
+                                            Aguardando seleção <br/> de escolas e turno
                                         </p>
                                     </div>
                                 )}
@@ -399,95 +391,94 @@ export function RouteForm({
                     </div>
                 </div>
 
-                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL (EXPANSIVA) */}
+                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
                         <div className="flex items-center gap-3">
                             <Badge variant="outline" className="bg-background text-primary border-primary/30 h-8 px-3 font-black text-base">{stops.length}</Badge>
                             <Label className="text-sm font-black uppercase tracking-tighter">Itinerário Final Gerado</Label>
                         </div>
-                        <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
+                        <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || stops.filter(s => s.type === 'student').length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
                             {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
                             OTIMIZAR IA
                         </Button>
                     </div>
 
-                    <div className="rounded-2xl min-h-[500px]">
-                        <div className="space-y-3">
-                            {stops.length > 0 ? (
-                                stops.map((stop, idx) => {
-                                    const studentObj = stop.type === 'student' ? studentsMap.get(stop.id) : null;
-                                    return (
-                                    <div key={`${stop.id}-${idx}`} className={cn(
-                                        "flex items-start gap-4 p-4 border-2 rounded-xl group animate-in fade-in slide-in-from-right-4 duration-300 shadow-sm",
-                                        stop.type === 'school' ? "bg-primary/5 border-primary/20 border-primary/30" : "bg-background border-border"
-                                    )}>
-                                        <span className="text-xs font-black bg-muted w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground shrink-0 mt-1">{idx + 1}</span>
+                    <div className="space-y-3 pb-20">
+                        {stops.length > 0 ? (
+                            stops.map((stop, idx) => {
+                                const studentObj = stop.type === 'student' ? studentsMap.get(stop.id) : null;
+                                return (
+                                <div key={`${stop.id}-${idx}`} className={cn(
+                                    "flex items-start gap-3 p-3 border-2 rounded-xl group animate-in fade-in duration-300 shadow-sm",
+                                    stop.type === 'school' ? "bg-primary/5 border-primary/20" : "bg-background border-border"
+                                )}>
+                                    <span className="text-[10px] font-black bg-muted w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground shrink-0 mt-0.5">{idx + 1}</span>
+                                    
+                                    <div className="flex-1 min-w-0">
+                                        {/* Row 1: Full Name */}
+                                        <div className="flex items-center gap-2 mb-1">
+                                            {stop.type === 'school' ? <School className="h-3.5 w-3.5 text-primary shrink-0" /> : <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                                            <p className="text-sm font-black uppercase leading-tight">{stop.name}</p>
+                                        </div>
                                         
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1.5">
-                                                {stop.type === 'school' ? <School className="h-4 w-4 text-primary shrink-0" /> : <Users className="h-4 w-4 text-muted-foreground shrink-0" />}
-                                                <p className="text-base font-black uppercase leading-tight">{stop.name}</p>
+                                        {/* Row 2: Metadata + Controls */}
+                                        <div className="flex items-center justify-between gap-4">
+                                            <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground uppercase">
+                                                {stop.type === 'student' ? (
+                                                    <>
+                                                        <span className="text-primary font-black">{formatStudentAbbrev(studentObj)}</span>
+                                                        <span>•</span>
+                                                        <span className="truncate max-w-[150px]">{stop.details}</span>
+                                                    </>
+                                                ) : (
+                                                    <span className="text-primary font-black">Destino Final</span>
+                                                )}
                                             </div>
                                             
-                                            <div className="flex items-center justify-between gap-4">
-                                                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
-                                                    {stop.type === 'student' ? (
-                                                        <>
-                                                            <School className="h-3 w-3" />
-                                                            <span className="truncate max-w-[120px]">{stop.details}</span>
-                                                            <span>•</span>
-                                                            <span className="text-primary font-black">{formatStudentAbbrev(studentObj)}</span>
-                                                        </>
-                                                    ) : (
-                                                        <span className="text-primary font-black">Ponto de Desembarque Final</span>
-                                                    )}
-                                                </div>
-                                                
-                                                <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { 
-                                                        const newStops = [...stops];
-                                                        if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                                    }} disabled={idx === 0}><ArrowUp className="h-4 w-4" /></Button>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
-                                                        const newStops = [...stops];
-                                                        if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                                    }} disabled={idx === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
-                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-4 w-4" /></Button>
-                                                </div>
+                                            <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { 
+                                                    const newStops = [...stops];
+                                                    if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                                }} disabled={idx === 0}><ArrowUp className="h-3.5 w-3.5" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                                                    const newStops = [...stops];
+                                                    if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                                }} disabled={idx === stops.length - 1}><ArrowDown className="h-3.5 w-3.5" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3.5 w-3.5" /></Button>
                                             </div>
                                         </div>
                                     </div>
-                                )})
-                            ) : (
-                                <div key="empty-itinerary" className="py-32 text-center text-muted-foreground flex flex-col items-center">
-                                    <RouteIcon className="h-16 w-16 mb-4 opacity-5" />
-                                    <p className="text-xs font-black uppercase tracking-widest text-center opacity-30 leading-tight">
-                                        Seu itinerário aparecerá aqui <br/> conforme você adiciona alunos
-                                    </p>
                                 </div>
-                            )}
-                        </div>
+                            )})
+                        ) : (
+                            <div key="empty-itinerary" className="py-24 text-center text-muted-foreground flex flex-col items-center">
+                                <RouteIcon className="h-12 w-12 mb-3 opacity-5" />
+                                <p className="text-[10px] font-black uppercase tracking-widest text-center opacity-30 leading-tight">
+                                    Adicione alunos para <br/> gerar o itinerário
+                                </p>
+                            </div>
+                        )}
                     </div>
                 </div>
             </div>
 
-            <div className="pt-12 pb-24 flex flex-col sm:flex-row gap-4 border-t mt-10">
+            <div className="pt-8 pb-20 flex flex-col sm:flex-row gap-3 border-t mt-10">
                 <DialogClose asChild>
-                    <Button variant="ghost" className="h-16 px-10 flex-1 text-base uppercase font-bold">Cancelar</Button>
+                    <Button variant="ghost" className="h-14 px-8 flex-1 text-sm uppercase font-bold">Cancelar</Button>
                 </DialogClose>
                 <Button 
                     variant="outline" 
-                    className="h-16 px-10 flex-1 text-base uppercase font-black border-green-600/30 text-green-600 hover:bg-green-50"
+                    className="h-14 px-8 flex-1 text-sm uppercase font-black border-green-600/30 text-green-600 hover:bg-green-50"
                     onClick={handleExportToWhatsApp}
                     disabled={stops.length === 0}
                 >
-                    <MessageCircle className="mr-2 h-6 w-6" />
-                    Enviar p/ WhatsApp
+                    <MessageCircle className="mr-2 h-5 w-5" />
+                    Enviar WhatsApp
                 </Button>
-                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-16 text-xl font-black shadow-2xl bg-primary text-white hover:bg-primary/90 transition-all active:scale-[0.98]">
-                    <CheckCircle2 className="mr-3 h-7 w-7" />
-                    SALVAR ROTA COMPLETA
+                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-14 text-lg font-black shadow-xl bg-primary text-white hover:bg-primary/90 transition-all">
+                    <CheckCircle2 className="mr-3 h-6 w-6" />
+                    SALVAR ROTA
                 </Button>
             </div>
         </div>
