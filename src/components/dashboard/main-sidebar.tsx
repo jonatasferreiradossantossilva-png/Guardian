@@ -34,6 +34,7 @@ import {
   BarChart3,
   UserPlus,
   Megaphone,
+  Building2,
 } from "lucide-react";
 import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -52,6 +53,7 @@ const operationalLinks = [
 ];
 
 const registrationLinks = [
+  { href: "/dashboard/management/company", label: "Perfil da Empresa", icon: Building2 },
   { href: "/dashboard/management/schools", label: "Escolas", icon: School },
   { href: "/dashboard/management/drivers", label: "Motoristas", icon: Car },
   { href: "/dashboard/management/vehicles", label: "Veículos", icon: Truck },
