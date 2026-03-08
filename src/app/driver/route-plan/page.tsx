@@ -103,7 +103,6 @@ const statusText: Record<StudentStatus, string> = {
 
 const formatStudentClassInfo = (student: Student) => {
     if (!student.serie) return student.shift;
-    // Remove redundâncias de símbolos caso o dado original já os possua
     const serie = student.serie.replace(/\s*ano/i, '').trim();
     const turma = student.turma ? student.turma.replace(/Sala/gi, 'SL') : '';
     return `${serie} • ${turma} • ${student.shift}`;

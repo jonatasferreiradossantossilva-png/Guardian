@@ -24,8 +24,8 @@ const RadioGroupItem = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
 >(({ className, ...props }, ref) => {
-  // Técnica de "Calmaria": Componente simplificado para evitar conflitos de flushSync 
-  // no ciclo de vida do React 19 durante o processo de renderização.
+  // Técnica de "Calmaria": Renderização direta para evitar conflitos de flushSync 
+  // no ciclo de vida do React 19. O controle de montagem é feito pelo pai (login-form).
   return (
     <RadioGroupPrimitive.Item
       ref={ref}
