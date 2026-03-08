@@ -24,18 +24,8 @@ const RadioGroupItem = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
 >(({ className, ...props }, ref) => {
-  // Técnica de "Calmaria": Garantimos que o componente esteja montado
-  // antes de interagir com as propriedades síncronas do Radix no React 19.
-  const [mounted, setMounted] = React.useState(false);
-  
-  React.useEffect(() => {
-    setMounted(true);
-  }, []);
-
-  if (!mounted) {
-    return <div className={cn("aspect-square h-4 w-4 rounded-full border border-primary opacity-50", className)} />;
-  }
-
+  // Técnica de "Calmaria": Componente simplificado para evitar conflitos de flushSync 
+  // no ciclo de vida do React 19 durante o processo de renderização.
   return (
     <RadioGroupPrimitive.Item
       ref={ref}
