@@ -82,7 +82,6 @@ export function RouteForm({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isOptimized, setIsOptimized] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  const prevSchoolIdsRef = useRef<string[]>([]);
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
@@ -196,157 +195,159 @@ export function RouteForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
-      <DialogHeader className="p-6 pb-2 border-b shrink-0">
+    <DialogContent className="sm:max-w-5xl max-h-[95vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogHeader className="p-6 pb-2 border-b shrink-0 bg-background z-10">
         <DialogTitle>Montar Itinerário</DialogTitle>
         <DialogDescription>Configure os parâmetros e adicione os alunos para criar a sequência de paradas.</DialogDescription>
       </DialogHeader>
       
       <ScrollArea className="flex-1">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
-            {/* Coluna 1: Configuração e Alunos Disponíveis (A INCLUIR) */}
-            <div className="space-y-6">
-                <div className="space-y-4 bg-muted/20 p-4 rounded-lg border border-dashed">
-                    <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Dados da Rota</Label>
-                        <Input placeholder="Nome da Rota (Ex: Rota Sul)" value={name} onChange={e => setName(e.target.value)} className="bg-background" />
-                    </div>
-                    <div className="grid grid-cols-2 gap-4">
+        <div className="p-6 pb-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                {/* Coluna 1: Configuração e Alunos Disponíveis (A INCLUIR) */}
+                <div className="space-y-6">
+                    <div className="space-y-4 bg-muted/20 p-4 rounded-lg border border-dashed">
                         <div className="space-y-2">
-                            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Turno</Label>
-                            <Select onValueChange={v => setShift(v as any)} value={shift}>
-                                <SelectTrigger className="bg-background"><SelectValue placeholder="Selecione" /></SelectTrigger>
-                                <SelectContent><SelectItem value="Manhã">Manhã</SelectItem><SelectItem value="Tarde">Tarde</SelectItem></SelectContent>
-                            </Select>
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Dados da Rota</Label>
+                            <Input placeholder="Nome da Rota (Ex: Rota Sul)" value={name} onChange={e => setName(e.target.value)} className="bg-background" />
                         </div>
-                        <div className="space-y-2">
-                            <Label className="text-[10px] uppercase font-bold text-muted-foreground">Motorista</Label>
-                            <Select onValueChange={setDriverId} value={driverId}>
-                                <SelectTrigger className="bg-background"><SelectValue placeholder="Escolha" /></SelectTrigger>
-                                <SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
-                            </Select>
-                        </div>
-                    </div>
-                </div>
-
-                <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Selecione as Escolas</Label>
-                    <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
-                        {schools.map(school => (
-                            <div key={school.id} className="flex items-center space-x-2">
-                                <Checkbox 
-                                    id={`sch-${school.id}`} 
-                                    checked={selectedSchoolIds.includes(school.id)} 
-                                    onCheckedChange={checked => setSelectedSchoolIds(prev => checked ? [...prev, school.id] : prev.filter(id => id !== school.id))} 
-                                />
-                                <Label htmlFor={`sch-${school.id}`} className="text-xs cursor-pointer">{school.name}</Label>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Turno</Label>
+                                <Select onValueChange={v => setShift(v as any)} value={shift}>
+                                    <SelectTrigger className="bg-background"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                                    <SelectContent><SelectItem value="Manhã">Manhã</SelectItem><SelectItem value="Tarde">Tarde</SelectItem></SelectContent>
+                                </Select>
                             </div>
-                        ))}
+                            <div className="space-y-2">
+                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Motorista</Label>
+                                <Select onValueChange={setDriverId} value={driverId}>
+                                    <SelectTrigger className="bg-background"><SelectValue placeholder="Escolha" /></SelectTrigger>
+                                    <SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Selecione as Escolas</Label>
+                        <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
+                            {schools.map(school => (
+                                <div key={school.id} className="flex items-center space-x-2">
+                                    <Checkbox 
+                                        id={`sch-${school.id}`} 
+                                        checked={selectedSchoolIds.includes(school.id)} 
+                                        onCheckedChange={checked => setSelectedSchoolIds(prev => checked ? [...prev, school.id] : prev.filter(id => id !== school.id))} 
+                                    />
+                                    <Label htmlFor={`sch-${school.id}`} className="text-xs cursor-pointer">{school.name}</Label>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div className="space-y-2">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis (A Incluir)</Label>
+                        <div className="border-2 rounded-lg overflow-hidden bg-background">
+                            <div className="p-2 border-b bg-muted/30">
+                                <Input placeholder="Buscar por nome..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
+                            </div>
+                            <div className="h-64 overflow-y-auto">
+                                {availableStudents.length > 0 ? (
+                                    availableStudents.map(s => (
+                                        <div key={s.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-secondary/50">
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-bold truncate">{s.name}</p>
+                                                <p className="text-[9px] text-muted-foreground uppercase">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
+                                            </div>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => { setStops(prev => [...prev, { id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name }]); setIsOptimized(false); }}>
+                                                <PlusCircle className="h-5 w-5" />
+                                            </Button>
+                                        </div>
+                                    ))
+                                ) : (
+                                    <div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
+                                        <Users className="h-8 w-8 mb-2 opacity-20" />
+                                        <p className="text-[10px] font-bold uppercase">Nenhum aluno compatível</p>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis (A Incluir)</Label>
-                    <div className="border-2 rounded-lg overflow-hidden bg-background">
-                        <div className="p-2 border-b bg-muted/30">
-                            <Input placeholder="Buscar por nome..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
+                {/* Coluna 2: Itinerário Final (INCLUÍDOS) */}
+                <div className="space-y-4">
+                    <div className="flex justify-between items-center bg-primary/5 p-3 rounded-lg border border-primary/20">
+                        <div className="flex items-center gap-2">
+                            <Badge variant="outline" className="bg-background text-primary border-primary/30 h-6 font-black">{stops.length}</Badge>
+                            <Label className="text-xs font-black uppercase tracking-tighter">Itinerário (Incluídos)</Label>
                         </div>
-                        <div className="h-64 overflow-y-auto">
-                            {availableStudents.length > 0 ? (
-                                availableStudents.map(s => (
-                                    <div key={s.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-secondary/50">
-                                        <div className="min-w-0">
-                                            <p className="text-xs font-bold truncate">{s.name}</p>
-                                            <p className="text-[9px] text-muted-foreground uppercase">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
+                        <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-8 font-bold text-[10px]">
+                            {isOptimizing ? <Loader2 className="animate-spin h-3 w-3 mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
+                            OTIMIZAR IA
+                        </Button>
+                    </div>
+
+                    <div className="border-2 border-dashed rounded-xl bg-background overflow-hidden">
+                        <div className="max-h-[30rem] overflow-y-auto p-3">
+                            {stops.length > 0 ? (
+                                <div className="space-y-2">
+                                    {stops.map((stop, idx) => (
+                                        <div key={`${stop.id}-${idx}`} className="flex items-center gap-3 p-2 bg-muted/20 border rounded-lg group">
+                                            <span className="text-[9px] font-black bg-background w-5 h-5 flex items-center justify-center rounded border text-muted-foreground">{idx + 1}</span>
+                                            <div className="flex-1 min-w-0">
+                                                <p className="text-xs font-bold uppercase truncate">{stop.name}</p>
+                                                <p className="text-[9px] text-muted-foreground truncate uppercase">{stop.details}</p>
+                                            </div>
+                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { 
+                                                    const newStops = [...stops];
+                                                    if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                                }} disabled={idx === 0}><ArrowUp className="h-3 w-3" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                                                    const newStops = [...stops];
+                                                    if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                                }} disabled={idx === stops.length - 1}><ArrowDown className="h-3 w-3" /></Button>
+                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3 w-3" /></Button>
+                                            </div>
                                         </div>
-                                        <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => { setStops(prev => [...prev, { id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name }]); setIsOptimized(false); }}>
-                                            <PlusCircle className="h-5 w-5" />
-                                        </Button>
-                                    </div>
-                                ))
+                                    ))}
+                                </div>
                             ) : (
-                                <div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
-                                    <Users className="h-8 w-8 mb-2 opacity-20" />
-                                    <p className="text-[10px] font-bold uppercase">Nenhum aluno compatível</p>
+                                <div className="h-64 flex flex-col items-center justify-center text-center text-muted-foreground p-10">
+                                    <School className="h-10 w-10 mb-4 opacity-10" />
+                                    <p className="text-xs font-bold uppercase tracking-widest leading-tight">Itinerário Vazio.<br/>Selecione as escolas e adicione alunos ao lado.</p>
                                 </div>
                             )}
                         </div>
+                        <div className="p-3 border-t bg-muted/10">
+                            <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                    <Button variant="outline" size="sm" className="w-full h-9 font-bold border-dashed border-primary/30 text-primary">
+                                        <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Escola (Desembarque)
+                                    </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent className="w-[300px]">
+                                    {selectedSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean).map(s => (
+                                        <DropdownMenuItem key={s.id} onSelect={() => { if (!stops.some(st => st.id === s.id && st.type === 'school')) setStops(prev => [...prev, { id: s.id, type: 'school', name: s.name, details: 'Ponto de desembarque' }]); setIsOptimized(false); }}>
+                                            <School className="mr-2 h-3 w-3" /> {s.name}
+                                        </DropdownMenuItem>
+                                    ))}
+                                </DropdownMenuContent>
+                            </DropdownMenu>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            {/* Coluna 2: Itinerário Final (INCLUÍDOS) */}
-            <div className="space-y-4">
-                <div className="flex justify-between items-center bg-primary/5 p-3 rounded-lg border border-primary/20">
-                    <div className="flex items-center gap-2">
-                        <Badge variant="outline" className="bg-background text-primary border-primary/30 h-6 font-black">{stops.length}</Badge>
-                        <Label className="text-xs font-black uppercase tracking-tighter">Itinerário (Incluídos)</Label>
-                    </div>
-                    <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-8 font-bold text-[10px]">
-                        {isOptimizing ? <Loader2 className="animate-spin h-3 w-3 mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                        OTIMIZAR IA
-                    </Button>
-                </div>
-
-                <div className="border-2 border-dashed rounded-xl bg-background overflow-hidden">
-                    <ScrollArea className="h-[30rem] p-3">
-                        {stops.length > 0 ? (
-                            <div className="space-y-2">
-                                {stops.map((stop, idx) => (
-                                    <div key={`${stop.id}-${idx}`} className="flex items-center gap-3 p-2 bg-muted/20 border rounded-lg group">
-                                        <span className="text-[9px] font-black bg-background w-5 h-5 flex items-center justify-center rounded border text-muted-foreground">{idx + 1}</span>
-                                        <div className="flex-1 min-w-0">
-                                            <p className="text-xs font-bold uppercase truncate">{stop.name}</p>
-                                            <p className="text-[9px] text-muted-foreground truncate uppercase">{stop.details}</p>
-                                        </div>
-                                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { 
-                                                const newStops = [...stops];
-                                                if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === 0}><ArrowUp className="h-3 w-3" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
-                                                const newStops = [...stops];
-                                                if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-3 w-3" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3 w-3" /></Button>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        ) : (
-                            <div className="h-64 flex flex-col items-center justify-center text-center text-muted-foreground p-10">
-                                <School className="h-10 w-10 mb-4 opacity-10" />
-                                <p className="text-xs font-bold uppercase tracking-widest leading-tight">Itinerário Vazio.<br/>Selecione as escolas e adicione alunos ao lado.</p>
-                            </div>
-                        )}
-                    </ScrollArea>
-                    <div className="p-3 border-t bg-muted/10">
-                        <DropdownMenu>
-                            <DropdownMenuTrigger asChild>
-                                <Button variant="outline" size="sm" className="w-full h-9 font-bold border-dashed border-primary/30 text-primary">
-                                    <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Escola (Desembarque)
-                                </Button>
-                            </DropdownMenuTrigger>
-                            <DropdownMenuContent className="w-[300px]">
-                                {selectedSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean).map(s => (
-                                    <DropdownMenuItem key={s.id} onSelect={() => { if (!stops.some(st => st.id === s.id && st.type === 'school')) setStops(prev => [...prev, { id: s.id, type: 'school', name: s.name, details: 'Ponto de desembarque' }]); setIsOptimized(false); }}>
-                                        <School className="mr-2 h-3 w-3" /> {s.name}
-                                    </DropdownMenuItem>
-                                ))}
-                            </DropdownMenuContent>
-                        </DropdownMenu>
-                    </div>
-                </div>
-            </div>
+            <DialogFooter className="mt-10 border-t pt-6 flex flex-col sm:flex-row gap-3 bg-background">
+                <DialogClose asChild><Button variant="ghost" className="h-12 px-8">Cancelar</Button></DialogClose>
+                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-1 h-12 text-lg font-black shadow-xl bg-primary text-white">
+                    SALVAR ROTA COMPLETA
+                </Button>
+            </DialogFooter>
         </div>
       </ScrollArea>
-
-      <DialogFooter className="p-6 border-t shrink-0 bg-background flex flex-col sm:flex-row gap-3">
-        <DialogClose asChild><Button variant="ghost" className="h-12 px-8">Cancelar</Button></DialogClose>
-        <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-1 h-12 text-lg font-black shadow-xl bg-primary text-white">
-            SALVAR ROTA COMPLETA
-        </Button>
-      </DialogFooter>
     </DialogContent>
   );
 }
