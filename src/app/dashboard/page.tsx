@@ -62,9 +62,6 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
             { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Milestone },
         ];
 
-        // Novo atalho de Feed para mobile
-        baseLinks.push({ href: '/dashboard', label: 'Feed Operacional', icon: Activity });
-
         if (isDriver) {
             return [
                 ...baseLinks,
@@ -115,7 +112,10 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 ))}
             </div>
 
-            <div className="space-y-2">
+            {/* Operational Feed Integrated into Mobile Home */}
+            <OperationalFeed />
+
+            <div className="space-y-2 pb-10">
                 <Button variant="outline" className="w-full h-12" onClick={onShareRegistration}>
                     <UserPlus className="mr-2 h-5 w-5 text-primary" />
                     Convidar Novos Pais

@@ -43,18 +43,20 @@ export function OperationalFeed() {
     const feedItems = useMemo<FeedItem[]>(() => {
         const items: FeedItem[] = [];
 
-        incidents?.forEach(inc => {
-            const isAI = inc.reporter === 'Guardian Intelligence';
-            items.push({
-                id: inc.id,
-                type: isAI ? 'intelligence' : 'incident',
-                title: inc.category,
-                description: inc.description,
-                timestamp: inc.timestamp,
-                icon: isAI ? <Sparkles className="h-4 w-4" /> : <Siren className="h-4 w-4" />,
-                color: isAI ? 'text-primary bg-primary/10 border-primary/20' : 'text-destructive bg-destructive/10 border-destructive/20'
+        if (incidents) {
+            incidents.forEach(inc => {
+                const isAI = inc.reporter === 'Guardian Intelligence';
+                items.push({
+                    id: inc.id,
+                    type: isAI ? 'intelligence' : 'incident',
+                    title: inc.category,
+                    description: inc.description,
+                    timestamp: inc.timestamp,
+                    icon: isAI ? <Sparkles className="h-4 w-4" /> : <Siren className="h-4 w-4" />,
+                    color: isAI ? 'text-primary bg-primary/10 border-primary/20' : 'text-destructive bg-destructive/10 border-destructive/20'
+                });
             });
-        });
+        }
 
         // Mock fixo para garantir que o feed nunca pareça vazio no início
         const now = new Date();
@@ -74,7 +76,7 @@ export function OperationalFeed() {
     }, [incidents]);
 
     return (
-        <Card className="h-full border-secondary overflow-hidden flex flex-col">
+        <Card className="h-full border-secondary overflow-hidden flex flex-col min-h-[300px]">
             <CardHeader className="pb-3 border-b bg-muted/10">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
@@ -82,8 +84,17 @@ export function OperationalFeed() {
                         Acontecendo Agora
                     </CardTitle>
                     <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/10" title="Simular Inteligência" onClick={handleSimulateEvent}>
-                            <Zap className="h-3 w-3" />
+                        <Button 
+                            variant="ghost" 
+                            size="icon" 
+                            className="h-8 w-8 text-primary hover:bg-primary/10" 
+                            title="Simular Inteligência" 
+                            onClick={(e) => {
+                                e.preventDefault();
+                                handleSimulateEvent();
+                            }}
+                        >
+                            <Zap className="h-4 w-4" />
                         </Button>
                         <Badge variant="outline" className="text-[10px] font-bold">LIVE</Badge>
                     </div>
@@ -99,7 +110,7 @@ export function OperationalFeed() {
                                     <div className={`mt-0.5 p-2 rounded-full border h-fit shrink-0 ${item.color}`}>
                                         {item.icon}
                                     </div>
-                                    <div className="space-y-1 min-w-0">
+                                    <div className="space-y-1 min-w-0 flex-1">
                                         <div className="flex items-center justify-between gap-2">
                                             <p className="text-sm font-bold truncate">{item.title}</p>
                                             <span className="text-[10px] text-muted-foreground whitespace-nowrap">
