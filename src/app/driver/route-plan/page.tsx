@@ -395,9 +395,19 @@ export default function DriverRoutePlanPage() {
                 </div>
 
                 <Tabs defaultValue="itinerario" className="flex-1 flex flex-col overflow-hidden">
-                    <TabsList className="grid w-full grid-cols-2 h-12 bg-muted/30 border-b">
-                        <TabsTrigger value="itinerario" className="gap-2 font-black text-xs uppercase"><Activity className="h-4 w-4" /> Itinerário</TabsTrigger>
-                        <TabsTrigger value="mapa" className="gap-2 font-black text-xs uppercase"><LocateFixed className="h-4 w-4" /> Mapa</TabsTrigger>
+                    <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1 border-b">
+                        <TabsTrigger 
+                            value="itinerario" 
+                            className="gap-2 font-black text-xs uppercase data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md"
+                        >
+                            <Activity className="h-4 w-4" /> Itinerário
+                        </TabsTrigger>
+                        <TabsTrigger 
+                            value="mapa" 
+                            className="gap-2 font-black text-xs uppercase data-[state=active]:bg-background data-[state=active]:text-primary data-[state=active]:shadow-md"
+                        >
+                            <LocateFixed className="h-4 w-4" /> Mapa
+                        </TabsTrigger>
                     </TabsList>
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
