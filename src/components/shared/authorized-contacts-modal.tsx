@@ -64,15 +64,15 @@ export function AuthorizedContactsModal({
           ) : studentAuthorizedContacts.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 {studentAuthorizedContacts.map((person) => (
-                    <div key={person.id} className="flex items-center gap-4 p-4 rounded-lg border bg-secondary/20">
-                        <Avatar className="h-20 w-24 w-20 rounded-lg">
+                    <div key={person.id} className="flex items-center gap-4 p-4 rounded-lg border bg-secondary/20 overflow-hidden">
+                        <Avatar className="h-20 w-20 shrink-0 rounded-lg">
                             <AvatarImage src={person.photoUrl} style={{ objectFit: 'cover' }} />
                             <AvatarFallback className="rounded-lg">IMG</AvatarFallback>
                         </Avatar>
                         <div className="flex-1 min-w-0">
                             <p className="font-bold text-base truncate">{person.name}</p>
-                            <p className="text-xs text-muted-foreground">CPF: {person.cpf}</p>
-                            <p className="text-xs text-muted-foreground mt-1">Tel: {person.phone || 'N/A'}</p>
+                            <p className="text-xs text-muted-foreground truncate">CPF: {person.cpf}</p>
+                            <p className="text-xs text-muted-foreground mt-1 truncate">Tel: {person.phone || 'N/A'}</p>
                         </div>
                     </div>
                 ))}

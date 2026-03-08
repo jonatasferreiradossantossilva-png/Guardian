@@ -552,13 +552,13 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
         </CardContent>
         <CardFooter className="flex flex-col gap-3 pt-3 bg-muted/10 rounded-b-lg border-t">
             <div className="grid grid-cols-3 gap-2 w-full">
-                <Button variant="secondary" className="h-12 text-[9px] font-black uppercase tracking-widest p-1" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`, '_blank')}>
+                <Button variant="secondary" className="h-12 text-[8px] font-black uppercase tracking-tighter p-1" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`, '_blank')}>
                     <Navigation className="mr-1 h-4 w-4 text-primary" /> NAVEGAR
                 </Button>
-                <Button variant="secondary" className="h-12 text-[9px] font-black uppercase tracking-widest p-1" onClick={onScanQrCode}>
+                <Button variant="secondary" className="h-12 text-[8px] font-black uppercase tracking-tighter p-1" onClick={onScanQrCode}>
                     <QrCode className="mr-1 h-4 w-4 text-primary" /> QR Code
                 </Button>
-                <Button variant="secondary" className="h-12 text-[9px] font-black uppercase tracking-widest p-1" onClick={() => onOpenAuthorizedModal(student)}>
+                <Button variant="secondary" className="h-12 text-[8px] font-black uppercase tracking-tighter p-1" onClick={() => onOpenAuthorizedModal(student)}>
                     <IdCard className="mr-1 h-4 w-4 text-primary"/> Autorizados
                 </Button>
             </div>
