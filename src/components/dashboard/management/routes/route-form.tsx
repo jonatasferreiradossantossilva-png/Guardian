@@ -214,7 +214,7 @@ export function RouteForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-6xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
+    <DialogContent className="sm:max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20 shadow-sm">
         <DialogTitle className="text-xl font-black uppercase italic text-primary">Montar Itinerário</DialogTitle>
         <DialogDescription>A IA calculará a melhor rota priorizando o bem-estar dos alunos e a economia de combustível.</DialogDescription>
@@ -222,36 +222,37 @@ export function RouteForm({
       
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
         <div className="p-6 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div className="space-y-6">
-                    <div className="space-y-4 bg-muted/20 p-4 rounded-lg border border-dashed">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO */}
+                <div className="space-y-8">
+                    <div className="space-y-4 bg-muted/20 p-5 rounded-xl border border-dashed">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Dados da Rota</Label>
-                            <Input placeholder="Nome da Rota" value={name} onChange={e => setName(e.target.value)} className="bg-background font-bold" />
+                            <Input placeholder="Nome da Rota" value={name} onChange={e => setName(e.target.value)} className="bg-background font-bold h-11" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Turno</Label>
                                 <Select onValueChange={v => setShift(v as any)} value={shift}>
-                                    <SelectTrigger className="bg-background"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                                    <SelectTrigger className="bg-background h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
                                     <SelectContent><SelectItem value="Manhã">Manhã</SelectItem><SelectItem value="Tarde">Tarde</SelectItem></SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Motorista</Label>
                                 <Select onValueChange={setDriverId} value={driverId}>
-                                    <SelectTrigger className="bg-background"><SelectValue placeholder="Escolha" /></SelectTrigger>
+                                    <SelectTrigger className="bg-background h-11"><SelectValue placeholder="Escolha" /></SelectTrigger>
                                     <SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
                         </div>
                     </div>
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Escolas Atendidas</Label>
-                        <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background">
+                        <div className="flex flex-wrap gap-3 p-4 border-2 rounded-xl bg-background shadow-sm">
                             {schools.map(school => (
-                                <div key={school.id} className="flex items-center space-x-2">
+                                <div key={school.id} className="flex items-center space-x-2 bg-secondary/30 px-3 py-2 rounded-lg border">
                                     <Checkbox 
                                         id={`sch-${school.id}`} 
                                         checked={selectedSchoolIds.includes(school.id)} 
@@ -260,41 +261,42 @@ export function RouteForm({
                                             setIsOptimized(false);
                                         }} 
                                     />
-                                    <Label htmlFor={`sch-${school.id}`} className="text-xs cursor-pointer font-medium">{school.name}</Label>
+                                    <Label htmlFor={`sch-${school.id}`} className="text-xs cursor-pointer font-bold uppercase tracking-tight">{school.name}</Label>
                                 </div>
                             ))}
                         </div>
                     </div>
 
+                    {/* SELETOR DE ESTRATÉGIA DINÂMICO */}
                     {selectedSchoolIds.length >= 2 && (
-                        <div className="space-y-2 p-4 bg-primary/5 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-2 duration-500">
+                        <div className="space-y-3 p-5 bg-primary/5 rounded-xl border-2 border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                <Zap className="h-3 w-3" /> Como a IA deve organizar os alunos?
+                                <Zap className="h-4 w-4" /> Como a IA deve organizar os alunos?
                             </Label>
                             <Select onValueChange={v => { setOptimizationMode(v as any); setIsOptimized(false); }} value={optimizationMode}>
-                                <SelectTrigger className="bg-background h-14 font-bold">
+                                <SelectTrigger className="bg-background h-16 font-black text-primary border-primary/30 shadow-md">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent className="w-[var(--radix-select-trigger-width)] md:min-w-[500px]">
-                                    <SelectItem value="safe" className="py-3">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-2 font-bold text-sm">
+                                <SelectContent className="w-[var(--radix-select-trigger-width)] md:min-w-[600px]">
+                                    <SelectItem value="safe" className="py-4">
+                                        <div className="flex flex-col gap-1 pr-4">
+                                            <div className="flex items-center gap-2 font-black text-sm uppercase">
                                                 <ShieldCheck className="h-4 w-4 text-primary"/> 
                                                 <span>Priorizar Embarque (Segurança Total)</span>
                                             </div>
-                                            <p className="text-[11px] text-muted-foreground italic leading-snug pl-6 whitespace-normal">
-                                                A van embarca todos os alunos de todas as escolas antes de iniciar os desembarques.
+                                            <p className="text-[11px] text-muted-foreground italic leading-snug pl-6 whitespace-normal max-w-lg">
+                                                A van embarca todos os alunos de todas as escolas antes de iniciar qualquer desembarque. Ideal para rotas onde a conferência de embarque é crítica.
                                             </p>
                                         </div>
                                     </SelectItem>
-                                    <SelectItem value="flexible" className="py-3">
-                                        <div className="flex flex-col gap-1">
-                                            <div className="flex items-center gap-2 font-bold text-sm">
+                                    <SelectItem value="flexible" className="py-4">
+                                        <div className="flex flex-col gap-1 pr-4">
+                                            <div className="flex items-center gap-2 font-black text-sm uppercase text-amber-600">
                                                 <Zap className="h-4 w-4 text-amber-500"/> 
                                                 <span>Entrega por Proximidade (Mais Agilidade)</span>
                                             </div>
-                                            <p className="text-[11px] text-muted-foreground italic leading-snug pl-6 whitespace-normal">
-                                                A IA sugere deixar os alunos se a escola estiver no caminho, diminuindo o tempo das crianças na van.
+                                            <p className="text-[11px] text-muted-foreground italic leading-snug pl-6 whitespace-normal max-w-lg">
+                                                A IA sugere deixar os alunos assim que o lote da escola estiver completo e ela estiver no caminho. Reduz drasticamente o tempo das crianças na van.
                                             </p>
                                         </div>
                                     </SelectItem>
@@ -303,34 +305,39 @@ export function RouteForm({
                         </div>
                     )}
 
-                    <div className="space-y-2">
+                    <div className="space-y-3">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
-                        <div className="border-2 rounded-lg overflow-hidden bg-background shadow-sm">
-                            <div className="p-2 border-b bg-muted/30">
-                                <Search className="inline-block h-3 w-3 mr-2 text-muted-foreground" />
-                                <input 
-                                    placeholder="Filtrar por nome do aluno..." 
-                                    value={studentSearch} 
-                                    onChange={e => setStudentSearch(e.target.value)} 
-                                    className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs outline-none w-[calc(100%-20px)]" 
-                                />
+                        <div className="border-2 rounded-xl overflow-hidden bg-background shadow-lg">
+                            <div className="p-3 border-b bg-muted/30">
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <input 
+                                        placeholder="Filtrar por nome do aluno..." 
+                                        value={studentSearch} 
+                                        onChange={e => setStudentSearch(e.target.value)} 
+                                        className="h-10 border-none focus-visible:ring-0 shadow-none bg-transparent text-sm outline-none w-full pl-9" 
+                                    />
+                                </div>
                             </div>
                             <div className="max-h-[400px] overflow-y-auto">
                                 {availableStudents.length > 0 ? (
                                     availableStudents.map(s => (
-                                        <div key={s.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-secondary/50">
+                                        <div key={s.id} className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-primary/5 transition-colors group">
                                             <div className="min-w-0">
-                                                <p className="text-xs font-bold truncate">{s.name}</p>
-                                                <p className="text-[9px] text-muted-foreground uppercase">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
+                                                <p className="text-sm font-black uppercase truncate group-hover:text-primary transition-colors">{s.name}</p>
+                                                <p className="text-[10px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
                                             </div>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => handleAddStudent(s)}>
-                                                <PlusCircle className="h-5 w-5" />
+                                            <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}>
+                                                <PlusCircle className="h-6 w-6" />
                                             </Button>
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="p-8 text-center text-muted-foreground">
-                                        <p className="text-[10px] font-bold uppercase opacity-40">Selecione escolas e turno acima</p>
+                                    <div className="p-12 text-center text-muted-foreground">
+                                        <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
+                                        <p className="text-[10px] font-black uppercase tracking-widest opacity-40 leading-tight">
+                                            Selecione escolas e turno <br/> para visualizar os alunos
+                                        </p>
                                     </div>
                                 )}
                             </div>
@@ -338,50 +345,54 @@ export function RouteForm({
                     </div>
                 </div>
 
+                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL */}
                 <div className="space-y-4">
-                    <div className="flex justify-between items-center bg-primary/5 p-3 rounded-lg border border-primary/20">
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="bg-background text-primary border-primary/30 h-6 font-black">{stops.length}</Badge>
-                            <Label className="text-xs font-black uppercase tracking-tighter">Itinerário Final</Label>
+                    <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
+                        <div className="flex items-center gap-3">
+                            <Badge variant="outline" className="bg-background text-primary border-primary/30 h-8 px-3 font-black text-base">{stops.length}</Badge>
+                            <Label className="text-sm font-black uppercase tracking-tighter">Itinerário Final</Label>
                         </div>
-                        <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-8 font-black text-[10px] shadow-md active:scale-95 transition-all">
-                            {isOptimizing ? <Loader2 className="animate-spin h-3 w-3 mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                            OTIMIZAR SEQUÊNCIA
+                        <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
+                            {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                            OTIMIZAR IA
                         </Button>
                     </div>
 
-                    <div className="border-2 border-dashed rounded-xl bg-background p-3 min-h-[300px]">
-                        <div className="space-y-2">
+                    <div className="border-2 border-dashed rounded-2xl bg-muted/10 p-4 min-h-[500px]">
+                        <div className="space-y-3">
                             {stops.length > 0 ? (
                                 stops.map((stop, idx) => (
                                     <div key={`${stop.id}-${idx}`} className={cn(
-                                        "flex items-center gap-3 p-2 border rounded-lg group animate-in fade-in slide-in-from-right-2 duration-300",
-                                        stop.type === 'school' ? "bg-primary/5 border-primary/20" : "bg-muted/20"
+                                        "flex items-center gap-4 p-3 border-2 rounded-xl group animate-in fade-in slide-in-from-right-4 duration-300 shadow-sm",
+                                        stop.type === 'school' ? "bg-primary/5 border-primary/20" : "bg-background border-border"
                                     )}>
-                                        <span className="text-[9px] font-black bg-background w-5 h-5 flex items-center justify-center rounded border text-muted-foreground">{idx + 1}</span>
+                                        <span className="text-xs font-black bg-muted w-7 h-7 flex items-center justify-center rounded-full text-muted-foreground">{idx + 1}</span>
                                         <div className="flex-1 min-w-0">
                                             <div className="flex items-center gap-2">
-                                                {stop.type === 'school' && <School className="h-3 w-3 text-primary" />}
-                                                <p className="text-xs font-bold uppercase truncate">{stop.name}</p>
+                                                {stop.type === 'school' && <School className="h-4 w-4 text-primary" />}
+                                                <p className="text-sm font-black uppercase truncate leading-tight">{stop.name}</p>
                                             </div>
-                                            <p className="text-[9px] text-muted-foreground truncate uppercase">{stop.details}</p>
+                                            <p className="text-[10px] text-muted-foreground truncate uppercase font-bold tracking-tight">{stop.details}</p>
                                         </div>
-                                        <div className="flex items-center gap-1">
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { 
+                                        <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { 
                                                 const newStops = [...stops];
                                                 if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === 0}><ArrowUp className="h-3 w-3" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                                            }} disabled={idx === 0}><ArrowUp className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
                                                 const newStops = [...stops];
                                                 if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-3 w-3" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3 w-3" /></Button>
+                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-4 w-4" /></Button>
                                         </div>
                                     </div>
                                 ))
                             ) : (
-                                <div className="py-20 text-center text-muted-foreground">
-                                    <p className="text-xs font-bold uppercase tracking-widest text-center opacity-40">Adicione alunos para iniciar o itinerário</p>
+                                <div className="py-32 text-center text-muted-foreground flex flex-col items-center">
+                                    <RouteIcon className="h-16 w-16 mb-4 opacity-5" />
+                                    <p className="text-xs font-black uppercase tracking-widest text-center opacity-30 leading-tight">
+                                        Seu itinerário aparecerá aqui <br/> conforme você adiciona alunos
+                                    </p>
                                 </div>
                             )}
                         </div>
@@ -389,12 +400,13 @@ export function RouteForm({
                 </div>
             </div>
 
-            <div className="pt-10 pb-20 flex flex-col sm:flex-row gap-3 border-t mt-10">
+            {/* BOTÃO SALVAR FLUIDO AO FINAL */}
+            <div className="pt-12 pb-24 flex flex-col sm:flex-row gap-4 border-t mt-10">
                 <DialogClose asChild>
-                    <Button variant="ghost" className="h-14 px-8 flex-1">Cancelar</Button>
+                    <Button variant="ghost" className="h-16 px-10 flex-1 text-base uppercase font-bold">Cancelar</Button>
                 </DialogClose>
-                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-14 text-lg font-black shadow-2xl bg-primary text-white hover:bg-primary/90">
-                    <CheckCircle2 className="mr-2 h-6 w-6" />
+                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-16 text-xl font-black shadow-2xl bg-primary text-white hover:bg-primary/90 transition-all active:scale-[0.98]">
+                    <CheckCircle2 className="mr-3 h-7 w-7" />
                     SALVAR ROTA COMPLETA
                 </Button>
             </div>

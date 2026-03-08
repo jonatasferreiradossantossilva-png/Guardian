@@ -117,7 +117,7 @@ export function CompanyForm() {
                     <FormControl>
                         <Input placeholder="Ex: Rota Segura Transporte Escolar" {...field} />
                     </FormControl>
-                    <FormMessage />
+                    <FormItem />
                     </FormItem>
                 )}
                 />
