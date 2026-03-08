@@ -19,7 +19,21 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Users, School, ArrowUp, ArrowDown, Sparkles, Loader2, X, PlusCircle, CheckCircle2, Search, ShieldCheck, Zap } from 'lucide-react';
+import { 
+    Users, 
+    School, 
+    ArrowUp, 
+    ArrowDown, 
+    Sparkles, 
+    Loader2, 
+    X, 
+    PlusCircle, 
+    CheckCircle2, 
+    Search, 
+    ShieldCheck, 
+    Zap,
+    Route as RouteIcon 
+} from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';

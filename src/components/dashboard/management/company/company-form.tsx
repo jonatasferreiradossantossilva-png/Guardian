@@ -117,7 +117,6 @@ export function CompanyForm() {
                     <FormControl>
                         <Input placeholder="Ex: Rota Segura Transporte Escolar" {...field} />
                     </FormControl>
-                    <FormItem />
                     </FormItem>
                 )}
                 />
@@ -163,7 +162,7 @@ export function CompanyForm() {
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
                         <Mail className="h-3 w-3" /> E-mail de Contato
-                    </FormLabel>
+                    </Label>
                     <FormControl>
                         <Input placeholder="contato@empresa.com.br" {...field} />
                     </FormControl>
