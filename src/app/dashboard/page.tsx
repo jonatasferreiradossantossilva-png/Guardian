@@ -96,7 +96,7 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 </div>
                 <div className="flex-1 min-w-0">
                     <p className="text-xs font-black uppercase text-primary tracking-tight">Status do Setup</p>
-                    <p className="text-[10px] text-muted-foreground leading-tight">Complete os 17 passos para ativar a telemetria inteligente.</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">Siga os 5 passos para ativar a infra e receber os primeiros alunos.</p>
                 </div>
                 <ChevronRight className="h-4 w-4 text-primary opacity-50" />
             </Card>
