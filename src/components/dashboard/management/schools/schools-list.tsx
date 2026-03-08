@@ -116,7 +116,7 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
-          Gerenciamento de Escolas
+          Escolas
         </h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
@@ -186,21 +186,21 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
                                    </DropdownMenuItem>
                                </DropdownMenuContent>
                            </DropdownMenu>
-                       </div>
-                    </TableCell>
-                  </TableRow>
-                ))
-              ) : (
-                !isLoading && (
-                  <TableRow>
-                    <TableCell colSpan={5} className="text-center h-24">
-                      Nenhuma escola cadastrada.
-                    </TableCell>
-                  </TableRow>
-                )
-              )}
-            </TableBody>
-          </Table>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                ) : (
+                  !isLoading && (
+                    <TableRow>
+                      <TableCell colSpan={5} className="text-center h-24">
+                        Nenhuma escola cadastrada.
+                      </TableCell>
+                    </TableRow>
+                  )
+                )}
+              </TableBody>
+            </Table>
           </div>
            {/* Mobile View */}
           <div className="md:hidden">
