@@ -142,10 +142,7 @@ export function RouteForm({
     const studentSchool = schoolsMap.get(s.schoolId);
     
     setStops(prev => {
-        // 1. Verifica se a escola deste aluno já está na rota
         const hasSchool = prev.some(st => st.id === s.schoolId && st.type === 'school');
-        
-        // 2. Adiciona o aluno
         const newStops = [...prev, { 
             id: s.id, 
             type: 'student' as const, 
@@ -153,25 +150,17 @@ export function RouteForm({
             details: studentSchool?.name 
         }];
         
-        // 3. Se a escola não estiver, injeta automaticamente ao final
         if (!hasSchool && studentSchool) {
             newStops.push({ 
                 id: s.schoolId, 
                 type: 'school' as const, 
                 name: studentSchool.name, 
-                details: 'Destino Final (Injetado via IA)' 
+                details: 'Destino Final (Auto-Inclusão)' 
             });
-            
-            // Sincroniza o seletor de escolas se necessário
-            setSelectedSchoolIds(prevIds => {
-                if (!prevIds.includes(s.schoolId)) return [...prevIds, s.schoolId];
-                return prevIds;
-            });
+            setSelectedSchoolIds(prevIds => prevIds.includes(s.schoolId) ? prevIds : [...prevIds, s.schoolId]);
         }
-        
         return newStops;
     });
-    
     setIsOptimized(false);
   };
 
@@ -231,10 +220,10 @@ export function RouteForm({
     <DialogContent className="sm:max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20">
         <DialogTitle>Montar Itinerário</DialogTitle>
-        <DialogDescription>Defina os parâmetros e adicione os alunos. Escolas são injetadas automaticamente.</DialogDescription>
+        <DialogDescription>Defina os parâmetros e adicione os alunos. O botão salvar acompanha a tela.</DialogDescription>
       </DialogHeader>
       
-      <div className="flex-1 overflow-y-auto bg-background">
+      <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
         <div className="p-6 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Coluna 1: Configuração e Alunos Disponíveis */}
@@ -263,7 +252,7 @@ export function RouteForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Escolas Atendidas</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Selecione as Escolas</Label>
                         <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background">
                             {schools.map(school => (
                                 <div key={school.id} className="flex items-center space-x-2">
@@ -279,7 +268,7 @@ export function RouteForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos a Incluir</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis (A Incluir)</Label>
                         <div className="border-2 rounded-lg overflow-hidden bg-background">
                             <div className="p-2 border-b bg-muted/30">
                                 <Input placeholder="Filtrar por nome..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
@@ -299,7 +288,7 @@ export function RouteForm({
                                     ))
                                 ) : (
                                     <div className="p-8 text-center text-muted-foreground">
-                                        <p className="text-[10px] font-bold uppercase">Nenhum aluno disponível</p>
+                                        <p className="text-[10px] font-bold uppercase">Nenhum aluno disponível para os filtros acima</p>
                                     </div>
                                 )}
                             </div>
@@ -345,25 +334,9 @@ export function RouteForm({
                                 ))
                             ) : (
                                 <div className="py-20 text-center text-muted-foreground">
-                                    <p className="text-xs font-bold uppercase tracking-widest">Adicione paradas ao itinerário</p>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-center">Arraste alunos da esquerda para montar o roteiro</p>
                                 </div>
                             )}
-                        </div>
-                        <div className="mt-4">
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="w-full h-9 font-bold border-dashed border-primary/30 text-primary">
-                                        <PlusCircle className="mr-2 h-4 w-4" /> Forçar Inclusão de Escola
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent className="w-[300px]">
-                                    {selectedSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean).map(s => (
-                                        <DropdownMenuItem key={s!.id} onSelect={() => { if (!stops.some(st => st.id === s!.id && st.type === 'school')) setStops(prev => [...prev, { id: s!.id, type: 'school', name: s!.name, details: 'Ponto de desembarque' }]); setIsOptimized(false); }}>
-                                            <School className="mr-2 h-3 w-3" /> {s!.name}
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
                         </div>
                     </div>
                 </div>
