@@ -402,9 +402,9 @@ export default function DriverRoutePlanPage() {
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
                         <ScrollArea className="h-full">
-                            <div className="px-8 py-4 space-y-6 pb-20">
+                            <div className="px-5 py-4 space-y-6 pb-20">
                                 {!activeStop ? (
-                                    <div className="px-2">
+                                    <div className="px-1">
                                         <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
                                             <CheckCircle className="h-14 w-14 text-green-500 mx-auto mb-6"/>
                                             <CardTitle className="text-2xl font-black text-green-600 uppercase">Fim de Rota!</CardTitle>
@@ -413,7 +413,7 @@ export default function DriverRoutePlanPage() {
                                     </div>
                                 ) : activeStop.type === 'student' ? (
                                     <div className="space-y-6">
-                                        <div className="px-2">
+                                        <div className="px-1">
                                             <NextStopCard 
                                                 student={activeStop.data as Student} 
                                                 onStatusChange={handleStatusChange} 
@@ -427,7 +427,7 @@ export default function DriverRoutePlanPage() {
                                             <div className="space-y-2">
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-3">Próximas Paradas</h3>
                                                 {upcomingStops.map((stop, idx) => (
-                                                    <div key={idx} className="px-2">
+                                                    <div key={idx} className="px-1">
                                                         <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
                                                             {stop.type === 'student' ? (
                                                                 <div className="flex-1 min-w-0 flex items-center gap-3">
@@ -451,7 +451,7 @@ export default function DriverRoutePlanPage() {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="px-2">
+                                    <div className="px-1">
                                         <NextStopSchoolCard 
                                             school={activeStop.data as SchoolData} 
                                             direction={selectedDirection}
