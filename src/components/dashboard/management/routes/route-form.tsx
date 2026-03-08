@@ -307,7 +307,13 @@ export function RouteForm({
                         <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
                         <div className="border-2 rounded-lg overflow-hidden bg-background shadow-sm">
                             <div className="p-2 border-b bg-muted/30">
-                                <Input placeholder="Filtrar por nome do aluno..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
+                                <Search className="inline-block h-3 w-3 mr-2 text-muted-foreground" />
+                                <input 
+                                    placeholder="Filtrar por nome do aluno..." 
+                                    value={studentSearch} 
+                                    onChange={e => setStudentSearch(e.target.value)} 
+                                    className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs outline-none w-[calc(100%-20px)]" 
+                                />
                             </div>
                             <div className="max-h-[400px] overflow-y-auto">
                                 {availableStudents.length > 0 ? (
@@ -324,7 +330,7 @@ export function RouteForm({
                                     ))
                                 ) : (
                                     <div className="p-8 text-center text-muted-foreground">
-                                        <p className="text-[10px] font-bold uppercase">Nenhum aluno disponível para os filtros acima</p>
+                                        <p className="text-[10px] font-bold uppercase opacity-40">Selecione escolas e turno acima</p>
                                     </div>
                                 )}
                             </div>
