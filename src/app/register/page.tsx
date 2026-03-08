@@ -80,6 +80,7 @@ export default function PublicRegistrationPage() {
   const { data: schools } = useMockCollection('schools');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Parent Data
   const [parentName, setParentName] = useState('');
   const [parentCpf, setParentCpf] = useState('');
   const [parentRg, setParentRg] = useState('');
@@ -87,6 +88,7 @@ export default function PublicRegistrationPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   
+  // Student Data
   const [studentName, setStudentName] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [studentSerie, setStudentSerie] = useState('');
@@ -94,11 +96,14 @@ export default function PublicRegistrationPage() {
   const [shift, setShift] = useState<string>(''); 
   const [photoUrl, setPhotoUrl] = useState('');
   
+  // Financial
   const [preferredPaymentDay, setPreferredPaymentDay] = useState('10');
   
+  // Health
   const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
   const [medicalNote, setMedicalNote] = useState('');
   
+  // Address
   const [zipCode, setZipCode] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');
@@ -539,7 +544,7 @@ export default function PublicRegistrationPage() {
                         <HeartPulse className="h-5 w-5" />
                         <CardTitle>Saúde e Cuidados</CardTitle>
                     </div>
-                    <CardDescription>Alertas para o motorista.</CardDescription>
+                    <CardDescription>Alertas importantes para o monitor/motorista.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
                     <div className="grid grid-cols-1 gap-3">
@@ -553,11 +558,11 @@ export default function PublicRegistrationPage() {
                     </div>
                     <div className="space-y-2 pt-4 border-t">
                         <Label className="text-xs">Observações Adicionais</Label>
-                        <Textarea placeholder="Detalhes importantes..." value={medicalNote} onChange={e => setMedicalNote(e.target.value)} />
+                        <Textarea placeholder="Detalhes sobre medicação ou alergias..." value={medicalNote} onChange={e => setMedicalNote(e.target.value)} />
                     </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2 border-t pt-6 bg-muted/20">
-                    <Button className="w-full h-14 text-base font-bold bg-green-600" onClick={handleFinalSubmit}>Finalizar e Enviar</Button>
+                    <Button className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-700" onClick={handleFinalSubmit}>Finalizar e Enviar para Aprovação</Button>
                 </CardFooter>
             </Card>
         )}
@@ -569,7 +574,7 @@ export default function PublicRegistrationPage() {
                         <CheckCircle className="text-green-500 h-10 w-10" />
                     </div>
                     <h2 className="text-2xl font-bold">Inscrição Enviada!</h2>
-                    <p className="text-muted-foreground text-sm">Recebemos seus dados. O gestor analisará a viabilidade e entrará em contato.</p>
+                    <p className="text-muted-foreground text-sm">Recebemos seus dados. O gestor analisará a viabilidade e entrará em contato via WhatsApp para o aceite do contrato.</p>
                     <Button asChild className="w-full h-12 font-bold"><Link href="/">Voltar para o Início</Link></Button>
                 </CardContent>
             </Card>

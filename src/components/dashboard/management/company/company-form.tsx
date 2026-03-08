@@ -79,6 +79,7 @@ export function CompanyForm() {
 
   const onSubmit = (data: FormValues) => {
     setIsSaving(true);
+    // Simulating save
     setTimeout(() => {
         if (company) {
             updateDoc('company_profile', company.id, data);
@@ -96,15 +97,15 @@ export function CompanyForm() {
   if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin" /></div>;
 
   return (
-    <Card className="max-w-3xl mx-auto shadow-lg border-primary/10">
+    <Card className="shadow-2xl border-primary/10 overflow-hidden">
       <CardHeader className="bg-primary/5 border-b pb-6">
         <div className="flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-full text-primary">
                 <Building2 className="h-8 w-8" />
             </div>
             <div>
-                <CardTitle className="text-2xl uppercase italic font-black">Minha Empresa</CardTitle>
-                <CardDescription>Dados oficiais e informações de faturamento.</CardDescription>
+                <CardTitle className="text-xl uppercase italic font-black">Dados Operacionais</CardTitle>
+                <CardDescription>Informações públicas que constarão nos contratos e faturas.</CardDescription>
             </div>
         </div>
       </CardHeader>
@@ -112,7 +113,7 @@ export function CompanyForm() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
             <div className="space-y-6">
-                <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em] border-b pb-2">Informações da Transportadora</p>
+                <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em] border-b pb-2">Identificação</p>
                 <FormField
                 control={form.control}
                 name="companyName"
@@ -139,7 +140,7 @@ export function CompanyForm() {
                         <FormControl>
                             <Input placeholder="00.000.000/0001-00 ou 000.000.000-00" {...field} />
                         </FormControl>
-                        <FormDescription className="text-[9px]">Pessoa jurídica ou autônomo.</FormDescription>
+                        <FormDescription className="text-[9px]">Para motoristas autônomos ou empresas.</FormDescription>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -150,7 +151,7 @@ export function CompanyForm() {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                            <Phone className="h-3 w-3" /> Telefone de Contato
+                            <Phone className="h-3 w-3" /> WhatsApp Comercial
                         </FormLabel>
                         <FormControl>
                             <Input placeholder="(11) 99999-9999" {...field} />
@@ -183,12 +184,12 @@ export function CompanyForm() {
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                        <MapPin className="h-3 w-3" /> Sede Profissional
+                        <MapPin className="h-3 w-3" /> Sede / Endereço Comercial
                     </FormLabel>
                     <FormControl>
                         <Input placeholder="Rua, Número, Bairro, Cidade - UF" {...field} />
                     </FormControl>
-                    <FormDescription className="text-[10px]">Este endereço aparecerá no cabeçalho dos seus contratos.</FormDescription>
+                    <FormDescription className="text-[10px]">Utilizado no cabeçalho dos contratos gerados.</FormDescription>
                     <FormMessage />
                     </FormItem>
                 )}
@@ -197,7 +198,7 @@ export function CompanyForm() {
 
             <div className="space-y-6 bg-muted/20 p-6 rounded-xl border border-dashed border-primary/20">
                 <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em] flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" /> Dados para Recebimento (USADOS NO CONTRATO)
+                    <CreditCard className="h-4 w-4" /> Dados de Recebimento (Automáticos no Contrato)
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
@@ -206,7 +207,7 @@ export function CompanyForm() {
                         render={({ field }) => (
                             <FormItem>
                                 <FormLabel className="text-xs font-bold">Banco</FormLabel>
-                                <FormControl><Input placeholder="Ex: NuBank ou Itaú" {...field} className="bg-background" /></FormControl>
+                                <FormControl><Input placeholder="Ex: NuBank" {...field} className="bg-background" /></FormControl>
                             </FormItem>
                         )}
                     />
@@ -244,15 +245,15 @@ export function CompanyForm() {
                             <FormControl>
                                 <Input placeholder="E-mail, CPF ou Chave Aleatória" {...field} className="bg-primary/5 border-primary/20 font-bold" />
                             </FormControl>
-                            <FormDescription className="text-[10px]">Preencha apenas o que deseja que apareça no contrato dos pais.</FormDescription>
+                            <FormDescription className="text-[10px]">Dica: O contrato será preenchido automaticamente com esses dados.</FormDescription>
                         </FormItem>
                     )}
                 />
             </div>
 
-            <Button type="submit" className="w-full h-14 text-lg font-black shadow-xl shadow-primary/20" disabled={isSaving}>
+            <Button type="submit" className="w-full h-14 text-lg font-black shadow-xl" disabled={isSaving}>
               {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 h-6 w-6" />}
-              SALVAR PERFIL E CONFIGURAÇÕES
+              SALVAR PERFIL OPERACIONAL
             </Button>
           </form>
         </Form>

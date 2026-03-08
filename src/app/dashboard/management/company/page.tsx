@@ -5,12 +5,16 @@ import { CompanyForm } from "@/components/dashboard/management/company/company-f
 
 export default function CompanyManagementPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight uppercase italic">Configurações do Gestor</h1>
-        <p className="text-muted-foreground">Gerencie os dados da sua transportadora e informações de faturamento.</p>
+    <div className="flex flex-col items-center justify-center w-full space-y-8 pb-20">
+      <div className="text-center max-w-2xl">
+        <h1 className="text-3xl font-bold tracking-tight uppercase italic text-primary">Perfil da Empresa</h1>
+        <p className="text-muted-foreground mt-2">
+          Gerencie os dados oficiais da sua transportadora e configure as informações de recebimento (Pix/Banco) que aparecerão nos contratos dos pais.
+        </p>
       </div>
-      <CompanyForm />
+      <div className="w-full max-w-3xl">
+        <CompanyForm />
+      </div>
     </div>
   );
 }

@@ -76,6 +76,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     }
   });
 
+  // Auto-fill from company profile
   useEffect(() => {
     if (company) {
         form.reset({
@@ -122,6 +123,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     const schoolYear = new Date().getFullYear().toString();
 
+    // INTELLIGENT PHRASING LOGIC
     let paymentPhrase = "";
     const hasBank = !!data.banco && !!data.agencia && !!data.conta;
     const hasPix = !!data.chavePix;
@@ -137,17 +139,21 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     }
 
     let generatedContent = template.content;
+    
+    // Replace the entire payment line if it follows the standard pattern
     const fullPaymentPattern = /via: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}/g;
     
     if (generatedContent.match(fullPaymentPattern)) {
         generatedContent = generatedContent.replace(fullPaymentPattern, paymentPhrase);
     } else {
+        // Individual replacements if the pattern is broken
         generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');
         generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'N/A');
         generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'N/A');
         generatedContent = generatedContent.replace(/{{chave_pix}}/g, data.chavePix || 'N/A');
     }
 
+    // Other variables
     generatedContent = generatedContent.replace(/{{aluno_nome}}/g, student.name || 'N/A');
     generatedContent = generatedContent.replace(/{{responsavel_nome}}/g, parent.name || 'N/A');
     generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, parent.cpf || 'N/A');
@@ -183,7 +189,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
             Gerar Contrato Inteligente
         </DialogTitle>
         <DialogDescription>
-          Confirme os dados. O sistema já puxou seu Pix do perfil automaticamente.
+          Selecione o aluno e o modelo. O sistema puxará os dados do seu perfil automaticamente.
         </DialogDescription>
       </DialogHeader>
       
@@ -196,9 +202,9 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                 name="studentId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Selecionar Aluno</FormLabel>
+                    <FormLabel>Aluno Pendente</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Escolha um aluno pendente..." /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Escolha um aluno..." /></SelectTrigger></FormControl>
                       <SelectContent>
                         {studentsWithoutContract.length > 0 ? (
                             studentsWithoutContract.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
@@ -215,7 +221,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
               {selectedStudentData && (
                   <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 space-y-3 animate-in fade-in slide-in-from-top-2">
                       <p className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
-                          <Sparkles className="h-3 w-3" /> Dados Recuperados da Triagem
+                          <Sparkles className="h-3 w-3" /> Dados Recuperados
                       </p>
                       <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
@@ -223,8 +229,8 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                               <p className="text-sm font-black text-foreground">R$ {selectedStudentData.student.monthlyFee?.toFixed(2).replace('.', ',') || '0,00'}</p>
                           </div>
                           <div className="space-y-1">
-                              <p className="text-[9px] text-muted-foreground font-bold uppercase">Dia Vencimento</p>
-                              <p className="text-sm font-black text-foreground">Dia {selectedStudentData.student.preferredPaymentDay || '10'}</p>
+                              <p className="text-[9px] text-muted-foreground font-bold uppercase">Vencimento</p>
+                              <p className="text-sm font-black text-foreground">Todo dia {selectedStudentData.student.preferredPaymentDay || '10'}</p>
                           </div>
                       </div>
                   </div>
@@ -235,9 +241,9 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                 name="templateId"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Modelo de Cláusulas</FormLabel>
+                    <FormLabel>Modelo de Texto</FormLabel>
                     <Select onValueChange={field.onChange} value={field.value}>
-                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione o modelo de texto..." /></SelectTrigger></FormControl>
+                      <FormControl><SelectTrigger><SelectValue placeholder="Selecione o modelo..." /></SelectTrigger></FormControl>
                       <SelectContent>
                         {templates.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                       </SelectContent>
@@ -250,12 +256,12 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1" className="border-primary/10">
                   <AccordionTrigger className="text-xs font-black uppercase text-muted-foreground hover:no-underline py-2">
-                      Dados de Recebimento (Confirmar)
+                      Dados de Recebimento (Revisão)
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-4 pt-2">
-                      <div className="p-3 bg-muted/20 rounded border border-dashed text-[10px] text-muted-foreground mb-2">
-                          Campos preenchidos aqui serão inseridos no contrato. Campos vazios serão omitidos da redação final.
+                      <div className="p-3 bg-muted/20 rounded border border-dashed text-[10px] text-muted-foreground mb-2 leading-tight">
+                          Estes dados vieram do seu "Perfil da Empresa". Se deixar campos vazios, a frase no contrato se adaptará automaticamente.
                       </div>
                       <FormField
                         control={form.control}
@@ -298,7 +304,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                                 <QrCode className="h-3 w-3" /> Chave Pix
                             </FormLabel>
                             <FormControl>
-                              <Input placeholder="E-mail ou CPF" {...field} className="h-8 text-xs border-primary/20 bg-primary/5" />
+                              <Input placeholder="E-mail, CPF ou Aleatória" {...field} className="h-8 text-xs border-primary/20 bg-primary/5" />
                             </FormControl>
                           </FormItem>
                         )}
