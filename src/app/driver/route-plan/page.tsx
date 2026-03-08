@@ -104,7 +104,7 @@ const statusText: Record<StudentStatus, string> = {
 
 const formatStudentClassInfo = (student: Student) => {
     if (!student.serie) return student.shift;
-    // Regex refinada para evitar duplicidade de símbolos
+    // Remove "Ano" e símbolos duplicados para exibir apenas "5º" por exemplo
     const serie = student.serie.replace(/\s*ano/i, '').replace(/º/g, '').trim();
     const turma = student.turma ? student.turma.replace(/Sala/gi, 'SL') : '';
     return `${serie}º • ${turma} • ${student.shift}`;

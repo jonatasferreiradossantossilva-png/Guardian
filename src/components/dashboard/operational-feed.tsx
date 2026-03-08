@@ -91,7 +91,7 @@ export function OperationalFeed() {
     }, [incidents]);
 
     return (
-        <Card className="h-full border-secondary overflow-hidden flex flex-col min-h-[300px]">
+        <Card className="h-full border-secondary overflow-hidden flex flex-col min-h-[300px] shadow-lg">
             <CardHeader className="pb-3 border-b bg-muted/10">
                 <div className="flex items-center justify-between">
                     <CardTitle className="text-base flex items-center gap-2">
@@ -111,24 +111,24 @@ export function OperationalFeed() {
                         >
                             <Zap className="h-4 w-4" />
                         </Button>
-                        <Badge variant="outline" className="text-[10px] font-bold">LIVE</Badge>
+                        <Badge variant="outline" className="text-[10px] font-black border-primary text-primary animate-pulse bg-primary/5">LIVE</Badge>
                     </div>
                 </div>
-                <CardDescription className="text-xs">Eventos da frota e inteligência da IA.</CardDescription>
+                <CardDescription className="text-xs uppercase font-bold tracking-tight opacity-70">Monitoramento da Frota</CardDescription>
             </CardHeader>
             <CardContent className="p-0 flex-1 overflow-y-auto">
                 {feedItems.length > 0 ? (
                     <div className="divide-y divide-border">
                         {feedItems.slice(0, 5).map((item) => (
-                            <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors group">
+                            <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors group animate-in fade-in slide-in-from-top-2 duration-500">
                                 <div className="flex gap-3">
                                     <div className={`mt-0.5 p-2 rounded-full border h-fit shrink-0 ${item.color}`}>
                                         {item.icon}
                                     </div>
                                     <div className="space-y-1 min-w-0 flex-1">
                                         <div className="flex items-center justify-between gap-2">
-                                            <p className="text-sm font-bold truncate">{item.title}</p>
-                                            <span className="text-[10px] text-muted-foreground whitespace-nowrap">
+                                            <p className="text-sm font-bold truncate uppercase tracking-tight">{item.title}</p>
+                                            <span className="text-[10px] text-muted-foreground whitespace-nowrap font-bold">
                                                 {format(new Date(item.timestamp), 'HH:mm', { locale: ptBR })}
                                             </span>
                                         </div>
@@ -148,9 +148,9 @@ export function OperationalFeed() {
                 )}
             </CardContent>
             <div className="p-3 border-t bg-muted/10 text-center">
-                <Button asChild variant="ghost" size="sm" className="text-[10px] uppercase font-bold tracking-widest text-primary h-7 w-full">
+                <Button asChild variant="ghost" size="sm" className="text-[10px] uppercase font-black tracking-[0.2em] text-primary h-8 w-full">
                     <Link href="/dashboard/operational-history">
-                        Ver Histórico Completo <ArrowRight className="ml-1 h-3 w-3" />
+                        Histórico Completo <ArrowRight className="ml-1 h-3 w-3" />
                     </Link>
                 </Button>
             </div>
