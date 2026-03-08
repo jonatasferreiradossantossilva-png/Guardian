@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useMemo, useState } from 'react';
@@ -27,17 +28,31 @@ export function OperationalFeed() {
     const { toast } = useToast();
 
     const handleSimulateEvent = () => {
+        // 1. Simulação de Inteligência (Falta de Aluno)
         addDoc('incidents', {
-            category: 'IA: Rota Reotimizada',
-            description: 'Inteligência detectou ausência. Rota recalculada com economia de 1.4km.',
+            category: 'Inteligência: Aluno Ausente',
+            description: 'Aluno Enzo Pereira (Falta) removido da Rota 01. Itinerário recalculado com economia de 1.2km.',
             severity: 'Baixa',
             reporter: 'Guardian Intelligence',
             timestamp: new Date().toISOString(),
-            location: { lat: -23.55, lng: -46.63 }
+            location: { lat: -23.5580, lng: -46.6600 }
         });
+
+        // 2. Simulação de Relato do Motorista (Incidente)
+        setTimeout(() => {
+            addDoc('incidents', {
+                category: 'Relato: Trânsito Intenso',
+                description: 'Motorista Juliano Castro reportou lentidão na Av. Paulista. Atraso estimado de 5 minutos.',
+                severity: 'Média',
+                reporter: 'Juliano Castro',
+                timestamp: new Date().toISOString(),
+                location: { lat: -23.5650, lng: -46.6520 }
+            });
+        }, 500);
+
         toast({
-            title: "Simulação Ativada",
-            description: "Um novo evento de inteligência foi injetado no feed."
+            title: "Simulação Operacional Ativada",
+            description: "Eventos de IA e do motorista foram injetados no feed."
         });
     };
 
@@ -59,7 +74,6 @@ export function OperationalFeed() {
             });
         }
 
-        // Mock fixo para garantir que o feed nunca pareça vazio no início
         const now = new Date();
         const hourAgo = new Date(now.getTime() - 60 * 60000).toISOString();
 
@@ -89,7 +103,7 @@ export function OperationalFeed() {
                             variant="ghost" 
                             size="icon" 
                             className="h-8 w-8 text-primary hover:bg-primary/10" 
-                            title="Simular Inteligência" 
+                            title="Simular Operação" 
                             onClick={(e) => {
                                 e.preventDefault();
                                 handleSimulateEvent();
