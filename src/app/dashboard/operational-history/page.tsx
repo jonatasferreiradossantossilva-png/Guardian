@@ -4,12 +4,13 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bus, Sparkles, Siren, Clock, Activity, ArrowLeft, Zap, Wrench, ShieldCheck, UserCheck } from 'lucide-react';
+import { Bus, Sparkles, Siren, Clock, Activity, ArrowLeft, Zap, Wrench, ShieldCheck, UserCheck, Loader2 } from 'lucide-react';
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
+import { cn } from '@/lib/utils';
 
 type FeedItem = {
     id: string;
