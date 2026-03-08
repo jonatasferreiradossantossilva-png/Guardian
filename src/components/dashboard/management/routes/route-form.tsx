@@ -65,12 +65,6 @@ interface RouteFormProps {
   onFormSubmit: () => void;
 }
 
-const getAbbreviatedClass = (student: Student | null | undefined) => {
-    if (!student?.serie) return null;
-    const seriePart = student.serie.replace(/\s*ano/i, '').trim();
-    return [seriePart, student.turma].filter(Boolean).join(' ');
-};
-
 export function RouteForm({
   route,
   allRoutes,
@@ -99,6 +93,14 @@ export function RouteForm({
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
+
+  const formatStudentAbbrev = (s: Student | undefined) => {
+    if (!s) return '';
+    const serie = s.serie?.replace(/\s*ano/i, '').replace(/º/g, '').trim() || '?';
+    const sala = s.turma?.replace(/sala/i, 'SL.').trim() || '';
+    const shift = s.shift?.toLowerCase() || '';
+    return `${serie}° - ${sala} - ${shift}`;
+  };
 
   useEffect(() => {
     const initialStops: Stop[] = [];
@@ -230,7 +232,7 @@ export function RouteForm({
         let details = "";
         if (s.type === 'student') {
             const st = studentsMap.get(s.id);
-            details = ` (${st?.serie || ''} ${st?.turma || ''})`;
+            details = ` (${formatStudentAbbrev(st)})`;
         }
         return `${num}. [${type}] ${s.name}${details}`;
     }).join('\n');
@@ -377,7 +379,7 @@ export function RouteForm({
                                         <div key={s.id} className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-primary/5 transition-colors group">
                                             <div className="min-w-0">
                                                 <p className="text-sm font-black uppercase group-hover:text-primary transition-colors">{s.name}</p>
-                                                <p className="text-[10px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
+                                                <p className="text-[10px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name} • {formatStudentAbbrev(s)}</p>
                                             </div>
                                             <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}>
                                                 <PlusCircle className="h-6 w-6" />
@@ -422,51 +424,38 @@ export function RouteForm({
                                     )}>
                                         <span className="text-xs font-black bg-muted w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground shrink-0 mt-1">{idx + 1}</span>
                                         
-                                        <div className="flex-1 min-w-0 py-1">
-                                            <div className="flex items-start gap-3 mb-1.5">
-                                                {stop.type === 'school' ? (
-                                                    <>
-                                                        <School className="h-5 w-5 text-primary shrink-0 mt-0.5" />
-                                                        <p className="text-base font-black uppercase leading-tight text-primary break-words flex-1">{stop.name}</p>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <Users className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
-                                                        <p className="text-base font-black uppercase leading-tight text-foreground break-words flex-1">{stop.name}</p>
-                                                    </>
-                                                )}
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 mb-1.5">
+                                                {stop.type === 'school' ? <School className="h-4 w-4 text-primary shrink-0" /> : <Users className="h-4 w-4 text-muted-foreground shrink-0" />}
+                                                <p className="text-base font-black uppercase leading-tight">{stop.name}</p>
                                             </div>
                                             
-                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-                                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase">
-                                                    <School className="h-3 w-3" />
-                                                    {stop.details}
+                                            <div className="flex items-center justify-between gap-4">
+                                                <div className="flex items-center gap-2 text-[10px] font-bold text-muted-foreground uppercase">
+                                                    {stop.type === 'student' ? (
+                                                        <>
+                                                            <School className="h-3 w-3" />
+                                                            <span className="truncate max-w-[120px]">{stop.details}</span>
+                                                            <span>•</span>
+                                                            <span className="text-primary font-black">{formatStudentAbbrev(studentObj)}</span>
+                                                        </>
+                                                    ) : (
+                                                        <span className="text-primary font-black">Ponto de Desembarque Final</span>
+                                                    )}
                                                 </div>
-                                                {studentObj && (
-                                                    <>
-                                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase">
-                                                            <GraduationCap className="h-3 w-3" />
-                                                            {studentObj.serie} {studentObj.turma ? `• ${studentObj.turma}` : ''}
-                                                        </div>
-                                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase">
-                                                            <Clock className="h-3 w-3" />
-                                                            {studentObj.shift}
-                                                        </div>
-                                                    </>
-                                                )}
+                                                
+                                                <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { 
+                                                        const newStops = [...stops];
+                                                        if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                                    }} disabled={idx === 0}><ArrowUp className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                                                        const newStops = [...stops];
+                                                        if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                                    }} disabled={idx === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
+                                                    <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-4 w-4" /></Button>
+                                                </div>
                                             </div>
-                                        </div>
-
-                                        <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity shrink-0 pt-1">
-                                            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => { 
-                                                const newStops = [...stops];
-                                                if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === 0}><ArrowUp className="h-5 w-5" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => {
-                                                const newStops = [...stops];
-                                                if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-5 w-5" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-5 w-5" /></Button>
                                         </div>
                                     </div>
                                 )})
