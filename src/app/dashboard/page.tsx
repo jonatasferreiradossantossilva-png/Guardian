@@ -71,7 +71,7 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 <Badge variant="outline" className="border-primary/20 text-primary font-bold">ADMIN</Badge>
             </div>
 
-            {/* Grade de 6 Atalhos Padronizada em Quadrados */}
+            {/* Grade de 6 Atalhos Padronizada em Quadrados Perfeitos */}
             <div className="grid grid-cols-3 gap-3">
                 {navLinks.map((link) => (
                     <Link href={link.href} key={link.href} passHref className="aspect-square">
@@ -129,26 +129,6 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
 
   const [selectedYear, setSelectedYear] = useState<string>('latest');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
-
-  // Fleet Health Proactive Alarms
-  const urgentMaintenance = useMemo(() => {
-    if (!vehicles) return [];
-    return vehicles.filter(v => {
-        const kmSinceLast = (v.currentOdometer || 0) - (v.lastMaintenanceOdometer || 0);
-        const remaining = (v.maintenanceInterval || 10000) - kmSinceLast;
-        return remaining < 1000 && v.active;
-    });
-  }, [vehicles]);
-
-  useEffect(() => {
-    if (urgentMaintenance.length > 0) {
-        toast({
-            title: "🚨 Alerta de Frota",
-            description: `${urgentMaintenance.length} veículo(s) precisam de manutenção urgente.`,
-            variant: "destructive"
-        });
-    }
-  }, [urgentMaintenance.length, toast]);
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
