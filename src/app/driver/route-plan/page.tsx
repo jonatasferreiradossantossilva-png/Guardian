@@ -581,29 +581,29 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
             <CardHeader className="text-center pb-4 bg-primary/10 border-b">
                 <div className="mx-auto w-16 h-16 rounded-full bg-background border-4 border-primary/20 text-primary shadow-lg flex items-center justify-center mb-2"><School className="h-8 w-8" /></div>
                 <Badge className="w-fit mx-auto mb-1 font-black uppercase tracking-widest text-[10px] bg-primary text-white">{isIda ? 'Desembarque Coletivo' : 'Embarque Coletivo'}</Badge>
-                <CardTitle className="text-2xl font-black uppercase truncate">{school.name}</CardTitle>
+                <CardTitle className="text-xl font-black uppercase truncate">{school.name}</CardTitle>
             </CardHeader>
-            <CardContent className="p-4 space-y-4">
-                <div className="flex justify-between items-center bg-muted/20 p-4 rounded-lg border-2 border-dashed border-primary/20">
+            <CardContent className="p-3 space-y-4">
+                <div className="flex justify-between items-center bg-muted/20 p-3 rounded-lg border-2 border-dashed border-primary/20">
                     <p className="text-[10px] font-black text-muted-foreground uppercase flex items-center gap-2"><Users className="h-4 w-4" /> Checklist ({students.length})</p>
-                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-[10px] h-10 font-black text-white" onClick={onAction}><CheckCircle className="mr-2" /> {isIda ? 'DESEMBARQUE' : 'EMBARQUE'}</Button>
+                    <Button size="sm" className="bg-primary hover:bg-primary/90 text-[10px] h-9 font-black text-white" onClick={onAction}><CheckCircle className="mr-2 h-4 w-4" /> {isIda ? 'DESEMBARQUE' : 'EMBARQUE'}</Button>
                 </div>
-                <div className="space-y-3">
+                <div className="space-y-2">
                     {students.map((s) => {
                         const hasAlert = (s.medicalConditions && s.medicalConditions.length > 0) || s.medicalNote;
                         return (
-                            <div key={s.id} className={cn("flex items-center gap-3 p-3 rounded-xl border-2 bg-background shadow-sm", hasAlert && "border-destructive/30")}>
-                                <Avatar className="h-12 w-12 shrink-0"><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/100/100`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                            <div key={s.id} className={cn("flex items-center gap-2 p-2 rounded-xl border-2 bg-background shadow-sm", hasAlert && "border-destructive/30")}>
+                                <Avatar className="h-10 w-10 shrink-0"><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/100/100`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                                 <div className="flex-1 min-w-0">
-                                    <div className="flex items-center gap-2">
-                                        <p className="text-xs font-black truncate uppercase">{s.name}</p>
-                                        {hasAlert && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" />}
+                                    <div className="flex items-center gap-1">
+                                        <p className="text-[11px] font-bold truncate uppercase leading-tight">{s.name}</p>
+                                        {hasAlert && <HeartPulse className="h-2.5 w-2.5 text-destructive animate-pulse shrink-0" />}
                                     </div>
-                                    <p className="text-[9px] text-primary font-black uppercase">{formatStudentClassInfo(s)}</p>
+                                    <p className="text-[8px] text-primary font-black uppercase truncate">{formatStudentClassInfo(s)}</p>
                                 </div>
-                                <div className="flex gap-2 shrink-0">
-                                    <Button size="icon" variant="outline" className="h-10 w-10 text-green-600" onClick={() => onStatusChange(s.id, isIda ? 'desembarcado' : 'a_bordo')}><Check className="h-5 w-5" /></Button>
-                                    <Button size="icon" variant="outline" className="h-10 w-10 text-destructive" onClick={() => onStatusChange(s.id, isIda ? 'ausente_ida' : 'ausente_volta')}><XCircle className="h-5 w-5" /></Button>
+                                <div className="flex gap-1 shrink-0">
+                                    <Button size="icon" variant="outline" className="h-8 w-8 text-green-600" onClick={() => onStatusChange(s.id, isIda ? 'desembarcado' : 'a_bordo')}><Check className="h-4 w-4" /></Button>
+                                    <Button size="icon" variant="outline" className="h-8 w-8 text-destructive" onClick={() => onStatusChange(s.id, isIda ? 'ausente_ida' : 'ausente_volta')}><XCircle className="h-4 w-4" /></Button>
                                 </div>
                             </div>
                         )
