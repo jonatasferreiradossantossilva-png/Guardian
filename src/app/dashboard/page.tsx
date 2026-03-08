@@ -89,6 +89,18 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 ))}
             </div>
 
+            {/* Card de Aviso do Guia / Setup Status */}
+            <Card className="border-dashed border-primary/40 bg-primary/5 flex items-center p-4 gap-4" onClick={onOpenGuide}>
+                <div className="p-3 bg-primary/10 rounded-full">
+                    <Sparkles className="h-6 w-6 text-primary animate-pulse" />
+                </div>
+                <div className="flex-1 min-w-0">
+                    <p className="text-xs font-black uppercase text-primary tracking-tight">Status do Setup</p>
+                    <p className="text-[10px] text-muted-foreground leading-tight">Complete os 17 passos para ativar a telemetria inteligente.</p>
+                </div>
+                <ChevronRight className="h-4 w-4 text-primary opacity-50" />
+            </Card>
+
             {/* Operational Feed Principal */}
             <OperationalFeed />
 
