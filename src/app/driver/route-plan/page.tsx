@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from 'react';
+import { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Card,
   CardContent,
@@ -17,7 +17,6 @@ import {
   IdCard,
   School,
   Play,
-  Square,
   CheckCircle,
   XCircle,
   Siren,
@@ -31,7 +30,8 @@ import {
   Pause,
   Users,
   Check,
-  RotateCcw,
+  AlertTriangle,
+  X,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -55,6 +55,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { routingGeoapify } from '@/ai/flows/routing-geoapify';
+import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 
 type Shift = 'Manhã' | 'Tarde' | 'Integral';
 type StudentStatus = 'aguardando' | 'a_bordo' | 'desembarcado' | 'ausente_ida' | 'ausente_volta' | 'ausente_dia_todo';
@@ -140,7 +141,7 @@ const GoogleMapMarkers = ({ driverLocation, stops, routePolyline }: { driverLoca
 );
 
 export default function DriverRoutePlanPage() {
-  const { updateDoc, setDoc } = useMockData();
+  const { updateDoc } = useMockData();
   const { toast } = useToast();
   
   const [mockUserId, setMockUserId] = useState<string | null>(null);
@@ -153,6 +154,8 @@ export default function DriverRoutePlanPage() {
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [isOptimizing, setIsOptimizing] = useState(false);
+  const [absentStudentsNames, setAbsentStudentsNames] = useState<string[]>([]);
+  const [showAbsenceAlert, setShowAbsenceAlert] = useState(false);
   const isOnline = useOnlineStatus();
 
   useEffect(() => {
@@ -165,7 +168,6 @@ export default function DriverRoutePlanPage() {
   const driverProfile = useMemo(() => (drivers ? drivers[0] : null), [drivers]);
   const driverId = driverProfile?.id;
   const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
-  const { data: vehicle } = useMockDoc('vehicles', driverProfile?.vehicleId);
 
   const { data: routes, isLoading: isRouteLoading } = useMockCollection('routes', driverId ? [{ field: 'driverId', op: '==', value: driverId }] : []);
   const route = useMemo(() => (driverProfile?.status !== 'inativo' && activeRouteId) ? (routes?.find(r => r.id === activeRouteId) || null) : (routes?.find(r => r.id === selectedRouteIdForStart) || null), [routes, driverProfile, activeRouteId, selectedRouteIdForStart]);
@@ -225,18 +227,26 @@ export default function DriverRoutePlanPage() {
       updateDoc('drivers', driverId, { status: 'inativo' });
       sessionStorage.removeItem('activeRouteId');
       setActiveRouteId(null);
+      setShowAbsenceAlert(false);
+      setAbsentStudentsNames([]);
       toast({ title: "Viagem Encerrada!" });
   }, [driverId, updateDoc, toast]);
 
   const handleStartRoute = async () => {
-    if (!route || !driverProfile) return;
+    if (!route || !driverProfile || !allStudents) return;
     setIsOptimizing(true);
     try {
-        route.studentIds.forEach(id => {
-            if (studentsMap.has(id)) {
-                updateDoc('students', id, { status: 'aguardando' });
-            }
-        });
+        // Detectar alunos ausentes antes de resetar os outros
+        const missing = allStudents.filter(s => 
+            route.studentIds.includes(s.id) && 
+            s.status.startsWith('ausente') && 
+            (s.shift === 'Integral' || s.shift === selectedShift)
+        );
+        
+        if (missing.length > 0) {
+            setAbsentStudentsNames(missing.map(m => m.name.split(' ')[0]));
+            setShowAbsenceAlert(true);
+        }
 
         const studentStops = orderedStops.filter(s => s.type === 'student').map(s => ({
             id: s.id,
@@ -406,6 +416,19 @@ export default function DriverRoutePlanPage() {
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
                         <ScrollArea className="h-full">
                             <div className="p-4 space-y-6 pb-20">
+                                {showAbsenceAlert && absentStudentsNames.length > 0 && (
+                                    <Alert className="bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400 relative">
+                                        <AlertTriangle className="h-4 w-4" />
+                                        <AlertTitle className="text-xs font-black uppercase tracking-tight">Rota Otimizada</AlertTitle>
+                                        <AlertDescription className="text-[11px] leading-tight">
+                                            {absentStudentsNames.join(', ')} {absentStudentsNames.length > 1 ? 'foram marcados' : 'foi marcado'} como ausente. A sequência de paradas foi recalculada automaticamente.
+                                        </AlertDescription>
+                                        <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-50 hover:opacity-100" onClick={() => setShowAbsenceAlert(false)}>
+                                            <X className="h-3 w-3" />
+                                        </Button>
+                                    </Alert>
+                                )}
+
                                 {!activeStop ? (
                                     <div className="w-full">
                                         <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
@@ -416,54 +439,48 @@ export default function DriverRoutePlanPage() {
                                     </div>
                                 ) : activeStop.type === 'student' ? (
                                     <div className="space-y-6 w-full">
-                                        <div>
-                                            <NextStopCard 
-                                                student={activeStop.data as Student} 
-                                                onStatusChange={handleStatusChange} 
-                                                onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
-                                                direction={selectedDirection} 
-                                                onScanQrCode={() => setIsScannerOpen(true)} 
-                                                onEndEarly={handleEndRoute}
-                                            />
-                                        </div>
+                                        <NextStopCard 
+                                            student={activeStop.data as Student} 
+                                            onStatusChange={handleStatusChange} 
+                                            onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
+                                            direction={selectedDirection} 
+                                            onScanQrCode={() => setIsScannerOpen(true)} 
+                                            onEndEarly={handleEndRoute}
+                                        />
                                         {upcomingStops.length > 0 && (
                                             <div className="space-y-2">
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-3">Próximas Paradas</h3>
                                                 {upcomingStops.map((stop, idx) => (
-                                                    <div key={idx}>
-                                                        <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
-                                                            {stop.type === 'student' ? (
-                                                                <div className="flex-1 min-w-0 flex items-center gap-3">
-                                                                    <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as Student).photoUrl || `https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
-                                                                    <div className="min-w-0">
-                                                                        <p className="text-xs font-black truncate uppercase">{stop.data.name}</p>
-                                                                        <p className="text-[9px] text-muted-foreground uppercase font-bold">{formatStudentClassInfo(stop.data as Student)}</p>
-                                                                    </div>
+                                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
+                                                        {stop.type === 'student' ? (
+                                                            <div className="flex-1 min-w-0 flex items-center gap-3">
+                                                                <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as Student).photoUrl || `https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-xs font-black truncate uppercase">{stop.data.name}</p>
+                                                                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{formatStudentClassInfo(stop.data as Student)}</p>
                                                                 </div>
-                                                            ) : (
-                                                                <div className="flex-1 min-w-0 flex items-center gap-3">
-                                                                    <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>
-                                                                    <span className="text-xs font-black truncate uppercase">{stop.data.name}</span>
-                                                                </div>
-                                                            )}
-                                                            <Badge variant="secondary" className="text-[9px] font-black uppercase">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
-                                                        </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex-1 min-w-0 flex items-center gap-3">
+                                                                <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>
+                                                                <span className="text-xs font-black truncate uppercase">{stop.data.name}</span>
+                                                            </div>
+                                                        )}
+                                                        <Badge variant="secondary" className="text-[9px] font-black uppercase">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
                                                     </div>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="w-full">
-                                        <NextStopSchoolCard 
-                                            school={activeStop.data as SchoolData} 
-                                            direction={selectedDirection}
-                                            onAction={handleSchoolAction} 
-                                            students={studentsAtCurrentStop}
-                                            onStatusChange={handleStatusChange}
-                                            onEndEarly={handleEndRoute}
-                                        />
-                                    </div>
+                                    <NextStopSchoolCard 
+                                        school={activeStop.data as SchoolData} 
+                                        direction={selectedDirection}
+                                        onAction={handleSchoolAction} 
+                                        students={studentsAtCurrentStop}
+                                        onStatusChange={handleStatusChange}
+                                        onEndEarly={handleEndRoute}
+                                    />
                                 )}
                             </div>
                         </ScrollArea>
