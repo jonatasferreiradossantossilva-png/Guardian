@@ -213,7 +213,7 @@ export default function DriverRoutePlanPage() {
   const studentsAtCurrentStop = useMemo(() => {
       if (!activeStop || activeStop.type !== 'school' || !allStudents) return [];
       const isIda = selectedDirection === 'ida';
-      const targetStatus = isIda ? 'a_bordo' : 'aguardando';
+      const targetStatus = isIda ? 'desembarcado' : 'a_bordo';
       
       return allStudents.filter(s => 
           s.schoolId === activeStop.id && 

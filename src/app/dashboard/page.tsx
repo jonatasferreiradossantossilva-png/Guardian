@@ -24,7 +24,8 @@ import {
     Play, 
     BookOpen,
     Sparkles,
-    ClipboardCheck
+    ClipboardCheck,
+    History
 } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
@@ -56,7 +57,7 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
     const navLinks = useMemo(() => {
         const baseLinks = [
             { href: '/dashboard/overview', label: 'Painel Financeiro', icon: LayoutGrid },
-            { href: '/dashboard/performance', label: 'Performance & Eco', icon: BarChart3 },
+            { href: '/dashboard/operational-history', label: 'Feed Operacional', icon: History },
             { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
             { href: '/dashboard/financial', label: 'Controle Financeiro', icon: DollarSign },
             { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Milestone },

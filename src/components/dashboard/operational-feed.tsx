@@ -9,6 +9,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import Link from 'next/link';
 
 type FeedItem = {
     id: string;
@@ -104,7 +105,7 @@ export function OperationalFeed() {
             <CardContent className="p-0 flex-1 overflow-y-auto">
                 {feedItems.length > 0 ? (
                     <div className="divide-y divide-border">
-                        {feedItems.map((item) => (
+                        {feedItems.slice(0, 5).map((item) => (
                             <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors group">
                                 <div className="flex gap-3">
                                     <div className={`mt-0.5 p-2 rounded-full border h-fit shrink-0 ${item.color}`}>
@@ -133,8 +134,10 @@ export function OperationalFeed() {
                 )}
             </CardContent>
             <div className="p-3 border-t bg-muted/10 text-center">
-                <Button variant="ghost" size="sm" className="text-[10px] uppercase font-bold tracking-widest text-primary h-7">
-                    Ver Histórico Completo <ArrowRight className="ml-1 h-3 w-3" />
+                <Button asChild variant="ghost" size="sm" className="text-[10px] uppercase font-bold tracking-widest text-primary h-7 w-full">
+                    <Link href="/dashboard/operational-history">
+                        Ver Histórico Completo <ArrowRight className="ml-1 h-3 w-3" />
+                    </Link>
                 </Button>
             </div>
         </Card>
