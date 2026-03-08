@@ -30,7 +30,6 @@ import {
     PlusCircle, 
     CheckCircle2, 
     Search, 
-    ShieldCheck, 
     Zap,
     Route as RouteIcon,
     MessageCircle
@@ -92,11 +91,11 @@ export function RouteForm({
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
 
-  const formatStudentAbbrev = (s: Student | undefined) => {
+  const formatStudentMetaAbbrev = (s: Student | undefined) => {
     if (!s) return '';
     const serie = s.serie?.replace(/\s*ano/i, '').replace(/º/g, '').trim() || '?';
     const sala = s.turma?.replace(/sala/i, 'SL.').trim() || '';
-    const shift = s.shift?.toLowerCase() || '';
+    const shift = s.shift || '';
     return `${serie}° - ${sala} - ${shift}`;
   };
 
@@ -230,7 +229,7 @@ export function RouteForm({
         let details = "";
         if (s.type === 'student') {
             const st = studentsMap.get(s.id);
-            details = ` (${formatStudentAbbrev(st)})`;
+            details = ` (${formatStudentMetaAbbrev(st)})`;
         }
         return `${num}. [${type}] ${s.name}${details}`;
     }).join('\n');
@@ -391,7 +390,7 @@ export function RouteForm({
                     </div>
                 </div>
 
-                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL */}
+                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL - LAYOUT DE 3 CAMADAS */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
                         <div className="flex items-center gap-3">
@@ -410,43 +409,43 @@ export function RouteForm({
                                 const studentObj = stop.type === 'student' ? studentsMap.get(stop.id) : null;
                                 return (
                                 <div key={`${stop.id}-${idx}`} className={cn(
-                                    "flex items-start gap-3 p-3 border-2 rounded-xl group animate-in fade-in duration-300 shadow-sm",
+                                    "flex flex-col gap-1 p-3 border-2 rounded-xl group animate-in fade-in duration-300 shadow-sm",
                                     stop.type === 'school' ? "bg-primary/5 border-primary/20" : "bg-background border-border"
                                 )}>
-                                    <span className="text-[10px] font-black bg-muted w-6 h-6 flex items-center justify-center rounded-full text-muted-foreground shrink-0 mt-0.5">{idx + 1}</span>
+                                    {/* CAMADA 1: NOME COMPLETO */}
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-[9px] font-black bg-muted w-5 h-5 flex items-center justify-center rounded-full text-muted-foreground shrink-0">{idx + 1}</span>
+                                        <p className="text-sm font-black uppercase leading-tight text-foreground">{stop.name}</p>
+                                    </div>
                                     
-                                    <div className="flex-1 min-w-0">
-                                        {/* Row 1: Full Name */}
-                                        <div className="flex items-center gap-2 mb-1">
-                                            {stop.type === 'school' ? <School className="h-3.5 w-3.5 text-primary shrink-0" /> : <Users className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
-                                            <p className="text-sm font-black uppercase leading-tight">{stop.name}</p>
+                                    {/* CAMADA 2: ESCOLA */}
+                                    <div className="pl-8 flex items-center gap-2">
+                                        {stop.type === 'school' ? (
+                                            <p className="text-[9px] font-black text-primary uppercase tracking-widest">Ponto de Desembarque Final</p>
+                                        ) : (
+                                            <div className="flex items-center gap-1.5">
+                                                <School className="h-3 w-3 text-muted-foreground/60" />
+                                                <p className="text-[10px] font-bold text-muted-foreground uppercase">{stop.details}</p>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* CAMADA 3: METADADOS + BOTÕES ALINHADOS */}
+                                    <div className="pl-8 mt-1 flex items-center justify-between border-t border-dashed border-muted pt-2">
+                                        <div className="text-[10px] font-black text-primary uppercase tracking-tight">
+                                            {stop.type === 'student' ? formatStudentMetaAbbrev(studentObj) : "Logística Escola"}
                                         </div>
                                         
-                                        {/* Row 2: Metadata + Controls */}
-                                        <div className="flex items-center justify-between gap-4">
-                                            <div className="flex items-center gap-2 text-[9px] font-bold text-muted-foreground uppercase">
-                                                {stop.type === 'student' ? (
-                                                    <>
-                                                        <span className="text-primary font-black">{formatStudentAbbrev(studentObj)}</span>
-                                                        <span>•</span>
-                                                        <span className="truncate max-w-[150px]">{stop.details}</span>
-                                                    </>
-                                                ) : (
-                                                    <span className="text-primary font-black">Destino Final</span>
-                                                )}
-                                            </div>
-                                            
-                                            <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { 
-                                                    const newStops = [...stops];
-                                                    if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                                }} disabled={idx === 0}><ArrowUp className="h-3.5 w-3.5" /></Button>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
-                                                    const newStops = [...stops];
-                                                    if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                                }} disabled={idx === stops.length - 1}><ArrowDown className="h-3.5 w-3.5" /></Button>
-                                                <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3.5 w-3.5" /></Button>
-                                            </div>
+                                        <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
+                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { 
+                                                const newStops = [...stops];
+                                                if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                            }} disabled={idx === 0}><ArrowUp className="h-3.5 w-3.5" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
+                                                const newStops = [...stops];
+                                                if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-3.5 w-3.5" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3.5 w-3.5" /></Button>
                                         </div>
                                     </div>
                                 </div>
