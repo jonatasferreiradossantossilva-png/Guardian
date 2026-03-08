@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, FileText, CheckCircle, Clock, Printer } from 'lucide-react';
+import { Loader2, ArrowLeft, FileText, CheckCircle, Clock, Printer, MessageCircle, Share2 } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -32,14 +32,12 @@ export default function ParentContractPage() {
         const storedUserId = sessionStorage.getItem('mockUserId');
         setMockUserId(storedUserId);
         
-        // Phase 2: Read selected student context
         const lastSelectedId = sessionStorage.getItem('selectedStudentId');
         setSelectedStudentId(lastSelectedId);
     }, []);
 
     const { data: contracts, isLoading: areContractsLoading } = useMockCollection('contracts', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
     
-    // Phase 2: Find the contract for the selected student
     const contract = useMemo(() => {
         if (!contracts) return null;
         if (!selectedStudentId) return contracts[0];
@@ -68,6 +66,20 @@ export default function ParentContractPage() {
         window.print();
     };
 
+    const handleShare = () => {
+        if (!contract) return;
+        
+        const statusMsg = contract.status === 'accepted' ? 'assinado digitalmente' : 'para análise';
+        const message = `Olá! Segue o meu contrato de transporte para o aluno ${student?.name} (${statusMsg}) via Plataforma Guardian:\n\nhttps://guardian-app.com/parent/contract?id=${contract.id}`;
+        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+        
+        window.open(whatsappUrl, '_blank');
+        toast({
+            title: 'Compartilhamento Simulado',
+            description: 'O link do contrato foi enviado via WhatsApp.',
+        });
+    };
+
     const isLoading = areContractsLoading || areStudentsLoading;
 
     if (isLoading) {
@@ -82,11 +94,18 @@ export default function ParentContractPage() {
                         <Link href="/parent/tracking"><ArrowLeft /></Link>
                     </Button>
                     {contract && (
-                        <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
-                            <Printer className="h-4 w-4" />
-                            <span className="hidden sm:inline">Imprimir / Salvar PDF</span>
-                            <span className="sm:hidden">PDF</span>
-                        </Button>
+                        <div className="flex gap-2">
+                            <Button variant="outline" size="sm" onClick={handleShare} className="gap-2">
+                                <MessageCircle className="h-4 w-4" />
+                                <span className="hidden sm:inline">Compartilhar</span>
+                                <span className="sm:hidden">Enviar</span>
+                            </Button>
+                            <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
+                                <Printer className="h-4 w-4" />
+                                <span className="hidden sm:inline">Imprimir / Salvar PDF</span>
+                                <span className="sm:hidden">PDF</span>
+                            </Button>
+                        </div>
                     )}
                 </div>
 
@@ -99,33 +118,33 @@ export default function ParentContractPage() {
                         </CardDescription>
                     </Card>
                 ) : (
-                    <Card className="print:border-none print:shadow-none">
-                        <CardHeader className="print:px-0">
-                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
+                    <Card className="print:border-none print:shadow-none shadow-xl border-2">
+                        <CardHeader className="print:px-0 bg-muted/5 border-b mb-6">
+                            <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-4">
                                 <div>
-                                    <CardTitle className="flex items-center gap-2"><FileText />Contrato de Transporte</CardTitle>
-                                    <CardDescription className="mt-2 text-primary font-semibold print:text-black">
+                                    <CardTitle className="flex items-center gap-2"><FileText className="text-primary"/>Contrato de Transporte</CardTitle>
+                                    <CardDescription className="mt-2 text-primary font-bold uppercase text-xs print:text-black">
                                         Aluno(a): {student?.name}
                                     </CardDescription>
-                                    <CardDescription className="print:text-black/60">
+                                    <CardDescription className="print:text-black/60 text-[10px] uppercase font-bold">
                                         Gerado em: {format(new Date(contract.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                                     </CardDescription>
                                 </div>
                                 {contract.status === 'accepted' && contract.acceptedAt && (
                                      <div className="text-sm p-3 rounded-md bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800 print:bg-white print:border-black print:text-black">
-                                        <p className="font-semibold flex items-center gap-2"><CheckCircle className="h-4 w-4"/>Contrato Aceito</p>
-                                        <p>Em: {format(new Date(contract.acceptedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
+                                        <p className="font-bold flex items-center gap-2 uppercase text-[10px]"><CheckCircle className="h-4 w-4"/>Contrato Aceito</p>
+                                        <p className="text-xs">Em: {format(new Date(contract.acceptedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
                                     </div>
                                 )}
                             </div>
                         </CardHeader>
                         <CardContent className="print:px-0">
-                            <ScrollArea className="h-[50vh] border rounded-md p-4 bg-secondary/30 print:h-auto print:border-none print:bg-transparent print:p-0 print:overflow-visible">
-                                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed print:text-black print:text-base">{contract.generatedContent}</pre>
+                            <ScrollArea className="h-[50vh] border rounded-md p-6 bg-secondary/10 print:h-auto print:border-none print:bg-transparent print:p-0 print:overflow-visible">
+                                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed print:text-black print:text-base italic text-foreground/90">{contract.generatedContent}</pre>
                             </ScrollArea>
                         </CardContent>
                         {contract.status === 'pending_acceptance' && (
-                            <CardFooter className="flex-col items-start gap-4 border-t pt-6 print:hidden">
+                            <CardFooter className="flex-col items-start gap-4 border-t pt-6 print:hidden bg-muted/5">
                                 <div className="flex items-center space-x-2">
                                     <Checkbox id="terms" checked={hasAgreed} onCheckedChange={(checked) => setHasAgreed(checked as boolean)} />
                                     <label
@@ -135,17 +154,19 @@ export default function ParentContractPage() {
                                         Li e concordo com todos os termos do contrato de transporte do(a) {student?.name}.
                                     </label>
                                 </div>
-                                <Button className="w-full sm:w-auto" disabled={!hasAgreed} onClick={handleAcceptContract}>
-                                    <CheckCircle className="mr-2 h-4 w-4" />
-                                    Aceitar Contrato Digitalmente
+                                <Button className="w-full h-12 font-bold shadow-lg" disabled={!hasAgreed} onClick={handleAcceptContract}>
+                                    <CheckCircle className="mr-2 h-5 w-5" />
+                                    ACEITAR CONTRATO DIGITALMENTE
                                 </Button>
                             </CardFooter>
                         )}
                         <CardFooter className="hidden print:flex justify-center border-t pt-8 mt-10">
-                            <p className="text-[10px] text-center text-black/40 italic">
-                                Documento gerado pela plataforma Guardian em {format(new Date(), "dd/MM/yyyy 'às' HH:mm")}.<br/>
-                                A jornada do seu filho, protegida em tempo real.
-                            </p>
+                            <div className="text-center">
+                                <p className="text-[10px] text-black/40 italic">
+                                    Documento gerado pela plataforma Guardian em {format(new Date(), "dd/MM/yyyy 'às' HH:mm")}.
+                                </p>
+                                <p className="text-[10px] font-bold text-black/60 uppercase tracking-widest mt-1">A jornada do seu filho, protegida em tempo real.</p>
+                            </div>
                         </CardFooter>
                     </Card>
                 )}
