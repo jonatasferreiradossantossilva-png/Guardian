@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from 'react';
@@ -532,9 +533,6 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                         </div>
                     </div>
                 </div>
-                <Button variant="outline" size="icon" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`, '_blank')} className="h-14 w-14 shadow-md bg-background">
-                    <Navigation className="h-7 w-7 text-primary" />
-                </Button>
             </div>
         </CardHeader>
         <CardContent className="pt-6 space-y-4">
@@ -560,9 +558,16 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
             )}
         </CardContent>
         <CardFooter className="flex flex-col gap-3 pt-3 bg-muted/10 rounded-b-lg border-t">
-            <div className="grid grid-cols-2 gap-3 w-full">
-                <Button variant="secondary" className="h-12 text-[10px] font-black uppercase tracking-widest" onClick={onScanQrCode}><QrCode className="mr-2 text-primary" /> QR Code</Button>
-                <Button variant="secondary" className="h-12 text-[10px] font-black uppercase tracking-widest" onClick={() => onOpenAuthorizedModal(student)}><IdCard className="mr-2 text-primary"/> Autorizados</Button>
+            <div className="grid grid-cols-3 gap-2 w-full">
+                <Button variant="secondary" className="h-12 text-[9px] font-black uppercase tracking-widest p-1" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`, '_blank')}>
+                    <Navigation className="mr-1 h-4 w-4 text-primary" /> NAVEGAR
+                </Button>
+                <Button variant="secondary" className="h-12 text-[9px] font-black uppercase tracking-widest p-1" onClick={onScanQrCode}>
+                    <QrCode className="mr-1 h-4 w-4 text-primary" /> QR Code
+                </Button>
+                <Button variant="secondary" className="h-12 text-[9px] font-black uppercase tracking-widest p-1" onClick={() => onOpenAuthorizedModal(student)}>
+                    <IdCard className="mr-1 h-4 w-4 text-primary"/> Autorizados
+                </Button>
             </div>
             <Button variant="ghost" className="w-full text-destructive text-[10px] font-black uppercase" onClick={onEndEarly}>Encerrar Viagem Manualmente</Button>
         </CardFooter>
