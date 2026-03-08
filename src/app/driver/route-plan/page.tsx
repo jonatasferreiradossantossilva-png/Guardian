@@ -412,7 +412,7 @@ export default function DriverRoutePlanPage() {
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
                         <ScrollArea className="h-full">
-                            <div className="pl-0 pr-10 py-4 space-y-6 pb-20">
+                            <div className="pl-2 pr-8 py-4 space-y-6 pb-20">
                                 {!activeStop ? (
                                     <div className="ml-0 mr-2">
                                         <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
