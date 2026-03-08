@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -156,24 +157,11 @@ export function RouteForm({
 
   const handleAddStudent = (s: Student) => {
     const studentSchool = schoolsMap.get(s.schoolId);
-    
     setStops(prev => {
         const hasSchool = prev.some(st => st.id === s.schoolId && st.type === 'school');
-        const newStops = [...prev, { 
-            id: s.id, 
-            type: 'student' as const, 
-            name: s.name, 
-            details: studentSchool?.name 
-        }];
-        
+        const newStops = [...prev, { id: s.id, type: 'student' as const, name: s.name, details: studentSchool?.name }];
         if (!hasSchool && studentSchool) {
-            newStops.push({ 
-                id: s.schoolId, 
-                type: 'school' as const, 
-                name: studentSchool.name, 
-                details: 'Destino Final (Auto-Inclusão)' 
-            });
-            setSelectedSchoolIds(prevIds => prevIds.includes(s.schoolId) ? prevIds : [...prevIds, s.schoolId]);
+            newStops.push({ id: s.schoolId, type: 'school' as const, name: studentSchool.name, details: 'Ponto de Desembarque' });
         }
         return newStops;
     });
@@ -182,38 +170,20 @@ export function RouteForm({
 
   const handleAddAllAvailable = () => {
     if (availableStudents.length === 0) return;
-    
     setStops(prev => {
         let newStops = [...prev];
-        let newSchoolIds = [...selectedSchoolIds];
-        
         availableStudents.forEach(s => {
             const studentSchool = schoolsMap.get(s.schoolId);
-            newStops.push({ 
-                id: s.id, 
-                type: 'student' as const, 
-                name: s.name, 
-                details: studentSchool?.name 
-            });
+            newStops.push({ id: s.id, type: 'student' as const, name: s.name, details: studentSchool?.name });
             const hasSchool = newStops.some(st => st.id === s.schoolId && st.type === 'school');
             if (!hasSchool && studentSchool) {
-                newStops.push({ 
-                    id: s.schoolId, 
-                    type: 'school' as const, 
-                    name: studentSchool.name, 
-                    details: 'Destino Final (Auto-Inclusão)' 
-                });
-                if (!newSchoolIds.includes(s.schoolId)) {
-                    newSchoolIds.push(s.schoolId);
-                }
+                newStops.push({ id: s.schoolId, type: 'school' as const, name: studentSchool.name, details: 'Ponto de Desembarque' });
             }
         });
-        setSelectedSchoolIds(newSchoolIds);
         return newStops;
     });
-    
     setIsOptimized(false);
-    toast({ title: "Inclusão em Massa!", description: `${availableStudents.length} alunos adicionados ao itinerário.` });
+    toast({ title: "Inclusão em Massa!", description: `${availableStudents.length} alunos adicionados.` });
   };
 
   const handleOptimizeOrder = async () => {
@@ -259,20 +229,9 @@ export function RouteForm({
 
   const handleExportToWhatsApp = () => {
     if (stops.length === 0) return;
-    const stopList = stops.map((s, i) => {
-        const num = (i + 1).toString().padStart(2, '0');
-        const type = s.type === 'student' ? '👤 ALUNO' : '🏫 ESCOLA';
-        let details = "";
-        if (s.type === 'student') {
-            const st = studentsMap.get(s.id);
-            details = ` (${formatStudentMetaAbbrev(st)})`;
-        }
-        return `${num}. [${type}] ${s.name}${details}`;
-    }).join('\n');
-    const header = `📋 GUARDIAN: ITINERÁRIO\nROTA: ${name || 'Sem nome'}\nTURNO: ${shift || 'Não definido'}\n--------------------------\n`;
-    const fullText = header + stopList;
-    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`;
-    window.open(whatsappUrl, '_blank');
+    const stopList = stops.map((s, i) => `${(i + 1).toString().padStart(2, '0')}. [${s.type === 'student' ? 'ALUNO' : 'ESCOLA'}] ${s.name}`).join('\n');
+    const header = `📋 GUARDIAN: ITINERÁRIO\nROTA: ${name}\n--------------------------\n`;
+    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(header + stopList)}`, '_blank');
     toast({ title: "WhatsApp Aberto!" });
   };
 
@@ -289,12 +248,12 @@ export function RouteForm({
 
   return (
     <DialogContent className="sm:max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
-      <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20 shadow-sm">
+      <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20">
         <DialogTitle className="text-xl font-black uppercase italic text-primary">Configuração de Itinerário Inteligente</DialogTitle>
         <DialogDescription>A IA calculará a melhor rota priorizando o bem-estar dos alunos e a economia da operação.</DialogDescription>
       </DialogHeader>
       
-      <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
+      <div className="flex-1 overflow-y-auto bg-background">
         <div className="p-6 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-[380px_1fr] gap-8">
                 {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO */}
@@ -355,7 +314,7 @@ export function RouteForm({
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
                             {availableStudents.length > 0 && <Button variant="ghost" size="sm" className="h-6 text-[9px] font-black uppercase text-primary hover:bg-primary/10" onClick={handleAddAllAvailable}><UserPlus className="h-3 w-3 mr-1" /> Inclusão em Massa</Button>}
                         </div>
-                        <div className="border-2 rounded-xl overflow-hidden bg-background shadow-lg">
+                        <div className="border-2 rounded-xl overflow-hidden bg-background">
                             <div className="p-3 border-b bg-muted/30">
                                 <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><input placeholder="Buscar aluno..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-9 border-none focus-visible:ring-0 shadow-none bg-transparent text-sm outline-none w-full pl-9" /></div>
                             </div>
