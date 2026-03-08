@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -34,6 +35,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
+import { FileText, Sparkles } from 'lucide-react';
 
 const formSchema = z.object({
   studentId: z.string({ required_error: 'Selecione um aluno.' }).min(1, { message: 'Selecione um aluno.' }),
@@ -71,7 +73,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
 
   const studentsWithoutContract = useMemo(() => {
     const contractedStudentIds = new Set(existingContracts.map(c => c.studentId));
-    return students.filter(s => !contractedStudentIds.has(s.id));
+    return students.filter(s => !contractedStudentIds.has(s.id) && s.active !== false);
   }, [students, existingContracts]);
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
@@ -90,23 +92,24 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     }
     
     const schoolName = schoolsMap.get(student.schoolId) || "Escola não informada";
-    const studentAddress = `${student.street || ''}, ${student.number || ''}`;
+    const studentAddress = `${student.street || ''}, ${student.number || ''} - ${student.neighborhood || ''}`;
     const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     const schoolYear = new Date().getFullYear().toString();
 
-
     let generatedContent = template.content;
-    generatedContent = generatedContent.replace(/{{aluno_nome}}/g, student.name || '');
-    generatedContent = generatedContent.replace(/{{responsavel_nome}}/g, parent.name || '');
-    generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, parent.cpf || '');
+    
+    // Substituição robusta de placeholders
+    generatedContent = generatedContent.replace(/{{aluno_nome}}/g, student.name || 'N/A');
+    generatedContent = generatedContent.replace(/{{responsavel_nome}}/g, parent.name || 'N/A');
+    generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, parent.cpf || 'N/A');
     generatedContent = generatedContent.replace(/{{aluno_endereco}}/g, studentAddress);
     generatedContent = generatedContent.replace(/{{escola_nome}}/g, schoolName);
-    generatedContent = generatedContent.replace(/{{valor_mensalidade}}/g, student.monthlyFee?.toFixed(2).replace('.', ',') || '0,00');
+    generatedContent = generatedContent.replace(/{{valor_mensalidade}}/g, `R$ ${student.monthlyFee?.toFixed(2).replace('.', ',') || '0,00'}`);
     generatedContent = generatedContent.replace(/{{data_geracao}}/g, generationDate);
     generatedContent = generatedContent.replace(/{{ano_letivo}}/g, schoolYear);
-    generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'Não informado');
-    generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'Não informado');
-    generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'Não informado');
+    generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');
+    generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'N/A');
+    generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'N/A');
 
     addDoc('contracts', {
         templateId: data.templateId,
@@ -119,7 +122,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
 
     toast({
       title: 'Contrato Gerado!',
-      description: `O contrato para ${student.name} foi gerado e enviado para o responsável.`,
+      description: `O contrato para ${student.name} já está disponível para o pai.`,
     });
     onFormSubmit();
   };
@@ -127,9 +130,12 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
   return (
     <DialogContent className="sm:max-w-md">
       <DialogHeader>
-        <DialogTitle>Gerar Novo Contrato</DialogTitle>
+        <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Gerar Novo Contrato
+        </DialogTitle>
         <DialogDescription>
-          Selecione o aluno e o modelo para gerar um novo contrato.
+          A IA preencherá automaticamente os dados do aluno e responsável no modelo selecionado.
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
@@ -139,14 +145,14 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
             name="studentId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Aluno</FormLabel>
+                <FormLabel>Selecionar Aluno</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl><SelectTrigger><SelectValue placeholder="Selecione um aluno..." /></SelectTrigger></FormControl>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Escolha um aluno sem contrato..." /></SelectTrigger></FormControl>
                   <SelectContent>
                     {studentsWithoutContract.length > 0 ? (
                         studentsWithoutContract.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)
                     ) : (
-                        <div className="p-4 text-sm text-muted-foreground">Todos os alunos já possuem contrato.</div>
+                        <div className="p-4 text-xs text-muted-foreground italic">Nenhum aluno pendente de contrato.</div>
                     )}
                   </SelectContent>
                 </Select>
@@ -159,9 +165,9 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
             name="templateId"
             render={({ field }) => (
               <FormItem>
-                <FormLabel>Modelo de Contrato</FormLabel>
+                <FormLabel>Modelo Base</FormLabel>
                 <Select onValueChange={field.onChange} value={field.value}>
-                  <FormControl><SelectTrigger><SelectValue placeholder="Selecione um modelo..." /></SelectTrigger></FormControl>
+                  <FormControl><SelectTrigger><SelectValue placeholder="Selecione o modelo de texto..." /></SelectTrigger></FormControl>
                   <SelectContent>
                     {templates.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                   </SelectContent>
@@ -172,8 +178,8 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
           />
           
           <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger className="text-sm font-medium">Informações Bancárias (Opcional)</AccordionTrigger>
+            <AccordionItem value="item-1" className="border-primary/10">
+              <AccordionTrigger className="text-xs font-black uppercase text-muted-foreground hover:no-underline">Dados de Pagamento (Opcional)</AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4 pt-2">
                   <FormField
@@ -181,11 +187,10 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                     name="banco"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Nome do Banco</FormLabel>
+                        <FormLabel className="text-xs">Banco para Recebimento</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: Banco do Brasil" {...field} />
+                          <Input placeholder="Ex: Banco do Brasil ou Chave Pix" {...field} className="h-8" />
                         </FormControl>
-                        <FormMessage />
                       </FormItem>
                     )}
                   />
@@ -195,11 +200,8 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                       name="agencia"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Agência</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: 1234-5" {...field} />
-                          </FormControl>
-                          <FormMessage />
+                          <FormLabel className="text-xs">Agência</FormLabel>
+                          <FormControl><Input placeholder="0000-0" {...field} className="h-8" /></FormControl>
                         </FormItem>
                       )}
                     />
@@ -208,11 +210,8 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                       name="conta"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel>Conta Corrente</FormLabel>
-                          <FormControl>
-                            <Input placeholder="Ex: 12345-6" {...field} />
-                          </FormControl>
-                          <FormMessage />
+                          <FormLabel className="text-xs">Conta</FormLabel>
+                          <FormControl><Input placeholder="00000-0" {...field} className="h-8" /></FormControl>
                         </FormItem>
                       )}
                     />
@@ -222,9 +221,9 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
             </AccordionItem>
           </Accordion>
 
-          <DialogFooter className="pt-4">
-            <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-            <Button type="submit">Gerar e Enviar para Aceite</Button>
+          <DialogFooter className="pt-4 gap-2">
+            <DialogClose asChild><Button type="button" variant="ghost" className="flex-1">Cancelar</Button></DialogClose>
+            <Button type="submit" className="flex-1 font-bold">GERAR E ENVIAR</Button>
           </DialogFooter>
         </form>
       </Form>

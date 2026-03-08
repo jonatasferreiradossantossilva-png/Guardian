@@ -129,7 +129,7 @@ export default function PublicRegistrationPage() {
           phone.trim() !== '' &&
           studentName.trim() !== '' &&
           selectedSchoolId !== '' &&
-          shift !== '' && // Turno Obrigatório
+          shift !== '' && 
           zipCode.replace(/\D/g, '').length === 8 &&
           street.trim() !== '' &&
           number.trim() !== '' &&
@@ -153,7 +153,7 @@ export default function PublicRegistrationPage() {
             setParentName(result.name);
             setParentCpf(result.cpf);
             setParentRg(result.rg);
-            setParentBirthDate(result.birthDate.split('/').reverse().join('-')); // YYYY-MM-DD
+            setParentBirthDate(result.birthDate.split('/').reverse().join('-')); 
             
             setStep('review');
             toast({ title: "Leitura concluída!", description: "Por favor, revise se os dados estão corretos." });
@@ -291,7 +291,7 @@ export default function PublicRegistrationPage() {
                 </div>
             </CardContent>
             <CardFooter className="flex flex-col gap-2">
-              <Button className="w-full h-12 text-lg" onClick={() => setStep('scan')}>
+              <Button className="w-full h-12 text-lg font-bold" onClick={() => setStep('scan')}>
                 Usar Leitura Automática
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
@@ -338,7 +338,7 @@ export default function PublicRegistrationPage() {
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2">
                     <input type="file" accept="image/*" capture="environment" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
-                    <Button className="w-full h-12" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}>
+                    <Button className="w-full h-12 font-bold" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}>
                         <Camera className="mr-2 h-5 w-5" />
                         Tirar Foto Agora
                     </Button>
@@ -384,7 +384,7 @@ export default function PublicRegistrationPage() {
                     </Alert>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2 border-t pt-6 bg-muted/20 rounded-b-xl">
-                    <Button className="w-full h-12" onClick={() => setStep('form')}>
+                    <Button className="w-full h-12 font-bold" onClick={() => setStep('form')}>
                         Dados Confirmados
                         <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
@@ -405,9 +405,8 @@ export default function PublicRegistrationPage() {
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
                     
-                    {/* Identificação do Responsável */}
                     <div className="space-y-4">
-                        <p className="text-sm font-bold flex items-center gap-2 text-primary">
+                        <p className="text-sm font-bold flex items-center gap-2 text-primary uppercase italic tracking-tighter">
                             <User className="h-4 w-4" /> Identificação do Responsável
                         </p>
                         <div className="space-y-4">
@@ -429,7 +428,7 @@ export default function PublicRegistrationPage() {
                     </div>
 
                     <div className="space-y-4 border-t pt-6">
-                        <p className="text-sm font-bold flex items-center gap-2 text-primary">
+                        <p className="text-sm font-bold flex items-center gap-2 text-primary uppercase italic tracking-tighter">
                             <FileText className="h-4 w-4" /> Contato do Responsável
                         </p>
                         
@@ -446,7 +445,7 @@ export default function PublicRegistrationPage() {
                     </div>
 
                     <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary uppercase italic tracking-tighter">
                             <MapPin className="h-4 w-4" /> Endereço de Embarque
                         </p>
                         
@@ -488,7 +487,7 @@ export default function PublicRegistrationPage() {
                     </div>
                     
                     <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary uppercase italic tracking-tighter">
                             <Users className="h-4 w-4" /> Dados do Aluno
                         </p>
                         <div className="space-y-4">
@@ -531,7 +530,7 @@ export default function PublicRegistrationPage() {
                     </div>
 
                     <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary uppercase italic tracking-tighter">
                             <DollarSign className="h-4 w-4" /> Preferências Financeiras
                         </p>
                         <div className="space-y-4">
@@ -686,7 +685,7 @@ export default function PublicRegistrationPage() {
                     </div>
                     
                     <div className="flex flex-col gap-3 pt-4">
-                        <Button className="w-full h-12" onClick={handleRegisterSibling}>
+                        <Button className="w-full h-12 font-bold" onClick={handleRegisterSibling}>
                             <Users className="mr-2 h-5 w-5" />
                             Cadastrar Outro Filho
                         </Button>

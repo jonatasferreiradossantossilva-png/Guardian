@@ -46,15 +46,15 @@ export default function OperationalHistoryPage() {
             });
         }
 
-        // 2. Injetar eventos estáticos históricos para preencher a tela (Simulando 24h de operação)
+        // 2. Injetar eventos estáticos históricos
         const now = new Date();
         
         items.push({
             id: 'h-1',
             type: 'maintenance',
             title: 'Manutenção Preditiva',
-            description: 'Veículo Mercedes Sprinter (BRA2E19) atingiu o limite de km. Agendamento sugerido para os próximos 500km.',
-            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 5).toISOString(), // 5h atrás
+            description: 'Veículo Mercedes Sprinter (BRA2E19) atingiu o limite de km. Agendamento sugerido.',
+            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 5).toISOString(),
             icon: <Wrench className="h-4 w-4" />,
             color: 'text-amber-500 bg-amber-500/10 border-amber-500/20',
             severity: 'Média'
@@ -64,34 +64,13 @@ export default function OperationalHistoryPage() {
             id: 'h-2',
             type: 'system',
             title: 'Backup de Telemetria',
-            description: 'Sincronização de dados de GPS de ontem concluída. 142 trajetos arquivados com 98% de precisão.',
-            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 12).toISOString(), // 12h atrás
+            description: 'Sincronização de dados de GPS concluída.',
+            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 12).toISOString(),
             icon: <ShieldCheck className="h-4 w-4" />,
             color: 'text-green-500 bg-green-500/10 border-green-500/20'
         });
 
-        items.push({
-            id: 'h-3',
-            type: 'route',
-            title: 'Viagem Finalizada',
-            description: 'Motorista Juliano Castro encerrou a Rota 02 - Tarde. Todos os alunos desembarcados com sucesso.',
-            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 18).toISOString(), // 18h atrás
-            icon: <UserCheck className="h-4 w-4" />,
-            color: 'text-blue-500 bg-blue-500/10 border-blue-500/20'
-        });
-
-        items.push({
-            id: 'h-4',
-            type: 'incident',
-            title: 'Alerta Médico no Embarque',
-            description: 'Monitora Fernanda Lima reportou visualização de alerta para Enzo Pereira (Alergia Alimentar).',
-            timestamp: new Date(now.getTime() - 1000 * 60 * 60 * 24).toISOString(), // 24h atrás
-            icon: <Activity className="h-4 w-4" />,
-            color: 'text-red-500 bg-red-500/10 border-red-500/20',
-            severity: 'Crítica'
-        });
-
-        return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.createdAt).getTime());
+        return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     }, [incidents]);
 
     return (
@@ -101,12 +80,12 @@ export default function OperationalHistoryPage() {
                     <Link href="/dashboard"><ArrowLeft className="h-4 w-4" /></Link>
                 </Button>
                 <div>
-                    <h1 className="text-3xl font-bold tracking-tight">Histórico Operacional</h1>
-                    <p className="text-muted-foreground text-sm">Auditoria completa de eventos, inteligência e ocorrências da frota.</p>
+                    <h1 className="text-3xl font-bold tracking-tight text-foreground uppercase italic">Histórico Operacional</h1>
+                    <p className="text-muted-foreground text-sm">Auditoria completa de eventos e inteligência da frota.</p>
                 </div>
             </div>
 
-            <Card>
+            <Card className="border-secondary shadow-lg">
                 <CardHeader className="bg-muted/10 border-b">
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                         <div>
@@ -116,16 +95,13 @@ export default function OperationalHistoryPage() {
                             </CardTitle>
                             <CardDescription>Eventos registrados nas últimas 24 horas.</CardDescription>
                         </div>
-                        <div className="flex items-center gap-2">
-                            <Badge variant="outline" className="bg-background">Total: {feedItems.length} registros</Badge>
-                        </div>
+                        <Badge variant="outline" className="bg-background">Total: {feedItems.length} registros</Badge>
                     </div>
                 </CardHeader>
                 <CardContent className="p-0">
                     {isLoading ? (
-                        <div className="p-20 text-center text-muted-foreground">
-                            <Loader2 className="animate-spin h-8 w-8 mx-auto mb-4" />
-                            Carregando logs da operação...
+                        <div className="p-20 text-center">
+                            <Loader2 className="animate-spin h-8 w-8 mx-auto text-primary" />
                         </div>
                     ) : feedItems.length > 0 ? (
                         <div className="divide-y divide-border">
@@ -138,12 +114,12 @@ export default function OperationalHistoryPage() {
                                         <div className="space-y-1 flex-1 min-w-0">
                                             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                                                 <div className="flex items-center gap-2 min-w-0">
-                                                    <p className="font-bold text-base truncate">{item.title}</p>
+                                                    <p className="font-bold text-base truncate uppercase tracking-tighter italic">{item.title}</p>
                                                     {item.severity && (
                                                         <Badge 
                                                             variant={item.severity === 'Crítica' ? 'destructive' : 'secondary'} 
                                                             className={cn(
-                                                                "text-[9px] h-4",
+                                                                "text-[9px] h-4 font-black uppercase",
                                                                 item.severity === 'Alta' && "bg-orange-500 text-white border-none",
                                                                 item.severity === 'Baixa' && "bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300"
                                                             )}
@@ -152,8 +128,8 @@ export default function OperationalHistoryPage() {
                                                         </Badge>
                                                     )}
                                                     {item.type === 'intelligence' && (
-                                                        <Badge variant="outline" className="text-[9px] h-4 border-primary text-primary font-black">
-                                                            INTELIGÊNCIA IA
+                                                        <Badge variant="outline" className="text-[9px] h-4 border-primary text-primary font-black uppercase italic">
+                                                            GUARDIAN AI
                                                         </Badge>
                                                     )}
                                                 </div>
@@ -170,11 +146,7 @@ export default function OperationalHistoryPage() {
                             ))}
                         </div>
                     ) : (
-                        <div className="p-20 text-center text-muted-foreground border-dashed border-2 m-6 rounded-xl">
-                            <Zap className="h-12 w-12 mx-auto mb-4 opacity-10" />
-                            <p className="font-bold">Nenhum evento registrado hoje.</p>
-                            <p className="text-xs">Os eventos aparecerão aqui assim que as viagens iniciarem.</p>
-                        </div>
+                        <div className="p-20 text-center text-muted-foreground">Nenhum evento registrado.</div>
                     )}
                 </CardContent>
             </Card>
