@@ -98,7 +98,7 @@ const statusText: Record<StudentStatus, string> = {
   ausente_dia_todo: 'Ausente (Dia Todo)',
 };
 
-// Helper function to format abbreviated student info
+// Helper function to format abbreviated student info: "5º Ano Fundamental" -> "5º" | "Sala 101" -> "SL 101"
 const formatStudentClassInfo = (student: Student) => {
     const serie = student.serie ? student.serie.split(' ')[0] : '';
     const turma = student.turma ? student.turma.replace(/Sala/gi, 'SL') : '';
@@ -291,10 +291,11 @@ export default function DriverRoutePlanPage() {
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
-    if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
+    // Só encerra automaticamente na IDA se não houver mais paradas
+    if (selectedDirection === 'ida' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
-  }, [updateDoc, handleEndRoute, upcomingStops.length]);
+  }, [updateDoc, handleEndRoute, upcomingStops.length, selectedDirection]);
 
   const handleSchoolAction = useCallback(() => {
       const isIda = selectedDirection === 'ida';
@@ -303,7 +304,7 @@ export default function DriverRoutePlanPage() {
       studentsAtCurrentStop.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
       toast({ title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!" });
 
-      // Only end route early if IDA and no upcoming stops
+      // Só encerra prematuramente na IDA se não houver mais paradas futuras (casas)
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
@@ -420,7 +421,8 @@ export default function DriverRoutePlanPage() {
                                         {upcomingStops.length > 0 && (
                                             <div className="space-y-2">
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Próximas Paradas</h3>
-                                                {upcomingStops.slice(0, 5).map((stop, idx) => (
+                                                {/* REMOVIDO SLICE(0, 5) PARA EXIBIR A LISTA COMPLETA DOS 15 ALUNOS */}
+                                                {upcomingStops.map((stop, idx) => (
                                                     <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
                                                         {stop.type === 'student' ? (
                                                             <div className="flex-1 min-w-0 flex items-center gap-3">
