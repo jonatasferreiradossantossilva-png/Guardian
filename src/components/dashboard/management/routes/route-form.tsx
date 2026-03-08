@@ -238,7 +238,6 @@ export function RouteForm({
     const header = `📋 GUARDIAN: ITINERÁRIO\nROTA: ${name || 'Sem nome'}\nTURNO: ${shift || 'Não definido'}\n--------------------------\n`;
     const fullText = header + stopList;
 
-    // Abrir WhatsApp com o texto codificado
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`;
     window.open(whatsappUrl, '_blank');
 
@@ -268,8 +267,8 @@ export function RouteForm({
       
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
         <div className="p-6 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-[0.8fr_1.2fr] gap-10">
-                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO (40%) */}
+            <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-10">
+                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO (FIXA EM 400PX) */}
                 <div className="space-y-8">
                     <div className="space-y-4 bg-muted/20 p-5 rounded-xl border border-dashed">
                         <div className="space-y-2">
@@ -386,7 +385,7 @@ export function RouteForm({
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="p-12 text-center text-muted-foreground">
+                                    <div key="empty-students" className="p-12 text-center text-muted-foreground">
                                         <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
                                         <p className="text-[10px] font-black uppercase tracking-widest opacity-40 leading-tight">
                                             Selecione escolas e turno <br/> para visualizar os alunos
@@ -398,7 +397,7 @@ export function RouteForm({
                     </div>
                 </div>
 
-                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL (60%) */}
+                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL (EXPANSIVA) */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
                         <div className="flex items-center gap-3">
@@ -418,22 +417,22 @@ export function RouteForm({
                                     const studentObj = stop.type === 'student' ? studentsMap.get(stop.id) : null;
                                     return (
                                     <div key={`${stop.id}-${idx}`} className={cn(
-                                        "flex items-center gap-4 p-4 border-2 rounded-xl group animate-in fade-in slide-in-from-right-4 duration-300 shadow-sm",
+                                        "flex items-start gap-4 p-4 border-2 rounded-xl group animate-in fade-in slide-in-from-right-4 duration-300 shadow-sm",
                                         stop.type === 'school' ? "bg-primary/5 border-primary/20 border-primary/30" : "bg-background border-border"
                                     )}>
-                                        <span className="text-xs font-black bg-muted w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground shrink-0">{idx + 1}</span>
+                                        <span className="text-xs font-black bg-muted w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground shrink-0 mt-1">{idx + 1}</span>
                                         
-                                        <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2 mb-1">
+                                        <div className="flex-1 min-w-0 py-1">
+                                            <div className="flex items-start gap-3 mb-1.5">
                                                 {stop.type === 'school' ? (
                                                     <>
-                                                        <School className="h-5 w-5 text-primary shrink-0" />
-                                                        <p className="text-base font-black uppercase leading-tight text-primary">{stop.name}</p>
+                                                        <School className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                                                        <p className="text-base font-black uppercase leading-tight text-primary break-words flex-1">{stop.name}</p>
                                                     </>
                                                 ) : (
                                                     <>
-                                                        <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                                                        <p className="text-base font-black uppercase leading-tight">{stop.name}</p>
+                                                        <Users className="h-4 w-4 text-muted-foreground shrink-0 mt-1" />
+                                                        <p className="text-base font-black uppercase leading-tight text-foreground break-words flex-1">{stop.name}</p>
                                                     </>
                                                 )}
                                             </div>
@@ -458,7 +457,7 @@ export function RouteForm({
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity shrink-0">
+                                        <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity shrink-0 pt-1">
                                             <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => { 
                                                 const newStops = [...stops];
                                                 if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
@@ -472,7 +471,7 @@ export function RouteForm({
                                     </div>
                                 )})
                             ) : (
-                                <div className="py-32 text-center text-muted-foreground flex flex-col items-center">
+                                <div key="empty-itinerary" className="py-32 text-center text-muted-foreground flex flex-col items-center">
                                     <RouteIcon className="h-16 w-16 mb-4 opacity-5" />
                                     <p className="text-xs font-black uppercase tracking-widest text-center opacity-30 leading-tight">
                                         Seu itinerário aparecerá aqui <br/> conforme você adiciona alunos
