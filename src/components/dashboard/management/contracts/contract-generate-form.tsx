@@ -105,6 +105,8 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     generatedContent = generatedContent.replace(/{{aluno_endereco}}/g, studentAddress);
     generatedContent = generatedContent.replace(/{{escola_nome}}/g, schoolName);
     generatedContent = generatedContent.replace(/{{valor_mensalidade}}/g, `R$ ${student.monthlyFee?.toFixed(2).replace('.', ',') || '0,00'}`);
+    generatedContent = generatedContent.replace(/{{turno}}/g, student.shift || 'N/A');
+    generatedContent = generatedContent.replace(/{{dia_vencimento}}/g, student.preferredPaymentDay?.toString() || '10');
     generatedContent = generatedContent.replace(/{{data_geracao}}/g, generationDate);
     generatedContent = generatedContent.replace(/{{ano_letivo}}/g, schoolYear);
     generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');

@@ -1,3 +1,4 @@
+
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -96,8 +97,9 @@ export function ContractTemplateForm({ template, templates, onFormSubmit }: Cont
 
   const placeholders = [
     '{{aluno_nome}}', '{{responsavel_nome}}', '{{responsavel_cpf}}',
-    '{{aluno_endereco}}', '{{escola_nome}}', '{{valor_mensalidade}}', '{{data_geracao}}',
-    '{{ano_letivo}}', '{{banco}}', '{{agencia}}', '{{conta}}'
+    '{{aluno_endereco}}', '{{escola_nome}}', '{{valor_mensalidade}}', '{{turno}}', 
+    '{{dia_vencimento}}', '{{data_geracao}}', '{{ano_letivo}}', '{{banco}}', 
+    '{{agencia}}', '{{conta}}'
   ];
 
   return (
