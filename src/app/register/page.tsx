@@ -4,7 +4,31 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Smartphone, Camera, Sparkles, RefreshCw, AlertTriangle, Apple, Wind, Activity, Accessibility, Brain, HeartPulse, DollarSign, Clock, Users } from 'lucide-react';
+import { 
+  CheckCircle, 
+  Loader2, 
+  UserPlus, 
+  FileText, 
+  ArrowRight, 
+  ShieldCheck, 
+  User, 
+  MapPin, 
+  CalendarDays, 
+  Smartphone, 
+  Camera, 
+  Sparkles, 
+  RefreshCw, 
+  AlertTriangle, 
+  Apple, 
+  Wind, 
+  Activity, 
+  Accessibility, 
+  Brain, 
+  HeartPulse, 
+  DollarSign, 
+  Clock,
+  Users 
+} from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
