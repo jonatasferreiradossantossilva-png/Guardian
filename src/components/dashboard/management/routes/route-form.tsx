@@ -197,7 +197,6 @@ export function RouteForm({
         <DialogDescription>Defina os parâmetros e adicione os alunos. O botão de salvar está ao final da lista.</DialogDescription>
       </DialogHeader>
       
-      {/* Área de Scroll Principal - Agora usando overflow-y-auto nativo para evitar travamentos */}
       <div className="flex-1 overflow-y-auto bg-background">
         <div className="p-6 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -256,7 +255,7 @@ export function RouteForm({
                                                 <p className="text-xs font-bold truncate">{s.name}</p>
                                                 <p className="text-[9px] text-muted-foreground uppercase">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
                                             </div>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => { setStops(prev => [...prev, { id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name }]); setIsOptimized(false); }}>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => { setStops(prev => [...prev, { id: s.id, type: 'student', name: s.name, details: schoolsMap.get(student.schoolId)?.name }]); setIsOptimized(false); }}>
                                                 <PlusCircle className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -333,7 +332,6 @@ export function RouteForm({
                 </div>
             </div>
 
-            {/* BOTÃO SALVAR - Agora faz parte do conteúdo e corre com a tela */}
             <div className="pt-10 pb-20 flex flex-col sm:flex-row gap-3">
                 <DialogClose asChild>
                     <Button variant="ghost" className="h-14 px-8 flex-1">Cancelar</Button>

@@ -44,6 +44,20 @@ export const initialMockData = {
             city: "São Paulo",
             state: "SP",
             zipCode: "01001-000"
+        },
+        {
+            id: "school-marjore",
+            name: "Colégio Marjore Paula",
+            cnpj: "99.888.777/0001-66",
+            active: true,
+            latitude: -23.5600,
+            longitude: -46.6500,
+            street: "Av. Rebouças",
+            number: "500",
+            neighborhood: "Pinheiros",
+            city: "São Paulo",
+            state: "SP",
+            zipCode: "05401-000"
         }
     ],
     school_knowledge_base: [
@@ -76,10 +90,10 @@ export const initialMockData = {
         { id: "student-17", name: "Manuela Ferro", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5810, longitude: -46.6810, street: "Rua Joaquim Floriano", number: "600", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "3º Ano", turma: "Sala 05" },
         { id: "student-18", name: "Ricardo Dias", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5820, longitude: -46.6820, street: "Av. Brigadeiro Faria Lima", number: "1200", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "4º Ano", turma: "Sala 06" },
         { id: "student-19", name: "Heloísa Santos", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5830, longitude: -46.6830, street: "Rua Iguatemi", number: "300", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "5º Ano", turma: "Sala 07" },
-        // NOVOS ALUNOS PARA EXEMPLO DE "A INCLUIR"
-        { id: "student-20", name: "Ricardo Silva", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5590, longitude: -46.6610, street: "Rua Estados Unidos", number: "1500", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "4º Ano", turma: "Sala 10" },
-        { id: "student-21", name: "Patrícia Souza", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6620, street: "Av. Brasil", number: "2000", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "2º Ano", turma: "Sala 05" },
-        { id: "student-22", name: "Bruno Santos", schoolId: "school-1", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6630, street: "Rua Augusta", number: "2500", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "1º Ano", turma: "Sala 01" },
+        // NOVOS ALUNOS PARA EXEMPLO DE "A INCLUIR" - COLÉGIO MARJORE PAULA
+        { id: "student-mj-1", name: "Pedro Oliveira", schoolId: "school-marjore", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5590, longitude: -46.6610, street: "Rua Oscar Freire", number: "1500", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "4º Ano", turma: "Sala 10" },
+        { id: "student-mj-2", name: "Sofia Almeida", schoolId: "school-marjore", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6620, street: "Av. Brasil", number: "2000", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "2º Ano", turma: "Sala 05" },
+        { id: "student-mj-3", name: "Lucca Mendes", schoolId: "school-marjore", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6630, street: "Rua Augusta", number: "2500", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "1º Ano", turma: "Sala 01" },
     ],
     drivers: [
         { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo", vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 }
