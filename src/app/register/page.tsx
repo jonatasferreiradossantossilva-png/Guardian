@@ -41,7 +41,6 @@ import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Switch } from '@/components/ui/switch';
 
 type Step = 'welcome' | 'scan' | 'review' | 'form' | 'photo' | 'health' | 'success';
 
