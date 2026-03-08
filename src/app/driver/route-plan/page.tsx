@@ -74,6 +74,7 @@ interface Student {
   neighborhood?: string;
   serie?: string;
   turma?: string;
+  photoUrl?: string;
 }
 
 interface SchoolData {
@@ -81,6 +82,8 @@ interface SchoolData {
   name: string;
   latitude: number;
   longitude: number;
+  street?: string;
+  number?: string;
 }
 
 type Stop = {
@@ -99,7 +102,8 @@ const statusText: Record<StudentStatus, string> = {
 };
 
 const formatStudentClassInfo = (student: Student) => {
-    const serie = student.serie ? student.serie.split(' ')[0] : '';
+    if (!student.serie) return student.shift;
+    const serie = student.serie.replace(/ ano/i, '°').split(' ')[0];
     const turma = student.turma ? student.turma.replace(/Sala/gi, 'SL') : '';
     return `${serie} • ${turma} • ${student.shift}`;
 };
@@ -122,7 +126,7 @@ const GoogleMapMarkers = ({ driverLocation, stops, routePolyline }: { driverLoca
                     {isStudent ? (
                         <Pin background={ hasAlert ? '#dc2626' : '#3b82f6'} borderColor={'#fff'}>
                             <Avatar className="h-6 w-6">
-                                <AvatarImage src={`https://picsum.photos/seed/student-${item.id}/40/40`} />
+                                <AvatarImage src={(item as Student).photoUrl || `https://picsum.photos/seed/student-${item.id}/40/40`} />
                                 <AvatarFallback>{item.name[0]}</AvatarFallback>
                             </Avatar>
                         </Pin>
@@ -188,7 +192,7 @@ export default function DriverRoutePlanPage() {
   }, [route?.studentIds, allStudents, schools, selectedShift, selectedDirection, studentsMap, schoolsMap]);
 
   const { activeStop, upcomingStops } = useMemo(() => {
-    if (!orderedStops || driverProfile?.status !== 'em_rota') return { activeStop: null, upcomingStops: [] };
+    if (!orderedStops || driverProfile?.status === 'inativo') return { activeStop: null, upcomingStops: [] };
     
     const nextStopIndex = orderedStops.findIndex(s => {
         if (selectedDirection === 'ida') {
@@ -290,6 +294,7 @@ export default function DriverRoutePlanPage() {
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
+    // Se for IDA e for a última parada, ou se for VOLTA e for o último aluno, encerra
     if (selectedDirection === 'ida' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -302,6 +307,7 @@ export default function DriverRoutePlanPage() {
       studentsAtCurrentStop.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
       toast({ title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!" });
 
+      // Na IDA, se a escola for o fim da linha, encerra
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
@@ -398,7 +404,7 @@ export default function DriverRoutePlanPage() {
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
                         <ScrollArea className="h-full">
-                            <div className="p-4 space-y-6 pb-20">
+                            <div className="px-6 py-4 space-y-6 pb-20">
                                 {!activeStop ? (
                                     <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
                                         <CheckCircle className="h-14 w-14 text-green-500 mx-auto mb-6"/>
@@ -422,7 +428,7 @@ export default function DriverRoutePlanPage() {
                                                     <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
                                                         {stop.type === 'student' ? (
                                                             <div className="flex-1 min-w-0 flex items-center gap-3">
-                                                                <Avatar className="h-8 w-8"><AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
+                                                                <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as Student).photoUrl || `https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
                                                                 <div className="min-w-0">
                                                                     <p className="text-sm font-black truncate uppercase">{stop.data.name}</p>
                                                                     <p className="text-[9px] text-muted-foreground uppercase font-bold">{formatStudentClassInfo(stop.data as Student)}</p>
@@ -493,7 +499,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
             </div>
             <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20 border-2 border-primary shadow-xl">
-                    <AvatarImage src={`https://picsum.photos/seed/student-${student.id}/100/100`} />
+                    <AvatarImage src={student.photoUrl || `https://picsum.photos/seed/student-${student.id}/100/100`} />
                     <AvatarFallback className="text-3xl font-black">{student.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow min-w-0">
@@ -565,7 +571,7 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                         const hasAlert = (s.medicalConditions && s.medicalConditions.length > 0) || s.medicalNote;
                         return (
                             <div key={s.id} className={cn("flex items-center gap-3 p-3 rounded-xl border-2 bg-background shadow-sm", hasAlert && "border-destructive/30")}>
-                                <Avatar className="h-12 w-12 shrink-0"><AvatarImage src={`https://picsum.photos/seed/student-${s.id}/100/100`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                                <Avatar className="h-12 w-12 shrink-0"><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/100/100`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
                                         <p className="text-sm font-black truncate uppercase">{s.name}</p>
