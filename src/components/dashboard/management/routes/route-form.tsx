@@ -283,7 +283,6 @@ export function RouteForm({
                         </div>
                     </div>
 
-                    {/* SELETOR DE ESTRATÉGIA DINÂMICO - AGORA EM CARDS PARA NÃO CORTAR TEXTO */}
                     {selectedSchoolIds.length >= 2 && (
                         <div className="space-y-4 p-6 bg-primary/5 rounded-2xl border-2 border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
                             <div className="space-y-1">
@@ -357,7 +356,7 @@ export function RouteForm({
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="p-12 text-center text-muted-foreground">
+                                    <div className="p-12 text-center text-muted-foreground" key="empty-available">
                                         <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
                                         <p className="text-[10px] font-black uppercase tracking-widest opacity-40 leading-tight">
                                             Selecione escolas e turno <br/> para visualizar os alunos
@@ -382,7 +381,7 @@ export function RouteForm({
                         </Button>
                     </div>
 
-                    <div className="border-2 border-dashed rounded-2xl bg-muted/10 p-4 min-h-[500px]">
+                    <div className="rounded-2xl min-h-[500px]">
                         <div className="space-y-3">
                             {stops.length > 0 ? (
                                 stops.map((stop, idx) => (
@@ -412,7 +411,7 @@ export function RouteForm({
                                     </div>
                                 ))
                             ) : (
-                                <div className="py-32 text-center text-muted-foreground flex flex-col items-center">
+                                <div className="py-32 text-center text-muted-foreground flex flex-col items-center" key="empty-itinerary">
                                     <RouteIcon className="h-16 w-16 mb-4 opacity-5" />
                                     <p className="text-xs font-black uppercase tracking-widest text-center opacity-30 leading-tight">
                                         Seu itinerário aparecerá aqui <br/> conforme você adiciona alunos
@@ -424,7 +423,6 @@ export function RouteForm({
                 </div>
             </div>
 
-            {/* BOTÃO SALVAR FLUIDO AO FINAL */}
             <div className="pt-12 pb-24 flex flex-col sm:flex-row gap-4 border-t mt-10">
                 <DialogClose asChild>
                     <Button variant="ghost" className="h-16 px-10 flex-1 text-base uppercase font-bold">Cancelar</Button>
