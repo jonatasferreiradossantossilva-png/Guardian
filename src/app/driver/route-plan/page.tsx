@@ -36,7 +36,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { useMockCollection, useMockData, useMockNestedDoc, useMockDoc } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData, useMockNestedDoc } from '@/hooks/use-mock-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -529,7 +529,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                     <AvatarFallback className="text-3xl font-black">{student.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow min-w-0">
-                    <CardTitle className="text-base font-black truncate uppercase leading-tight">{student.name}</CardTitle>
+                    <CardTitle className="text-lg font-black truncate uppercase leading-tight">{student.name}</CardTitle>
                     <div className="space-y-1 mt-1">
                         <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase">
                             <span>{formatStudentClassInfo(student)}</span>
