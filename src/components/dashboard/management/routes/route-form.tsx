@@ -32,7 +32,8 @@ import {
     Search, 
     Zap,
     Route as RouteIcon,
-    MessageCircle
+    MessageCircle,
+    UserPlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -95,8 +96,8 @@ export function RouteForm({
     if (!s) return '';
     const serie = s.serie?.replace(/\s*ano/i, '').replace(/º/g, '').trim() || '?';
     const sala = s.turma?.replace(/sala/i, 'SL.').trim() || '';
-    const shift = s.shift || '';
-    return `${serie}° - ${sala} - ${shift}`;
+    const shiftText = s.shift || '';
+    return `${serie}° - ${sala} - ${shiftText}`;
   };
 
   useEffect(() => {
@@ -177,6 +178,49 @@ export function RouteForm({
         return newStops;
     });
     setIsOptimized(false);
+  };
+
+  const handleAddAllAvailable = () => {
+    if (availableStudents.length === 0) return;
+    
+    setStops(prev => {
+        let newStops = [...prev];
+        let newSchoolIds = [...selectedSchoolIds];
+        
+        availableStudents.forEach(s => {
+            const studentSchool = schoolsMap.get(s.schoolId);
+            // Adiciona o aluno
+            newStops.push({ 
+                id: s.id, 
+                type: 'student' as const, 
+                name: s.name, 
+                details: studentSchool?.name 
+            });
+            
+            // Adiciona a escola se ela não existir no itinerário
+            const hasSchool = newStops.some(st => st.id === s.schoolId && st.type === 'school');
+            if (!hasSchool && studentSchool) {
+                newStops.push({ 
+                    id: s.schoolId, 
+                    type: 'school' as const, 
+                    name: studentSchool.name, 
+                    details: 'Destino Final (Auto-Inclusão)' 
+                });
+                if (!newSchoolIds.includes(s.schoolId)) {
+                    newSchoolIds.push(s.schoolId);
+                }
+            }
+        });
+        
+        setSelectedSchoolIds(newSchoolIds);
+        return newStops;
+    });
+    
+    setIsOptimized(false);
+    toast({ 
+        title: "Inclusão em Massa!", 
+        description: `${availableStudents.length} alunos adicionados ao itinerário.` 
+    });
   };
 
   const handleOptimizeOrder = async () => {
@@ -266,7 +310,7 @@ export function RouteForm({
       
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
         <div className="p-6 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-[380px_1fr] gap-8">
+            <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-8">
                 {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO */}
                 <div className="space-y-8">
                     <div className="space-y-4 bg-muted/20 p-5 rounded-xl border border-dashed">
@@ -351,7 +395,19 @@ export function RouteForm({
                     )}
 
                     <div className="space-y-3">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
+                        <div className="flex items-center justify-between">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
+                            {availableStudents.length > 0 && (
+                                <Button 
+                                    variant="ghost" 
+                                    size="sm" 
+                                    className="h-6 text-[9px] font-black uppercase text-primary hover:bg-primary/10"
+                                    onClick={handleAddAllAvailable}
+                                >
+                                    <UserPlus className="h-3 w-3 mr-1" /> Adicionar Todos
+                                </Button>
+                            )}
+                        </div>
                         <div className="border-2 rounded-xl overflow-hidden bg-background shadow-lg">
                             <div className="p-3 border-b bg-muted/30">
                                 <div className="relative">
