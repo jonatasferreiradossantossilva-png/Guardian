@@ -18,12 +18,12 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Building2, Save, MapPin, Phone, Mail, Globe, Loader2 } from 'lucide-react';
+import { Building2, Save, MapPin, Phone, Mail, Globe, Loader2, User } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
 const formSchema = z.object({
   companyName: z.string().min(3, { message: 'Nome da empresa deve ter pelo menos 3 caracteres.' }),
-  cnpj: z.string().min(14, { message: 'CNPJ inválido.' }),
+  cnpj: z.string().min(11, { message: 'Documento inválido (CPF ou CNPJ).' }),
   email: z.string().email({ message: 'E-mail inválido.' }),
   phone: z.string().min(10, { message: 'Telefone inválido.' }),
   address: z.string().min(10, { message: 'Endereço completo é necessário.' }),
@@ -119,10 +119,13 @@ export function CompanyForm() {
                 name="cnpj"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">CNPJ</FormLabel>
+                    <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
+                        <User className="h-3 w-3" /> CNPJ ou CPF
+                    </FormLabel>
                     <FormControl>
-                        <Input placeholder="00.000.000/0001-00" {...field} />
+                        <Input placeholder="00.000.000/0001-00 ou 000.000.000-00" {...field} />
                     </FormControl>
+                    <FormDescription className="text-[9px]">Pessoa jurídica ou autônomo.</FormDescription>
                     <FormMessage />
                     </FormItem>
                 )}

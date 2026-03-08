@@ -9,6 +9,17 @@ export const initialMockData = {
     config: [
         { id: "global", scaling_mode: false } 
     ],
+    company_profile: [
+        { 
+            id: "profile-1", 
+            companyName: "Guardian Transporte Escolar", 
+            cnpj: "00.000.000/0001-00", 
+            email: "contato@guardian.com.br", 
+            phone: "(11) 99999-9999", 
+            address: "Av. Paulista, 1000 - São Paulo, SP", 
+            website: "https://guardian.app" 
+        }
+    ],
     users: [
         { id: "user-admin-1", name: "Admin Guardian", email: "admin@guardian.com", profile: 'gestor', active: true },
         { id: "user-motorista-4", name: "Juliano Castro", email: "juliano.castro@rotasegura.com", profile: 'motorista', active: true },
@@ -42,7 +53,6 @@ export const initialMockData = {
         { id: "parent-3", userId: "user-gen-3", name: "Carla Dias", email: "carla@email.com", phone: "11933334444", active: true },
     ],
     students: [
-        // TURNO MANHÃ (ALUNOS 1-8)
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "5º Ano", turma: "Sala 101", medicalConditions: ["Alergia"], medicalNote: "ALERGIA GRAVE A GLÚTEN E LACTOSE." },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5585, longitude: -46.6605, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "3º Ano", turma: "Sala 202", medicalConditions: ["Respiratório"], medicalNote: "Possui bronquite asmática. Bombinha na mochila." },
         { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", monthlyFee: 420, preferredPaymentDay: 5, serie: "1º Ano", turma: "Sala 303" },
@@ -51,14 +61,10 @@ export const initialMockData = {
         { id: "student-6", name: "Pedro Rocha", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5630, longitude: -46.6630, street: "Rua Consolação", number: "400", city: "São Paulo", state: "SP", monthlyFee: 480, preferredPaymentDay: 15, serie: "6º Ano", turma: "Sala 106" },
         { id: "student-7", name: "Julia Santos", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5640, longitude: -46.6640, street: "Rua Peixoto Gomide", number: "500", city: "São Paulo", state: "SP", monthlyFee: 480, preferredPaymentDay: 15, serie: "7º Ano", turma: "Sala 307" },
         { id: "student-8", name: "Gabriel Dias", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6650, street: "Rua Oscar Freire", number: "50", city: "São Paulo", state: "SP", monthlyFee: 480, preferredPaymentDay: 15, serie: "8º Ano", turma: "Sala 408" },
-
-        // TURNO TARDE (ALUNOS 9-12)
         { id: "student-9", name: "Gustavo Alencar", schoolId: "school-1", parentId: "parent-2", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5655, longitude: -46.6655, street: "Rua Pamplona", number: "600", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "9º Ano", turma: "Sala 509" },
         { id: "student-10", name: "Sofia Braga", schoolId: "school-1", parentId: "parent-2", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5660, longitude: -46.6660, street: "Alameda Santos", number: "700", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "1º Ano", turma: "Sala 110" },
         { id: "student-11", name: "Thiago Mendes", schoolId: "school-1", parentId: "parent-2", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5670, longitude: -46.6670, street: "Rua Estados Unidos", number: "800", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "2º Ano", turma: "Sala 211", medicalConditions: ["Diabetes"], medicalNote: "Monitorar ingestão de açúcar no lanche." },
         { id: "student-12", name: "Larissa Faria", schoolId: "school-1", parentId: "parent-2", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5680, longitude: -46.6680, street: "Rua Colômbia", number: "900", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "3º Ano", turma: "Sala 312" },
-
-        // TURNO INTEGRAL (ALUNOS 13-19)
         { id: "student-13", name: "Felipe Azevedo", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5690, longitude: -46.6690, street: "Rua Chile", number: "100", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "Maternal", turma: "Sala 01" },
         { id: "student-14", name: "Bianca Viana", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5700, longitude: -46.6700, street: "Rua Peru", number: "200", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "Pré I", turma: "Sala 02" },
         { id: "student-15", name: "Rafael Guimarães", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5710, longitude: -46.6710, street: "Rua Argentina", number: "300", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "1º Ano", turma: "Sala 03" },
