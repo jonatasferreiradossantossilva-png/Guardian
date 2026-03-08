@@ -21,11 +21,9 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Users, School, ArrowUp, ArrowDown, Sparkles, Loader2, X, PlusCircle } from 'lucide-react';
+import { Users, School, ArrowUp, ArrowDown, Sparkles, Loader2, X, PlusCircle, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { DropdownMenu, DropdownMenuTrigger, DropdownMenuContent, DropdownMenuItem } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { routingGeoapify } from '@/ai/flows/routing-geoapify';
@@ -220,10 +218,10 @@ export function RouteForm({
     <DialogContent className="sm:max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20">
         <DialogTitle>Montar Itinerário</DialogTitle>
-        <DialogDescription>Defina os parâmetros e adicione os alunos. O botão salvar acompanha a tela.</DialogDescription>
+        <DialogDescription>Defina os parâmetros e adicione os alunos. O botão salvar acompanha o fim da lista.</DialogDescription>
       </DialogHeader>
       
-      <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
+      <div className="flex-1 overflow-y-auto bg-background">
         <div className="p-6 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {/* Coluna 1: Configuração e Alunos Disponíveis */}
@@ -269,11 +267,11 @@ export function RouteForm({
 
                     <div className="space-y-2">
                         <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis (A Incluir)</Label>
-                        <div className="border-2 rounded-lg overflow-hidden bg-background">
+                        <div className="border-2 rounded-lg overflow-hidden bg-background shadow-sm">
                             <div className="p-2 border-b bg-muted/30">
                                 <Input placeholder="Filtrar por nome..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
                             </div>
-                            <div className="max-h-64 overflow-y-auto">
+                            <div className="max-h-[400px] overflow-y-auto">
                                 {availableStudents.length > 0 ? (
                                     availableStudents.map(s => (
                                         <div key={s.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-secondary/50">
@@ -313,7 +311,7 @@ export function RouteForm({
                         <div className="space-y-2">
                             {stops.length > 0 ? (
                                 stops.map((stop, idx) => (
-                                    <div key={`${stop.id}-${idx}`} className="flex items-center gap-3 p-2 bg-muted/20 border rounded-lg group">
+                                    <div key={`${stop.id}-${idx}`} className="flex items-center gap-3 p-2 bg-muted/20 border rounded-lg group animate-in fade-in slide-in-from-right-2 duration-300">
                                         <span className="text-[9px] font-black bg-background w-5 h-5 flex items-center justify-center rounded border text-muted-foreground">{idx + 1}</span>
                                         <div className="flex-1 min-w-0">
                                             <p className="text-xs font-bold uppercase truncate">{stop.name}</p>
@@ -334,7 +332,7 @@ export function RouteForm({
                                 ))
                             ) : (
                                 <div className="py-20 text-center text-muted-foreground">
-                                    <p className="text-xs font-bold uppercase tracking-widest text-center">Arraste alunos da esquerda para montar o roteiro</p>
+                                    <p className="text-xs font-bold uppercase tracking-widest text-center">Clique no "+" da esquerda para montar o itinerário</p>
                                 </div>
                             )}
                         </div>
@@ -342,11 +340,13 @@ export function RouteForm({
                 </div>
             </div>
 
-            <div className="pt-10 pb-20 flex flex-col sm:flex-row gap-3">
+            {/* Rodapé Interno: Corre junto com o scroll no fim do conteúdo */}
+            <div className="pt-10 pb-20 flex flex-col sm:flex-row gap-3 border-t">
                 <DialogClose asChild>
                     <Button variant="ghost" className="h-14 px-8 flex-1">Cancelar</Button>
                 </DialogClose>
                 <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-14 text-lg font-black shadow-xl bg-primary text-white">
+                    <CheckCircle2 className="mr-2 h-6 w-6" />
                     SALVAR ROTA COMPLETA
                 </Button>
             </div>
