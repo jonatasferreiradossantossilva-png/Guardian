@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -20,7 +19,6 @@ import {
     BarChart3, 
     ChevronRight, 
     UserPlus, 
-    Share2, 
     Activity, 
     ExternalLink, 
     Play, 
@@ -39,6 +37,7 @@ import { validateGeoapifyApi, type ValidateApiOutput } from '@/ai/flows/validate
 import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { OperationalFeed } from '@/components/dashboard/operational-feed';
 
 // --- Mobile Home Screen Component ---
 function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => void, onShareRegistration: () => void }) {
@@ -336,36 +335,9 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
             </Card>
           </Link>
 
-          <Card className="border-border/50 bg-muted/20 md:col-span-2">
-            <CardHeader className="py-3 px-4">
-                <CardTitle className="text-xs font-medium flex items-center justify-between text-muted-foreground">
-                    <span className="flex items-center gap-2">
-                        <Activity className="h-3 w-3" />
-                        Status da Rede de Dados (Geoapify)
-                    </span>
-                    <Button variant="ghost" size="sm" onClick={handleValidateApis} disabled={isValidating} className="h-6 text-[10px]">
-                        {isValidating ? <Loader2 className="h-2 w-2 animate-spin mr-1" /> : <RefreshCw className="h-2 w-2 mr-1" />}
-                        Verificar
-                    </Button>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="py-2 px-4 flex flex-wrap gap-4 text-[10px]">
-                <div className="flex items-center gap-1.5">
-                    <span className="text-muted-foreground">Geocoding:</span>
-                    {apiStatus?.geocoding.status === 'ok' ? 
-                        <Badge className="bg-green-500/10 text-green-500 border-green-500/20 h-4 px-1.5 text-[9px]">ONLINE</Badge> : 
-                        <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">OFFLINE</Badge>
-                    }
-                </div>
-                <div className="flex items-center gap-1.5">
-                    <span className="text-muted-foreground">Routing:</span>
-                    {apiStatus?.routing.status === 'ok' ? 
-                        <Badge className="bg-green-500/10 text-green-500 border-green-500/20 h-4 px-1.5 text-[9px]">ONLINE</Badge> : 
-                        <Badge variant="destructive" className="h-4 px-1.5 text-[9px]">OFFLINE</Badge>
-                    }
-                </div>
-            </CardContent>
-          </Card>
+          <div className="md:col-span-2">
+            <OperationalFeed />
+          </div>
       </div>
 
       <OverviewCards filters={filters} />

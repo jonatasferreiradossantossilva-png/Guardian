@@ -411,9 +411,9 @@ export default function DriverRoutePlanPage() {
                         </TabsTrigger>
                     </TabsList>
 
-                    <TabsContent value="itinerario" className="flex-1 overflow-hidden">
+                    <TabsContent value="itinerario" className="flex-1 overflow-hidden p-4">
                         <ScrollArea className="h-full">
-                            <div className="p-4 space-y-6 pb-20">
+                            <div className="space-y-6 pb-20">
                                 {showAbsenceAlert && absentStudentsNames.length > 0 && (
                                     <Alert className="bg-amber-500/10 border-amber-500/20 text-amber-700 dark:text-amber-400 relative">
                                         <AlertTriangle className="h-4 w-4" />
