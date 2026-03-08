@@ -11,7 +11,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, CheckCircle, Clock, FileText, Loader2, MessageCircle } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, CheckCircle, Clock, FileText, Loader2, MessageCircle, Edit } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useMockCollection } from '@/hooks/use-mock-data';
@@ -19,6 +19,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ContractGenerateForm } from './contract-generate-form';
+import { ContractEditForm } from './contract-edit-form';
 import { ContractViewerModal } from './contract-viewer-modal';
 import { useToast } from '@/hooks/use-toast';
 
@@ -52,7 +53,9 @@ const statusTextMap: Record<Contract['status'], string> = {
 
 export function ContractsList({ initialContracts, initialStudents, initialParents, initialTemplates }: ContractsListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isEditOpen, setIsEditOpen] = useState(false);
   const [viewingContract, setViewingContract] = useState<Contract | null>(null);
+  const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const { toast } = useToast();
   
   const { data: liveContracts, isLoading: areContractsLoading } = useMockCollection('contracts');
@@ -72,6 +75,8 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
 
   const handleFormSubmit = useCallback(() => {
     setIsFormOpen(false);
+    setIsEditOpen(false);
+    setEditingContract(null);
   }, []);
   
   const sortedContracts = useMemo(() => {
@@ -90,6 +95,11 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
   
   const handleViewContract = (contract: Contract) => {
     setViewingContract(contract);
+  };
+
+  const handleEditContract = (contract: Contract) => {
+    setEditingContract(contract);
+    setIsEditOpen(true);
   };
 
   const handleShareContract = (contract: Contract) => {
@@ -164,10 +174,16 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                                 Visualizar
                             </Button>
                             {contract.status === 'pending_acceptance' && (
-                                <Button variant="ghost" size="sm" onClick={() => handleShareContract(contract)} className="h-8 text-xs font-bold text-green-600 hover:text-green-700 hover:bg-green-50">
-                                    <MessageCircle className="mr-1.5 h-3.5 w-3.5" />
-                                    Notificar
-                                </Button>
+                                <>
+                                    <Button variant="outline" size="sm" onClick={() => handleEditContract(contract)} className="h-8 text-xs font-bold border-primary/20 text-primary">
+                                        <Edit className="mr-1.5 h-3.5 w-3.5" />
+                                        Editar
+                                    </Button>
+                                    <Button variant="ghost" size="sm" onClick={() => handleShareContract(contract)} className="h-8 text-xs font-bold text-green-600 hover:text-green-700 hover:bg-green-50">
+                                        <MessageCircle className="mr-1.5 h-3.5 w-3.5" />
+                                        Notificar
+                                    </Button>
+                                </>
                             )}
                         </div>
                       </TableCell>
@@ -203,16 +219,22 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                         <p className="text-[10px]">{formatDate(contract.acceptedAt)}</p>
                       </div>
                     </div>
-                    <div className="flex gap-2">
+                    <div className="flex flex-wrap gap-2">
                         <Button variant="outline" size="sm" className="flex-1 font-bold border-primary/30 text-primary h-10" onClick={() => handleViewContract(contract)}>
                             <FileText className="mr-2 h-4 w-4" />
                             VER
                         </Button>
                         {contract.status === 'pending_acceptance' && (
-                            <Button variant="outline" size="sm" className="flex-1 font-bold border-green-600/30 text-green-600 h-10" onClick={() => handleShareContract(contract)}>
-                                <MessageCircle className="mr-2 h-4 w-4" />
-                                ENVIAR
-                            </Button>
+                            <>
+                                <Button variant="outline" size="sm" className="flex-1 font-bold border-primary/30 text-primary h-10" onClick={() => handleEditContract(contract)}>
+                                    <Edit className="mr-2 h-4 w-4" />
+                                    EDITAR
+                                </Button>
+                                <Button variant="outline" size="sm" className="w-full font-bold border-green-600/30 text-green-600 h-10" onClick={() => handleShareContract(contract)}>
+                                    <MessageCircle className="mr-2 h-4 w-4" />
+                                    NOTIFICAR NO WHATSAPP
+                                </Button>
+                            </>
                         )}
                     </div>
                   </div>
@@ -223,11 +245,22 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
           </div>
         </CardContent>
       </Card>
+      
       <ContractViewerModal 
         isOpen={!!viewingContract}
         onClose={() => setViewingContract(null)}
         contract={viewingContract ? { ...viewingContract, studentName: studentsMap.get(viewingContract.studentId) || 'Aluno desconhecido' } : null}
       />
+
+      <Dialog open={isEditOpen} onOpenChange={setIsEditOpen}>
+          {editingContract && (
+              <ContractEditForm 
+                contract={editingContract}
+                studentName={studentsMap.get(editingContract.studentId) || 'Aluno'}
+                onFormSubmit={handleFormSubmit}
+              />
+          )}
+      </Dialog>
     </div>
   );
 }
