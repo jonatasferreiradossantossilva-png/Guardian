@@ -109,6 +109,12 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                     <UserPlus className="mr-2 h-5 w-5" />
                     CONVIDAR NOVOS PAIS
                 </Button>
+                <Button asChild variant="ghost" className="w-full text-muted-foreground text-[10px] font-bold uppercase tracking-widest h-8">
+                    <Link href="/register">
+                        <ExternalLink className="mr-2 h-3 w-3" />
+                        Simular Link de Cadastro (Teste)
+                    </Link>
+                </Button>
             </div>
         </div>
     );
@@ -153,10 +159,18 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
           </Button>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button variant="outline" onClick={onShareRegistration} className="border-primary/30 text-primary font-bold">
-                <UserPlus className="mr-2 h-4 w-4" />
-                Convidar Pais
-            </Button>
+            <div className="flex flex-col gap-1">
+                <Button variant="outline" onClick={onShareRegistration} className="border-primary/30 text-primary font-bold">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Convidar Pais
+                </Button>
+                <Button asChild variant="link" className="text-[10px] h-4 p-0 text-muted-foreground uppercase font-bold flex items-center justify-center">
+                    <Link href="/register" target="_blank">
+                        <ExternalLink className="mr-1 h-2.5 w-2.5" />
+                        Simular Link
+                    </Link>
+                </Button>
+            </div>
             <Select value={selectedYear} onValueChange={setSelectedYear}>
                 <SelectTrigger className="w-full sm:w-[120px]">
                     <SelectValue placeholder="Ano" />
