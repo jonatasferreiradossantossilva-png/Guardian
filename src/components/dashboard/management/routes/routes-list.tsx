@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect, useCallback } from "react";
@@ -149,7 +148,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     <div>
       <div className="flex items-center justify-between mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
-          Gerenciamento de Rotas
+          Rotas
         </h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>

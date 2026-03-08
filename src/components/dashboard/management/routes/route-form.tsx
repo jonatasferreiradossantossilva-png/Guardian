@@ -445,242 +445,247 @@ export function RouteForm({
   };
   
   return (
-    <DialogContent className="sm:max-w-3xl">
-      <DialogHeader>
+    <DialogContent className="sm:max-w-4xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogHeader className="p-6 pb-2 border-b shrink-0">
         <DialogTitle>{route ? 'Editar Rota' : 'Adicionar Rota'}</DialogTitle>
         <DialogDescription>
           Preencha as informações, adicione escolas, e monte o itinerário da rota.
         </DialogDescription>
       </DialogHeader>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
-        <div className="space-y-4">
-            <div className="space-y-2">
-                <Label htmlFor="routeName">Nome da Rota</Label>
-                <Input id="routeName" placeholder="Ex: Rota Matinal - Escolas A e B" value={name} onChange={(e) => setName(e.target.value)} />
-                {errors.name && <p className="text-sm font-medium text-destructive">{errors.name}</p>}
-            </div>
+      
+      <ScrollArea className="flex-1">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6">
+            <div className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="routeName">Nome da Rota</Label>
+                    <Input id="routeName" placeholder="Ex: Rota Matinal - Escolas A e B" value={name} onChange={(e) => setName(e.target.value)} />
+                    {errors.name && <p className="text-sm font-medium text-destructive">{errors.name}</p>}
+                </div>
 
-            <div className="grid grid-cols-2 gap-4">
-                 <div className="space-y-2">
-                    <Label htmlFor="shiftId">Turno da Rota</Label>
-                    <Select onValueChange={(v) => handleShiftChange(v as 'Manhã' | 'Tarde')} value={shift}>
-                        <SelectTrigger id="shiftId"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                        <Label htmlFor="shiftId">Turno da Rota</Label>
+                        <Select onValueChange={(v) => handleShiftChange(v as 'Manhã' | 'Tarde')} value={shift}>
+                            <SelectTrigger id="shiftId"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="Manhã">Manhã</SelectItem>
+                                <SelectItem value="Tarde">Tarde</SelectItem>
+                            </SelectContent>
+                        </Select>
+                        {errors.shift && <p className="text-sm font-medium text-destructive">{errors.shift}</p>}
+                    </div>
+                    <div className="space-y-2">
+                        <Label htmlFor="driverId">Motorista</Label>
+                        <Select onValueChange={handleDriverChange} value={driverId}>
+                            <SelectTrigger id="driverId"><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                            <SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent>
+                        </Select>
+                        {vehicle && <p className="text-[10px] text-muted-foreground">Veículo: {vehicle.model} (Cap: {vehicle.capacity})</p>}
+                        {errors.driverId && <p className="text-sm font-medium text-destructive">{errors.driverId}</p>}
+                    </div>
+                </div>
+
+                <div className="space-y-2">
+                    <Label htmlFor="monitorId">Monitor (Opcional)</Label>
+                    <Select onValueChange={setMonitorId} value={monitorId || 'none'}>
+                        <SelectTrigger id="monitorId"><SelectValue placeholder="Selecione um monitor" /></SelectTrigger>
                         <SelectContent>
-                            <SelectItem value="Manhã">Manhã</SelectItem>
-                            <SelectItem value="Tarde">Tarde</SelectItem>
+                            <SelectItem value="none">Nenhum</SelectItem>
+                            {monitors.map(a => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}
                         </SelectContent>
                     </Select>
-                     {errors.shift && <p className="text-sm font-medium text-destructive">{errors.shift}</p>}
                 </div>
-                <div className="space-y-2">
-                    <Label htmlFor="driverId">Motorista</Label>
-                    <Select onValueChange={handleDriverChange} value={driverId}>
-                        <SelectTrigger id="driverId"><SelectValue placeholder="Selecione..." /></SelectTrigger>
-                        <SelectContent>{drivers.map(d => (<SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>))}</SelectContent>
-                    </Select>
-                    {vehicle && <p className="text-xs text-muted-foreground">Veículo: {vehicle.model} (Capacidade: {vehicle.capacity})</p>}
-                    {errors.driverId && <p className="text-sm font-medium text-destructive">{errors.driverId}</p>}
-                </div>
-            </div>
-
-            <div className="space-y-2">
-                <Label htmlFor="monitorId">Monitor (Opcional)</Label>
-                <Select onValueChange={setMonitorId} value={monitorId || 'none'}>
-                    <SelectTrigger id="monitorId"><SelectValue placeholder="Selecione um monitor" /></SelectTrigger>
-                    <SelectContent>
-                        <SelectItem value="none">Nenhum</SelectItem>
-                        {monitors.map(a => (<SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>))}
-                    </SelectContent>
-                </Select>
-            </div>
-            
-            <div className="space-y-2">
-                <Label>Escolas Atendidas</Label>
-                <div className="space-y-2 rounded-md border p-4 max-h-32 overflow-y-auto">
-                    {schools.length > 0 ? (
-                        schools.map(school => (
-                            <div key={school.id} className="flex items-center space-x-2">
-                                <Checkbox
-                                    id={`school-${school.id}`}
-                                    checked={selectedSchoolIds.includes(school.id)}
-                                    onCheckedChange={(checked) => {
-                                        setSelectedSchoolIds(prev =>
-                                            checked
-                                                ? [...prev, school.id]
-                                                : prev.filter(id => id !== school.id)
-                                        );
-                                    }}
-                                />
-                                <label
-                                    htmlFor={`school-${school.id}`}
-                                    className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                                >
-                                    {school.name}
-                                </label>
-                            </div>
-                        ))
-                    ) : (
-                        <p className="text-sm text-muted-foreground">Nenhuma escola cadastrada.</p>
-                    )}
-                </div>
-                 {errors.schoolIds && <p className="text-sm font-medium text-destructive">{errors.schoolIds}</p>}
-            </div>
-
-            <div className="space-y-2">
-                <Label>Alunos a Selecionar</Label>
-                <div className="border rounded-md overflow-hidden">
-                    <div className="p-2 border-b">
-                        <Input placeholder="Buscar aluno por nome..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none"/>
-                    </div>
-                    <div>
-                        {!selectedSchoolIds.length || !shift ? (
-                            <div className="h-56 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
-                                <School className="h-8 w-8 mb-2"/>
-                                <p className="font-semibold">Selecione escolas e um turno</p>
-                                <p className="text-sm">Escolha as escolas no formulário para ver os alunos disponíveis.</p>
-                            </div>
+                
+                <div className="space-y-2 border-t pt-4">
+                    <Label className="text-xs font-bold uppercase text-primary">Escolas Atendidas</Label>
+                    <div className="space-y-2 rounded-md border p-3 max-h-32 overflow-y-auto bg-muted/20">
+                        {schools.length > 0 ? (
+                            schools.map(school => (
+                                <div key={school.id} className="flex items-center space-x-2">
+                                    <Checkbox
+                                        id={`school-${school.id}`}
+                                        checked={selectedSchoolIds.includes(school.id)}
+                                        onCheckedChange={(checked) => {
+                                            setSelectedSchoolIds(prev =>
+                                                checked
+                                                    ? [...prev, school.id]
+                                                    : prev.filter(id => id !== school.id)
+                                            );
+                                        }}
+                                    />
+                                    <label
+                                        htmlFor={`school-${school.id}`}
+                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                    >
+                                        {school.name}
+                                    </label>
+                                </div>
+                            ))
                         ) : (
-                            <ScrollArea className="h-56">
-                                {availableStudents.length > 0 ? (
-                                    Object.entries(
-                                        availableStudents.reduce((acc, student) => {
-                                            const schoolName = schoolsMap.get(student.schoolId)?.name || 'Outra';
-                                            if (!acc[schoolName]) acc[schoolName] = [];
-                                            acc[schoolName].push(student);
-                                            return acc;
-                                        }, {} as Record<string, Student[]>)
-                                    ).map(([schoolName, students]) => {
-                                        const schoolId = students[0]?.schoolId;
-                                        return(
-                                            <div key={schoolName}>
-                                                <div className="flex justify-between items-center px-2 py-1.5 bg-secondary/50 border-y">
-                                                    <h4 className="font-semibold text-sm text-muted-foreground">{schoolName}</h4>
-                                                    {schoolId && (
-                                                        <Button
-                                                            type="button"
-                                                            variant="secondary"
-                                                            size="sm"
-                                                            className="h-7"
-                                                            onClick={() => handleAddStudentsBySchool(schoolId)}
-                                                            disabled={isOptimizing}
-                                                        >
-                                                            <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Todos
-                                                        </Button>
-                                                    )}
-                                                </div>
-                                                {students.map(s => {
-                                                    const studentWithClass = getAbbreviatedClass(s);
-                                                    return (
-                                                        <div key={s.id} className="flex items-center gap-2 rounded-md p-2 hover:bg-accent/50">
-                                                            <div className="flex-grow flex items-center gap-2 min-w-0">
-                                                                <p className="font-medium text-sm truncate">{s.name}</p>
-                                                                {studentWithClass && (
-                                                                    <span className="text-xs text-muted-foreground">({studentWithClass})</span>
-                                                                )}
-                                                            </div>
-                                                            <div className="flex-shrink-0 flex items-center gap-2">
-                                                                <span className="text-xs text-muted-foreground">{s.shift}</span>
-                                                                <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
-                                                                    <PlusCircle className="h-4 w-4 text-green-500" />
-                                                                </Button>
-                                                            </div>
-                                                        </div>
-                                                    )
-                                                })}
-                                            </div>
-                                        )
-                                    })
-                                ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhum aluno disponível para as escolas/turno selecionados ou para a busca.</p>}
-                            </ScrollArea>
+                            <p className="text-sm text-muted-foreground">Nenhuma escola cadastrada.</p>
                         )}
                     </div>
+                    {errors.schoolIds && <p className="text-sm font-medium text-destructive">{errors.schoolIds}</p>}
                 </div>
-            </div>
 
-        </div>
-
-        <div className="space-y-4">
-            <div className="flex justify-between items-center">
-                <Label>Itinerário da Rota ({stops.length} paradas)</Label>
-                <Button type="button" size="sm" variant="outline" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized}>
-                    {isOptimizing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
-                    Otimizar Ordem
-                </Button>
-             </div>
-            <p className="text-sm text-muted-foreground">Adicione alunos, otimize a ordem e use as setas para ajustes finos.</p>
-            {isCapacityExceeded && (
-                <div className="my-2 flex items-center gap-2 rounded-md bg-destructive/10 p-2 text-sm font-medium text-destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    Capacidade de {vehicleCapacity} alunos excedida!
-                </div>
-            )}
-
-            <div className="border rounded-md">
-                <ScrollArea className="h-[28rem] p-2">
-                    {stops.length > 0 ? (
-                        <div className="space-y-1">
-                           {stops.map((stop, index) => (
-                                <div key={`${stop.id}-${index}`} className="grid grid-cols-[auto_1fr_auto] items-center w-full bg-background rounded-md p-2 hover:bg-accent/50 gap-2">
-                                    <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground pt-2 self-start">{index + 1}</span>
-
-                                    <div className="grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0">
-                                        <div className="row-span-2 self-center">
-                                            {stop.type === 'student' ? (
-                                                <Avatar className="h-8 w-8 flex-shrink-0">
-                                                    <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
-                                                    <AvatarFallback>{stop.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                                </Avatar>
-                                            ) : (
-                                                <div className="flex items-center justify-center h-8 w-8 rounded-full bg-secondary flex-shrink-0">
-                                                    <School className="h-4 w-4 text-muted-foreground" />
-                                                </div>
-                                            )}
-                                        </div>
-                                        <p className="font-medium text-sm truncate col-start-2">{stop.name}</p>
-                                        <p className="text-xs text-muted-foreground truncate col-start-2">
-                                            {stop.details}
-                                        </p>
-                                    </div>
-
-                                    <div className="flex items-center flex-shrink-0">
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
-                                            <ArrowUp className="h-4 w-4" />
-                                        </Button>
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}>
-                                            <ArrowDown className="h-4 w-4" />
-                                        </Button>
-                                        <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => removeStop(index)}>
-                                            <X className="h-4 w-4 text-destructive" />
-                                        </Button>
-                                    </div>
-                                </div>
-                            ))}
+                <div className="space-y-2 border-t pt-4">
+                    <Label className="text-xs font-bold uppercase text-primary">Alunos Disponíveis</Label>
+                    <div className="border rounded-md overflow-hidden bg-background">
+                        <div className="p-2 border-b bg-muted/30">
+                            <Input placeholder="Buscar aluno..." value={studentSearch} onChange={(e) => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent"/>
                         </div>
-                    ) : <p className="p-8 text-center text-sm text-muted-foreground">Nenhuma parada no itinerário. Adicione alunos ou escolas.</p>}
-                </ScrollArea>
-                <div className="p-2 border-t">
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button variant="outline" size="sm" className="w-full">
-                                <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Parada (Escola)
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent>
-                             {selectedSchoolIds.map(schoolId => schoolsMap.get(schoolId)).filter(Boolean).map(school => (
-                                <DropdownMenuItem key={school.id} onSelect={() => handleAddSchoolToRoute(school.id)}>
-                                    {school.name}
-                                </DropdownMenuItem>
-                            ))}
-                            {selectedSchoolIds.length === 0 && <DropdownMenuItem disabled>Selecione uma escola primeiro</DropdownMenuItem>}
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                        <div>
+                            {!selectedSchoolIds.length || !shift ? (
+                                <div className="h-48 flex flex-col items-center justify-center text-center p-4 text-muted-foreground">
+                                    <School className="h-6 w-6 mb-2 opacity-30"/>
+                                    <p className="text-xs font-semibold">Selecione escolas e turno primeiro</p>
+                                </div>
+                            ) : (
+                                <div className="h-48 overflow-y-auto">
+                                    {availableStudents.length > 0 ? (
+                                        Object.entries(
+                                            availableStudents.reduce((acc, student) => {
+                                                const schoolName = schoolsMap.get(student.schoolId)?.name || 'Outra';
+                                                if (!acc[schoolName]) acc[schoolName] = [];
+                                                acc[schoolName].push(student);
+                                                return acc;
+                                            }, {} as Record<string, Student[]>)
+                                        ).map(([schoolName, students]) => {
+                                            const schoolId = students[0]?.schoolId;
+                                            return(
+                                                <div key={schoolName}>
+                                                    <div className="flex justify-between items-center px-2 py-1 bg-secondary/50 border-y">
+                                                        <h4 className="font-bold text-[10px] text-muted-foreground uppercase">{schoolName}</h4>
+                                                        {schoolId && (
+                                                            <Button
+                                                                type="button"
+                                                                variant="ghost"
+                                                                size="sm"
+                                                                className="h-6 text-[10px] hover:text-primary"
+                                                                onClick={() => handleAddStudentsBySchool(schoolId)}
+                                                                disabled={isOptimizing}
+                                                            >
+                                                                Add Todos
+                                                            </Button>
+                                                        )}
+                                                    </div>
+                                                    {students.map(s => {
+                                                        const studentWithClass = getAbbreviatedClass(s);
+                                                        return (
+                                                            <div key={s.id} className="flex items-center gap-2 rounded-md p-2 hover:bg-accent/50 border-b last:border-0">
+                                                                <div className="flex-grow flex items-center gap-2 min-w-0">
+                                                                    <p className="font-medium text-xs truncate">{s.name}</p>
+                                                                    {studentWithClass && <span className="text-[10px] text-muted-foreground">({studentWithClass})</span>}
+                                                                </div>
+                                                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => addStop({id: s.id, type: 'student', name: s.name, details: schoolName})}>
+                                                                    <PlusCircle className="h-4 w-4 text-primary" />
+                                                                </Button>
+                                                            </div>
+                                                        )
+                                                    })}
+                                                </div>
+                                            )
+                                        })
+                                    ) : <p className="p-8 text-center text-xs text-muted-foreground">Nenhum aluno compatível.</p>}
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div className="space-y-4">
+                <div className="flex justify-between items-center bg-primary/5 p-3 rounded-lg border border-primary/20">
+                    <div>
+                        <Label className="text-sm font-bold flex items-center gap-2">
+                            Itinerário ({stops.length} paradas)
+                        </Label>
+                        <p className="text-[10px] text-muted-foreground uppercase font-bold">Ordem de execução da van</p>
+                    </div>
+                    <Button type="button" size="sm" variant="default" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="h-9 font-bold bg-primary text-white">
+                        {isOptimizing ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Sparkles className="mr-2 h-4 w-4" />}
+                        Otimizar IA
+                    </Button>
+                </div>
+
+                <div className="border-2 border-dashed rounded-lg bg-background overflow-hidden">
+                    <ScrollArea className="h-[32rem] p-3">
+                        {stops.length > 0 ? (
+                            <div className="space-y-2">
+                            {stops.map((stop, index) => (
+                                    <div key={`${stop.id}-${index}`} className="grid grid-cols-[auto_1fr_auto] items-center w-full bg-muted/20 border rounded-md p-2 hover:bg-accent/50 gap-3 transition-colors">
+                                        <span className="w-5 flex-shrink-0 text-[10px] font-black text-muted-foreground flex items-center justify-center h-5 bg-background rounded border">{index + 1}</span>
+
+                                        <div className="grid grid-cols-[auto_1fr] items-center gap-x-3 min-w-0">
+                                            <div className="row-span-2 self-center">
+                                                {stop.type === 'student' ? (
+                                                    <Avatar className="h-9 w-9 border shadow-sm">
+                                                        <AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`} alt={stop.name} />
+                                                        <AvatarFallback>{stop.name[0]}</AvatarFallback>
+                                                    </Avatar>
+                                                ) : (
+                                                    <div className="flex items-center justify-center h-9 w-9 rounded-full bg-destructive/10 text-destructive border-2 border-destructive/20 flex-shrink-0">
+                                                        <School className="h-5 w-5" />
+                                                    </div>
+                                                )}
+                                            </div>
+                                            <p className="font-bold text-xs truncate col-start-2">{stop.name.toUpperCase()}</p>
+                                            <p className="text-[10px] text-muted-foreground truncate col-start-2 uppercase font-medium">
+                                                {stop.details}
+                                            </p>
+                                        </div>
+
+                                        <div className="flex items-center gap-1 shrink-0">
+                                            <div className="flex flex-col">
+                                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveStop(index, 'up')} disabled={index === 0}><ArrowUp className="h-3 w-3" /></Button>
+                                                <Button type="button" variant="ghost" size="icon" className="h-6 w-6" onClick={() => moveStop(index, 'down')} disabled={index === stops.length - 1}><ArrowDown className="h-3 w-3" /></Button>
+                                            </div>
+                                            <Button type="button" variant="ghost" size="icon" className="h-8 w-8 hover:bg-destructive/10 text-destructive" onClick={() => removeStop(index)}><X className="h-4 w-4" /></Button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        ) : (
+                            <div className="h-64 flex flex-col items-center justify-center text-center text-muted-foreground">
+                                <Users className="h-8 w-8 mb-2 opacity-20"/>
+                                <p className="text-xs font-bold uppercase tracking-widest">Seu itinerário está vazio</p>
+                            </div>
+                        )}
+                    </ScrollArea>
+                    <div className="p-3 border-t bg-muted/10">
+                        <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                                <Button variant="outline" size="sm" className="w-full h-10 font-bold border-dashed">
+                                    <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Parada Escolar
+                                </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="w-[300px]">
+                                {selectedSchoolIds.map(schoolId => schoolsMap.get(schoolId)).filter(Boolean).map(school => (
+                                    <DropdownMenuItem key={school.id} onSelect={() => handleAddSchoolToRoute(school.id)} className="text-xs">
+                                        <School className="mr-2 h-3 w-3" /> {school.name}
+                                    </DropdownMenuItem>
+                                ))}
+                                {selectedSchoolIds.length === 0 && <DropdownMenuItem disabled className="text-xs italic">Selecione uma escola no formulário</DropdownMenuItem>}
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
                 </div>
             </div>
         </div>
-      </div>
-      <DialogFooter className="pt-4 mt-4 border-t">
-        <DialogClose asChild><Button type="button" variant="outline">Cancelar</Button></DialogClose>
-        <Button type="button" onClick={handleSubmit} disabled={isCapacityExceeded}>Salvar Rota</Button>
+      </ScrollArea>
+
+      <DialogFooter className="p-6 border-t shrink-0 bg-background flex flex-col sm:flex-row gap-3">
+        <DialogClose asChild>
+            <Button type="button" variant="ghost" className="w-full sm:w-auto h-12 px-8">Cancelar</Button>
+        </DialogClose>
+        <Button 
+            type="button" 
+            onClick={handleSubmit} 
+            disabled={isCapacityExceeded || isOptimizing}
+            className="w-full sm:flex-1 h-12 text-lg font-black shadow-xl"
+        >
+            SALVAR ROTA COMPLETA
+        </Button>
       </DialogFooter>
     </DialogContent>
   );
