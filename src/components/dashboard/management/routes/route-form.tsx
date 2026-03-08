@@ -35,7 +35,8 @@ import {
     Route as RouteIcon,
     GraduationCap,
     Clock,
-    Share2
+    Share2,
+    MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -383,7 +384,7 @@ export function RouteForm({
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="p-12 text-center text-muted-foreground" key="empty-available">
+                                    <div className="p-12 text-center text-muted-foreground">
                                         <Users className="h-10 w-10 mx-auto mb-3 opacity-20" />
                                         <p className="text-[10px] font-black uppercase tracking-widest opacity-40 leading-tight">
                                             Selecione escolas e turno <br/> para visualizar os alunos
@@ -402,18 +403,10 @@ export function RouteForm({
                             <Badge variant="outline" className="bg-background text-primary border-primary/30 h-8 px-3 font-black text-base">{stops.length}</Badge>
                             <Label className="text-sm font-black uppercase tracking-tighter">Itinerário Final Gerado</Label>
                         </div>
-                        <div className="flex gap-2">
-                            {isOptimized && (
-                                <Button variant="outline" size="sm" onClick={handleExportSequence} className="h-10 px-4 font-black text-xs border-primary/30 text-primary hover:bg-primary/5">
-                                    <Share2 className="h-4 w-4 mr-2" />
-                                    EXPORTAR
-                                </Button>
-                            )}
-                            <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
-                                {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                                OTIMIZAR IA
-                            </Button>
-                        </div>
+                        <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
+                            {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                            OTIMIZAR IA
+                        </Button>
                     </div>
 
                     <div className="rounded-2xl min-h-[500px]">
@@ -480,7 +473,7 @@ export function RouteForm({
                                 <div className="py-32 text-center text-muted-foreground flex flex-col items-center">
                                     <RouteIcon className="h-16 w-16 mb-4 opacity-5" />
                                     <p className="text-xs font-black uppercase tracking-widest text-center opacity-30 leading-tight">
-                                        Seu itinerário detalhado aparecerá aqui <br/> conforme você adiciona alunos
+                                        Seu itinerário aparecerá aqui <br/> conforme você adiciona alunos
                                     </p>
                                 </div>
                             )}
@@ -493,6 +486,15 @@ export function RouteForm({
                 <DialogClose asChild>
                     <Button variant="ghost" className="h-16 px-10 flex-1 text-base uppercase font-bold">Cancelar</Button>
                 </DialogClose>
+                <Button 
+                    variant="outline" 
+                    className="h-16 px-10 flex-1 text-base uppercase font-black border-green-600/30 text-green-600 hover:bg-green-50"
+                    onClick={handleExportSequence}
+                    disabled={stops.length === 0}
+                >
+                    <MessageCircle className="mr-2 h-6 w-6" />
+                    Enviar p/ WhatsApp
+                </Button>
                 <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-16 text-xl font-black shadow-2xl bg-primary text-white hover:bg-primary/90 transition-all active:scale-[0.98]">
                     <CheckCircle2 className="mr-3 h-7 w-7" />
                     SALVAR ROTA COMPLETA
