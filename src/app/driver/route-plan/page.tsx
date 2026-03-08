@@ -412,9 +412,9 @@ export default function DriverRoutePlanPage() {
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
                         <ScrollArea className="h-full">
-                            <div className="pl-2 pr-6 py-4 space-y-6 pb-20">
+                            <div className="pl-2 pr-8 py-4 space-y-6 pb-20">
                                 {!activeStop ? (
-                                    <div>
+                                    <div className="mx-1">
                                         <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
                                             <CheckCircle className="h-14 w-14 text-green-500 mx-auto mb-6"/>
                                             <CardTitle className="text-2xl font-black text-green-600 uppercase">Fim de Rota!</CardTitle>
@@ -422,7 +422,7 @@ export default function DriverRoutePlanPage() {
                                         </Card>
                                     </div>
                                 ) : activeStop.type === 'student' ? (
-                                    <div className="space-y-6">
+                                    <div className="space-y-6 mx-1">
                                         <div>
                                             <NextStopCard 
                                                 student={activeStop.data as Student} 
@@ -461,7 +461,7 @@ export default function DriverRoutePlanPage() {
                                         )}
                                     </div>
                                 ) : (
-                                    <div>
+                                    <div className="mx-1">
                                         <NextStopSchoolCard 
                                             school={activeStop.data as SchoolData} 
                                             direction={selectedDirection}
