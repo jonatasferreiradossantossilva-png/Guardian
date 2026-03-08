@@ -54,7 +54,6 @@ interface RouteFormProps {
 
 const getAbbreviatedClass = (student: Student | null | undefined) => {
     if (!student?.serie) return null;
-    // FIXED: Only remove " Ano" to avoid double symbols if the original already has "º"
     const seriePart = student.serie.replace(/\s*ano/i, '').trim();
     return [seriePart, student.turma].filter(Boolean).join(' ');
 };
@@ -345,7 +344,6 @@ export function RouteForm({
             address: formatAddress(s)
         }));
 
-        // 1. Otimizar a sequência usando IA (Genkit)
         const result = await optimizeSchoolVanRoute({
             students: studentInput,
             schools: schoolsInput,
@@ -365,7 +363,6 @@ export function RouteForm({
             return null;
         }).filter(Boolean) as Stop[];
         
-        // 2. Buscar o traçado visual (Polyline) usando Geoapify (Plano B/Custo Zero)
         const waypoints = newOptimizedStops.map(stop => {
             const entity = stop.type === 'student' ? studentsMap.get(stop.id) : schoolsMap.get(stop.id);
             if (entity?.latitude && entity?.longitude) {
@@ -456,7 +453,6 @@ export function RouteForm({
         </DialogDescription>
       </DialogHeader>
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 py-4 max-h-[70vh] overflow-y-auto pr-2">
-        {/* Coluna da Esquerda: Configurações e Alunos Disponíveis */}
         <div className="space-y-4">
             <div className="space-y-2">
                 <Label htmlFor="routeName">Nome da Rota</Label>
@@ -603,7 +599,6 @@ export function RouteForm({
 
         </div>
 
-        {/* Coluna da Direita: Itinerário */}
         <div className="space-y-4">
             <div className="flex justify-between items-center">
                 <Label>Itinerário da Rota ({stops.length} paradas)</Label>
@@ -626,10 +621,8 @@ export function RouteForm({
                         <div className="space-y-1">
                            {stops.map((stop, index) => (
                                 <div key={`${stop.id}-${index}`} className="grid grid-cols-[auto_1fr_auto] items-center w-full bg-background rounded-md p-2 hover:bg-accent/50 gap-2">
-                                    {/* Column 1: Number */}
                                     <span className="w-6 flex-shrink-0 text-xs font-mono text-muted-foreground pt-2 self-start">{index + 1}</span>
 
-                                    {/* Column 2: Content */}
                                     <div className="grid grid-cols-[auto_1fr] items-center gap-x-2 min-w-0">
                                         <div className="row-span-2 self-center">
                                             {stop.type === 'student' ? (
@@ -649,7 +642,6 @@ export function RouteForm({
                                         </p>
                                     </div>
 
-                                    {/* Column 3: Buttons */}
                                     <div className="flex items-center flex-shrink-0">
                                         <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => moveStop(index, 'up')} disabled={index === 0}>
                                             <ArrowUp className="h-4 w-4" />
