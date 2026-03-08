@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -247,7 +246,7 @@ export function RouteForm({
                             </div>
                         </div>
                         
-                        {/* Visibilidade Dinâmica da Estratégia Inteligente */}
+                        {/* Visibilidade Dinâmica da Estratégia Inteligente: Surge apenas com 2+ escolas */}
                         {selectedSchoolIds.length >= 2 && (
                             <div className="space-y-2 border-t pt-4 animate-in fade-in slide-in-from-top-2 duration-500">
                                 <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
@@ -368,6 +367,7 @@ export function RouteForm({
                 </div>
             </div>
 
+            {/* Botão de salvar agora posicionado naturalmente no final do fluxo, correndo com a rolagem */}
             <div className="pt-10 pb-20 flex flex-col sm:flex-row gap-3 border-t mt-10">
                 <DialogClose asChild>
                     <Button variant="ghost" className="h-14 px-8 flex-1">Cancelar</Button>

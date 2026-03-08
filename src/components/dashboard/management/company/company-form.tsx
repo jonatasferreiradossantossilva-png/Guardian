@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -79,7 +78,6 @@ export function CompanyForm() {
 
   const onSubmit = (data: FormValues) => {
     setIsSaving(true);
-    // Simulating save
     setTimeout(() => {
         if (company) {
             updateDoc('company_profile', company.id, data);
@@ -97,17 +95,13 @@ export function CompanyForm() {
   if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin" /></div>;
 
   return (
-    <Card className="shadow-2xl border-primary/10 overflow-hidden">
-      <CardHeader className="bg-primary/5 border-b pb-6">
-        <div className="flex items-center gap-4">
-            <div className="p-3 bg-primary/10 rounded-full text-primary">
-                <Building2 className="h-8 w-8" />
-            </div>
-            <div>
-                <CardTitle className="text-xl uppercase italic font-black">Dados Operacionais</CardTitle>
-                <CardDescription>Informações públicas que constarão nos contratos e faturas.</CardDescription>
-            </div>
+    <Card className="shadow-2xl border-primary/10 overflow-hidden max-w-2xl mx-auto">
+      <CardHeader className="bg-primary/5 border-b pb-6 text-center">
+        <div className="mx-auto p-3 bg-primary/10 rounded-full text-primary w-fit mb-4">
+            <Building2 className="h-8 w-8" />
         </div>
+        <CardTitle className="text-xl uppercase italic font-black">Perfil da Empresa</CardTitle>
+        <CardDescription>Dados oficiais para cabeçalho de contratos e recebimento de mensalidades.</CardDescription>
       </CardHeader>
       <CardContent className="pt-8">
         <Form {...form}>
@@ -119,7 +113,7 @@ export function CompanyForm() {
                 name="companyName"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Nome Fantasia / Razão Social</FormLabel>
+                    <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Razão Social / Nome Fantasia</FormLabel>
                     <FormControl>
                         <Input placeholder="Ex: Rota Segura Transporte Escolar" {...field} />
                     </FormControl>
@@ -140,7 +134,7 @@ export function CompanyForm() {
                         <FormControl>
                             <Input placeholder="00.000.000/0001-00 ou 000.000.000-00" {...field} />
                         </FormControl>
-                        <FormDescription className="text-[9px]">Para motoristas autônomos ou empresas.</FormDescription>
+                        <FormDescription className="text-[9px]">Documento que aparecerá como contratado.</FormDescription>
                         <FormMessage />
                         </FormItem>
                     )}
@@ -168,7 +162,7 @@ export function CompanyForm() {
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                        <Mail className="h-3 w-3" /> E-mail Institucional
+                        <Mail className="h-3 w-3" /> E-mail de Contato
                     </FormLabel>
                     <FormControl>
                         <Input placeholder="contato@empresa.com.br" {...field} />
@@ -184,12 +178,11 @@ export function CompanyForm() {
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                        <MapPin className="h-3 w-3" /> Sede / Endereço Comercial
+                        <MapPin className="h-3 w-3" /> Endereço da Sede
                     </FormLabel>
                     <FormControl>
                         <Input placeholder="Rua, Número, Bairro, Cidade - UF" {...field} />
                     </FormControl>
-                    <FormDescription className="text-[10px]">Utilizado no cabeçalho dos contratos gerados.</FormDescription>
                     <FormMessage />
                     </FormItem>
                 )}
@@ -198,7 +191,7 @@ export function CompanyForm() {
 
             <div className="space-y-6 bg-muted/20 p-6 rounded-xl border border-dashed border-primary/20">
                 <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em] flex items-center gap-2">
-                    <CreditCard className="h-4 w-4" /> Dados de Recebimento (Automáticos no Contrato)
+                    <CreditCard className="h-4 w-4" /> Dados Bancários (Para o Contrato)
                 </p>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <FormField
@@ -241,11 +234,11 @@ export function CompanyForm() {
                         <FormItem>
                             <FormLabel className="text-xs font-bold text-primary flex items-center gap-1">
                                 <QrCode className="h-3 w-3" /> Chave Pix Principal
-                            </Label>
+                            </FormLabel>
                             <FormControl>
                                 <Input placeholder="E-mail, CPF ou Chave Aleatória" {...field} className="bg-primary/5 border-primary/20 font-bold" />
                             </FormControl>
-                            <FormDescription className="text-[10px]">Dica: O contrato será preenchido automaticamente com esses dados.</FormDescription>
+                            <FormDescription className="text-[10px]">Dica: O contrato puxará esses dados automaticamente.</FormDescription>
                         </FormItem>
                     )}
                 />
@@ -253,7 +246,7 @@ export function CompanyForm() {
 
             <Button type="submit" className="w-full h-14 text-lg font-black shadow-xl" disabled={isSaving}>
               {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 h-6 w-6" />}
-              SALVAR PERFIL OPERACIONAL
+              SALVAR PERFIL
             </Button>
           </form>
         </Form>
