@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, FileText, CheckCircle, Clock, Printer, MessageCircle, Share2 } from 'lucide-react';
+import { Loader2, ArrowLeft, FileText, CheckCircle, Printer, MessageCircle } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -39,7 +39,7 @@ export default function ParentContractPage() {
     const { data: contracts, isLoading: areContractsLoading } = useMockCollection('contracts', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
     
     const contract = useMemo(() => {
-        if (!contracts) return null;
+        if (!contracts || contracts.length === 0) return null;
         if (!selectedStudentId) return contracts[0];
         return contracts.find(c => c.studentId === selectedStudentId) || contracts[0];
     }, [contracts, selectedStudentId]);
@@ -70,13 +70,13 @@ export default function ParentContractPage() {
         if (!contract) return;
         
         const statusMsg = contract.status === 'accepted' ? 'assinado digitalmente' : 'para análise';
-        const message = `Olá! Segue o meu contrato de transporte para o aluno ${student?.name} (${statusMsg}) via Plataforma Guardian:\n\nhttps://guardian-app.com/parent/contract?id=${contract.id}`;
+        const message = `Olá! Segue o meu contrato de transporte para o aluno ${student?.name} (${statusMsg}) via Plataforma Guardian:\n\n${window.location.origin}/parent/contract`;
         const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
         
         window.open(whatsappUrl, '_blank');
         toast({
-            title: 'Compartilhamento Simulado',
-            description: 'O link do contrato foi enviado via WhatsApp.',
+            title: 'Contrato Compartilhado',
+            description: 'O link do documento foi enviado via WhatsApp.',
         });
     };
 
@@ -95,9 +95,9 @@ export default function ParentContractPage() {
                     </Button>
                     {contract && (
                         <div className="flex gap-2">
-                            <Button variant="outline" size="sm" onClick={handleShare} className="gap-2">
+                            <Button variant="outline" size="sm" onClick={handleShare} className="gap-2 border-primary/30 text-primary">
                                 <MessageCircle className="h-4 w-4" />
-                                <span className="hidden sm:inline">Compartilhar</span>
+                                <span className="hidden sm:inline">Compartilhar Assinado</span>
                                 <span className="sm:hidden">Enviar</span>
                             </Button>
                             <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
@@ -154,7 +154,7 @@ export default function ParentContractPage() {
                                         Li e concordo com todos os termos do contrato de transporte do(a) {student?.name}.
                                     </label>
                                 </div>
-                                <Button className="w-full h-12 font-bold shadow-lg" disabled={!hasAgreed} onClick={handleAcceptContract}>
+                                <Button className="w-full h-14 text-lg font-bold shadow-lg" disabled={!hasAgreed} onClick={handleAcceptContract}>
                                     <CheckCircle className="mr-2 h-5 w-5" />
                                     ACEITAR CONTRATO DIGITALMENTE
                                 </Button>

@@ -13,7 +13,6 @@ import {
   ShieldCheck, 
   User, 
   MapPin, 
-  CalendarDays, 
   Smartphone, 
   Camera, 
   Sparkles, 
@@ -26,7 +25,6 @@ import {
   Brain, 
   HeartPulse, 
   DollarSign, 
-  Clock,
   Users 
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
@@ -43,6 +41,7 @@ import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Switch } from '@/components/ui/switch';
 
 type Step = 'welcome' | 'scan' | 'review' | 'form' | 'photo' | 'health' | 'success';
 
@@ -96,7 +95,7 @@ export default function PublicRegistrationPage() {
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [studentSerie, setStudentSerie] = useState('');
   const [studentTurma, setStudentTurma] = useState('');
-  const [shift, setShift] = useState<string>(''); // Turno
+  const [shift, setShift] = useState<string>(''); 
   const [photoUrl, setPhotoUrl] = useState('');
   
   // Finance states
@@ -121,7 +120,6 @@ export default function PublicRegistrationPage() {
     }
   }, [step]);
 
-  // Validation Logic
   const isFormValid = () => {
       return (
           parentName.trim() !== '' &&
@@ -138,7 +136,6 @@ export default function PublicRegistrationPage() {
       );
   };
 
-  // OCR Logic
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -182,7 +179,6 @@ export default function PublicRegistrationPage() {
     reader.readAsDataURL(file);
   };
 
-  // CEP Auto-fill
   useEffect(() => {
     const cleanedCep = zipCode.replace(/\D/g, '');
     if (cleanedCep.length === 8) {
@@ -234,19 +230,6 @@ export default function PublicRegistrationPage() {
     });
 
     setStep('success');
-  };
-
-  const handleRegisterSibling = () => {
-      setStudentName('');
-      setSelectedSchoolId('');
-      setStudentSerie('');
-      setStudentTurma('');
-      setShift('');
-      setPhotoUrl('');
-      setMedicalConditions([]);
-      setMedicalNote('');
-      setStep('form');
-      toast({ title: "Dados preservados!", description: "Cadastre o próximo filho com o mesmo endereço de embarque." });
   };
 
   const toggleCondition = (id: string) => {
@@ -328,13 +311,6 @@ export default function PublicRegistrationPage() {
                             </>
                         )}
                     </div>
-                    
-                    <div className="space-y-3">
-                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                            <Badge variant="outline" className="h-5">DICA</Badge>
-                            <span>Remova o plástico do documento se houver muito brilho.</span>
-                        </div>
-                    </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2">
                     <input type="file" accept="image/*" capture="environment" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
@@ -374,10 +350,6 @@ export default function PublicRegistrationPage() {
                             <Input value={parentRg} onChange={e => setParentRg(e.target.value)} />
                         </div>
                     </div>
-                    <div className="space-y-2">
-                        <Label>Data de Nascimento</Label>
-                        <Input type="date" value={parentBirthDate} onChange={e => setParentBirthDate(e.target.value)} />
-                    </div>
                     <Alert className="bg-amber-500/10 text-amber-600 border-amber-500/20 py-2">
                         <AlertTriangle className="h-4 w-4" />
                         <AlertDescription className="text-[10px]">Confirme se os números do CPF e RG estão 100% corretos para o contrato.</AlertDescription>
@@ -399,116 +371,103 @@ export default function PublicRegistrationPage() {
           <Card className="shadow-2xl border-primary/20 flex flex-col h-[90vh]">
             <CardHeader className="border-b bg-muted/30 shrink-0">
               <CardTitle className="text-lg">Finalizar Inscrição</CardTitle>
-              <CardDescription>Complete com seus dados de contato e endereço atual.</CardDescription>
+              <CardDescription>Complete com seus contatos e endereço.</CardDescription>
             </CardHeader>
             
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
-                    
                     <div className="space-y-4">
-                        <p className="text-sm font-bold flex items-center gap-2 text-primary uppercase italic tracking-tighter">
+                        <p className="text-sm font-bold flex items-center gap-2 text-primary">
                             <User className="h-4 w-4" /> Identificação do Responsável
                         </p>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Nome Completo do Responsável *</Label>
-                                <Input placeholder="Conforme documento" value={parentName} onChange={e => setParentName(e.target.value)} className={cn(!parentName && "border-destructive/50")} />
+                                <Label>Nome Completo *</Label>
+                                <Input value={parentName} onChange={e => setParentName(e.target.value)} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>CPF *</Label>
-                                    <Input placeholder="000.000.000-00" value={parentCpf} onChange={e => setParentCpf(e.target.value)} className={cn(!parentCpf && "border-destructive/50")} />
+                                    <Input value={parentCpf} onChange={e => setParentCpf(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>RG</Label>
-                                    <Input placeholder="00.000.000-0" value={parentRg} onChange={e => setParentRg(e.target.value)} />
+                                    <Input value={parentRg} onChange={e => setParentRg(e.target.value)} />
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="space-y-4 border-t pt-6">
-                        <p className="text-sm font-bold flex items-center gap-2 text-primary uppercase italic tracking-tighter">
-                            <FileText className="h-4 w-4" /> Contato do Responsável
+                        <p className="text-sm font-bold flex items-center gap-2 text-primary">
+                            <Smartphone className="h-4 w-4" /> Contato
                         </p>
-                        
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label>E-mail *</Label>
-                                <Input type="email" placeholder="exemplo@email.com" value={email} onChange={e => setEmail(e.target.value)} className={cn(!email && "border-destructive/50")} />
+                                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label>WhatsApp *</Label>
-                                <Input placeholder="(11) 90000-0000" value={phone} onChange={e => setPhone(e.target.value)} className={cn(!phone && "border-destructive/50")} />
+                                <Input value={phone} onChange={e => setPhone(e.target.value)} />
                             </div>
                         </div>
                     </div>
 
                     <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary uppercase italic tracking-tighter">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
                             <MapPin className="h-4 w-4" /> Endereço de Embarque
                         </p>
-                        
                         <div className="space-y-4">
-                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                                <div className="space-y-2 sm:col-span-1">
-                                    <Label>CEP de Embarque *</Label>
+                            <div className="grid grid-cols-3 gap-4">
+                                <div className="space-y-2">
+                                    <Label>CEP *</Label>
                                     <div className="relative">
-                                        <Input placeholder="00000-000" value={zipCode} onChange={e => setZipCode(e.target.value)} className={cn(zipCode.replace(/\D/g, '').length !== 8 && "border-destructive/50")} />
+                                        <Input value={zipCode} onChange={e => setZipCode(e.target.value)} />
                                         {isFetchingCep && <Loader2 className="absolute right-2 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
                                     </div>
                                 </div>
-                                <div className="space-y-2 sm:col-span-2">
-                                    <Label>Rua/Avenida *</Label>
-                                    <Input placeholder="Logradouro" value={street} onChange={e => setStreet(e.target.value)} className={cn(!street && "border-destructive/50")} />
+                                <div className="space-y-2 col-span-2">
+                                    <Label>Rua *</Label>
+                                    <Input value={street} onChange={e => setStreet(e.target.value)} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Número *</Label>
-                                    <Input placeholder="Ex: 123" value={number} onChange={e => setNumber(e.target.value)} className={cn(!number && "border-destructive/50")} />
+                                    <Input value={number} onChange={e => setNumber(e.target.value)} />
                                 </div>
-                                <div className="space-y-2">
-                                    <Label>Complemento</Label>
-                                    <Input placeholder="Ex: Apto 42" value={complement} onChange={e => setComplement(e.target.value)} />
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Bairro</Label>
-                                    <Input placeholder="Bairro" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
-                                </div>
-                                <div className="space-y-2">
-                                    <Label>Cidade *</Label>
-                                    <Input placeholder="Cidade" value={city} onChange={e => setCity(e.target.value)} className={cn(!city && "border-destructive/50")} />
+                                    <Input value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
                                 </div>
                             </div>
                         </div>
                     </div>
                     
                     <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary uppercase italic tracking-tighter">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
                             <Users className="h-4 w-4" /> Dados do Aluno
                         </p>
                         <div className="space-y-4">
                             <div className="space-y-2">
                                 <Label>Nome do Filho(a) *</Label>
-                                <Input placeholder="Nome completo do aluno" value={studentName} onChange={e => setStudentName(e.target.value)} className={cn(!studentName && "border-destructive/50")} />
+                                <Input value={studentName} onChange={e => setStudentName(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Escola de Destino *</Label>
                                 <Select onValueChange={setSelectedSchoolId} value={selectedSchoolId}>
-                                    <SelectTrigger className={cn(!selectedSchoolId && "border-destructive/50")}><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
+                                    <SelectTrigger><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
                                     <SelectContent>
                                         {schools?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
                                     <Label>Série/Ano</Label>
                                     <Select onValueChange={setStudentSerie} value={studentSerie}>
-                                        <SelectTrigger><SelectValue placeholder="Selecione a série..." /></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder="Série..." /></SelectTrigger>
                                         <SelectContent>
                                             {SERIE_OPTIONS.map(opt => <SelectItem key={opt} value={opt}>{opt}</SelectItem>)}
                                         </SelectContent>
@@ -517,7 +476,7 @@ export default function PublicRegistrationPage() {
                                 <div className="space-y-2">
                                     <Label>Turno Operacional *</Label>
                                     <Select onValueChange={setShift} value={shift}>
-                                        <SelectTrigger className={cn(!shift && "border-destructive/50")}><SelectValue placeholder="Manhã, Tarde..." /></SelectTrigger>
+                                        <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Manhã">Manhã</SelectItem>
                                             <SelectItem value="Tarde">Tarde</SelectItem>
@@ -530,42 +489,27 @@ export default function PublicRegistrationPage() {
                     </div>
 
                     <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary uppercase italic tracking-tighter">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
                             <DollarSign className="h-4 w-4" /> Preferências Financeiras
                         </p>
-                        <div className="space-y-4">
-                            <div className="space-y-2">
-                                <Label>Sugestão de melhor dia para pagar</Label>
-                                <Select onValueChange={setPreferredPaymentDay} value={preferredPaymentDay}>
-                                    <SelectTrigger className="bg-background"><SelectValue placeholder="Escolha um dia..." /></SelectTrigger>
-                                    <SelectContent>
-                                        {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
-                                    </SelectContent>
-                                </Select>
-                                <p className="text-[10px] text-muted-foreground italic">Essa informação ajudará o gestor na configuração do seu contrato.</p>
-                            </div>
+                        <div className="space-y-2">
+                            <Label>Dia de Vencimento Sugerido</Label>
+                            <Select onValueChange={setPreferredPaymentDay} value={preferredPaymentDay}>
+                                <SelectTrigger><SelectValue placeholder="Escolha um dia..." /></SelectTrigger>
+                                <SelectContent>
+                                    {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
+                                </SelectContent>
+                            </Select>
                         </div>
                     </div>
                 </CardContent>
             </ScrollArea>
 
             <CardFooter className="border-t p-6 shrink-0 bg-background">
-                <div className="flex flex-col w-full gap-2">
-                    <Button 
-                        className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90" 
-                        onClick={() => {
-                            if (isFormValid()) setStep('photo');
-                            else toast({ title: "Campos obrigatórios", description: "Verifique os campos marcados em vermelho.", variant: "destructive" });
-                        }}
-                        disabled={!isFormValid()}
-                    >
-                        Próximo: Identificação do Aluno
-                        <ArrowRight className="ml-2 h-5 w-5" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('review')}>
-                        Voltar para Identificação do Pai
-                    </Button>
-                </div>
+                <Button className="w-full h-14 text-base font-bold" onClick={() => setStep('photo')} disabled={!isFormValid()}>
+                    Próximo: Identificação do Aluno
+                    <ArrowRight className="ml-2 h-5 w-5" />
+                </Button>
             </CardFooter>
           </Card>
         )}
@@ -573,44 +517,24 @@ export default function PublicRegistrationPage() {
         {step === 'photo' && (
             <Card className="shadow-2xl border-primary/20 animate-in slide-in-from-bottom-4 duration-500">
                 <CardHeader className="bg-primary/5 border-b text-center">
-                    <CardTitle className="text-lg">Identificação Visual do Aluno</CardTitle>
-                    <CardDescription>Esta foto será exibida para o motorista no checklist de embarque para segurança total.</CardDescription>
+                    <CardTitle className="text-lg">Identificação do Aluno</CardTitle>
+                    <CardDescription>Esta foto ajuda o motorista no embarque.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-8 flex flex-col items-center">
-                    <div className="relative group">
+                    <div className="relative">
                         <Avatar className="h-48 w-48 border-4 border-background shadow-2xl">
                             <AvatarImage src={photoUrl} style={{ objectFit: 'cover' }} />
-                            <AvatarFallback className="bg-secondary text-primary">
-                                <User className="h-20 w-20" />
-                            </AvatarFallback>
+                            <AvatarFallback className="bg-secondary text-primary"><User className="h-20 w-20" /></AvatarFallback>
                         </Avatar>
-                        <div className="absolute -bottom-2 -right-2 bg-primary p-3 rounded-full text-white shadow-lg">
-                            <Camera className="h-6 w-6" />
-                        </div>
-                    </div>
-
-                    <div className="text-center space-y-2">
-                        <p className="text-xs text-muted-foreground font-medium italic">
-                            * Dica: Tire uma foto nítida do rosto do aluno.
-                        </p>
+                        <div className="absolute -bottom-2 -right-2 bg-primary p-3 rounded-full text-white shadow-lg"><Camera className="h-6 w-6" /></div>
                     </div>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-3 border-t pt-6 bg-muted/20 rounded-b-xl">
+                <CardFooter className="flex flex-col gap-3 border-t pt-6 bg-muted/20">
                     <input type="file" accept="image/*" capture="user" className="hidden" id="student-photo-input" onChange={handleStudentPhotoChange} />
                     <Button className="w-full h-14 text-base font-bold" onClick={() => document.getElementById('student-photo-input')?.click()}>
                         {photoUrl ? "Tirar outra foto" : "Capturar Foto do Filho(a)"}
                     </Button>
-                    <div className="grid grid-cols-2 gap-2 w-full">
-                        <Button variant="outline" onClick={() => setStep('form')}>Voltar</Button>
-                        <Button variant="secondary" onClick={() => setStep('health')}>
-                            {photoUrl ? "Continuar" : "Pular e fazer depois"}
-                        </Button>
-                    </div>
-                    {!photoUrl && (
-                        <p className="text-[10px] text-center text-muted-foreground">
-                            Caso opte por pular, você poderá adicionar a foto depois no seu painel.
-                        </p>
-                    )}
+                    <Button variant="secondary" className="w-full" onClick={() => setStep('health')}>Continuar</Button>
                 </CardFooter>
             </Card>
         )}
@@ -622,53 +546,25 @@ export default function PublicRegistrationPage() {
                         <HeartPulse className="h-5 w-5" />
                         <CardTitle className="text-lg">Saúde e Cuidados</CardTitle>
                     </div>
-                    <CardDescription>
-                        Estes alertas aparecerão para o motorista no momento do embarque.
-                        <span className="block mt-1 font-medium text-foreground/70 italic">Caso o aluno não possua condições especiais, basta não selecionar nada e finalizar.</span>
-                    </CardDescription>
+                    <CardDescription>Alertas para o motorista.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-6">
-                    <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Selecione alertas críticos:</p>
                     <div className="grid grid-cols-1 gap-3">
                         {HEALTH_CATEGORIES.map(cat => (
-                            <div 
-                                key={cat.id} 
-                                onClick={() => toggleCondition(cat.id)}
-                                className={cn(
-                                    "flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all",
-                                    medicalConditions.includes(cat.id) 
-                                        ? "border-destructive bg-destructive/5 shadow-inner" 
-                                        : "border-muted hover:border-destructive/30"
-                                )}
-                            >
-                                <div className={cn(
-                                    "p-2 rounded-full",
-                                    medicalConditions.includes(cat.id) ? "bg-destructive text-white" : "bg-muted text-muted-foreground"
-                                )}>
-                                    {cat.icon}
-                                </div>
+                            <div key={cat.id} onClick={() => toggleCondition(cat.id)} className={cn("flex items-center gap-3 p-3 rounded-lg border-2 cursor-pointer transition-all", medicalConditions.includes(cat.id) ? "border-destructive bg-destructive/5" : "border-muted")}>
+                                <div className={cn("p-2 rounded-full", medicalConditions.includes(cat.id) ? "bg-destructive text-white" : "bg-muted")}>{cat.icon}</div>
                                 <span className="text-sm font-medium flex-1">{cat.label}</span>
                                 <Checkbox checked={medicalConditions.includes(cat.id)} onCheckedChange={() => {}} />
                             </div>
                         ))}
                     </div>
-
                     <div className="space-y-2 pt-4 border-t">
-                        <Label className="text-xs">Observações Adicionais (Opcional)</Label>
-                        <span className="block text-[10px] text-muted-foreground mb-1 italic">Detalhes sobre alergias, dosagens ou cuidados específicos.</span>
-                        <Textarea 
-                            placeholder="Descreva detalhes importantes..."
-                            value={medicalNote}
-                            onChange={e => setMedicalNote(e.target.value)}
-                            className="bg-muted/30"
-                        />
+                        <Label className="text-xs">Observações Adicionais</Label>
+                        <Textarea placeholder="Detalhes importantes..." value={medicalNote} onChange={e => setMedicalNote(e.target.value)} />
                     </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2 border-t pt-6 bg-muted/20">
-                    <Button className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-700" onClick={handleFinalSubmit}>
-                        Finalizar e Enviar Cadastro
-                    </Button>
-                    <Button variant="ghost" className="text-xs" onClick={() => setStep('photo')}>Voltar para Foto</Button>
+                    <Button className="w-full h-14 text-base font-bold bg-green-600" onClick={handleFinalSubmit}>Finalizar e Enviar</Button>
                 </CardFooter>
             </Card>
         )}
@@ -676,23 +572,12 @@ export default function PublicRegistrationPage() {
         {step === 'success' && (
             <Card className="shadow-2xl border-green-500/20 text-center p-8">
                 <CardContent className="space-y-6 pt-6 text-center">
-                    <div className="mx-auto w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center border-2 border-green-500/20 mb-4 animate-bounce">
+                    <div className="mx-auto w-20 h-20 bg-green-500/10 rounded-full flex items-center justify-center border-2 border-green-500/20 mb-4">
                         <CheckCircle className="text-green-500 h-10 w-10" />
                     </div>
-                    <div className="space-y-2">
-                        <h2 className="text-2xl font-bold">Inscrição Enviada!</h2>
-                        <p className="text-muted-foreground text-sm leading-relaxed">Recebemos seus dados. O gestor analisará a viabilidade da rota e entrará em contato.</p>
-                    </div>
-                    
-                    <div className="flex flex-col gap-3 pt-4">
-                        <Button className="w-full h-12 font-bold" onClick={handleRegisterSibling}>
-                            <Users className="mr-2 h-5 w-5" />
-                            Cadastrar Outro Filho
-                        </Button>
-                        <Button asChild variant="outline" className="w-full h-12">
-                            <Link href="/">Voltar para o Início</Link>
-                        </Button>
-                    </div>
+                    <h2 className="text-2xl font-bold">Inscrição Enviada!</h2>
+                    <p className="text-muted-foreground text-sm">Recebemos seus dados. O gestor analisará a viabilidade e entrará em contato.</p>
+                    <Button asChild className="w-full h-12 font-bold"><Link href="/">Voltar para o Início</Link></Button>
                 </CardContent>
             </Card>
         )}

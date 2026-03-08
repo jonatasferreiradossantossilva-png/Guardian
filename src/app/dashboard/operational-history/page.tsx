@@ -4,7 +4,7 @@
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bus, Sparkles, Siren, Clock, Activity, ArrowLeft, Zap, Wrench, ShieldCheck, UserCheck, Loader2 } from 'lucide-react';
+import { Sparkles, Siren, Clock, ArrowLeft, Wrench, ShieldCheck, Loader2 } from 'lucide-react';
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -29,7 +29,6 @@ export default function OperationalHistoryPage() {
     const feedItems = useMemo<FeedItem[]>(() => {
         const items: FeedItem[] = [];
 
-        // 1. Mapear incidentes e eventos de IA vindos da coleção
         if (incidents) {
             incidents.forEach(inc => {
                 const isAI = inc.reporter === 'Guardian Intelligence';
@@ -46,7 +45,6 @@ export default function OperationalHistoryPage() {
             });
         }
 
-        // 2. Injetar eventos estáticos históricos
         const now = new Date();
         
         items.push({

@@ -30,13 +30,12 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
-import { useMemo, useEffect } from 'react';
+import { useMemo } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { FileText, Sparkles, DollarSign, CalendarDays, School, User, QrCode } from 'lucide-react';
-import { Badge } from '@/components/ui/badge';
+import { Sparkles, QrCode } from 'lucide-react';
 
 const formSchema = z.object({
   studentId: z.string({ required_error: 'Selecione um aluno.' }).min(1, { message: 'Selecione um aluno.' }),
@@ -108,9 +107,23 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     const schoolYear = new Date().getFullYear().toString();
 
+    // Inteligência de Pagamento: Constrói a frase dinamicamente
+    let paymentPhrase = "";
+    const bankInfo = data.banco ? `${data.banco}, Agência ${data.agencia}, Conta ${data.conta}` : "";
+    const pixInfo = data.chavePix ? `Chave Pix: ${data.chavePix}` : "";
+
+    if (bankInfo && pixInfo) {
+        paymentPhrase = `via: ${bankInfo} ou através da ${pixInfo}`;
+    } else if (bankInfo) {
+        paymentPhrase = `via: ${bankInfo}`;
+    } else if (pixInfo) {
+        paymentPhrase = `através da ${pixInfo}`;
+    } else {
+        paymentPhrase = "a ser definido pelo contratado";
+    }
+
     let generatedContent = template.content;
     
-    // Substituição robusta de placeholders
     generatedContent = generatedContent.replace(/{{aluno_nome}}/g, student.name || 'N/A');
     generatedContent = generatedContent.replace(/{{responsavel_nome}}/g, parent.name || 'N/A');
     generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, parent.cpf || 'N/A');
@@ -121,10 +134,13 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     generatedContent = generatedContent.replace(/{{dia_vencimento}}/g, student.preferredPaymentDay?.toString() || '10');
     generatedContent = generatedContent.replace(/{{data_geracao}}/g, generationDate);
     generatedContent = generatedContent.replace(/{{ano_letivo}}/g, schoolYear);
-    generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');
-    generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'N/A');
-    generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'N/A');
-    generatedContent = generatedContent.replace(/{{chave_pix}}/g, data.chavePix || 'N/A');
+    
+    // Substituição Inteligente do bloco de pagamento
+    generatedContent = generatedContent.replace(/via: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}/g, paymentPhrase);
+    generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || '');
+    generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || '');
+    generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || '');
+    generatedContent = generatedContent.replace(/{{chave_pix}}/g, data.chavePix || '');
 
     addDoc('contracts', {
         templateId: data.templateId,
@@ -150,7 +166,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
             Gerar Contrato Inteligente
         </DialogTitle>
         <DialogDescription>
-          A IA preencherá automaticamente os dados capturados durante o cadastro dos pais.
+          A IA adaptará as cláusulas de pagamento com base no que for preenchido abaixo.
         </DialogDescription>
       </DialogHeader>
       <Form {...form}>
@@ -190,14 +206,6 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                           <p className="text-[9px] text-muted-foreground font-bold uppercase">Dia Vencimento</p>
                           <p className="text-sm font-black text-foreground">Dia {selectedStudentData.student.preferredPaymentDay || '10'}</p>
                       </div>
-                      <div className="space-y-1">
-                          <p className="text-[9px] text-muted-foreground font-bold uppercase">Escola</p>
-                          <p className="text-[10px] font-bold truncate text-foreground">{selectedStudentData.schoolName || 'N/A'}</p>
-                      </div>
-                      <div className="space-y-1">
-                          <p className="text-[9px] text-muted-foreground font-bold uppercase">Turno</p>
-                          <p className="text-[10px] font-bold text-foreground">{selectedStudentData.student.shift}</p>
-                      </div>
                   </div>
               </div>
           )}
@@ -222,19 +230,20 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
           <Accordion type="single" collapsible className="w-full">
             <AccordionItem value="item-1" className="border-primary/10">
               <AccordionTrigger className="text-xs font-black uppercase text-muted-foreground hover:no-underline py-2">
-                  Dados de Recebimento (Opcional)
+                  Dados de Recebimento
               </AccordionTrigger>
               <AccordionContent>
                 <div className="space-y-4 pt-2">
+                  <div className="p-3 bg-muted/20 rounded border border-dashed text-[10px] text-muted-foreground mb-2">
+                      O sistema citará apenas os métodos que você preencher. Se deixar vazio, o contrato será gerado sem esses dados.
+                  </div>
                   <FormField
                     control={form.control}
                     name="banco"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs text-muted-foreground">Instituição Bancária</FormLabel>
-                        <FormControl>
-                          <Input placeholder="Ex: NuBank ou Banco do Brasil" {...field} className="h-8 text-xs" />
-                        </FormControl>
+                        <FormLabel className="text-xs">Banco</FormLabel>
+                        <FormControl><Input placeholder="Ex: NuBank" {...field} className="h-8 text-xs" /></FormControl>
                       </FormItem>
                     )}
                   />
@@ -244,7 +253,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                       name="agencia"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs text-muted-foreground">Agência</FormLabel>
+                          <FormLabel className="text-xs">Agência</FormLabel>
                           <FormControl><Input placeholder="0001" {...field} className="h-8 text-xs" /></FormControl>
                         </FormItem>
                       )}
@@ -254,7 +263,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                       name="conta"
                       render={({ field }) => (
                         <FormItem>
-                          <FormLabel className="text-xs text-muted-foreground">Conta</FormLabel>
+                          <FormLabel className="text-xs">Conta</FormLabel>
                           <FormControl><Input placeholder="12345-6" {...field} className="h-8 text-xs" /></FormControl>
                         </FormItem>
                       )}
@@ -269,7 +278,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                             <QrCode className="h-3 w-3" /> Chave Pix
                         </FormLabel>
                         <FormControl>
-                          <Input placeholder="E-mail, CPF ou Aleatória" {...field} className="h-8 text-xs border-primary/20 bg-primary/5" />
+                          <Input placeholder="E-mail ou CPF" {...field} className="h-8 text-xs border-primary/20 bg-primary/5" />
                         </FormControl>
                       </FormItem>
                     )}

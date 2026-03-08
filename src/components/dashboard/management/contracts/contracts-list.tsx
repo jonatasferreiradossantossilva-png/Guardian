@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState, useMemo, useEffect, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import {
   Table,
   TableBody,
@@ -11,15 +11,16 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { MoreHorizontal, PlusCircle, CheckCircle, Clock, FileText, Loader2 } from 'lucide-react';
+import { MoreHorizontal, PlusCircle, CheckCircle, Clock, FileText, Loader2, MessageCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useMockCollection } from '@/hooks/use-mock-data';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { ContractGenerateForm } from './contract-generate-form';
 import { ContractViewerModal } from './contract-viewer-modal';
+import { useToast } from '@/hooks/use-toast';
 
 type Contract = {
   id: string;
@@ -52,8 +53,8 @@ const statusTextMap: Record<Contract['status'], string> = {
 export function ContractsList({ initialContracts, initialStudents, initialParents, initialTemplates }: ContractsListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [viewingContract, setViewingContract] = useState<Contract | null>(null);
+  const { toast } = useToast();
   
-  // Fetch live data to ensure reactivity
   const { data: liveContracts, isLoading: areContractsLoading } = useMockCollection('contracts');
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
   const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents');
@@ -89,6 +90,15 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
   
   const handleViewContract = (contract: Contract) => {
     setViewingContract(contract);
+  };
+
+  const handleShareContract = (contract: Contract) => {
+      const studentName = studentsMap.get(contract.studentId);
+      const parentName = parentDataMap.get(contract.parentUserId);
+      const message = `Olá, ${parentName}! O contrato de transporte do aluno ${studentName} foi gerado. Por favor, acesse seu painel no Guardian para assinar digitalmente:\n\n${window.location.origin}/parent/contract`;
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
+      window.open(whatsappUrl, '_blank');
+      toast({ title: "Link enviado!", description: "Compartilhamento via WhatsApp iniciado." });
   };
 
   return (
@@ -148,10 +158,18 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                       </TableCell>
                       <TableCell className="text-xs">{formatDate(contract.acceptedAt)}</TableCell>
                       <TableCell className="text-right">
-                        <Button variant="outline" size="sm" onClick={() => handleViewContract(contract)} className="h-8 text-xs font-bold border-primary/20 text-primary">
-                          <FileText className="mr-1.5 h-3.5 w-3.5" />
-                          Visualizar
-                        </Button>
+                        <div className="flex justify-end gap-2">
+                            <Button variant="outline" size="sm" onClick={() => handleViewContract(contract)} className="h-8 text-xs font-bold border-primary/20 text-primary">
+                                <FileText className="mr-1.5 h-3.5 w-3.5" />
+                                Visualizar
+                            </Button>
+                            {contract.status === 'pending_acceptance' && (
+                                <Button variant="ghost" size="sm" onClick={() => handleShareContract(contract)} className="h-8 text-xs font-bold text-green-600 hover:text-green-700 hover:bg-green-50">
+                                    <MessageCircle className="mr-1.5 h-3.5 w-3.5" />
+                                    Notificar
+                                </Button>
+                            )}
+                        </div>
                       </TableCell>
                     </TableRow>
                   ))
@@ -185,10 +203,18 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                         <p className="text-[10px]">{formatDate(contract.acceptedAt)}</p>
                       </div>
                     </div>
-                     <Button variant="outline" size="sm" className="w-full font-bold border-primary/30 text-primary h-10" onClick={() => handleViewContract(contract)}>
-                        <FileText className="mr-2 h-4 w-4" />
-                        VISUALIZAR CONTRATO
-                    </Button>
+                    <div className="flex gap-2">
+                        <Button variant="outline" size="sm" className="flex-1 font-bold border-primary/30 text-primary h-10" onClick={() => handleViewContract(contract)}>
+                            <FileText className="mr-2 h-4 w-4" />
+                            VER
+                        </Button>
+                        {contract.status === 'pending_acceptance' && (
+                            <Button variant="outline" size="sm" className="flex-1 font-bold border-green-600/30 text-green-600 h-10" onClick={() => handleShareContract(contract)}>
+                                <MessageCircle className="mr-2 h-4 w-4" />
+                                ENVIAR
+                            </Button>
+                        )}
+                    </div>
                   </div>
                 ))
             ) : !isLoading && (
