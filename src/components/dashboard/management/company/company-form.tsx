@@ -233,7 +233,7 @@ export function CompanyForm() {
                         <FormItem>
                             <FormLabel className="text-xs font-bold text-primary flex items-center gap-1">
                                 <QrCode className="h-3 w-3" /> Chave Pix Principal
-                            </Label>
+                            </FormLabel>
                             <FormControl>
                                 <Input placeholder="E-mail, CPF ou Chave Aleatória" {...field} className="bg-primary/5 border-primary/20 font-bold" />
                             </FormControl>

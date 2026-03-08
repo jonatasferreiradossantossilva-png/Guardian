@@ -373,7 +373,7 @@ export function RouteForm({
                     </div>
                 </div>
 
-                {/* COLUNA DA DIREITA: ITINERÁRIO EM 3 CAMADAS (SEM CONTORNOS ROUBANDO ESPAÇO) */}
+                {/* COLUNA DA DIREITA: ITINERÁRIO EM 3 CAMADAS */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
                         <div className="flex items-center gap-3">
