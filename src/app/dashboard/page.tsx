@@ -55,9 +55,15 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
 
     return (
         <div className="p-4 space-y-6">
+            {/* Header com Guia integrado */}
             <div className="flex justify-between items-start">
-                <div>
-                    <h1 className="text-3xl font-bold tracking-tight mb-1 text-primary uppercase italic">Guardian</h1>
+                <div className="flex-1">
+                    <div className="flex items-center gap-2">
+                        <h1 className="text-3xl font-bold tracking-tight text-primary uppercase italic">Guardian</h1>
+                        <Button variant="ghost" size="icon" onClick={onOpenGuide} className="h-8 w-8 text-muted-foreground hover:text-primary">
+                            <HelpCircle className="h-5 w-5" />
+                        </Button>
+                    </div>
                     <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">
                         Inteligência Operacional
                     </p>
@@ -65,15 +71,18 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 <Badge variant="outline" className="border-primary/20 text-primary font-bold">ADMIN</Badge>
             </div>
 
+            {/* Grade de 6 Atalhos Padronizada */}
             <div className="grid grid-cols-3 gap-3">
                 {navLinks.map((link) => (
                     <Link href={link.href} key={link.href} passHref>
-                        <Card className="hover:bg-secondary transition-colors border-primary/10 active:scale-95 duration-200">
-                            <CardHeader className="flex flex-col items-center justify-center text-center p-3">
+                        <Card className="hover:bg-secondary transition-colors border-primary/10 active:scale-95 duration-200 h-full">
+                            <CardHeader className="flex flex-col items-center justify-center text-center p-3 h-full">
                                 <div className="p-2 rounded-lg bg-primary/10 mb-2">
                                     <link.icon className="h-5 w-5 text-primary" />
                                 </div>
-                                <CardTitle className="text-[9px] uppercase font-black leading-tight tracking-tighter">{link.label}</CardTitle>
+                                <CardTitle className="text-[9px] uppercase font-black leading-tight tracking-tighter min-h-[20px] flex items-center justify-center">
+                                    {link.label}
+                                </CardTitle>
                             </CardHeader>
                         </Card>
                     </Link>
@@ -82,21 +91,6 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
 
             {/* Operational Feed Principal */}
             <OperationalFeed />
-
-            <Card className="bg-primary/5 border-primary/20 border-dashed">
-                <CardHeader className="p-4 pb-2">
-                    <CardTitle className="text-sm flex items-center gap-2">
-                        <HelpCircle className="h-4 w-4 text-primary" />
-                        Guia de Configuração
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="p-4 pt-0">
-                    <p className="text-[10px] text-muted-foreground mb-3 uppercase font-bold">Configure escolas, motoristas e rotas passo a passo.</p>
-                    <Button size="sm" className="w-full h-10 font-bold" onClick={onOpenGuide}>
-                        <Play className="mr-2 h-4 w-4 fill-current" /> INICIAR GUIA
-                    </Button>
-                </CardContent>
-            </Card>
 
             <div className="space-y-2 pb-10">
                 <Button variant="outline" className="w-full h-12 border-primary/30 text-primary font-bold shadow-sm" onClick={onShareRegistration}>
@@ -160,9 +154,11 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-        <div>
+        <div className="flex items-center gap-2">
           <h1 className="text-3xl font-bold tracking-tight">Painel de Controle</h1>
-          <p className="text-muted-foreground">Monitoramento em tempo real e inteligência financeira.</p>
+          <Button variant="ghost" size="icon" onClick={onOpenGuide} className="text-muted-foreground hover:text-primary">
+            <HelpCircle className="h-5 w-5" />
+          </Button>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <Button variant="outline" onClick={onShareRegistration} className="border-primary/30 text-primary font-bold">
@@ -204,20 +200,20 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
           <Card className="h-full border-dashed border-primary/40 bg-secondary/20 flex flex-col">
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
-                        <HelpCircle className="h-5 w-5 text-primary" />
-                        Setup Inicial
+                        <BookOpen className="h-5 w-5 text-primary" />
+                        Status do Setup
                     </CardTitle>
-                    <CardDescription className="text-xs">Configure sua frota para ativar a IA.</CardDescription>
+                    <CardDescription className="text-xs">Visualize o guia para ativar a IA.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-center items-center text-center p-6 space-y-4">
                     <div className="bg-primary/10 p-4 rounded-full border-2 border-primary/20">
-                        <BookOpen className="h-8 w-8 text-primary" />
+                        <ShieldCheck className="h-8 w-8 text-primary" />
                     </div>
-                    <p className="text-xs text-muted-foreground uppercase font-bold">Escolas • Motoristas • GPS</p>
+                    <p className="text-xs text-muted-foreground uppercase font-bold text-center">Configuração de Frota <br/> & Telemetria Ativa</p>
                 </CardContent>
                 <CardFooter className="p-4 border-t bg-background/50">
-                    <Button size="sm" className="w-full font-bold" onClick={onOpenGuide}>
-                        <Play className="mr-2 h-4 w-4 fill-current" /> INICIAR GUIA
+                    <Button size="sm" variant="outline" className="w-full font-bold" onClick={onOpenGuide}>
+                        ABRIR GUIA RÁPIDO
                     </Button>
                 </CardFooter>
           </Card>

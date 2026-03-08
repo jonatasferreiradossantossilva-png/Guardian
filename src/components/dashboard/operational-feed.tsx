@@ -79,15 +79,18 @@ export function OperationalFeed() {
         const now = new Date();
         const hourAgo = new Date(now.getTime() - 60 * 60000).toISOString();
 
-        items.push({
-            id: 'route-static-1',
-            type: 'route',
-            title: 'Viagem Iniciada',
-            description: 'Juliano Castro iniciou a Rota 01 - Manhã.',
-            timestamp: hourAgo,
-            icon: <Bus className="h-4 w-4" />,
-            color: 'text-blue-500 bg-blue-500/10 border-blue-500/20'
-        });
+        // Adiciona um item estático de base se a lista estiver vazia
+        if (items.length === 0) {
+            items.push({
+                id: 'route-static-1',
+                type: 'route',
+                title: 'Viagem Iniciada',
+                description: 'Juliano Castro iniciou a Rota 01 - Manhã.',
+                timestamp: hourAgo,
+                icon: <Bus className="h-4 w-4" />,
+                color: 'text-blue-500 bg-blue-500/10 border-blue-500/20'
+            });
+        }
 
         return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
     }, [incidents]);
