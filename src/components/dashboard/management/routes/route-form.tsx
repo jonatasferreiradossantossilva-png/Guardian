@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useMemo, useEffect, useRef } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -20,7 +20,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { ScrollArea } from '@/components/ui/scroll-area';
 import { useMockData } from '@/hooks/use-mock-data';
 import { Users, School, ArrowUp, ArrowDown, Sparkles, Loader2, X, PlusCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -81,13 +80,11 @@ export function RouteForm({
   const [errors, setErrors] = useState<{name?: string, driverId?: string, schoolIds?: string, shift?: string}>({});
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isOptimized, setIsOptimized] = useState(false);
-  const [isInitializing, setIsInitializing] = useState(true);
 
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
 
   useEffect(() => {
-    setIsInitializing(true);
     const initialStops: Stop[] = [];
     const initialSchoolIds = new Set<string>();
 
@@ -105,13 +102,12 @@ export function RouteForm({
     setStops(initialStops);
     setSelectedSchoolIds(Array.from(initialSchoolIds));
     setIsOptimized(!!route?.lastOptimizedAt);
-    setIsInitializing(false);
   }, [route, studentsMap, schoolsMap]);
 
-  const { vehicle, vehicleCapacity } = useMemo(() => {
+  const { vehicleCapacity } = useMemo(() => {
      const driver = drivers.find(d => d.id === driverId);
      const v = vehicles.find(v => v.id === driver?.vehicleId);
-     return { vehicle: v, vehicleCapacity: v?.capacity || Infinity };
+     return { vehicleCapacity: v?.capacity || Infinity };
   }, [driverId, drivers, vehicles]);
 
   const assignedStudentsInOtherRoutes = useMemo(() => {
@@ -195,21 +191,22 @@ export function RouteForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-5xl max-h-[95vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
-      <DialogHeader className="p-6 pb-2 border-b shrink-0 bg-background z-10">
+    <DialogContent className="sm:max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
+      <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20">
         <DialogTitle>Montar Itinerário</DialogTitle>
-        <DialogDescription>Configure os parâmetros e adicione os alunos para criar a sequência de paradas.</DialogDescription>
+        <DialogDescription>Defina os parâmetros e adicione os alunos. O botão de salvar está ao final da lista.</DialogDescription>
       </DialogHeader>
       
-      <ScrollArea className="flex-1">
-        <div className="p-6 pb-10">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {/* Coluna 1: Configuração e Alunos Disponíveis (A INCLUIR) */}
+      {/* Área de Scroll Principal - Agora usando overflow-y-auto nativo para evitar travamentos */}
+      <div className="flex-1 overflow-y-auto bg-background">
+        <div className="p-6 space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                {/* Coluna 1: Configuração e Alunos Disponíveis */}
                 <div className="space-y-6">
                     <div className="space-y-4 bg-muted/20 p-4 rounded-lg border border-dashed">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Dados da Rota</Label>
-                            <Input placeholder="Nome da Rota (Ex: Rota Sul)" value={name} onChange={e => setName(e.target.value)} className="bg-background" />
+                            <Input placeholder="Nome da Rota" value={name} onChange={e => setName(e.target.value)} className="bg-background" />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
@@ -230,8 +227,8 @@ export function RouteForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Selecione as Escolas</Label>
-                        <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background min-h-[60px]">
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Escolas Atendidas</Label>
+                        <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background">
                             {schools.map(school => (
                                 <div key={school.id} className="flex items-center space-x-2">
                                     <Checkbox 
@@ -246,12 +243,12 @@ export function RouteForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis (A Incluir)</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos a Incluir</Label>
                         <div className="border-2 rounded-lg overflow-hidden bg-background">
                             <div className="p-2 border-b bg-muted/30">
-                                <Input placeholder="Buscar por nome..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
+                                <Input placeholder="Filtrar por nome..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
                             </div>
-                            <div className="h-64 overflow-y-auto">
+                            <div className="max-h-64 overflow-y-auto">
                                 {availableStudents.length > 0 ? (
                                     availableStudents.map(s => (
                                         <div key={s.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-secondary/50">
@@ -265,9 +262,8 @@ export function RouteForm({
                                         </div>
                                     ))
                                 ) : (
-                                    <div className="h-full flex flex-col items-center justify-center p-8 text-center text-muted-foreground">
-                                        <Users className="h-8 w-8 mb-2 opacity-20" />
-                                        <p className="text-[10px] font-bold uppercase">Nenhum aluno compatível</p>
+                                    <div className="p-8 text-center text-muted-foreground">
+                                        <p className="text-[10px] font-bold uppercase">Nenhum aluno disponível</p>
                                     </div>
                                 )}
                             </div>
@@ -280,7 +276,7 @@ export function RouteForm({
                     <div className="flex justify-between items-center bg-primary/5 p-3 rounded-lg border border-primary/20">
                         <div className="flex items-center gap-2">
                             <Badge variant="outline" className="bg-background text-primary border-primary/30 h-6 font-black">{stops.length}</Badge>
-                            <Label className="text-xs font-black uppercase tracking-tighter">Itinerário (Incluídos)</Label>
+                            <Label className="text-xs font-black uppercase tracking-tighter">Itinerário Final</Label>
                         </div>
                         <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-8 font-bold text-[10px]">
                             {isOptimizing ? <Loader2 className="animate-spin h-3 w-3 mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
@@ -288,39 +284,36 @@ export function RouteForm({
                         </Button>
                     </div>
 
-                    <div className="border-2 border-dashed rounded-xl bg-background overflow-hidden">
-                        <div className="max-h-[30rem] overflow-y-auto p-3">
+                    <div className="border-2 border-dashed rounded-xl bg-background p-3 min-h-[300px]">
+                        <div className="space-y-2">
                             {stops.length > 0 ? (
-                                <div className="space-y-2">
-                                    {stops.map((stop, idx) => (
-                                        <div key={`${stop.id}-${idx}`} className="flex items-center gap-3 p-2 bg-muted/20 border rounded-lg group">
-                                            <span className="text-[9px] font-black bg-background w-5 h-5 flex items-center justify-center rounded border text-muted-foreground">{idx + 1}</span>
-                                            <div className="flex-1 min-w-0">
-                                                <p className="text-xs font-bold uppercase truncate">{stop.name}</p>
-                                                <p className="text-[9px] text-muted-foreground truncate uppercase">{stop.details}</p>
-                                            </div>
-                                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { 
-                                                    const newStops = [...stops];
-                                                    if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                                }} disabled={idx === 0}><ArrowUp className="h-3 w-3" /></Button>
-                                                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
-                                                    const newStops = [...stops];
-                                                    if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                                }} disabled={idx === stops.length - 1}><ArrowDown className="h-3 w-3" /></Button>
-                                                <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3 w-3" /></Button>
-                                            </div>
+                                stops.map((stop, idx) => (
+                                    <div key={`${stop.id}-${idx}`} className="flex items-center gap-3 p-2 bg-muted/20 border rounded-lg group">
+                                        <span className="text-[9px] font-black bg-background w-5 h-5 flex items-center justify-center rounded border text-muted-foreground">{idx + 1}</span>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs font-bold uppercase truncate">{stop.name}</p>
+                                            <p className="text-[9px] text-muted-foreground truncate uppercase">{stop.details}</p>
                                         </div>
-                                    ))}
-                                </div>
+                                        <div className="flex items-center gap-1">
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => { 
+                                                const newStops = [...stops];
+                                                if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                            }} disabled={idx === 0}><ArrowUp className="h-3 w-3" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => {
+                                                const newStops = [...stops];
+                                                if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
+                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-3 w-3" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3 w-3" /></Button>
+                                        </div>
+                                    </div>
+                                ))
                             ) : (
-                                <div className="h-64 flex flex-col items-center justify-center text-center text-muted-foreground p-10">
-                                    <School className="h-10 w-10 mb-4 opacity-10" />
-                                    <p className="text-xs font-bold uppercase tracking-widest leading-tight">Itinerário Vazio.<br/>Selecione as escolas e adicione alunos ao lado.</p>
+                                <div className="py-20 text-center text-muted-foreground">
+                                    <p className="text-xs font-bold uppercase tracking-widest">Adicione paradas ao itinerário</p>
                                 </div>
                             )}
                         </div>
-                        <div className="p-3 border-t bg-muted/10">
+                        <div className="mt-4">
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="sm" className="w-full h-9 font-bold border-dashed border-primary/30 text-primary">
@@ -340,14 +333,17 @@ export function RouteForm({
                 </div>
             </div>
 
-            <DialogFooter className="mt-10 border-t pt-6 flex flex-col sm:flex-row gap-3 bg-background">
-                <DialogClose asChild><Button variant="ghost" className="h-12 px-8">Cancelar</Button></DialogClose>
-                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-1 h-12 text-lg font-black shadow-xl bg-primary text-white">
+            {/* BOTÃO SALVAR - Agora faz parte do conteúdo e corre com a tela */}
+            <div className="pt-10 pb-20 flex flex-col sm:flex-row gap-3">
+                <DialogClose asChild>
+                    <Button variant="ghost" className="h-14 px-8 flex-1">Cancelar</Button>
+                </DialogClose>
+                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-14 text-lg font-black shadow-xl bg-primary text-white">
                     SALVAR ROTA COMPLETA
                 </Button>
-            </DialogFooter>
+            </div>
         </div>
-      </ScrollArea>
+      </div>
     </DialogContent>
   );
 }
