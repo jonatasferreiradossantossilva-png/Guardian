@@ -120,5 +120,6 @@ export const initialMockData = {
     trip_requests: [],
     pending_registrations: [],
     announcements: [],
+    incidents: [],
     trip_history: []
 };

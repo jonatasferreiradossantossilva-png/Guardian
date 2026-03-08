@@ -61,7 +61,7 @@ export function OperationalFeed() {
     const feedItems = useMemo<FeedItem[]>(() => {
         const items: FeedItem[] = [];
 
-        if (incidents) {
+        if (incidents && incidents.length > 0) {
             incidents.forEach(inc => {
                 const isAI = inc.reporter === 'Guardian Intelligence';
                 items.push({
@@ -79,7 +79,7 @@ export function OperationalFeed() {
         const now = new Date();
         const hourAgo = new Date(now.getTime() - 60 * 60000).toISOString();
 
-        // Adiciona um item estático de base se a lista estiver vazia
+        // Adiciona um item estático de base se a lista estiver vazia para não ficar um buraco visual
         if (items.length === 0) {
             items.push({
                 id: 'route-static-1',

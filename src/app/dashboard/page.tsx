@@ -55,7 +55,7 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
 
     return (
         <div className="p-4 space-y-6">
-            {/* Header com Guia integrado */}
+            {/* Header com Guia integrado no topo */}
             <div className="flex justify-between items-start">
                 <div className="flex-1">
                     <div className="flex items-center gap-2">
@@ -71,16 +71,16 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
                 <Badge variant="outline" className="border-primary/20 text-primary font-bold">ADMIN</Badge>
             </div>
 
-            {/* Grade de 6 Atalhos Padronizada */}
+            {/* Grade de 6 Atalhos Padronizada em Quadrados */}
             <div className="grid grid-cols-3 gap-3">
                 {navLinks.map((link) => (
-                    <Link href={link.href} key={link.href} passHref>
+                    <Link href={link.href} key={link.href} passHref className="aspect-square">
                         <Card className="hover:bg-secondary transition-colors border-primary/10 active:scale-95 duration-200 h-full">
-                            <CardHeader className="flex flex-col items-center justify-center text-center p-3 h-full">
-                                <div className="p-2 rounded-lg bg-primary/10 mb-2">
+                            <CardHeader className="flex flex-col items-center justify-center text-center p-2 h-full">
+                                <div className="p-2 rounded-lg bg-primary/10 mb-1.5 shrink-0">
                                     <link.icon className="h-5 w-5 text-primary" />
                                 </div>
-                                <CardTitle className="text-[9px] uppercase font-black leading-tight tracking-tighter min-h-[20px] flex items-center justify-center">
+                                <CardTitle className="text-[9px] uppercase font-black leading-tight tracking-tighter flex items-center justify-center min-h-[24px]">
                                     {link.label}
                                 </CardTitle>
                             </CardHeader>
@@ -155,7 +155,7 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
     <div className="flex flex-col gap-8">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div className="flex items-center gap-2">
-          <h1 className="text-3xl font-bold tracking-tight">Painel de Controle</h1>
+          <h1 className="text-3xl font-bold tracking-tight text-foreground italic uppercase">Guardian</h1>
           <Button variant="ghost" size="icon" onClick={onOpenGuide} className="text-muted-foreground hover:text-primary">
             <HelpCircle className="h-5 w-5" />
           </Button>
@@ -197,7 +197,7 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
             <OperationalFeed />
           </div>
 
-          <Card className="h-full border-dashed border-primary/40 bg-secondary/20 flex flex-col">
+          <Card className="h-full border-dashed border-primary/40 bg-secondary/20 flex flex-col shadow-sm">
                 <CardHeader>
                     <CardTitle className="text-base flex items-center gap-2">
                         <BookOpen className="h-5 w-5 text-primary" />
