@@ -78,6 +78,7 @@ export function CompanyForm() {
 
   const onSubmit = (data: FormValues) => {
     setIsSaving(true);
+    // Simulação de delay de rede
     setTimeout(() => {
         if (company) {
             updateDoc('company_profile', company.id, data);
@@ -92,7 +93,7 @@ export function CompanyForm() {
     }, 800);
   };
 
-  if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin" /></div>;
+  if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin text-primary" /></div>;
 
   return (
     <Card className="shadow-2xl border-primary/10 overflow-hidden max-w-2xl mx-auto">
@@ -128,7 +129,7 @@ export function CompanyForm() {
                     render={({ field }) => (
                         <FormItem>
                         <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                            <User className="h-3 w-3" /> CNPJ ou CPF
+                            <User className="h-3 w-3" /> Documento (CNPJ ou CPF)
                         </FormLabel>
                         <FormControl>
                             <Input placeholder="00.000.000/0001-00 ou 000.000.000-00" {...field} />
