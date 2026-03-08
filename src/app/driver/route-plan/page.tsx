@@ -294,7 +294,6 @@ export default function DriverRoutePlanPage() {
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
-    // Se for IDA e for a última parada, ou se for VOLTA e for o último aluno, encerra
     if (selectedDirection === 'ida' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -307,7 +306,6 @@ export default function DriverRoutePlanPage() {
       studentsAtCurrentStop.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
       toast({ title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!" });
 
-      // Na IDA, se a escola for o fim da linha, encerra
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
@@ -378,7 +376,7 @@ export default function DriverRoutePlanPage() {
                 </Card>
             </div>
         ) : (
-            <div className="flex-1 flex flex-col overflow-hidden max-w-md mx-auto w-full">
+            <div className="flex-1 flex flex-col overflow-hidden max-w-md mx-auto w-full border-x">
                 <div className="p-4 border-b bg-primary/10 flex items-center justify-between shrink-0">
                     <div className="flex items-center gap-3">
                         <Bus className="text-primary h-6 w-6" />
@@ -404,57 +402,65 @@ export default function DriverRoutePlanPage() {
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
                         <ScrollArea className="h-full">
-                            <div className="px-6 py-4 space-y-6 pb-20">
+                            <div className="px-8 py-4 space-y-6 pb-20">
                                 {!activeStop ? (
-                                    <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
-                                        <CheckCircle className="h-14 w-14 text-green-500 mx-auto mb-6"/>
-                                        <CardTitle className="text-2xl font-black text-green-600 uppercase">Fim de Rota!</CardTitle>
-                                        <Button variant="destructive" className="mt-10 w-full h-14 text-lg font-black shadow-xl" onClick={handleEndRoute}>FINALIZAR OPERAÇÃO</Button>
-                                    </Card>
+                                    <div className="px-2">
+                                        <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
+                                            <CheckCircle className="h-14 w-14 text-green-500 mx-auto mb-6"/>
+                                            <CardTitle className="text-2xl font-black text-green-600 uppercase">Fim de Rota!</CardTitle>
+                                            <Button variant="destructive" className="mt-10 w-full h-14 text-lg font-black shadow-xl" onClick={handleEndRoute}>FINALIZAR OPERAÇÃO</Button>
+                                        </Card>
+                                    </div>
                                 ) : activeStop.type === 'student' ? (
                                     <div className="space-y-6">
-                                        <NextStopCard 
-                                            student={activeStop.data as Student} 
-                                            onStatusChange={handleStatusChange} 
-                                            onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
-                                            direction={selectedDirection} 
-                                            onScanQrCode={() => setIsScannerOpen(true)} 
-                                            onEndEarly={handleEndRoute}
-                                        />
+                                        <div className="px-2">
+                                            <NextStopCard 
+                                                student={activeStop.data as Student} 
+                                                onStatusChange={handleStatusChange} 
+                                                onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
+                                                direction={selectedDirection} 
+                                                onScanQrCode={() => setIsScannerOpen(true)} 
+                                                onEndEarly={handleEndRoute}
+                                            />
+                                        </div>
                                         {upcomingStops.length > 0 && (
                                             <div className="space-y-2">
-                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Próximas Paradas</h3>
+                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-3">Próximas Paradas</h3>
                                                 {upcomingStops.map((stop, idx) => (
-                                                    <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
-                                                        {stop.type === 'student' ? (
-                                                            <div className="flex-1 min-w-0 flex items-center gap-3">
-                                                                <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as Student).photoUrl || `https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
-                                                                <div className="min-w-0">
-                                                                    <p className="text-sm font-black truncate uppercase">{stop.data.name}</p>
-                                                                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{formatStudentClassInfo(stop.data as Student)}</p>
+                                                    <div key={idx} className="px-2">
+                                                        <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
+                                                            {stop.type === 'student' ? (
+                                                                <div className="flex-1 min-w-0 flex items-center gap-3">
+                                                                    <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as Student).photoUrl || `https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
+                                                                    <div className="min-w-0">
+                                                                        <p className="text-sm font-black truncate uppercase">{stop.data.name}</p>
+                                                                        <p className="text-[9px] text-muted-foreground uppercase font-bold">{formatStudentClassInfo(stop.data as Student)}</p>
+                                                                    </div>
                                                                 </div>
-                                                            </div>
-                                                        ) : (
-                                                            <div className="flex-1 min-w-0 flex items-center gap-3">
-                                                                <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>
-                                                                <span className="text-sm font-black truncate uppercase">{stop.data.name}</span>
-                                                            </div>
-                                                        )}
-                                                        <Badge variant="secondary" className="text-[9px] font-black uppercase">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
+                                                            ) : (
+                                                                <div className="flex-1 min-w-0 flex items-center gap-3">
+                                                                    <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>
+                                                                    <span className="text-sm font-black truncate uppercase">{stop.data.name}</span>
+                                                                </div>
+                                                            )}
+                                                            <Badge variant="secondary" className="text-[9px] font-black uppercase">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
+                                                        </div>
                                                     </div>
                                                 ))}
                                             </div>
                                         )}
                                     </div>
                                 ) : (
-                                    <NextStopSchoolCard 
-                                        school={activeStop.data as SchoolData} 
-                                        direction={selectedDirection}
-                                        onAction={handleSchoolAction} 
-                                        students={studentsAtCurrentStop}
-                                        onStatusChange={handleStatusChange}
-                                        onEndEarly={handleEndRoute}
-                                    />
+                                    <div className="px-2">
+                                        <NextStopSchoolCard 
+                                            school={activeStop.data as SchoolData} 
+                                            direction={selectedDirection}
+                                            onAction={handleSchoolAction} 
+                                            students={studentsAtCurrentStop}
+                                            onStatusChange={handleStatusChange}
+                                            onEndEarly={handleEndRoute}
+                                        />
+                                    </div>
                                 )}
                             </div>
                         </ScrollArea>
