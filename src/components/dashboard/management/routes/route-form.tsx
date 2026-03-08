@@ -198,7 +198,7 @@ export function RouteForm({
 
         setStops(newStops);
         setIsOptimized(true);
-        toast({ title: `Ordem otimizada no modo ${optimizationMode === 'safe' ? 'Tradicional' : 'Híbrido'}!` });
+        toast({ title: `Ordem dos alunos otimizada!` });
     } catch (e) { toast({ title: "Erro na otimização", variant: "destructive" }); } finally { setIsOptimizing(false); }
   };
 
@@ -217,7 +217,7 @@ export function RouteForm({
     <DialogContent className="sm:max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20 shadow-sm">
         <DialogTitle className="text-xl font-black uppercase italic text-primary">Montar Itinerário</DialogTitle>
-        <DialogDescription>A IA calculará a melhor rota baseada na estratégia escolhida.</DialogDescription>
+        <DialogDescription>A IA calculará a melhor rota priorizando o bem-estar dos alunos.</DialogDescription>
       </DialogHeader>
       
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
@@ -248,7 +248,7 @@ export function RouteForm({
                     </div>
 
                     <div className="space-y-2">
-                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Selecione as Escolas</Label>
+                        <Label className="text-[10px] font-black uppercase tracking-widest text-primary">1. Escolas Atendidas</Label>
                         <div className="flex flex-wrap gap-2 p-3 border rounded-md bg-background">
                             {schools.map(school => (
                                 <div key={school.id} className="flex items-center space-x-2">
@@ -266,11 +266,10 @@ export function RouteForm({
                         </div>
                     </div>
 
-                    {/* Visibilidade Dinâmica da Estratégia Inteligente: Aparece aqui após a escolha das escolas */}
                     {selectedSchoolIds.length >= 2 && (
                         <div className="space-y-2 p-4 bg-primary/5 rounded-lg border border-primary/20 animate-in fade-in slide-in-from-top-2 duration-500">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                <Zap className="h-3 w-3" /> Estratégia de Inteligência
+                                <Zap className="h-3 w-3" /> Como a IA deve organizar os alunos?
                             </Label>
                             <Select onValueChange={v => { setOptimizationMode(v as any); setIsOptimized(false); }} value={optimizationMode}>
                                 <SelectTrigger className="bg-background h-11 font-bold">
@@ -278,12 +277,12 @@ export function RouteForm({
                                 </SelectTrigger>
                                 <SelectContent>
                                     <SelectItem value="safe" className="flex flex-col items-start gap-0.5">
-                                        <div className="flex items-center gap-2 font-bold"><ShieldCheck className="h-3.5 w-3.5 text-primary"/> Regra de Ouro (Tradicional)</div>
-                                        <p className="text-[9px] text-muted-foreground ml-5 italic">Embarca todos primeiro, entrega depois.</p>
+                                        <div className="flex items-center gap-2 font-bold"><ShieldCheck className="h-3.5 w-3.5 text-primary"/> Priorizar Embarque (Todos os Alunos)</div>
+                                        <p className="text-[9px] text-muted-foreground ml-5 italic">A van só vai para as escolas após o último aluno da lista entrar no veículo.</p>
                                     </SelectItem>
                                     <SelectItem value="flexible" className="flex flex-col items-start gap-0.5">
-                                        <div className="flex items-center gap-2 font-bold"><Zap className="h-3.5 w-3.5 text-amber-500"/> Modo Híbrido (IA)</div>
-                                        <p className="text-[9px] text-muted-foreground ml-5 italic">Entrega antecipada se o lote estiver completo.</p>
+                                        <div className="flex items-center gap-2 font-bold"><Zap className="h-3.5 w-3.5 text-amber-500"/> Entrega por Proximidade (IA)</div>
+                                        <p className="text-[9px] text-muted-foreground ml-5 italic">A IA sugere deixar os alunos na escola se o grupo já estiver completo e a escola for no caminho.</p>
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -294,7 +293,7 @@ export function RouteForm({
                         <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
                         <div className="border-2 rounded-lg overflow-hidden bg-background shadow-sm">
                             <div className="p-2 border-b bg-muted/30">
-                                <Input placeholder="Filtrar por nome..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
+                                <Input placeholder="Filtrar por nome do aluno..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-8 border-none focus-visible:ring-0 shadow-none bg-transparent text-xs" />
                             </div>
                             <div className="max-h-[400px] overflow-y-auto">
                                 {availableStudents.length > 0 ? (
@@ -327,7 +326,7 @@ export function RouteForm({
                         </div>
                         <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-8 font-black text-[10px] shadow-md active:scale-95 transition-all">
                             {isOptimizing ? <Loader2 className="animate-spin h-3 w-3 mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                            OTIMIZAR {optimizationMode === 'safe' ? 'MODO 1' : 'MODO 2'}
+                            OTIMIZAR ALUNOS
                         </Button>
                     </div>
 

@@ -238,7 +238,7 @@ export function CompanyForm() {
                             <FormControl>
                                 <Input placeholder="E-mail, CPF ou Chave Aleatória" {...field} className="bg-primary/5 border-primary/20 font-bold" />
                             </FormControl>
-                            <FormDescription className="text-[10px]">Dica: O contrato puxará esses dados automaticamente.</FormDescription>
+                            <FormDescription className="text-[10px]">Dica: O contrato será preenchido automaticamente com esses dados.</FormDescription>
                         </FormItem>
                     )}
                 />
