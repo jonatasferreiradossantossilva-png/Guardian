@@ -30,12 +30,12 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
-import { useMemo } from 'react';
+import { useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Sparkles, QrCode } from 'lucide-react';
+import { Sparkles, QrCode, Loader2 } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
@@ -61,6 +61,8 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
   const { toast } = useToast();
   const { addDoc } = useMockData();
   const { data: schools } = useMockCollection('schools');
+  const { data: companyData } = useMockCollection('company_profile');
+  const company = companyData?.[0];
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
@@ -73,6 +75,19 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
         chavePix: '',
     }
   });
+
+  // Inteligência: Puxa dados do perfil da empresa como default
+  useEffect(() => {
+    if (company) {
+        form.reset({
+            ...form.getValues(),
+            banco: company.bankName || '',
+            agencia: company.bankAgency || '',
+            conta: company.bankAccount || '',
+            chavePix: company.pixKey || '',
+        });
+    }
+  }, [company, form]);
 
   const watchStudentId = form.watch('studentId');
 
@@ -108,9 +123,9 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     const schoolYear = new Date().getFullYear().toString();
 
-    // Redação Inteligente de Pagamento
+    // Redação Inteligente de Pagamento (Analisa o preenchimento)
     let paymentPhrase = "";
-    const hasBank = !!data.banco;
+    const hasBank = !!data.banco && !!data.agencia && !!data.conta;
     const hasPix = !!data.chavePix;
 
     if (hasBank && hasPix) {
@@ -131,7 +146,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     if (generatedContent.match(fullPaymentPattern)) {
         generatedContent = generatedContent.replace(fullPaymentPattern, paymentPhrase);
     } else {
-        // Fallback replacement if the specific sentence pattern isn't used
+        // Fallback individual replacements
         generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');
         generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'N/A');
         generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'N/A');
@@ -161,7 +176,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
 
     toast({
       title: 'Contrato Gerado!',
-      description: `O contrato para ${student.name} já está disponível para o pai.`,
+      description: `O contrato para ${student.name} já está disponível para o pai assinar.`,
     });
     onFormSubmit();
   };
@@ -174,7 +189,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
             Gerar Contrato Inteligente
         </DialogTitle>
         <DialogDescription>
-          Os dados de pagamento serão adaptados automaticamente no texto final.
+          Confirme os dados. O sistema já puxou seu Pix do perfil automaticamente.
         </DialogDescription>
       </DialogHeader>
       
@@ -206,7 +221,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
               {selectedStudentData && (
                   <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 space-y-3 animate-in fade-in slide-in-from-top-2">
                       <p className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
-                          <Sparkles className="h-3 w-3" /> Dados Recuperados do Cadastro
+                          <Sparkles className="h-3 w-3" /> Dados Recuperados da Triagem
                       </p>
                       <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
@@ -241,12 +256,12 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
               <Accordion type="single" collapsible className="w-full">
                 <AccordionItem value="item-1" className="border-primary/10">
                   <AccordionTrigger className="text-xs font-black uppercase text-muted-foreground hover:no-underline py-2">
-                      Dados de Recebimento
+                      Dados de Recebimento (Confirmar)
                   </AccordionTrigger>
                   <AccordionContent>
                     <div className="space-y-4 pt-2">
                       <div className="p-3 bg-muted/20 rounded border border-dashed text-[10px] text-muted-foreground mb-2">
-                          O sistema citará apenas os métodos que você preencher. Se deixar vazio, o contrato omitirá essas opções bancárias.
+                          Campos preenchidos aqui serão inseridos no contrato. Campos vazios serão omitidos da redação final.
                       </div>
                       <FormField
                         control={form.control}

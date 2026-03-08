@@ -18,8 +18,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Building2, Save, MapPin, Phone, Mail, Globe, Loader2, User } from 'lucide-react';
+import { Building2, Save, MapPin, Phone, Mail, Globe, Loader2, User, QrCode, CreditCard } from 'lucide-react';
 import { useState, useEffect } from 'react';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
   companyName: z.string().min(3, { message: 'Nome da empresa deve ter pelo menos 3 caracteres.' }),
@@ -28,6 +29,11 @@ const formSchema = z.object({
   phone: z.string().min(10, { message: 'Telefone inválido.' }),
   address: z.string().min(10, { message: 'Endereço completo é necessário.' }),
   website: z.string().url().optional().or(z.literal('')),
+  // Novos campos de pagamento
+  bankName: z.string().optional(),
+  bankAgency: z.string().optional(),
+  bankAccount: z.string().optional(),
+  pixKey: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -49,6 +55,10 @@ export function CompanyForm() {
       phone: '',
       address: '',
       website: '',
+      bankName: '',
+      bankAgency: '',
+      bankAccount: '',
+      pixKey: '',
     },
   });
 
@@ -61,12 +71,17 @@ export function CompanyForm() {
         phone: company.phone || '',
         address: company.address || '',
         website: company.website || '',
+        bankName: company.bankName || '',
+        bankAgency: company.bankAgency || '',
+        bankAccount: company.bankAccount || '',
+        pixKey: company.pixKey || '',
       });
     }
   }, [company, form]);
 
   const onSubmit = (data: FormValues) => {
     setIsSaving(true);
+    // Simulação de delay de rede
     setTimeout(() => {
         if (company) {
             updateDoc('company_profile', company.id, data);
@@ -76,7 +91,7 @@ export function CompanyForm() {
         setIsSaving(false);
         toast({
             title: 'Perfil Atualizado!',
-            description: 'Os dados da sua transportadora foram salvos com sucesso.',
+            description: 'Os dados da sua transportadora e de pagamento foram salvos com sucesso.',
         });
     }, 800);
   };
@@ -84,7 +99,7 @@ export function CompanyForm() {
   if (isLoading) return <div className="flex justify-center p-20"><Loader2 className="animate-spin" /></div>;
 
   return (
-    <Card className="max-w-2xl mx-auto shadow-lg border-primary/10">
+    <Card className="max-w-3xl mx-auto shadow-lg border-primary/10">
       <CardHeader className="bg-primary/5 border-b pb-6">
         <div className="flex items-center gap-4">
             <div className="p-3 bg-primary/10 rounded-full text-primary">
@@ -92,113 +107,157 @@ export function CompanyForm() {
             </div>
             <div>
                 <CardTitle className="text-2xl uppercase italic font-black">Minha Empresa</CardTitle>
-                <CardDescription>Dados oficiais da transportadora para contratos e faturas.</CardDescription>
+                <CardDescription>Dados oficiais e informações de faturamento.</CardDescription>
             </div>
         </div>
       </CardHeader>
       <CardContent className="pt-8">
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            <FormField
-              control={form.control}
-              name="companyName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Nome Fantasia / Razão Social</FormLabel>
-                  <FormControl>
-                    <Input placeholder="Ex: Rota Segura Transporte Escolar" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+            {/* Seção 1: Dados Gerais */}
+            <div className="space-y-6">
+                <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em] border-b pb-2">Informações da Transportadora</p>
                 <FormField
                 control={form.control}
-                name="cnpj"
+                name="companyName"
                 render={({ field }) => (
                     <FormItem>
-                    <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                        <User className="h-3 w-3" /> CNPJ ou CPF
-                    </FormLabel>
+                    <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground">Nome Fantasia / Razão Social</FormLabel>
                     <FormControl>
-                        <Input placeholder="00.000.000/0001-00 ou 000.000.000-00" {...field} />
+                        <Input placeholder="Ex: Rota Segura Transporte Escolar" {...field} />
                     </FormControl>
-                    <FormDescription className="text-[9px]">Pessoa jurídica ou autônomo.</FormDescription>
                     <FormMessage />
                     </FormItem>
                 )}
                 />
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                    control={form.control}
+                    name="cnpj"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
+                            <User className="h-3 w-3" /> CNPJ ou CPF
+                        </FormLabel>
+                        <FormControl>
+                            <Input placeholder="00.000.000/0001-00 ou 000.000.000-00" {...field} />
+                        </FormControl>
+                        <FormDescription className="text-[9px]">Pessoa jurídica ou autônomo.</FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                    <FormField
+                    control={form.control}
+                    name="phone"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
+                            <Phone className="h-3 w-3" /> Telefone de Contato
+                        </FormLabel>
+                        <FormControl>
+                            <Input placeholder="(11) 99999-9999" {...field} />
+                        </FormControl>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                </div>
+
                 <FormField
                 control={form.control}
-                name="phone"
+                name="email"
                 render={({ field }) => (
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                        <Phone className="h-3 w-3" /> Telefone de Contato
+                        <Mail className="h-3 w-3" /> E-mail Institucional
                     </FormLabel>
                     <FormControl>
-                        <Input placeholder="(11) 99999-9999" {...field} />
+                        <Input placeholder="contato@empresa.com.br" {...field} />
                     </FormControl>
+                    <FormMessage />
+                    </FormItem>
+                )}
+                />
+
+                <FormField
+                control={form.control}
+                name="address"
+                render={({ field }) => (
+                    <FormItem>
+                    <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
+                        <MapPin className="h-3 w-3" /> Sede Profissional
+                    </FormLabel>
+                    <FormControl>
+                        <Input placeholder="Rua, Número, Bairro, Cidade - UF" {...field} />
+                    </FormControl>
+                    <FormDescription className="text-[10px]">Este endereço aparecerá no cabeçalho dos seus contratos.</FormDescription>
                     <FormMessage />
                     </FormItem>
                 )}
                 />
             </div>
 
-            <FormField
-              control={form.control}
-              name="email"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Mail className="h-3 w-3" /> E-mail Institucional
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="contato@empresa.com.br" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+            {/* Seção 2: Dados de Pagamento (Inteligência de Contrato) */}
+            <div className="space-y-6 bg-muted/20 p-6 rounded-xl border border-dashed border-primary/20">
+                <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em] flex items-center gap-2">
+                    <CreditCard className="h-4 w-4" /> Dados para Recebimento (USADOS NO CONTRATO)
+                </p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <FormField
+                        control={form.control}
+                        name="bankName"
+                        render={({ field }) => (
+                            <FormItem>
+                                <FormLabel className="text-xs font-bold">Banco</FormLabel>
+                                <FormControl><Input placeholder="Ex: NuBank ou Itaú" {...field} className="bg-background" /></FormControl>
+                            </FormItem>
+                        )}
+                    />
+                    <div className="grid grid-cols-2 gap-2">
+                        <FormField
+                            control={form.control}
+                            name="bankAgency"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-bold">Agência</FormLabel>
+                                    <FormControl><Input placeholder="0001" {...field} className="bg-background" /></FormControl>
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="bankAccount"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="text-xs font-bold">Conta</FormLabel>
+                                    <FormControl><Input placeholder="12345-6" {...field} className="bg-background" /></FormControl>
+                                </FormItem>
+                            )}
+                        />
+                    </div>
+                </div>
+                <FormField
+                    control={form.control}
+                    name="pixKey"
+                    render={({ field }) => (
+                        <FormItem>
+                            <FormLabel className="text-xs font-bold text-primary flex items-center gap-2">
+                                <QrCode className="h-3 w-3" /> Chave Pix Principal
+                            </FormLabel>
+                            <FormControl>
+                                <Input placeholder="E-mail, CPF ou Chave Aleatória" {...field} className="bg-primary/5 border-primary/20 font-bold" />
+                            </FormControl>
+                            <FormDescription className="text-[10px]">Preencha apenas o que deseja que apareça no contrato dos pais.</FormDescription>
+                        </FormItem>
+                    )}
+                />
+            </div>
 
-            <FormField
-              control={form.control}
-              name="address"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                      <MapPin className="h-3 w-3" /> Sede Profissional
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="Rua, Número, Bairro, Cidade - UF" {...field} />
-                  </FormControl>
-                  <FormDescription className="text-[10px]">Este endereço aparecerá no cabeçalho dos seus contratos.</FormDescription>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <FormField
-              control={form.control}
-              name="website"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
-                      <Globe className="h-3 w-3" /> Site ou Link de Redes Sociais
-                  </FormLabel>
-                  <FormControl>
-                    <Input placeholder="https://www.empresa.com.br" {...field} />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-
-            <Button type="submit" className="w-full h-12 font-bold" disabled={isSaving}>
-              {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 h-5 w-5" />}
-              SALVAR PERFIL DA EMPRESA
+            <Button type="submit" className="w-full h-14 text-lg font-black shadow-xl shadow-primary/20" disabled={isSaving}>
+              {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 h-6 w-6" />}
+              SALVAR PERFIL E CONFIGURAÇÕES
             </Button>
           </form>
         </Form>
