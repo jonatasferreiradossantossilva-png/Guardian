@@ -303,6 +303,7 @@ export default function DriverRoutePlanPage() {
       studentsAtCurrentStop.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
       toast({ title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!" });
 
+      // Only end route early if IDA and no upcoming stops
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
