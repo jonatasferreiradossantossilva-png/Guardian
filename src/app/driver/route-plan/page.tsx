@@ -531,11 +531,11 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
         <CardContent className="pt-6 space-y-4">
             <div className="grid grid-cols-2 gap-3">
                 {isGoing ? (
-                    <Button className="bg-green-600 hover:bg-green-700 h-14 font-black text-white text-sm" onClick={() => onStatusChange(student.id, 'a_bordo')}><CheckCircle className="mr-2" /> EMBARCOU</Button>
+                    <Button className="bg-green-600 hover:bg-green-700 h-14 font-black text-white text-xs" onClick={() => onStatusChange(student.id, 'a_bordo')}><CheckCircle className="mr-2" /> EMBARCOU</Button>
                 ) : (
-                    <Button className="bg-blue-600 hover:bg-blue-700 h-14 font-black text-white text-sm" onClick={() => onStatusChange(student.id, 'desembarcado')}><CheckCircle className="mr-2" /> DESEMBARCOU</Button>
+                    <Button className="bg-blue-600 hover:bg-blue-700 h-14 font-black text-white text-xs" onClick={() => onStatusChange(student.id, 'desembarcado')}><CheckCircle className="mr-2" /> DESEMBARCOU</Button>
                 )}
-                <Button variant="destructive" className="h-14 font-black text-sm" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}><XCircle className="mr-2" /> AUSENTE</Button>
+                <Button variant="destructive" className="h-14 font-black text-xs" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}><XCircle className="mr-2" /> AUSENTE</Button>
             </div>
             
             {hasMedicalAlert && (
