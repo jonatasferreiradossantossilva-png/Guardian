@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
@@ -55,7 +54,8 @@ interface RouteFormProps {
 
 const getAbbreviatedClass = (student: Student | null | undefined) => {
     if (!student?.serie) return null;
-    const seriePart = student.serie.replace(/ ano/i, '°');
+    // FIXED: Only remove " Ano" to avoid double symbols if the original already has "º"
+    const seriePart = student.serie.replace(/\s*ano/i, '').trim();
     return [seriePart, student.turma].filter(Boolean).join(' ');
 };
 

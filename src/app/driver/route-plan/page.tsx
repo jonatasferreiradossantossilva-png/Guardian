@@ -103,7 +103,8 @@ const statusText: Record<StudentStatus, string> = {
 
 const formatStudentClassInfo = (student: Student) => {
     if (!student.serie) return student.shift;
-    const serie = student.serie.replace(/ ano/i, '°').split(' ')[0];
+    // FIXED: Only remove " Ano" to avoid double symbols if the original already has "º"
+    const serie = student.serie.replace(/\s*ano/i, '').trim();
     const turma = student.turma ? student.turma.replace(/Sala/gi, 'SL') : '';
     return `${serie} • ${turma} • ${student.shift}`;
 };
@@ -527,9 +528,9 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                     <AvatarFallback className="text-3xl font-black">{student.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow min-w-0">
-                    <CardTitle className="text-lg font-black truncate uppercase leading-tight">{student.name}</CardTitle>
+                    <CardTitle className="text-base font-black truncate uppercase leading-tight">{student.name}</CardTitle>
                     <div className="space-y-1 mt-1">
-                        <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase">
+                        <div className="flex items-center gap-1.5 text-primary font-bold text-[10px] uppercase">
                             <span>{formatStudentClassInfo(student)}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-muted-foreground">
