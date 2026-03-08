@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from 'react';
@@ -522,7 +521,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                     <AvatarFallback className="text-3xl font-black">{student.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow min-w-0">
-                    <CardTitle className="text-lg font-black truncate uppercase leading-tight">{student.name}</CardTitle>
+                    <CardTitle className="text-base font-black truncate uppercase leading-tight">{student.name}</CardTitle>
                     <div className="space-y-1 mt-1">
                         <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase">
                             <span>{formatStudentClassInfo(student)}</span>

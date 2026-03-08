@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -118,7 +117,7 @@ export function LoginForm() {
                   <FormLabel className="text-base font-semibold">Selecione seu perfil:</FormLabel>
                   <RadioGroup
                     onValueChange={field.onChange}
-                    defaultValue={field.value}
+                    value={field.value}
                     className="grid grid-cols-1 sm:grid-cols-2 gap-2"
                   >
                     <div 
