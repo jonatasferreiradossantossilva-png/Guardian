@@ -34,7 +34,8 @@ import {
     Zap,
     Route as RouteIcon,
     GraduationCap,
-    Clock
+    Clock,
+    Share2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -220,6 +221,30 @@ export function RouteForm({
     } catch (e) { toast({ title: "Erro na otimização", variant: "destructive" }); } finally { setIsOptimizing(false); }
   };
 
+  const handleExportSequence = () => {
+    if (stops.length === 0) return;
+    
+    const stopList = stops.map((s, i) => {
+        const num = (i + 1).toString().padStart(2, '0');
+        const type = s.type === 'student' ? '👤 ALUNO' : '🏫 ESCOLA';
+        let details = "";
+        if (s.type === 'student') {
+            const st = studentsMap.get(s.id);
+            details = ` (${st?.serie || ''} ${st?.turma || ''})`;
+        }
+        return `${num}. [${type}] ${s.name}${details}`;
+    }).join('\n');
+
+    const header = `📋 GUARDIAN: ITINERÁRIO\nROTA: ${name || 'Sem nome'}\nTURNO: ${shift || 'Não definido'}\n--------------------------\n`;
+    const fullText = header + stopList;
+
+    navigator.clipboard.writeText(fullText);
+    toast({
+        title: "Sequência Copiada!",
+        description: "Itinerário formatado pronto para colar no WhatsApp.",
+    });
+  };
+
   const handleSubmit = () => {
     if (!name.trim() || !driverId || !selectedSchoolIds.length || !shift) {
         setErrors({ name: !name.trim() ? 'Obrigatório' : '', driverId: !driverId ? 'Obrigatório' : '', schoolIds: !selectedSchoolIds.length ? 'Selecione uma escola' : '', shift: !shift ? 'Obrigatório' : '' });
@@ -377,10 +402,18 @@ export function RouteForm({
                             <Badge variant="outline" className="bg-background text-primary border-primary/30 h-8 px-3 font-black text-base">{stops.length}</Badge>
                             <Label className="text-sm font-black uppercase tracking-tighter">Itinerário Final Gerado</Label>
                         </div>
-                        <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
-                            {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                            OTIMIZAR IA
-                        </Button>
+                        <div className="flex gap-2">
+                            {isOptimized && (
+                                <Button variant="outline" size="sm" onClick={handleExportSequence} className="h-10 px-4 font-black text-xs border-primary/30 text-primary hover:bg-primary/5">
+                                    <Share2 className="h-4 w-4 mr-2" />
+                                    EXPORTAR
+                                </Button>
+                            )}
+                            <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
+                                {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
+                                OTIMIZAR IA
+                            </Button>
+                        </div>
                     </div>
 
                     <div className="rounded-2xl min-h-[500px]">

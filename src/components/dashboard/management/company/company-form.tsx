@@ -78,7 +78,6 @@ export function CompanyForm() {
 
   const onSubmit = (data: FormValues) => {
     setIsSaving(true);
-    // Simulação de delay de rede
     setTimeout(() => {
         if (company) {
             updateDoc('company_profile', company.id, data);
