@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useMemo } from 'react';
@@ -125,7 +124,7 @@ export default function OperationalHistoryPage() {
                     {isLoading ? (
                         <div className="p-20 text-center text-muted-foreground">
                             <Loader2 className="animate-spin h-8 w-8 mx-auto mb-4" />
-                            Carregando logs da operation...
+                            Carregando logs da operação...
                         </div>
                     ) : feedItems.length > 0 ? (
                         <div className="divide-y divide-border">
