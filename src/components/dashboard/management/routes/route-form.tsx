@@ -327,9 +327,9 @@ export function RouteForm({
                                 )} onClick={() => setOptimizationMode('safe')}>
                                     <div className="mt-1"><RadioGroupItem value="safe" id="safe" /></div>
                                     <div className="space-y-1 flex-1">
-                                        <Label htmlFor="safe" className="font-black text-[10px] uppercase cursor-pointer">Segurança Total (Coletar todos)</Label>
+                                        <Label htmlFor="safe" className="font-black text-[10px] uppercase cursor-pointer">Segurança Total (Regras de Ouro)</Label>
                                         <p className="text-[9px] text-muted-foreground leading-tight italic">
-                                            Embarca todos antes de iniciar qualquer desembarque.
+                                            A van deve primeiro embarcar TODOS os alunos da lista antes de iniciar qualquer desembarque em escola.
                                         </p>
                                     </div>
                                 </div>
@@ -340,9 +340,9 @@ export function RouteForm({
                                 )} onClick={() => setOptimizationMode('flexible')}>
                                     <div className="mt-1"><RadioGroupItem value="flexible" id="flexible" /></div>
                                     <div className="space-y-1 flex-1">
-                                        <Label htmlFor="flexible" className="font-black text-[10px] uppercase text-amber-600 cursor-pointer">Máxima Agilidade (Entrega Rápida)</Label>
+                                        <Label htmlFor="flexible" className="font-black text-[10px] uppercase text-amber-600 cursor-pointer">Máxima Agilidade (Plano do Motorista)</Label>
                                         <p className="text-[9px] text-muted-foreground leading-tight italic">
-                                            Desembarca assim que estiver próximo da escola.
+                                            Permite o desembarque em fases. A IA prioriza a entrega rápida assim que o grupo de uma escola estiver completo no veículo.
                                         </p>
                                     </div>
                                 </div>
