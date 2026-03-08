@@ -76,7 +76,6 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     }
   });
 
-  // Inteligência: Puxa dados do perfil da empresa como default
   useEffect(() => {
     if (company) {
         form.reset({
@@ -123,7 +122,6 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     const schoolYear = new Date().getFullYear().toString();
 
-    // Redação Inteligente de Pagamento (Analisa o preenchimento)
     let paymentPhrase = "";
     const hasBank = !!data.banco && !!data.agencia && !!data.conta;
     const hasPix = !!data.chavePix;
@@ -140,20 +138,17 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
 
     let generatedContent = template.content;
     
-    // Placeholder pattern detection for intelligent replacement
     const fullPaymentPattern = /via: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}/g;
     
     if (generatedContent.match(fullPaymentPattern)) {
         generatedContent = generatedContent.replace(fullPaymentPattern, paymentPhrase);
     } else {
-        // Fallback individual replacements
         generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');
         generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'N/A');
         generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'N/A');
         generatedContent = generatedContent.replace(/{{chave_pix}}/g, data.chavePix || 'N/A');
     }
 
-    // Standard replacements
     generatedContent = generatedContent.replace(/{{aluno_nome}}/g, student.name || 'N/A');
     generatedContent = generatedContent.replace(/{{responsavel_nome}}/g, parent.name || 'N/A');
     generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, parent.cpf || 'N/A');

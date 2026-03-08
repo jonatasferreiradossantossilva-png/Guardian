@@ -18,7 +18,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Building2, Save, MapPin, Phone, Mail, Globe, Loader2, User, QrCode, CreditCard } from 'lucide-react';
+import { Building2, Save, MapPin, Phone, Mail, Loader2, User, QrCode, CreditCard } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -29,7 +29,6 @@ const formSchema = z.object({
   phone: z.string().min(10, { message: 'Telefone inválido.' }),
   address: z.string().min(10, { message: 'Endereço completo é necessário.' }),
   website: z.string().url().optional().or(z.literal('')),
-  // Novos campos de pagamento
   bankName: z.string().optional(),
   bankAgency: z.string().optional(),
   bankAccount: z.string().optional(),
@@ -81,7 +80,6 @@ export function CompanyForm() {
 
   const onSubmit = (data: FormValues) => {
     setIsSaving(true);
-    // Simulação de delay de rede
     setTimeout(() => {
         if (company) {
             updateDoc('company_profile', company.id, data);
@@ -114,7 +112,6 @@ export function CompanyForm() {
       <CardContent className="pt-8">
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
-            {/* Seção 1: Dados Gerais */}
             <div className="space-y-6">
                 <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em] border-b pb-2">Informações da Transportadora</p>
                 <FormField
@@ -172,7 +169,7 @@ export function CompanyForm() {
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
                         <Mail className="h-3 w-3" /> E-mail Institucional
-                    </FormLabel>
+                    </Label>
                     <FormControl>
                         <Input placeholder="contato@empresa.com.br" {...field} />
                     </FormControl>
@@ -199,7 +196,6 @@ export function CompanyForm() {
                 />
             </div>
 
-            {/* Seção 2: Dados de Pagamento (Inteligência de Contrato) */}
             <div className="space-y-6 bg-muted/20 p-6 rounded-xl border border-dashed border-primary/20">
                 <p className="text-[10px] font-black uppercase text-primary tracking-[0.2em] flex items-center gap-2">
                     <CreditCard className="h-4 w-4" /> Dados para Recebimento (USADOS NO CONTRATO)

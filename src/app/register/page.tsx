@@ -8,7 +8,6 @@ import {
   CheckCircle, 
   Loader2, 
   UserPlus, 
-  FileText, 
   ArrowRight, 
   ShieldCheck, 
   User, 
@@ -81,7 +80,6 @@ export default function PublicRegistrationPage() {
   const { data: schools } = useMockCollection('schools');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Form states - Responsible
   const [parentName, setParentName] = useState('');
   const [parentCpf, setParentCpf] = useState('');
   const [parentRg, setParentRg] = useState('');
@@ -89,7 +87,6 @@ export default function PublicRegistrationPage() {
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
   
-  // Form states - Student
   const [studentName, setStudentName] = useState('');
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [studentSerie, setStudentSerie] = useState('');
@@ -97,14 +94,11 @@ export default function PublicRegistrationPage() {
   const [shift, setShift] = useState<string>(''); 
   const [photoUrl, setPhotoUrl] = useState('');
   
-  // Finance states
   const [preferredPaymentDay, setPreferredPaymentDay] = useState('10');
   
-  // Health states
   const [medicalConditions, setMedicalConditions] = useState<string[]>([]);
   const [medicalNote, setMedicalNote] = useState('');
   
-  // Address states
   const [zipCode, setZipCode] = useState('');
   const [street, setStreet] = useState('');
   const [number, setNumber] = useState('');

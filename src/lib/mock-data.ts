@@ -18,7 +18,6 @@ export const initialMockData = {
             phone: "(11) 99999-9999", 
             address: "Av. Paulista, 1000 - São Paulo, SP", 
             website: "https://guardian.app",
-            // Novos campos iniciais para demonstração
             bankName: "NuBank",
             bankAgency: "0001",
             bankAccount: "1234567-8",
