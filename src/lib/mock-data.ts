@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais blindados para o protótipo do Guardian.
@@ -145,7 +146,15 @@ export const initialMockData = {
     expenses: [],
     predefined_messages: [
         { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
-        { id: "pm-2", text: "A van está chegando na escola.", for: "driver" }
+        { id: "pm-2", text: "A van está chegando na escola.", for: "driver" },
+        { id: "pm-3", text: "O aluno já embarcou com segurança.", for: "monitor" },
+        { id: "pm-4", text: "Por favor, sua fatura deste mês está disponível no painel.", for: "gestor" }
+    ],
+    messages: [
+        { id: "m-1", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Olá Ana! O contrato de transporte do Enzo e da Valentina já está disponível para sua assinatura digital no painel.", timestamp: new Date(Date.now() - 86400000).toISOString() },
+        { id: "m-2", senderId: "user-pai-1", recipientId: "user-admin-1", text: "Olá! Vou verificar e assinar ainda hoje. Obrigada pelo aviso.", timestamp: new Date(Date.now() - 86000000).toISOString() },
+        { id: "m-3", senderId: "user-motorista-4", recipientId: "user-pai-1", text: "Ana, bom dia! Estou a 5 minutos da sua residência para buscar as crianças.", timestamp: new Date().toISOString() },
+        { id: "m-4", senderId: "user-admin-1", recipientId: "user-motorista-4", text: "Juliano, lembre-se de conferir o alerta de alergia do Enzo hoje.", timestamp: new Date(Date.now() - 3600000).toISOString() }
     ],
     authorized_pickups: [],
     trip_requests: [],

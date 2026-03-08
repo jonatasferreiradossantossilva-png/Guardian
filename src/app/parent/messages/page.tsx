@@ -1,3 +1,4 @@
+
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
@@ -53,13 +54,24 @@ export default function ParentMessagesPage() {
   const parentUserId = parent?.userId;
   
   const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
-  const student = useMemo(() => students?.[0], [students]);
+  const firstStudent = useMemo(() => students?.[0], [students]);
   
-  const { data: route } = useMockDoc('routes', student?.routeId);
+  // FIXED: Logic to find the route based on studentIds array inside the route object
+  const { data: allRoutes } = useMockCollection('routes');
+  const route = useMemo(() => {
+    if (!firstStudent || !allRoutes) return null;
+    return allRoutes.find(r => r.studentIds.includes(firstStudent.id));
+  }, [firstStudent, allRoutes]);
+
   const { data: driverDoc } = useMockDoc('drivers', route?.driverId);
-  const { data: monitorDoc } = useMockDoc('users', route?.monitorId);
   
+  // Find monitor user
   const { data: allUsers } = useMockCollection('users');
+  const monitorDoc = useMemo(() => {
+      if (!route?.monitorId || !allUsers) return null;
+      return allUsers.find(u => u.id === route.monitorId);
+  }, [route?.monitorId, allUsers]);
+  
   const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
   const { data: predefinedMessages } = useMockCollection('predefined_messages');
 
@@ -113,7 +125,7 @@ export default function ParentMessagesPage() {
   if (areMessagesLoading || !isClient) {
       return (
           <div className="flex items-center justify-center h-screen">
-              <Loader2 className="animate-spin" /> <span className="ml-2">Carregando dados...</span>
+              <Loader2 className="animate-spin h-8 w-8 text-primary" /> <span className="ml-2">Carregando dados...</span>
           </div>
       );
   }
@@ -138,9 +150,9 @@ export default function ParentMessagesPage() {
                  </CardHeader>
                  <div className="px-4">
                     <TabsList className="grid w-full grid-cols-3">
-                        <TabsTrigger value="gestor"><Building className="mr-2 h-4 w-4"/>Gestor</TabsTrigger>
-                        <TabsTrigger value="motorista"><Car className="mr-2 h-4 w-4"/>Motorista</TabsTrigger>
-                        <TabsTrigger value="monitor"><ClipboardCheck className="mr-2 h-4 w-4"/>Monitor</TabsTrigger>
+                        <TabsTrigger value="gestor" className="text-xs sm:text-sm"><Building className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4"/>Gestor</TabsTrigger>
+                        <TabsTrigger value="motorista" className="text-xs sm:text-sm"><Car className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4"/>Motorista</TabsTrigger>
+                        <TabsTrigger value="monitor" className="text-xs sm:text-sm"><ClipboardCheck className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4"/>Monitor</TabsTrigger>
                     </TabsList>
                 </div>
                 <ScrollArea className="flex-1 mt-2">
@@ -166,7 +178,12 @@ export default function ParentMessagesPage() {
                                     onSelect={handleSelectConversation}
                                 />
                             ))}
-                            {driver.length === 0 && <p className="text-center text-sm text-muted-foreground p-4">Nenhum motorista na rota.</p>}
+                            {driver.length === 0 && (
+                                <div className="p-8 text-center space-y-2 opacity-40">
+                                    <Car className="h-8 w-8 mx-auto" />
+                                    <p className="text-xs font-bold uppercase tracking-widest">Nenhuma van atribuída</p>
+                                </div>
+                            )}
                         </div>
                     </TabsContent>
                     <TabsContent value="monitor" className="m-0">
@@ -179,7 +196,12 @@ export default function ParentMessagesPage() {
                                     onSelect={handleSelectConversation}
                                 />
                             ))}
-                             {monitor.length === 0 && <p className="text-center text-sm text-muted-foreground p-4">Nenhum monitor na rota.</p>}
+                             {monitor.length === 0 && (
+                                <div className="p-8 text-center space-y-2 opacity-40">
+                                    <ClipboardCheck className="h-8 w-8 mx-auto" />
+                                    <p className="text-xs font-bold uppercase tracking-widest">Sem monitor na rota</p>
+                                </div>
+                             )}
                         </div>
                     </TabsContent>
                 </ScrollArea>
@@ -197,11 +219,11 @@ export default function ParentMessagesPage() {
                     <Button variant="ghost" size="icon" className="md:hidden -ml-2" onClick={() => setSelectedConversation(null)}>
                         <ArrowLeft />
                     </Button>
-                    <Avatar>
+                    <Avatar className="h-8 w-8">
                         <AvatarImage src={`https://picsum.photos/seed/${selectedConversation.avatarSeed}/100/100`} alt={selectedConversation.name} />
                         <AvatarFallback>{selectedConversation.name.charAt(0)}</AvatarFallback>
                     </Avatar>
-                    {selectedConversation.name}
+                    <span className="truncate">{selectedConversation.name}</span>
                   </CardTitle>
                 </CardHeader>
                 <ScrollArea className="flex-1 p-4 bg-secondary/20">
@@ -211,9 +233,9 @@ export default function ParentMessagesPage() {
                         key={msg.id}
                         className={`flex items-end gap-2 ${isMyMessage(msg.senderId) ? 'justify-end' : ''}`}
                       >
-                        <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${isMyMessage(msg.senderId) ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
-                          <p className="text-sm">{msg.text}</p>
-                           <p className="text-xs text-right mt-1 opacity-70">
+                        <div className={`max-w-[80%] p-3 rounded-lg ${isMyMessage(msg.senderId) ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
+                          <p className="text-sm leading-relaxed">{msg.text}</p>
+                           <p className={cn("text-[10px] text-right mt-1 opacity-70 font-bold uppercase", isMyMessage(msg.senderId) ? "text-primary-foreground" : "text-muted-foreground")}>
                               {isClient ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                           </p>
                         </div>
@@ -223,7 +245,7 @@ export default function ParentMessagesPage() {
                 </ScrollArea>
                  <div className="p-2 border-t flex flex-wrap gap-2 bg-background">
                     {parentPredefinedMessages.map(pm => (
-                        <Button key={pm.id} variant="outline" size="sm" onClick={() => handleSendMessage(pm.text)}>
+                        <Button key={pm.id} variant="outline" size="sm" className="text-[10px] h-7" onClick={() => handleSendMessage(pm.text)}>
                             {pm.text}
                         </Button>
                     ))}
@@ -236,21 +258,28 @@ export default function ParentMessagesPage() {
                       onChange={e => setCurrentMessage(e.target.value)}
                       onKeyPress={e => e.key === 'Enter' && handleSendMessage(currentMessage)}
                       disabled={!selectedConversation}
+                      className="h-12 pr-12"
                     />
                     <Button
                       size="icon"
-                      className="absolute right-1 top-1/2 -translate-y-1/2 h-8 w-8"
+                      className="absolute right-1 top-1/2 -translate-y-1/2 h-10 w-10"
                       onClick={() => handleSendMessage(currentMessage)}
                       disabled={!currentMessage.trim() || !selectedConversation}
                     >
-                      <Send />
+                      <Send className="h-5 w-5" />
                     </Button>
                   </div>
                 </CardFooter>
               </>
             ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                <p>Selecione uma conversa para começar.</p>
+              <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-8 text-center space-y-4">
+                <div className="p-6 bg-secondary/50 rounded-full">
+                    <MessageCircle className="h-12 w-12 text-primary opacity-20" />
+                </div>
+                <div>
+                    <p className="font-bold uppercase tracking-widest text-xs">Sua Central de Mensagens</p>
+                    <p className="text-sm">Selecione uma conversa ao lado para falar com o Gestor ou com a equipe da van.</p>
+                </div>
               </div>
             )}
           </div>
@@ -258,4 +287,10 @@ export default function ParentMessagesPage() {
       </div>
     </div>
   );
+}
+
+function MessageCircle({ className }: { className?: string }) {
+    return (
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/></svg>
+    );
 }
