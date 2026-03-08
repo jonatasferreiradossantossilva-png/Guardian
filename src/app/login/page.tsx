@@ -40,7 +40,7 @@ export default function LandingPage() {
     <div className="flex flex-col min-h-screen bg-background text-foreground">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4">
+        <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4 mx-auto">
           <Link href="/login" className="flex items-center gap-2 font-bold">
             <Rocket className="h-6 w-6 text-primary" />
             <span>Guardian</span>
@@ -89,7 +89,7 @@ export default function LandingPage() {
         {/* The Problem Section */}
         <section id="problema" className="w-full py-20 md:py-28">
             <div className="container mx-auto px-4">
-                <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">Sua Operação Está Vazando Dinheiro e Segurança</h2>
+                <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl uppercase tracking-tighter italic">Sua Operação Está Vazando Dinheiro e Segurança</h2>
                 <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg">
                     Troque o "achismo" por dados reais. Nós monitoramos cada quilômetro e cada alerta de saúde para garantir uma operação lucrativa e segura.
                 </p>
@@ -121,50 +121,60 @@ export default function LandingPage() {
             <div className="container mx-auto px-4">
                 <div className="grid md:grid-cols-2 gap-12 items-center">
                     <div>
-                        <Badge className="mb-4">Diferencial de Mercado</Badge>
+                        <Badge className="mb-4 bg-primary text-primary-foreground">Diferencial de Mercado</Badge>
                         <h2 className="text-3xl font-bold mb-6">Por que o Guardian é único?</h2>
                         <div className="space-y-6">
                             <div className="flex gap-4">
                                 <div className="bg-primary/10 p-3 rounded-lg h-fit"><Database className="text-primary"/></div>
                                 <div>
                                     <h4 className="font-bold">Base Nacional de Escolas</h4>
-                                    <p className="text-sm text-muted-foreground">Possuímos uma base proprietária de escolas ativas. Cadastre instituições instantaneamente sem depender apenas de APIs pagas.</p>
+                                    <p className="text-sm text-muted-foreground">Possuímos uma base proprietária de 190.000 escolas ativas. Cadastre instituições instantaneamente sem depender de cadastros manuais.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
                                 <div className="bg-primary/10 p-3 rounded-lg h-fit"><Zap className="text-primary"/></div>
                                 <div>
-                                    <h4 className="font-bold">Onboarding Expresso</h4>
-                                    <p className="text-sm text-muted-foreground">Cadastre novos alunos em 2 minutos via OCR de documentos e busca regionalizada inteligente. Menos burocracia, mais lucro.</p>
+                                    <h4 className="font-bold">Onboarding Expresso (17 Passos)</h4>
+                                    <p className="text-sm text-muted-foreground">O pai faz o trabalho via IA (OCR) e link público. Reduzimos o tempo de cadastro de 45 minutos para apenas 2 minutos.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
                                 <div className="bg-primary/10 p-3 rounded-lg h-fit"><ShieldCheck className="text-primary"/></div>
                                 <div>
-                                    <h4 className="font-bold">Soberania de Dados</h4>
-                                    <p className="text-sm text-muted-foreground">Geocodificação validada e GPS de alta precisão. Garantimos que a van nunca se perca ou siga para o portão errado.</p>
+                                    <h4 className="font-bold">Soberania de Dados & GPS</h4>
+                                    <p className="text-sm text-muted-foreground">Geocodificação validada e alerta de proximidade 800m. Garantimos que a van nunca se perca ou chegue sem aviso.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <Card className="border-primary/20 shadow-2xl overflow-hidden">
-                        <CardHeader className="bg-secondary/50">
-                            <CardTitle className="text-lg">Dashboard de Performance</CardTitle>
-                            <CardDescription>Visualização real da frota</CardDescription>
+                    <Card className="border-primary/20 shadow-2xl overflow-hidden bg-background">
+                        <CardHeader className="bg-secondary/50 border-b">
+                            <div className="flex justify-between items-center">
+                                <CardTitle className="text-lg flex items-center gap-2">
+                                    <Activity className="h-5 w-5 text-primary" />
+                                    Painel de Performance (ROI)
+                                </CardTitle>
+                                <Badge variant="outline" className="animate-pulse border-primary text-primary font-bold">LIVE</Badge>
+                            </div>
+                            <CardDescription>Comparativo real de economia de combustível</CardDescription>
                         </CardHeader>
                         <CardContent className="p-6 space-y-6">
-                            <div className="flex items-center justify-between border-b pb-4">
+                            <div className="flex items-center justify-between border-b border-dashed pb-4">
                                 <div>
-                                    <p className="text-2xl font-bold text-green-500">-14.2%</p>
-                                    <p className="text-xs text-muted-foreground">Economia de Combustível</p>
+                                    <p className="text-3xl font-black text-green-500">-14.2%</p>
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Gasto de Combustível</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-2xl font-bold text-primary">94.5%</p>
-                                    <p className="text-xs text-muted-foreground">Adesão à Rota</p>
+                                    <p className="text-3xl font-black text-primary">96.5%</p>
+                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Adesão à Rota IA</p>
                                 </div>
                             </div>
-                            <div className="bg-muted rounded-md h-32 flex items-center justify-center italic text-xs text-muted-foreground text-center px-8">
-                                "A IA detectou desvio recorrente na Rua Augusta. Sugestão: Alterar ordem de coleta para evitar obras."
+                            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 relative">
+                                <Sparkles className="absolute right-2 top-2 h-4 w-4 text-primary/40" />
+                                <p className="text-[10px] font-black uppercase text-primary mb-1">Decisão da Inteligência</p>
+                                <p className="text-xs text-muted-foreground italic leading-relaxed">
+                                    "O aluno Enzo Pereira comunicou ausência via App. Recalculando rota... Economia estimada: 1.2km neste trajeto."
+                                </p>
                             </div>
                         </CardContent>
                     </Card>
@@ -175,10 +185,10 @@ export default function LandingPage() {
         {/* Features Section */}
         <section id="features" className="w-full py-20 md:py-28">
           <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl">
+            <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl uppercase tracking-tighter italic mb-12">
               Inteligência Completa em Todas as Pontas
             </h2>
-            <div className="mt-12 grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
               {/* Feature Card: Gestor */}
               <Card className="flex flex-col border-primary/20 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300">
                 <CardHeader>
@@ -192,7 +202,7 @@ export default function LandingPage() {
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Activity} title="Analytics Planejado vs. Real" description="Veja exatamente onde sua van economizou quilometragem em relação ao planejado pela IA." />
                     <FeatureItem icon={Database} title="Base Nacional de Escolas" description="Cadastro rápido de instituições através de nossa inteligência de dados regionalizada." />
-                    <FeatureItem icon={DollarSign} title="Faturamento Automatizado" description="Geração de faturas e lembretes inteligentes via WhatsApp com base na presença confirmada." />
+                    <FeatureItem icon={DollarSign} title="Faturamento Automatizado" description="Geração de faturas e lembretes inteligentes via WhatsApp com confirmação instantânea." />
                   </div>
                 </CardContent>
               </Card>
@@ -208,9 +218,9 @@ export default function LandingPage() {
                      <Image src="https://picsum.photos/seed/crew-app/600/400" alt="App Equipe" fill style={{ objectFit: 'cover' }} data-ai-hint="mobile app interface" />
                   </div>
                   <div className="space-y-4 pt-4">
-                    <FeatureItem icon={HeartPulse} title="Alertas Médicos no Embarque" description="Identificação visual imediata de alunos com alergias ou necessidades especiais durante o check-in." />
-                    <FeatureItem icon={QrCode} title="Check-in por Telemetria" description="Registro de embarque que valida a posição GPS da van com o endereço do aluno, garantindo conformidade." />
-                    <FeatureItem icon={ShieldCheck} title="Modo Offline Inteligente" description="Funcionamento total sem internet, com sincronização automática de dados de telemetria." />
+                    <FeatureItem icon={HeartPulse} title="Alertas Médicos Pulsantes" description="Identificação visual imediata de alunos com alergias ou necessidades especiais no momento do embarque." />
+                    <FeatureItem icon={QrCode} title="Check-in por QR Code" description="Validação visual com foto do aluno e registro de posição GPS, garantindo conformidade e segurança." />
+                    <FeatureItem icon={ShieldCheck} title="Modo Offline Inteligente" description="Funcionamento total sem internet, com sincronização automática de dados de telemetria e presenças." />
                   </div>
                 </CardContent>
               </Card>
@@ -227,8 +237,8 @@ export default function LandingPage() {
                   </div>
                   <div className="space-y-4 pt-4">
                     <FeatureItem icon={Map} title="Tracking de Alta Precisão" description="Acompanhe a van no mapa com atualizações fluidas e previsão de chegada inteligente." />
-                    <FeatureItem icon={BellRing} title="Alerta de Proximidade" description="Notificação automática quando a van entrar no raio de 800m da sua residência." />
-                    <FeatureItem icon={FileText} title="Contratos Digitais" description="Visualize e dê o aceite jurídico em contratos de serviço diretamente pela tela do celular." />
+                    <FeatureItem icon={BellRing} title="Alerta de Proximidade (800m)" description="Notificação push automática apenas quando a van entra no raio crítico da sua residência." />
+                    <FeatureItem icon={FileText} title="Contratos & Multi-filhos" description="Visualize e aceite contratos digitalmente. Gerencie a jornada de todos os filhos em uma única tela." />
                   </div>
                 </CardContent>
               </Card>
@@ -239,12 +249,12 @@ export default function LandingPage() {
         {/* CTA Section */}
         <section id="cta" className="w-full py-20 md:py-28 bg-primary/5">
             <div className="container mx-auto text-center px-4">
-                 <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl">Leve sua frota para a era dos dados</h2>
+                 <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl uppercase tracking-tighter italic">Leve sua frota para a era dos dados</h2>
                  <p className="mt-4 max-w-xl mx-auto text-muted-foreground md:text-lg mb-8">
-                    Agende uma demonstração e veja como a nossa inteligência operacional pode transformar seus custos em lucro.
+                    Agende uma demonstração e veja como a nossa inteligência operacional pode transformar seus custos em lucro comprovado.
                 </p>
                 <div className="flex justify-center">
-                    <Button asChild size="lg" className="h-14 px-12 text-lg">
+                    <Button asChild size="lg" className="h-14 px-12 text-lg font-bold">
                         <Link href="/">Agendar Demonstração Gratuita</Link>
                     </Button>
                 </div>
@@ -259,7 +269,7 @@ export default function LandingPage() {
           <p>&copy; {new Date().getFullYear()} Guardian. Todos os direitos reservados.</p>
           <div className="flex items-center gap-2">
             <Rocket className="h-4 w-4 text-primary" />
-            <span>Inteligência para Transporte Escolar</span>
+            <span className="font-bold uppercase italic text-[10px]">Inteligência Operacional para Transporte</span>
           </div>
         </div>
       </footer>
@@ -269,10 +279,12 @@ export default function LandingPage() {
 
 const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
   <div className="flex items-start gap-4 text-left">
-    <Icon className="h-6 w-6 text-primary mt-1 flex-shrink-0" />
+    <div className="bg-primary/10 p-2 rounded-lg shrink-0">
+        <Icon className="h-5 w-5 text-primary" />
+    </div>
     <div>
         <h4 className="font-semibold text-foreground">{title}</h4>
-        <p className="text-sm text-muted-foreground">{description}</p>
+        <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
     </div>
   </div>
 );
