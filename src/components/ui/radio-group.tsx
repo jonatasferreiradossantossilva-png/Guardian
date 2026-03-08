@@ -1,4 +1,3 @@
-
 "use client"
 
 import * as React from "react"
@@ -25,20 +24,6 @@ const RadioGroupItem = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
 >(({ className, ...props }, ref) => {
-  // Fix for React 19 / flushSync issue in lifecycle: 
-  // We defer the full Radix item initialization until after mount to prevent hydration/lifecycle sync errors.
-  const [mounted, setMounted] = React.useState(false);
-  React.useEffect(() => { setMounted(true); }, []);
-
-  if (!mounted) {
-    return (
-      <div className={cn(
-        "aspect-square h-4 w-4 rounded-full border border-primary opacity-50",
-        className
-      )} />
-    );
-  }
-
   return (
     <RadioGroupPrimitive.Item
       ref={ref}

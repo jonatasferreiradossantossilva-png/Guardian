@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -236,7 +235,6 @@ export default function DriverRoutePlanPage() {
     if (!route || !driverProfile || !allStudents) return;
     setIsOptimizing(true);
     try {
-        // Detectar alunos ausentes antes de resetar os outros
         const missing = allStudents.filter(s => 
             route.studentIds.includes(s.id) && 
             s.status.startsWith('ausente') && 
