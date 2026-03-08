@@ -405,12 +405,9 @@ export default function DriverRoutePlanPage() {
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
                         <ScrollArea className="h-full">
-                            <div className={cn(
-                                "py-4 space-y-6 pb-20",
-                                selectedDirection === 'ida' ? "pl-2 pr-8" : "pl-1 pr-9"
-                            )}>
+                            <div className="p-4 space-y-6 pb-20">
                                 {!activeStop ? (
-                                    <div className="ml-0 mr-2">
+                                    <div className="w-full">
                                         <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
                                             <CheckCircle className="h-14 w-14 text-green-500 mx-auto mb-6"/>
                                             <CardTitle className="text-2xl font-black text-green-600 uppercase">Fim de Rota!</CardTitle>
@@ -418,7 +415,7 @@ export default function DriverRoutePlanPage() {
                                         </Card>
                                     </div>
                                 ) : activeStop.type === 'student' ? (
-                                    <div className="space-y-6 ml-0 mr-2">
+                                    <div className="space-y-6 w-full">
                                         <div>
                                             <NextStopCard 
                                                 student={activeStop.data as Student} 
@@ -434,7 +431,7 @@ export default function DriverRoutePlanPage() {
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-3">Próximas Paradas</h3>
                                                 {upcomingStops.map((stop, idx) => (
                                                     <div key={idx}>
-                                                        <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm mx-1">
+                                                        <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
                                                             {stop.type === 'student' ? (
                                                                 <div className="flex-1 min-w-0 flex items-center gap-3">
                                                                     <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as Student).photoUrl || `https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
@@ -457,7 +454,7 @@ export default function DriverRoutePlanPage() {
                                         )}
                                     </div>
                                 ) : (
-                                    <div className="ml-0 mr-2">
+                                    <div className="w-full">
                                         <NextStopSchoolCard 
                                             school={activeStop.data as SchoolData} 
                                             direction={selectedDirection}
@@ -503,7 +500,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
   return (
-    <Card className={cn("w-full shadow-2xl border-primary border-2 mx-1", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
+    <Card className={cn("w-full shadow-2xl border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
         <CardHeader className="pb-3 border-b bg-muted/10">
             <div className="flex justify-between items-center mb-3">
                 <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase text-primary">Parada Atual</Badge>
@@ -571,7 +568,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
 function NextStopSchoolCard({ school, direction, onAction, students, onStatusChange, onEndEarly }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, students: Student[], onStatusChange: (id: string, status: StudentStatus) => void, onEndEarly: () => void }) {
     const isIda = direction === 'ida';
     return (
-        <Card className="w-full shadow-2xl border-primary border-2 bg-card overflow-hidden mx-1">
+        <Card className="w-full shadow-2xl border-primary border-2 bg-card overflow-hidden">
             <CardHeader className="text-center pb-4 bg-primary/10 border-b">
                 <div className="mx-auto w-16 h-16 rounded-full bg-background border-4 border-primary/20 text-primary shadow-lg flex items-center justify-center mb-2"><School className="h-8 w-8" /></div>
                 <Badge className="w-fit mx-auto mb-1 font-black uppercase tracking-widest text-[10px] bg-primary text-white">{isIda ? 'Desembarque Coletivo' : 'Embarque Coletivo'}</Badge>
