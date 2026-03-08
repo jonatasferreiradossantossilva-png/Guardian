@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect, useCallback, useRef, useTransition } from 'react';
@@ -293,10 +294,7 @@ export default function DriverRoutePlanPage() {
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
-    if (selectedDirection === 'ida' && upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
-        setTimeout(handleEndRoute, 2000);
-    }
-  }, [updateDoc, handleEndRoute, upcomingStops.length, selectedDirection]);
+  }, [updateDoc]);
 
   const handleSchoolAction = useCallback(() => {
       const isIda = selectedDirection === 'ida';
@@ -304,11 +302,7 @@ export default function DriverRoutePlanPage() {
       
       studentsAtCurrentStop.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
       toast({ title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!" });
-
-      if (isIda && upcomingStops.length === 0) {
-          setTimeout(handleEndRoute, 2000);
-      }
-  }, [selectedDirection, studentsAtCurrentStop, updateDoc, toast, upcomingStops.length, handleEndRoute]);
+  }, [selectedDirection, studentsAtCurrentStop, updateDoc, toast]);
 
   const handlePauseToggle = useCallback(() => {
       const isPaused = driverProfile?.status === 'pausa';
