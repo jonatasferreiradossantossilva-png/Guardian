@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Info, Users, Smartphone, Camera, Sparkles, RefreshCw, AlertTriangle, Apple, Wind, Activity, Accessibility, Brain, HeartPulse, DollarSign } from 'lucide-react';
+import { CheckCircle, Loader2, UserPlus, FileText, ArrowRight, ShieldCheck, User, MapPin, CalendarDays, Smartphone, Camera, Sparkles, RefreshCw, AlertTriangle, Apple, Wind, Activity, Accessibility, Brain, HeartPulse, DollarSign, Clock } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -17,8 +17,9 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-type Step = 'welcome' | 'scan' | 'review' | 'form' | 'health' | 'success';
+type Step = 'welcome' | 'scan' | 'review' | 'form' | 'photo' | 'health' | 'success';
 
 const SERIE_OPTIONS = [
     "Berçário / Maternal",
@@ -70,6 +71,8 @@ export default function PublicRegistrationPage() {
   const [selectedSchoolId, setSelectedSchoolId] = useState('');
   const [studentSerie, setStudentSerie] = useState('');
   const [studentTurma, setStudentTurma] = useState('');
+  const [shift, setShift] = useState<string>(''); // Turno
+  const [photoUrl, setPhotoUrl] = useState('');
   
   // Finance states
   const [preferredPaymentDay, setPreferredPaymentDay] = useState('10');
@@ -99,6 +102,7 @@ export default function PublicRegistrationPage() {
           phone.trim() !== '' &&
           studentName.trim() !== '' &&
           selectedSchoolId !== '' &&
+          shift !== '' && // Turno Obrigatório
           zipCode.replace(/\D/g, '').length === 8 &&
           street.trim() !== '' &&
           number.trim() !== '' &&
@@ -136,6 +140,17 @@ export default function PublicRegistrationPage() {
         } finally {
             setIsProcessing(false);
         }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleStudentPhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        setPhotoUrl(reader.result as string);
+        toast({ title: "Foto capturada!", description: "Identificação do aluno salva com sucesso." });
     };
     reader.readAsDataURL(file);
   };
@@ -180,6 +195,8 @@ export default function PublicRegistrationPage() {
         schoolId: selectedSchoolId,
         studentSerie,
         studentTurma,
+        shift,
+        photoUrl,
         preferredPaymentDay: Number(preferredPaymentDay),
         medicalConditions,
         medicalNote,
@@ -197,6 +214,8 @@ export default function PublicRegistrationPage() {
       setSelectedSchoolId('');
       setStudentSerie('');
       setStudentTurma('');
+      setShift('');
+      setPhotoUrl('');
       setMedicalConditions([]);
       setMedicalNote('');
       setStep('form');
@@ -359,7 +378,7 @@ export default function PublicRegistrationPage() {
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
                     
-                    {/* Dados de Identidade do Responsável */}
+                    {/* Identificação do Responsável */}
                     <div className="space-y-4">
                         <p className="text-sm font-bold flex items-center gap-2 text-primary">
                             <User className="h-4 w-4" /> Identificação do Responsável
@@ -470,8 +489,15 @@ export default function PublicRegistrationPage() {
                                     </Select>
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Turma/Sala (Opcional)</Label>
-                                    <Input placeholder="Ex: Sala 102" value={studentTurma} onChange={e => setStudentTurma(e.target.value)} />
+                                    <Label>Turno Operacional *</Label>
+                                    <Select onValueChange={setShift} value={shift}>
+                                        <SelectTrigger className={cn(!shift && "border-destructive/50")}><SelectValue placeholder="Manhã, Tarde..." /></SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="Manhã">Manhã</SelectItem>
+                                            <SelectItem value="Tarde">Tarde</SelectItem>
+                                            <SelectItem value="Integral">Integral</SelectItem>
+                                        </SelectContent>
+                                    </Select>
                                 </div>
                             </div>
                         </div>
@@ -502,20 +528,65 @@ export default function PublicRegistrationPage() {
                     <Button 
                         className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90" 
                         onClick={() => {
-                            if (isFormValid()) setStep('health');
+                            if (isFormValid()) setStep('photo');
                             else toast({ title: "Campos obrigatórios", description: "Verifique os campos marcados em vermelho.", variant: "destructive" });
                         }}
                         disabled={!isFormValid()}
                     >
-                        Próximo: Informações de Saúde
+                        Próximo: Identificação do Aluno
                         <ArrowRight className="ml-2 h-5 w-5" />
                     </Button>
                     <Button variant="ghost" size="sm" className="text-muted-foreground text-xs" onClick={() => setStep('review')}>
-                        Voltar para Identificação
+                        Voltar para Identificação do Pai
                     </Button>
                 </div>
             </CardFooter>
           </Card>
+        )}
+
+        {step === 'photo' && (
+            <Card className="shadow-2xl border-primary/20 animate-in slide-in-from-bottom-4 duration-500">
+                <CardHeader className="bg-primary/5 border-b text-center">
+                    <CardTitle className="text-lg">Identificação Visual do Aluno</CardTitle>
+                    <CardDescription>Esta foto será exibida para o motorista no checklist de embarque para segurança total.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-8 flex flex-col items-center">
+                    <div className="relative group">
+                        <Avatar className="h-48 w-48 border-4 border-background shadow-2xl">
+                            <AvatarImage src={photoUrl} style={{ objectFit: 'cover' }} />
+                            <AvatarFallback className="bg-secondary text-primary">
+                                <User className="h-20 w-20" />
+                            </AvatarFallback>
+                        </Avatar>
+                        <div className="absolute -bottom-2 -right-2 bg-primary p-3 rounded-full text-white shadow-lg">
+                            <Camera className="h-6 w-6" />
+                        </div>
+                    </div>
+
+                    <div className="text-center space-y-2">
+                        <p className="text-xs text-muted-foreground font-medium italic">
+                            * Dica: Tire uma foto nítida do rosto do aluno.
+                        </p>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-3 border-t pt-6 bg-muted/20 rounded-b-xl">
+                    <input type="file" accept="image/*" capture="user" className="hidden" id="student-photo-input" onChange={handleStudentPhotoChange} />
+                    <Button className="w-full h-14 text-base font-bold" onClick={() => document.getElementById('student-photo-input')?.click()}>
+                        {photoUrl ? "Tirar outra foto" : "Capturar Foto do Filho(a)"}
+                    </Button>
+                    <div className="grid grid-cols-2 gap-2 w-full">
+                        <Button variant="outline" onClick={() => setStep('form')}>Voltar</Button>
+                        <Button variant="secondary" onClick={() => setStep('health')}>
+                            {photoUrl ? "Continuar" : "Pular e fazer depois"}
+                        </Button>
+                    </div>
+                    {!photoUrl && (
+                        <p className="text-[10px] text-center text-muted-foreground">
+                            Caso opte por pular, você poderá adicionar a foto depois no seu painel.
+                        </p>
+                    )}
+                </CardFooter>
+            </Card>
         )}
 
         {step === 'health' && (
@@ -571,7 +642,7 @@ export default function PublicRegistrationPage() {
                     <Button className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-700" onClick={handleFinalSubmit}>
                         Finalizar e Enviar Cadastro
                     </Button>
-                    <Button variant="ghost" className="text-xs" onClick={() => setStep('form')}>Voltar para Endereço</Button>
+                    <Button variant="ghost" className="text-xs" onClick={() => setStep('photo')}>Voltar para Foto</Button>
                 </CardFooter>
             </Card>
         )}

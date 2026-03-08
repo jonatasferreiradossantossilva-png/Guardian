@@ -1,7 +1,6 @@
-
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef } from "react";
 import Link from "next/link";
 import {
   useMockCollection,
@@ -29,7 +28,9 @@ import {
     Map as MapIcon, 
     Activity, 
     Info,
-    Loader2
+    Loader2,
+    Camera,
+    AlertTriangle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -65,6 +66,7 @@ interface Student {
   number?: string;
   neighborhood?: string;
   active?: boolean;
+  photoUrl?: string;
 }
 interface Route {
   id: string;
@@ -135,7 +137,7 @@ function GoogleMapMarkers({
                   )}
                   <AdvancedMarker position={{ lat: s.latitude, lng: s.longitude }} title={s.name}>
                         <Pin background={isSelected ? '#3b82f6' : '#cbd5e1'} borderColor={'#fff'}>
-                            <Avatar className={cn("h-6 w-6", !isSelected && "grayscale opacity-70")}><AvatarImage src={`https://picsum.photos/seed/student-${s.id}/40/40`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                            <Avatar className={cn("h-6 w-6", !isSelected && "grayscale opacity-70")}><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/40/40`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                         </Pin>
                   </AdvancedMarker>
                   {school && (
@@ -182,6 +184,8 @@ function JourneyTimeline({ status, direction }: { status: Student['status'], dir
 export default function ParentTrackingPage() {
   const { toast } = useToast();
   const { updateDoc } = useMockData();
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
@@ -189,6 +193,7 @@ export default function ParentTrackingPage() {
   const [isAbsenceDialogOpen, setIsAbsenceDialogOpen] = useState(false);
   const [selectedAbsenceType, setSelectedAbsenceType] = useState<"ausente_ida" | "ausente_volta" | "ausente_dia_todo">("ausente_dia_todo");
   const [applyAbsenceToAll, setApplyAbsenceToAll] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
     setMockUserId(sessionStorage.getItem('mockUserId'));
@@ -204,7 +209,6 @@ export default function ParentTrackingPage() {
   const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", mockUserId ? [{ field: "userId", op: "==", value: mockUserId }] : undefined);
   const parent = useMemo(() => (parents && parents.length > 0 ? parents[0] : null), [parents]);
   
-  // BLINDAGEM: Se não tiver parentId, passa um filtro impossível para não retornar tudo
   const studentFilter = useMemo(() => parent ? [{ field: "parentId", op: "==", value: parent.id }] : [{ field: "id", op: "==", value: "none" }], [parent]);
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", studentFilter);
   
@@ -242,6 +246,19 @@ export default function ParentTrackingPage() {
 
   const handleConfirmPresence = () => { if (student) { updateDoc('students', student.id, { status: 'aguardando' }); toast({ title: "Presença Confirmada!" }); } };
 
+  const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file || !student) return;
+    setIsUploading(true);
+    const reader = new FileReader();
+    reader.onloadend = () => {
+        updateDoc('students', student.id, { photoUrl: reader.result as string });
+        setIsUploading(false);
+        toast({ title: "Foto Adicionada!", description: "Seu filho já pode ser identificado pelo motorista." });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handleShareTrip = useCallback(() => {
     if (!student || !displayLocation) {
         toast({
@@ -277,12 +294,29 @@ export default function ParentTrackingPage() {
             <Link href="/"><Button variant="ghost">Sair</Button></Link>
         </div>
 
+        {/* Alerta de Foto Pendente */}
+        {student && !student.photoUrl && (
+            <Card className="border-amber-500/20 bg-amber-500/5 p-4 flex items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-500">
+                <div className="flex items-start gap-3">
+                    <div className="p-2 bg-amber-500/10 rounded-full text-amber-600"><AlertTriangle className="h-5 w-5" /></div>
+                    <div className="space-y-1">
+                        <p className="text-sm font-bold text-amber-700">Segurança: Foto Pendente</p>
+                        <p className="text-[10px] text-amber-600 leading-tight">Adicione uma foto de {student.name.split(' ')[0]} para que o motorista o identifique no embarque.</p>
+                    </div>
+                </div>
+                <input type="file" accept="image/*" capture="user" className="hidden" ref={fileInputRef} onChange={handlePhotoUpload} />
+                <Button size="sm" variant="outline" className="border-amber-500/30 text-amber-700 h-8 text-[10px] font-bold shrink-0" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                    {isUploading ? <Loader2 className="h-3 w-3 animate-spin" /> : <><Camera className="h-3 w-3 mr-1" /> ADICIONAR AGORA</>}
+                </Button>
+            </Card>
+        )}
+
         {/* Multi-child selector */}
         {students && students.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {students.map((s) => (
                     <button key={s.id} onClick={() => handleStudentSelect(s.id)} className={cn("flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0", selectedStudentId === s.id ? "bg-primary border-primary text-primary-foreground shadow-md" : "bg-card border-muted text-muted-foreground")}>
-                        <Avatar className="h-6 w-6"><AvatarImage src={`https://picsum.photos/seed/student-${s.id}/40/40`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                        <Avatar className="h-6 w-6"><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/40/40`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                         <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
                     </button>
                 ))}
@@ -312,7 +346,10 @@ export default function ParentTrackingPage() {
                 <Card className="border-2 shadow-xl overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b pb-4">
                         <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16 border-2 border-background shadow-md"><AvatarImage src={`https://picsum.photos/seed/student-${student?.id}/100/100`} /><AvatarFallback>{student?.name[0]}</AvatarFallback></Avatar>
+                            <Avatar className="h-16 w-16 border-2 border-background shadow-md">
+                                <AvatarImage src={student?.photoUrl || `https://picsum.photos/seed/student-${student?.id}/100/100`} />
+                                <AvatarFallback className="text-3xl font-black">{student?.name[0]}</AvatarFallback>
+                            </Avatar>
                             <div><CardTitle className="text-xl">Olá, {parent?.name.split(' ')[0]}</CardTitle><CardDescription className="font-medium text-foreground/80">Jornada de {student?.name}</CardDescription></div>
                         </div>
                     </CardHeader>
