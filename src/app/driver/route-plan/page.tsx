@@ -190,6 +190,7 @@ export default function DriverRoutePlanPage() {
             if (s.type === 'student') return s.data.status === 'aguardando';
             return orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'a_bordo');
         } else {
+            // NA VOLTA: O ponto da escola é considerado concluído se pelo menos um aluno está a bordo OU se já passamos por ela
             if (s.type === 'school') return orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'aguardando');
             return s.data.status === 'a_bordo';
         }
