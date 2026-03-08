@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -230,6 +230,20 @@ export default function PublicRegistrationPage() {
     setStep('success');
   };
 
+  const handleRegisterAnother = useCallback(() => {
+      // Limpa dados do aluno mas preserva responsável e endereço
+      setStudentName('');
+      setSelectedSchoolId('');
+      setStudentSerie('');
+      setStudentTurma('');
+      setShift('');
+      setPhotoUrl('');
+      setMedicalConditions([]);
+      setMedicalNote('');
+      setStep('form');
+      toast({ title: "Novo cadastro iniciado", description: "Seus dados de responsável foram preservados." });
+  }, [toast]);
+
   const toggleCondition = (id: string) => {
       setMedicalConditions(prev => 
           prev.includes(id) ? prev.filter(item => item !== id) : [...prev, id]
@@ -430,10 +444,14 @@ export default function PublicRegistrationPage() {
                                     <Input value={street} onChange={e => setStreet(e.target.value)} />
                                 </div>
                             </div>
-                            <div className="grid grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="space-y-2">
                                     <Label>Número *</Label>
                                     <Input value={number} onChange={e => setNumber(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label>Complemento</Label>
+                                    <Input value={complement} onChange={e => setComplement(e.target.value)} placeholder="Ex: Apto 42" />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Bairro</Label>
@@ -575,7 +593,12 @@ export default function PublicRegistrationPage() {
                     </div>
                     <h2 className="text-2xl font-bold">Inscrição Enviada!</h2>
                     <p className="text-muted-foreground text-sm">Recebemos seus dados. O gestor analisará a viabilidade e entrará em contato via WhatsApp para o aceite do contrato.</p>
-                    <Button asChild className="w-full h-12 font-bold"><Link href="/">Voltar para o Início</Link></Button>
+                    <div className="flex flex-col gap-3 pt-4">
+                        <Button asChild className="w-full h-12 font-bold"><Link href="/">Voltar para o Início</Link></Button>
+                        <Button variant="outline" className="w-full h-12 font-bold border-primary text-primary" onClick={handleRegisterAnother}>
+                            <Users className="mr-2 h-5 w-5" /> Cadastrar mais um filho
+                        </Button>
+                    </div>
                 </CardContent>
             </Card>
         )}
