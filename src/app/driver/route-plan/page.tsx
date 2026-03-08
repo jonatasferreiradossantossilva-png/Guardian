@@ -72,6 +72,8 @@ interface Student {
   street?: string;
   number?: string;
   neighborhood?: string;
+  serie?: string;
+  turma?: string;
 }
 
 interface SchoolData {
@@ -284,6 +286,7 @@ export default function DriverRoutePlanPage() {
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
+    // Só encerra se for a ÚLTIMA parada da lista
     if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -415,8 +418,20 @@ export default function DriverRoutePlanPage() {
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-1">Próximas Paradas</h3>
                                                 {upcomingStops.slice(0, 5).map((stop, idx) => (
                                                     <div key={idx} className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
-                                                        {stop.type === 'student' ? <Avatar className="h-8 w-8"><AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar> : <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>}
-                                                        <span className="text-sm font-black truncate flex-1 uppercase">{stop.data.name}</span>
+                                                        {stop.type === 'student' ? (
+                                                            <div className="flex-1 min-w-0 flex items-center gap-3">
+                                                                <Avatar className="h-8 w-8"><AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
+                                                                <div className="min-w-0">
+                                                                    <p className="text-sm font-black truncate uppercase">{stop.data.name}</p>
+                                                                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{(stop.data as Student).serie} • {(stop.data as Student).turma}</p>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <div className="flex-1 min-w-0 flex items-center gap-3">
+                                                                <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>
+                                                                <span className="text-sm font-black truncate uppercase">{stop.data.name}</span>
+                                                            </div>
+                                                        )}
                                                         <Badge variant="secondary" className="text-[9px] font-black uppercase">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
                                                     </div>
                                                 ))}
@@ -481,9 +496,16 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                 </Avatar>
                 <div className="flex-grow min-w-0">
                     <CardTitle className="text-xl font-black truncate uppercase">{student.name}</CardTitle>
-                    <div className="flex items-center gap-1.5 text-muted-foreground mt-2">
-                        <MapPin className="h-4 w-4 text-primary" />
-                        <span className="text-xs font-black truncate">{student.street}, {student.number}</span>
+                    <div className="space-y-1 mt-1">
+                        <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase">
+                            <span>{student.serie}</span>
+                            <span className="opacity-30">•</span>
+                            <span>{student.turma}</span>
+                        </div>
+                        <div className="flex items-center gap-1.5 text-muted-foreground">
+                            <MapPin className="h-3 w-3 text-primary" />
+                            <span className="text-[10px] font-black truncate uppercase">{student.street}, {student.number}</span>
+                        </div>
                     </div>
                 </div>
                 <Button variant="outline" size="icon" onClick={() => window.open(`https://www.google.com/maps/dir/?api=1&destination=${student.latitude},${student.longitude}`, '_blank')} className="h-14 w-14 shadow-md bg-background">
@@ -500,6 +522,15 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                 )}
                 <Button variant="destructive" className="h-14 font-black text-sm" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}><XCircle className="mr-2" /> AUSENTE</Button>
             </div>
+            
+            {hasMedicalAlert && (
+                <div className="flex flex-wrap gap-2 pt-2">
+                    {student.medicalConditions?.map(cond => (
+                        <Badge key={cond} variant="destructive" className="text-[9px] font-black uppercase tracking-wider">{cond}</Badge>
+                    ))}
+                </div>
+            )}
+
             {hasMedicalAlert && student.medicalNote && (
                 <div className="p-4 rounded-md bg-destructive/10 border-2 border-destructive/20 text-sm italic text-destructive font-black flex gap-3"><HeartPulse className="h-5 w-5 shrink-0" /><span>"{student.medicalNote}"</span></div>
             )}
@@ -530,19 +561,25 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                     <Button size="sm" className="bg-primary hover:bg-primary/90 text-[10px] h-10 font-black text-white" onClick={onAction}><CheckCircle className="mr-2" /> {isIda ? 'DESEMBARQUE' : 'EMBARQUE'}</Button>
                 </div>
                 <div className="space-y-3">
-                    {students.map((s) => (
-                        <div key={s.id} className="flex items-center gap-3 p-3 rounded-xl border-2 bg-background shadow-sm">
-                            <Avatar className="h-12 w-12 shrink-0"><AvatarImage src={`https://picsum.photos/seed/student-${s.id}/100/100`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-black truncate uppercase">{s.name}</p>
-                                <p className="text-[9px] text-primary font-black uppercase">{s.status}</p>
+                    {students.map((s) => {
+                        const hasAlert = (s.medicalConditions && s.medicalConditions.length > 0) || s.medicalNote;
+                        return (
+                            <div key={s.id} className={cn("flex items-center gap-3 p-3 rounded-xl border-2 bg-background shadow-sm", hasAlert && "border-destructive/30")}>
+                                <Avatar className="h-12 w-12 shrink-0"><AvatarImage src={`https://picsum.photos/seed/student-${s.id}/100/100`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                                <div className="flex-1 min-w-0">
+                                    <div className="flex items-center gap-2">
+                                        <p className="text-sm font-black truncate uppercase">{s.name}</p>
+                                        {hasAlert && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" />}
+                                    </div>
+                                    <p className="text-[9px] text-primary font-black uppercase">{s.serie} • {s.turma}</p>
+                                </div>
+                                <div className="flex gap-2 shrink-0">
+                                    <Button size="icon" variant="outline" className="h-10 w-10 text-green-600" onClick={() => onStatusChange(s.id, isIda ? 'desembarcado' : 'a_bordo')}><Check className="h-5 w-5" /></Button>
+                                    <Button size="icon" variant="outline" className="h-10 w-10 text-destructive" onClick={() => onStatusChange(s.id, isIda ? 'ausente_ida' : 'ausente_volta')}><XCircle className="h-5 w-5" /></Button>
+                                </div>
                             </div>
-                            <div className="flex gap-2 shrink-0">
-                                <Button size="icon" variant="outline" className="h-10 w-10 text-green-600" onClick={() => onStatusChange(s.id, isIda ? 'desembarcado' : 'a_bordo')}><Check className="h-5 w-5" /></Button>
-                                <Button size="icon" variant="outline" className="h-10 w-10 text-destructive" onClick={() => onStatusChange(s.id, isIda ? 'ausente_ida' : 'ausente_volta')}><XCircle className="h-5 w-5" /></Button>
-                            </div>
-                        </div>
-                    ))}
+                        )
+                    })}
                 </div>
             </CardContent>
             <CardFooter className="p-4 border-t bg-muted/10 flex flex-col gap-3">
