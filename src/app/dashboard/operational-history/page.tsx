@@ -91,7 +91,7 @@ export default function OperationalHistoryPage() {
             severity: 'Crítica'
         });
 
-        return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.createdAt).getTime());
     }, [incidents]);
 
     return (

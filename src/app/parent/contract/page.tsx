@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Loader2, ArrowLeft, FileText, CheckCircle, Clock } from 'lucide-react';
+import { Loader2, ArrowLeft, FileText, CheckCircle, Clock, Printer } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -64,6 +64,10 @@ export default function ParentContractPage() {
         });
     };
 
+    const handlePrint = () => {
+        window.print();
+    };
+
     const isLoading = areContractsLoading || areStudentsLoading;
 
     if (isLoading) {
@@ -71,16 +75,23 @@ export default function ParentContractPage() {
     }
 
     return (
-        <div className="min-h-screen bg-background text-foreground p-4">
+        <div className="min-h-screen bg-background text-foreground p-4 print:bg-white print:p-0">
             <div className="max-w-4xl mx-auto">
-                <div className="flex items-center gap-4 mb-6">
+                <div className="flex items-center justify-between gap-4 mb-6 print:hidden">
                     <Button asChild variant="outline" size="icon">
                         <Link href="/parent/tracking"><ArrowLeft /></Link>
                     </Button>
+                    {contract && (
+                        <Button variant="outline" size="sm" onClick={handlePrint} className="gap-2">
+                            <Printer className="h-4 w-4" />
+                            <span className="hidden sm:inline">Imprimir / Salvar PDF</span>
+                            <span className="sm:hidden">PDF</span>
+                        </Button>
+                    )}
                 </div>
 
                 {!contract ? (
-                    <Card className="text-center p-8">
+                    <Card className="text-center p-8 print:hidden">
                         <FileText className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                         <CardTitle>Nenhum contrato encontrado</CardTitle>
                         <CardDescription className="mt-2">
@@ -88,33 +99,33 @@ export default function ParentContractPage() {
                         </CardDescription>
                     </Card>
                 ) : (
-                    <Card>
-                        <CardHeader>
+                    <Card className="print:border-none print:shadow-none">
+                        <CardHeader className="print:px-0">
                             <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-2">
                                 <div>
                                     <CardTitle className="flex items-center gap-2"><FileText />Contrato de Transporte</CardTitle>
-                                    <CardDescription className="mt-2 text-primary font-semibold">
+                                    <CardDescription className="mt-2 text-primary font-semibold print:text-black">
                                         Aluno(a): {student?.name}
                                     </CardDescription>
-                                    <CardDescription>
+                                    <CardDescription className="print:text-black/60">
                                         Gerado em: {format(new Date(contract.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                                     </CardDescription>
                                 </div>
                                 {contract.status === 'accepted' && contract.acceptedAt && (
-                                     <div className="text-sm p-3 rounded-md bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800">
+                                     <div className="text-sm p-3 rounded-md bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800 print:bg-white print:border-black print:text-black">
                                         <p className="font-semibold flex items-center gap-2"><CheckCircle className="h-4 w-4"/>Contrato Aceito</p>
                                         <p>Em: {format(new Date(contract.acceptedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
                                     </div>
                                 )}
                             </div>
                         </CardHeader>
-                        <CardContent>
-                            <ScrollArea className="h-[50vh] border rounded-md p-4 bg-secondary/30">
-                                <pre className="whitespace-pre-wrap font-sans text-sm">{contract.generatedContent}</pre>
+                        <CardContent className="print:px-0">
+                            <ScrollArea className="h-[50vh] border rounded-md p-4 bg-secondary/30 print:h-auto print:border-none print:bg-transparent print:p-0 print:overflow-visible">
+                                <pre className="whitespace-pre-wrap font-sans text-sm leading-relaxed print:text-black print:text-base">{contract.generatedContent}</pre>
                             </ScrollArea>
                         </CardContent>
                         {contract.status === 'pending_acceptance' && (
-                            <CardFooter className="flex-col items-start gap-4 border-t pt-6">
+                            <CardFooter className="flex-col items-start gap-4 border-t pt-6 print:hidden">
                                 <div className="flex items-center space-x-2">
                                     <Checkbox id="terms" checked={hasAgreed} onCheckedChange={(checked) => setHasAgreed(checked as boolean)} />
                                     <label
@@ -130,6 +141,12 @@ export default function ParentContractPage() {
                                 </Button>
                             </CardFooter>
                         )}
+                        <CardFooter className="hidden print:flex justify-center border-t pt-8 mt-10">
+                            <p className="text-[10px] text-center text-black/40 italic">
+                                Documento gerado pela plataforma Guardian em {format(new Date(), "dd/MM/yyyy 'às' HH:mm")}.<br/>
+                                A jornada do seu filho, protegida em tempo real.
+                            </p>
+                        </CardFooter>
                     </Card>
                 )}
             </div>
