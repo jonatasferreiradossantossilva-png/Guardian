@@ -214,10 +214,10 @@ export function RouteForm({
   };
 
   return (
-    <DialogContent className="sm:max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
+    <DialogContent className="sm:max-w-6xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20 shadow-sm">
         <DialogTitle className="text-xl font-black uppercase italic text-primary">Montar Itinerário</DialogTitle>
-        <DialogDescription>A IA calculará a melhor rota priorizando o bem-estar dos alunos.</DialogDescription>
+        <DialogDescription>A IA calculará a melhor rota priorizando o bem-estar dos alunos e a economia de combustível.</DialogDescription>
       </DialogHeader>
       
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
@@ -272,17 +272,17 @@ export function RouteForm({
                                 <Zap className="h-3 w-3" /> Como a IA deve organizar os alunos?
                             </Label>
                             <Select onValueChange={v => { setOptimizationMode(v as any); setIsOptimized(false); }} value={optimizationMode}>
-                                <SelectTrigger className="bg-background h-11 font-bold">
+                                <SelectTrigger className="bg-background h-14 font-bold">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>
-                                    <SelectItem value="safe" className="flex flex-col items-start gap-0.5">
-                                        <div className="flex items-center gap-2 font-bold"><ShieldCheck className="h-3.5 w-3.5 text-primary"/> Priorizar Embarque (Todos os Alunos)</div>
-                                        <p className="text-[9px] text-muted-foreground ml-5 italic">A van só vai para as escolas após o último aluno da lista entrar no veículo.</p>
+                                    <SelectItem value="safe" className="flex flex-col items-start gap-0.5 py-3">
+                                        <div className="flex items-center gap-2 font-bold"><ShieldCheck className="h-3.5 w-3.5 text-primary"/> Priorizar Embarque (Segurança Total)</div>
+                                        <p className="text-[10px] text-muted-foreground ml-5 italic leading-tight max-w-[450px]">A van embarca todos os alunos antes de iniciar os desembarques nas escolas.</p>
                                     </SelectItem>
-                                    <SelectItem value="flexible" className="flex flex-col items-start gap-0.5">
-                                        <div className="flex items-center gap-2 font-bold"><Zap className="h-3.5 w-3.5 text-amber-500"/> Entrega por Proximidade (IA)</div>
-                                        <p className="text-[9px] text-muted-foreground ml-5 italic">A IA sugere deixar os alunos na escola se o grupo já estiver completo e a escola for no caminho.</p>
+                                    <SelectItem value="flexible" className="flex flex-col items-start gap-0.5 py-3">
+                                        <div className="flex items-center gap-2 font-bold"><Zap className="h-3.5 w-3.5 text-amber-500"/> Entrega por Proximidade (Máximo ROI)</div>
+                                        <p className="text-[10px] text-muted-foreground ml-5 italic leading-tight max-w-[450px]">A IA permite deixar alunos se a escola estiver no caminho e o lote dela estiver completo.</p>
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
@@ -326,7 +326,7 @@ export function RouteForm({
                         </div>
                         <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-8 font-black text-[10px] shadow-md active:scale-95 transition-all">
                             {isOptimizing ? <Loader2 className="animate-spin h-3 w-3 mr-1" /> : <Sparkles className="h-3 w-3 mr-1" />}
-                            OTIMIZAR ALUNOS
+                            OTIMIZAR SEQUÊNCIA
                         </Button>
                     </div>
 
