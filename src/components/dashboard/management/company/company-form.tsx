@@ -100,7 +100,7 @@ export function CompanyForm() {
         <div className="mx-auto p-3 bg-primary/10 rounded-full text-primary w-fit mb-4">
             <Building2 className="h-8 w-8" />
         </div>
-        <CardTitle className="text-xl uppercase italic font-black">Perfil da Empresa</CardTitle>
+        <CardTitle className="text-xl uppercase italic font-black text-primary">Perfil da Empresa</CardTitle>
         <CardDescription>Dados oficiais para cabeçalho de contratos e recebimento de mensalidades.</CardDescription>
       </CardHeader>
       <CardContent className="pt-8">
@@ -245,7 +245,7 @@ export function CompanyForm() {
 
             <Button type="submit" className="w-full h-14 text-lg font-black shadow-xl" disabled={isSaving}>
               {isSaving ? <Loader2 className="animate-spin mr-2" /> : <Save className="mr-2 h-6 w-6" />}
-              SALVAR PERFIL
+              SALVAR PERFIL DA EMPRESA
             </Button>
           </form>
         </Form>

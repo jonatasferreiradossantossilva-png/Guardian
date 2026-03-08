@@ -296,8 +296,8 @@ export function RouteForm({
       
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
         <div className="p-6 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-8">
-                {/* COLUNA DA ESQUERDA */}
+            <div className="grid grid-cols-1 md:grid-cols-[380px_1fr] gap-8">
+                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO */}
                 <div className="space-y-8">
                     <div className="space-y-4 bg-muted/20 p-5 rounded-xl border border-dashed">
                         <div className="space-y-2">
@@ -353,7 +353,7 @@ export function RouteForm({
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
-                            {availableStudents.length > 0 && <Button variant="ghost" size="sm" className="h-6 text-[9px] font-black uppercase text-primary hover:bg-primary/10" onClick={handleAddAllAvailable}><UserPlus className="h-3 w-3 mr-1" /> Adicionar Todos</Button>}
+                            {availableStudents.length > 0 && <Button variant="ghost" size="sm" className="h-6 text-[9px] font-black uppercase text-primary hover:bg-primary/10" onClick={handleAddAllAvailable}><UserPlus className="h-3 w-3 mr-1" /> Inclusão em Massa</Button>}
                         </div>
                         <div className="border-2 rounded-xl overflow-hidden bg-background shadow-lg">
                             <div className="p-3 border-b bg-muted/30">
@@ -373,7 +373,7 @@ export function RouteForm({
                     </div>
                 </div>
 
-                {/* COLUNA DA DIREITA: ITINERÁRIO EM 3 CAMADAS */}
+                {/* COLUNA DA DIREITA: ITINERÁRIO EM 3 CAMADAS (SEM CONTORNOS ROUBANDO ESPAÇO) */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
                         <div className="flex items-center gap-3">
@@ -391,13 +391,13 @@ export function RouteForm({
                                 const studentObj = stop.type === 'student' ? studentsMap.get(stop.id) : null;
                                 return (
                                 <div key={`${stop.id}-${idx}`} className={cn("flex flex-col gap-1 p-3 border-2 rounded-xl group bg-background border-border", stop.type === 'school' && "bg-primary/5 border-primary/20")}>
-                                    {/* CAMADA 1: NOME COMPLETO */}
+                                    {/* CAMADA 1: NOME COMPLETO DO ALUNO */}
                                     <div className="flex items-center gap-3">
                                         <span className="text-[9px] font-black bg-muted w-5 h-5 flex items-center justify-center rounded-full text-muted-foreground shrink-0">{idx + 1}</span>
                                         <p className="text-sm font-black uppercase leading-tight text-foreground">{stop.name}</p>
                                     </div>
                                     
-                                    {/* CAMADA 2: ESCOLA */}
+                                    {/* CAMADA 2: NOME DA ESCOLA (CONTEXTO) */}
                                     <div className="pl-8">
                                         {stop.type === 'school' ? (
                                             <p className="text-[9px] font-black text-primary uppercase tracking-widest">Ponto de Desembarque Final</p>
@@ -406,7 +406,7 @@ export function RouteForm({
                                         )}
                                     </div>
 
-                                    {/* CAMADA 3: METADADOS + BOTOES */}
+                                    {/* CAMADA 3: METADADOS ABREVIADOS & BOTÕES DE AÇÃO */}
                                     <div className="pl-8 mt-1 flex items-center justify-between border-t border-dashed border-muted pt-2">
                                         <div className="text-[10px] font-black text-primary uppercase tracking-tight">
                                             {stop.type === 'student' ? formatStudentMetaAbbrev(studentObj) : "Logística Escola"}
@@ -426,8 +426,8 @@ export function RouteForm({
 
             <div className="pt-8 pb-20 flex flex-col sm:flex-row gap-3 border-t mt-10">
                 <DialogClose asChild><Button variant="ghost" className="h-14 px-8 flex-1 text-sm uppercase font-bold">Cancelar</Button></DialogClose>
-                <Button variant="outline" className="h-14 px-8 flex-1 text-sm uppercase font-black border-green-600/30 text-green-600 hover:bg-green-50" onClick={handleExportToWhatsApp} disabled={stops.length === 0}><MessageCircle className="mr-2 h-5 w-5" /> Enviar WhatsApp</Button>
-                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-14 text-lg font-black shadow-xl bg-primary text-white hover:bg-primary/90 transition-all"><CheckCircle2 className="mr-3 h-6 w-6" /> SALVAR ROTA</Button>
+                <Button variant="outline" className="h-14 px-8 flex-1 text-sm uppercase font-black border-green-600/30 text-green-600 hover:bg-green-50" onClick={handleExportToWhatsApp} disabled={stops.length === 0}><MessageCircle className="mr-2 h-5 w-5" /> Enviar p/ WhatsApp</Button>
+                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-14 text-lg font-black shadow-xl bg-primary text-white hover:bg-primary/90 transition-all"><CheckCircle2 className="mr-3 h-6 w-6" /> SALVAR ROTA DEFINITIVA</Button>
             </div>
         </div>
       </div>
