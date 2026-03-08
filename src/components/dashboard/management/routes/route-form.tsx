@@ -32,7 +32,9 @@ import {
     Search, 
     ShieldCheck, 
     Zap,
-    Route as RouteIcon 
+    Route as RouteIcon,
+    GraduationCap,
+    Clock
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -232,14 +234,14 @@ export function RouteForm({
   return (
     <DialogContent className="sm:max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20 shadow-sm">
-        <DialogTitle className="text-xl font-black uppercase italic text-primary">Montar Itinerário</DialogTitle>
-        <DialogDescription>A IA calculará a melhor rota priorizando o bem-estar dos alunos e a economia de combustível.</DialogDescription>
+        <DialogTitle className="text-xl font-black uppercase italic text-primary">Configuração de Itinerário Inteligente</DialogTitle>
+        <DialogDescription>A IA calculará a melhor rota priorizando o bem-estar dos alunos e a economia da operação.</DialogDescription>
       </DialogHeader>
       
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
         <div className="p-6 space-y-8">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
-                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO */}
+            <div className="grid grid-cols-1 md:grid-cols-[0.8fr_1.2fr] gap-10">
+                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO (40%) */}
                 <div className="space-y-8">
                     <div className="space-y-4 bg-muted/20 p-5 rounded-xl border border-dashed">
                         <div className="space-y-2">
@@ -304,7 +306,7 @@ export function RouteForm({
                                             <Label htmlFor="safe" className="font-black text-sm uppercase cursor-pointer">Priorizar Embarque (Segurança Total)</Label>
                                         </div>
                                         <p className="text-[11px] text-muted-foreground leading-relaxed italic">
-                                            A van embarca todos os alunos de todas as escolas antes de iniciar qualquer desembarque. Ideal para frotas que exigem conferência de lotação completa.
+                                            A van embarca todos os alunos de todas as escolas antes de iniciar qualquer desembarque. Ideal para conferência de lotação completa.
                                         </p>
                                     </div>
                                 </div>
@@ -320,7 +322,7 @@ export function RouteForm({
                                             <Label htmlFor="flexible" className="font-black text-sm uppercase text-amber-600 cursor-pointer">Entrega por Proximidade (Mais Agilidade)</Label>
                                         </div>
                                         <p className="text-[11px] text-muted-foreground leading-relaxed italic">
-                                            A IA sugere deixar os alunos assim que o lote da escola estiver completo e ela estiver na rota. Reduz drasticamente o tempo das crianças dentro do veículo.
+                                            A IA sugere deixar os alunos assim que estiverem próximos da escola. Reduz drasticamente o tempo das crianças no veículo.
                                         </p>
                                     </div>
                                 </div>
@@ -368,12 +370,12 @@ export function RouteForm({
                     </div>
                 </div>
 
-                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL */}
+                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL (60%) */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
                         <div className="flex items-center gap-3">
                             <Badge variant="outline" className="bg-background text-primary border-primary/30 h-8 px-3 font-black text-base">{stops.length}</Badge>
-                            <Label className="text-sm font-black uppercase tracking-tighter">Itinerário Final</Label>
+                            <Label className="text-sm font-black uppercase tracking-tighter">Itinerário Final Gerado</Label>
                         </div>
                         <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || studentsOnRoute.length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
                             {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
@@ -384,37 +386,68 @@ export function RouteForm({
                     <div className="rounded-2xl min-h-[500px]">
                         <div className="space-y-3">
                             {stops.length > 0 ? (
-                                stops.map((stop, idx) => (
+                                stops.map((stop, idx) => {
+                                    const studentObj = stop.type === 'student' ? studentsMap.get(stop.id) : null;
+                                    return (
                                     <div key={`${stop.id}-${idx}`} className={cn(
-                                        "flex items-center gap-4 p-3 border-2 rounded-xl group animate-in fade-in slide-in-from-right-4 duration-300 shadow-sm",
-                                        stop.type === 'school' ? "bg-primary/5 border-primary/20" : "bg-background border-border"
+                                        "flex items-center gap-4 p-4 border-2 rounded-xl group animate-in fade-in slide-in-from-right-4 duration-300 shadow-sm",
+                                        stop.type === 'school' ? "bg-primary/5 border-primary/20 border-primary/30" : "bg-background border-border"
                                     )}>
-                                        <span className="text-xs font-black bg-muted w-7 h-7 flex items-center justify-center rounded-full text-muted-foreground">{idx + 1}</span>
+                                        <span className="text-xs font-black bg-muted w-8 h-8 flex items-center justify-center rounded-full text-muted-foreground shrink-0">{idx + 1}</span>
+                                        
                                         <div className="flex-1 min-w-0">
-                                            <div className="flex items-center gap-2">
-                                                {stop.type === 'school' && <School className="h-4 w-4 text-primary" />}
-                                                <p className="text-sm font-black uppercase truncate leading-tight">{stop.name}</p>
+                                            <div className="flex items-center gap-2 mb-1">
+                                                {stop.type === 'school' ? (
+                                                    <>
+                                                        <School className="h-5 w-5 text-primary shrink-0" />
+                                                        <p className="text-base font-black uppercase truncate leading-tight text-primary">{stop.name}</p>
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <Users className="h-4 w-4 text-muted-foreground shrink-0" />
+                                                        <p className="text-base font-black uppercase truncate leading-tight">{stop.name}</p>
+                                                    </>
+                                                )}
                                             </div>
-                                            <p className="text-[10px] text-muted-foreground truncate uppercase font-bold tracking-tight">{stop.details}</p>
+                                            
+                                            <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                                                <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase">
+                                                    <School className="h-3 w-3" />
+                                                    {stop.details}
+                                                </div>
+                                                {studentObj && (
+                                                    <>
+                                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase">
+                                                            <GraduationCap className="h-3 w-3" />
+                                                            {studentObj.serie} {studentObj.turma ? `• ${studentObj.turma}` : ''}
+                                                        </div>
+                                                        <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground font-bold uppercase">
+                                                            <Clock className="h-3 w-3" />
+                                                            {studentObj.shift}
+                                                        </div>
+                                                    </>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => { 
+
+                                        <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity shrink-0">
+                                            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => { 
                                                 const newStops = [...stops];
                                                 if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === 0}><ArrowUp className="h-4 w-4" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => {
+                                            }} disabled={idx === 0}><ArrowUp className="h-5 w-5" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => {
                                                 const newStops = [...stops];
                                                 if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-4 w-4" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-4 w-4" /></Button>
+                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-5 w-5" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-5 w-5" /></Button>
                                         </div>
                                     </div>
-                                ))
+                                )})
                             ) : (
                                 <div className="py-32 text-center text-muted-foreground flex flex-col items-center" key="empty-itinerary">
                                     <RouteIcon className="h-16 w-16 mb-4 opacity-5" />
                                     <p className="text-xs font-black uppercase tracking-widest text-center opacity-30 leading-tight">
-                                        Seu itinerário aparecerá aqui <br/> conforme você adiciona alunos
+                                        Seu itinerário detalhado aparecerá aqui <br/> conforme você adiciona alunos
                                     </p>
                                 </div>
                             )}
