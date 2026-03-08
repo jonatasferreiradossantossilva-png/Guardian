@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -137,6 +138,43 @@ export function RouteForm({
     return { availableStudents: filtered, studentsOnRoute };
   }, [stops, students, studentSearch, selectedSchoolIds, shift, assignedStudentsInOtherRoutes, studentsMap]);
 
+  const handleAddStudent = (s: Student) => {
+    const studentSchool = schoolsMap.get(s.schoolId);
+    
+    setStops(prev => {
+        // 1. Verifica se a escola deste aluno já está na rota
+        const hasSchool = prev.some(st => st.id === s.schoolId && st.type === 'school');
+        
+        // 2. Adiciona o aluno
+        const newStops = [...prev, { 
+            id: s.id, 
+            type: 'student' as const, 
+            name: s.name, 
+            details: studentSchool?.name 
+        }];
+        
+        // 3. Se a escola não estiver, injeta automaticamente ao final
+        if (!hasSchool && studentSchool) {
+            newStops.push({ 
+                id: s.schoolId, 
+                type: 'school' as const, 
+                name: studentSchool.name, 
+                details: 'Destino Final (Injetado via IA)' 
+            });
+            
+            // Sincroniza o seletor de escolas se necessário
+            setSelectedSchoolIds(prevIds => {
+                if (!prevIds.includes(s.schoolId)) return [...prevIds, s.schoolId];
+                return prevIds;
+            });
+        }
+        
+        return newStops;
+    });
+    
+    setIsOptimized(false);
+  };
+
   const handleOptimizeOrder = async () => {
     if (studentsOnRoute.length < 2) return;
     setIsOptimizing(true);
@@ -193,7 +231,7 @@ export function RouteForm({
     <DialogContent className="sm:max-w-5xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20">
         <DialogTitle>Montar Itinerário</DialogTitle>
-        <DialogDescription>Defina os parâmetros e adicione os alunos. O botão de salvar está ao final da lista.</DialogDescription>
+        <DialogDescription>Defina os parâmetros e adicione os alunos. Escolas são injetadas automaticamente.</DialogDescription>
       </DialogHeader>
       
       <div className="flex-1 overflow-y-auto bg-background">
@@ -254,7 +292,7 @@ export function RouteForm({
                                                 <p className="text-xs font-bold truncate">{s.name}</p>
                                                 <p className="text-[9px] text-muted-foreground uppercase">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
                                             </div>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => { setStops(prev => [...prev, { id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name }]); setIsOptimized(false); }}>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => handleAddStudent(s)}>
                                                 <PlusCircle className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -315,7 +353,7 @@ export function RouteForm({
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="outline" size="sm" className="w-full h-9 font-bold border-dashed border-primary/30 text-primary">
-                                        <PlusCircle className="mr-2 h-4 w-4" /> Adicionar Escola (Desembarque)
+                                        <PlusCircle className="mr-2 h-4 w-4" /> Forçar Inclusão de Escola
                                     </Button>
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[300px]">
