@@ -239,9 +239,9 @@ export function CompanyForm() {
                     name="pixKey"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel className="text-xs font-bold text-primary flex items-center gap-2">
+                            <FormLabel className="text-xs font-bold text-primary flex items-center gap-1">
                                 <QrCode className="h-3 w-3" /> Chave Pix Principal
-                            </FormLabel>
+                            </Label>
                             <FormControl>
                                 <Input placeholder="E-mail, CPF ou Chave Aleatória" {...field} className="bg-primary/5 border-primary/20 font-bold" />
                             </FormControl>

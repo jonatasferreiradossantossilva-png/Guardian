@@ -246,26 +246,30 @@ export function RouteForm({
                                 </Select>
                             </div>
                         </div>
-                        <div className="space-y-2 border-t pt-4">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                <Zap className="h-3 w-3" /> Estratégia de Inteligência
-                            </Label>
-                            <Select onValueChange={v => { setOptimizationMode(v as any); setIsOptimized(false); }} value={optimizationMode}>
-                                <SelectTrigger className="bg-primary/5 border-primary/20 h-11 font-bold">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="safe" className="flex flex-col items-start gap-0.5">
-                                        <div className="flex items-center gap-2 font-bold"><ShieldCheck className="h-3.5 w-3.5 text-primary"/> Regra de Ouro (Tradicional)</div>
-                                        <p className="text-[9px] text-muted-foreground ml-5 italic">Embarca todos primeiro, entrega depois.</p>
-                                    </SelectItem>
-                                    <SelectItem value="flexible" className="flex flex-col items-start gap-0.5">
-                                        <div className="flex items-center gap-2 font-bold"><Zap className="h-3.5 w-3.5 text-amber-500"/> Modo Híbrido (IA)</div>
-                                        <p className="text-[9px] text-muted-foreground ml-5 italic">Entrega antecipada se o lote estiver completo.</p>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
-                        </div>
+                        
+                        {/* Visibilidade Dinâmica da Estratégia Inteligente */}
+                        {selectedSchoolIds.length >= 2 && (
+                            <div className="space-y-2 border-t pt-4 animate-in fade-in slide-in-from-top-2 duration-500">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                    <Zap className="h-3 w-3" /> Estratégia de Inteligência
+                                </Label>
+                                <Select onValueChange={v => { setOptimizationMode(v as any); setIsOptimized(false); }} value={optimizationMode}>
+                                    <SelectTrigger className="bg-primary/5 border-primary/20 h-11 font-bold">
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="safe" className="flex flex-col items-start gap-0.5">
+                                            <div className="flex items-center gap-2 font-bold"><ShieldCheck className="h-3.5 w-3.5 text-primary"/> Regra de Ouro (Tradicional)</div>
+                                            <p className="text-[9px] text-muted-foreground ml-5 italic">Embarca todos primeiro, entrega depois.</p>
+                                        </SelectItem>
+                                        <SelectItem value="flexible" className="flex flex-col items-start gap-0.5">
+                                            <div className="flex items-center gap-2 font-bold"><Zap className="h-3.5 w-3.5 text-amber-500"/> Modo Híbrido (IA)</div>
+                                            <p className="text-[9px] text-muted-foreground ml-5 italic">Entrega antecipada se o lote estiver completo.</p>
+                                        </SelectItem>
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                        )}
                     </div>
 
                     <div className="space-y-2">

@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais blindados para o protótipo do Guardian.
@@ -89,7 +90,7 @@ export const initialMockData = {
         { id: "student-17", name: "Manuela Ferro", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5810, longitude: -46.6810, street: "Rua Joaquim Floriano", number: "600", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "3º Ano", turma: "Sala 05" },
         { id: "student-18", name: "Ricardo Dias", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5820, longitude: -46.6820, street: "Av. Brigadeiro Faria Lima", number: "1200", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "4º Ano", turma: "Sala 06" },
         { id: "student-19", name: "Heloísa Santos", schoolId: "school-1", parentId: "parent-3", shift: "Integral", status: "aguardando", active: true, latitude: -23.5830, longitude: -46.6830, street: "Rua Iguatemi", number: "300", city: "São Paulo", state: "SP", monthlyFee: 650, preferredPaymentDay: 10, serie: "5º Ano", turma: "Sala 07" },
-        // NOVOS ALUNOS PARA EXEMPLO DE "A INCLUIR" - COLÉGIO MARJORE PAULA
+        // NOVOS ALUNOS DO COLÉGIO MARJORE PAULA PARA TESTE DE FILTRO
         { id: "student-mj-1", name: "Pedro Oliveira", schoolId: "school-marjore", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5590, longitude: -46.6610, street: "Rua Oscar Freire", number: "1500", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "4º Ano", turma: "Sala 10" },
         { id: "student-mj-2", name: "Sofia Almeida", schoolId: "school-marjore", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5600, longitude: -46.6620, street: "Av. Brasil", number: "2000", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "2º Ano", turma: "Sala 05" },
         { id: "student-mj-3", name: "Lucca Mendes", schoolId: "school-marjore", parentId: "parent-3", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5610, longitude: -46.6630, street: "Rua Augusta", number: "2500", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "1º Ano", turma: "Sala 01" },
