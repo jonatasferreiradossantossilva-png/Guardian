@@ -1,12 +1,14 @@
 'use client';
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Bus, Sparkles, Siren, Clock, Activity, ArrowRight } from 'lucide-react';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { Bus, Sparkles, Siren, Clock, Activity, ArrowRight, Zap } from 'lucide-react';
+import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/hooks/use-toast';
 
 type FeedItem = {
     id: string;
@@ -20,40 +22,46 @@ type FeedItem = {
 
 export function OperationalFeed() {
     const { data: incidents } = useMockCollection('incidents');
+    const { addDoc } = useMockData();
+    const { toast } = useToast();
+
+    const handleSimulateEvent = () => {
+        addDoc('incidents', {
+            category: 'IA: Rota Reotimizada',
+            description: 'Inteligência detectou ausência. Rota recalculada com economia de 1.4km.',
+            severity: 'Baixa',
+            reporter: 'Guardian Intelligence',
+            timestamp: new Date().toISOString(),
+            location: { lat: -23.55, lng: -46.63 }
+        });
+        toast({
+            title: "Simulação Ativada",
+            description: "Um novo evento de inteligência foi injetado no feed."
+        });
+    };
 
     const feedItems = useMemo<FeedItem[]>(() => {
         const items: FeedItem[] = [];
 
-        // 1. Adicionar incidentes reais do banco
         incidents?.forEach(inc => {
+            const isAI = inc.reporter === 'Guardian Intelligence';
             items.push({
                 id: inc.id,
-                type: 'incident',
-                title: `Alerta: ${inc.category}`,
-                description: `${inc.reporter}: ${inc.description}`,
+                type: isAI ? 'intelligence' : 'incident',
+                title: inc.category,
+                description: inc.description,
                 timestamp: inc.timestamp,
-                icon: <Siren className="h-4 w-4" />,
-                color: 'text-destructive bg-destructive/10 border-destructive/20'
+                icon: isAI ? <Sparkles className="h-4 w-4" /> : <Siren className="h-4 w-4" />,
+                color: isAI ? 'text-primary bg-primary/10 border-primary/20' : 'text-destructive bg-destructive/10 border-destructive/20'
             });
         });
 
-        // 2. Mock de eventos de inteligência e operação para o protótipo
+        // Mock fixo para garantir que o feed nunca pareça vazio no início
         const now = new Date();
-        const tenMinAgo = new Date(now.getTime() - 10 * 60000).toISOString();
         const hourAgo = new Date(now.getTime() - 60 * 60000).toISOString();
 
         items.push({
-            id: 'intel-1',
-            type: 'intelligence',
-            title: 'IA: Rota Reotimizada',
-            description: 'Enzo Pereira (Falta) removido da Rota 01. Economia de 1.2km detectada.',
-            timestamp: tenMinAgo,
-            icon: <Sparkles className="h-4 w-4" />,
-            color: 'text-primary bg-primary/10 border-primary/20'
-        });
-
-        items.push({
-            id: 'route-1',
+            id: 'route-static-1',
             type: 'route',
             title: 'Viagem Iniciada',
             description: 'Juliano Castro iniciou a Rota 01 - Manhã.',
@@ -73,7 +81,12 @@ export function OperationalFeed() {
                         <Activity className="h-4 w-4 text-primary" />
                         Acontecendo Agora
                     </CardTitle>
-                    <Badge variant="outline" className="text-[10px] font-bold">LIVE</Badge>
+                    <div className="flex items-center gap-2">
+                        <Button variant="ghost" size="icon" className="h-6 w-6 text-primary hover:bg-primary/10" title="Simular Inteligência" onClick={handleSimulateEvent}>
+                            <Zap className="h-3 w-3" />
+                        </Button>
+                        <Badge variant="outline" className="text-[10px] font-bold">LIVE</Badge>
+                    </div>
                 </div>
                 <CardDescription className="text-xs">Eventos da frota e inteligência da IA.</CardDescription>
             </CardHeader>

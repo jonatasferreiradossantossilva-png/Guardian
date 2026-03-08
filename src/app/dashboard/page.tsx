@@ -62,6 +62,9 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
             { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Milestone },
         ];
 
+        // Novo atalho de Feed para mobile
+        baseLinks.push({ href: '/dashboard', label: 'Feed Operacional', icon: Activity });
+
         if (isDriver) {
             return [
                 ...baseLinks,
