@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -255,7 +254,7 @@ export function RouteForm({
                                                 <p className="text-xs font-bold truncate">{s.name}</p>
                                                 <p className="text-[9px] text-muted-foreground uppercase">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
                                             </div>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => { setStops(prev => [...prev, { id: s.id, type: 'student', name: s.name, details: schoolsMap.get(student.schoolId)?.name }]); setIsOptimized(false); }}>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onClick={() => { setStops(prev => [...prev, { id: s.id, type: 'student', name: s.name, details: schoolsMap.get(s.schoolId)?.name }]); setIsOptimized(false); }}>
                                                 <PlusCircle className="h-5 w-5" />
                                             </Button>
                                         </div>
@@ -321,8 +320,8 @@ export function RouteForm({
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent className="w-[300px]">
                                     {selectedSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean).map(s => (
-                                        <DropdownMenuItem key={s.id} onSelect={() => { if (!stops.some(st => st.id === s.id && st.type === 'school')) setStops(prev => [...prev, { id: s.id, type: 'school', name: s.name, details: 'Ponto de desembarque' }]); setIsOptimized(false); }}>
-                                            <School className="mr-2 h-3 w-3" /> {s.name}
+                                        <DropdownMenuItem key={s!.id} onSelect={() => { if (!stops.some(st => st.id === s!.id && st.type === 'school')) setStops(prev => [...prev, { id: s!.id, type: 'school', name: s!.name, details: 'Ponto de desembarque' }]); setIsOptimized(false); }}>
+                                            <School className="mr-2 h-3 w-3" /> {s!.name}
                                         </DropdownMenuItem>
                                     ))}
                                 </DropdownMenuContent>
