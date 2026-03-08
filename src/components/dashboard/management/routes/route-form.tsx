@@ -400,12 +400,12 @@ export function RouteForm({
                                                 {stop.type === 'school' ? (
                                                     <>
                                                         <School className="h-5 w-5 text-primary shrink-0" />
-                                                        <p className="text-base font-black uppercase truncate leading-tight text-primary">{stop.name}</p>
+                                                        <p className="text-base font-black uppercase leading-tight text-primary">{stop.name}</p>
                                                     </>
                                                 ) : (
                                                     <>
                                                         <Users className="h-4 w-4 text-muted-foreground shrink-0" />
-                                                        <p className="text-base font-black uppercase truncate leading-tight">{stop.name}</p>
+                                                        <p className="text-base font-black uppercase leading-tight">{stop.name}</p>
                                                     </>
                                                 )}
                                             </div>
@@ -444,7 +444,7 @@ export function RouteForm({
                                     </div>
                                 )})
                             ) : (
-                                <div className="py-32 text-center text-muted-foreground flex flex-col items-center" key="empty-itinerary">
+                                <div className="py-32 text-center text-muted-foreground flex flex-col items-center">
                                     <RouteIcon className="h-16 w-16 mb-4 opacity-5" />
                                     <p className="text-xs font-black uppercase tracking-widest text-center opacity-30 leading-tight">
                                         Seu itinerário detalhado aparecerá aqui <br/> conforme você adiciona alunos
