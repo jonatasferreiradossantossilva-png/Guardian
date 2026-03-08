@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -37,9 +38,11 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { routingGeoapify } from '@/ai/flows/routing-geoapify';
 import { cn } from '@/lib/utils';
+import { ScrollArea } from '@/components/ui/scroll-area';
 
 type Driver = { id: string; name: string; vehicleId?: string; latitude?: number; longitude?: number; };
 type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string; serie?: string; turma?: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; latitude?: number; longitude?: number; };
@@ -242,20 +245,20 @@ export function RouteForm({
                     <div className="space-y-4 bg-muted/20 p-5 rounded-xl border border-dashed">
                         <div className="space-y-2">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Dados da Rota</Label>
-                            <Input placeholder="Nome da Rota" value={name} onChange={e => setName(e.target.value)} className="bg-background font-bold h-11" />
+                            <Input placeholder="Nome da Rota" value={name} onChange={e => setName(e.target.value)} className={cn("bg-background font-bold h-11", errors.name && "border-destructive")} />
                         </div>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Turno</Label>
                                 <Select onValueChange={v => setShift(v as any)} value={shift}>
-                                    <SelectTrigger className="bg-background h-11"><SelectValue placeholder="Selecione" /></SelectTrigger>
+                                    <SelectTrigger className={cn("bg-background h-11", errors.shift && "border-destructive")}><SelectValue placeholder="Selecione" /></SelectTrigger>
                                     <SelectContent><SelectItem value="Manhã">Manhã</SelectItem><SelectItem value="Tarde">Tarde</SelectItem></SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
                                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Motorista</Label>
                                 <Select onValueChange={setDriverId} value={driverId}>
-                                    <SelectTrigger className="bg-background h-11"><SelectValue placeholder="Escolha" /></SelectTrigger>
+                                    <SelectTrigger className={cn("bg-background h-11", errors.driverId && "border-destructive")}><SelectValue placeholder="Escolha" /></SelectTrigger>
                                     <SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
                                 </Select>
                             </div>
@@ -281,41 +284,49 @@ export function RouteForm({
                         </div>
                     </div>
 
-                    {/* SELETOR DE ESTRATÉGIA DINÂMICO */}
+                    {/* SELETOR DE ESTRATÉGIA DINÂMICO - AGORA EM CARDS PARA NÃO CORTAR TEXTO */}
                     {selectedSchoolIds.length >= 2 && (
-                        <div className="space-y-3 p-5 bg-primary/5 rounded-xl border-2 border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                <Zap className="h-4 w-4" /> Como a IA deve organizar os alunos?
-                            </Label>
-                            <Select onValueChange={v => { setOptimizationMode(v as any); setIsOptimized(false); }} value={optimizationMode}>
-                                <SelectTrigger className="bg-background h-16 font-black text-primary border-primary/30 shadow-md">
-                                    <SelectValue />
-                                </SelectTrigger>
-                                <SelectContent className="w-[var(--radix-select-trigger-width)] md:min-w-[600px]">
-                                    <SelectItem value="safe" className="py-4">
-                                        <div className="flex flex-col gap-1 pr-4">
-                                            <div className="flex items-center gap-2 font-black text-sm uppercase">
-                                                <ShieldCheck className="h-4 w-4 text-primary"/> 
-                                                <span>Priorizar Embarque (Segurança Total)</span>
-                                            </div>
-                                            <p className="text-[11px] text-muted-foreground italic leading-snug pl-6 whitespace-normal max-w-lg">
-                                                A van embarca todos os alunos de todas as escolas antes de iniciar qualquer desembarque. Ideal para rotas onde a conferência de embarque é crítica.
-                                            </p>
+                        <div className="space-y-4 p-6 bg-primary/5 rounded-2xl border-2 border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
+                            <div className="space-y-1">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
+                                    <Zap className="h-4 w-4" /> Inteligência Guardian
+                                </Label>
+                                <h3 className="text-base font-black uppercase italic tracking-tight">Como a IA deve organizar os alunos?</h3>
+                            </div>
+                            
+                            <RadioGroup value={optimizationMode} onValueChange={(v) => { setOptimizationMode(v as any); setIsOptimized(false); }} className="grid grid-cols-1 gap-4">
+                                <div className={cn(
+                                    "relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md bg-background",
+                                    optimizationMode === 'safe' ? "border-primary ring-1 ring-primary/20" : "border-border opacity-70"
+                                )} onClick={() => setOptimizationMode('safe')}>
+                                    <div className="mt-1"><RadioGroupItem value="safe" id="safe" /></div>
+                                    <div className="space-y-1.5 flex-1 pr-4">
+                                        <div className="flex items-center gap-2">
+                                            <ShieldCheck className="h-4 w-4 text-primary" />
+                                            <Label htmlFor="safe" className="font-black text-sm uppercase cursor-pointer">Priorizar Embarque (Segurança Total)</Label>
                                         </div>
-                                    </SelectItem>
-                                    <SelectItem value="flexible" className="py-4">
-                                        <div className="flex flex-col gap-1 pr-4">
-                                            <div className="flex items-center gap-2 font-black text-sm uppercase text-amber-600">
-                                                <Zap className="h-4 w-4 text-amber-500"/> 
-                                                <span>Entrega por Proximidade (Mais Agilidade)</span>
-                                            </div>
-                                            <p className="text-[11px] text-muted-foreground italic leading-snug pl-6 whitespace-normal max-w-lg">
-                                                A IA sugere deixar os alunos assim que o lote da escola estiver completo e ela estiver no caminho. Reduz drasticamente o tempo das crianças na van.
-                                            </p>
+                                        <p className="text-[11px] text-muted-foreground leading-relaxed italic">
+                                            A van embarca todos os alunos de todas as escolas antes de iniciar qualquer desembarque. Ideal para frotas que exigem conferência de lotação completa.
+                                        </p>
+                                    </div>
+                                </div>
+
+                                <div className={cn(
+                                    "relative flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300 hover:shadow-md bg-background",
+                                    optimizationMode === 'flexible' ? "border-amber-500 ring-1 ring-amber-500/20" : "border-border opacity-70"
+                                )} onClick={() => setOptimizationMode('flexible')}>
+                                    <div className="mt-1"><RadioGroupItem value="flexible" id="flexible" /></div>
+                                    <div className="space-y-1.5 flex-1 pr-4">
+                                        <div className="flex items-center gap-2">
+                                            <Zap className="h-4 w-4 text-amber-500" />
+                                            <Label htmlFor="flexible" className="font-black text-sm uppercase text-amber-600 cursor-pointer">Entrega por Proximidade (Mais Agilidade)</Label>
                                         </div>
-                                    </SelectItem>
-                                </SelectContent>
-                            </Select>
+                                        <p className="text-[11px] text-muted-foreground leading-relaxed italic">
+                                            A IA sugere deixar os alunos assim que o lote da escola estiver completo e ela estiver na rota. Reduz drasticamente o tempo das crianças dentro do veículo.
+                                        </p>
+                                    </div>
+                                </div>
+                            </RadioGroup>
                         </div>
                     )}
 
