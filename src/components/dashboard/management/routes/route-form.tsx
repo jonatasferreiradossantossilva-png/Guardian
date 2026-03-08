@@ -35,7 +35,6 @@ import {
     Route as RouteIcon,
     GraduationCap,
     Clock,
-    Share2,
     MessageCircle
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -222,7 +221,7 @@ export function RouteForm({
     } catch (e) { toast({ title: "Erro na otimização", variant: "destructive" }); } finally { setIsOptimizing(false); }
   };
 
-  const handleExportSequence = () => {
+  const handleExportToWhatsApp = () => {
     if (stops.length === 0) return;
     
     const stopList = stops.map((s, i) => {
@@ -239,10 +238,13 @@ export function RouteForm({
     const header = `📋 GUARDIAN: ITINERÁRIO\nROTA: ${name || 'Sem nome'}\nTURNO: ${shift || 'Não definido'}\n--------------------------\n`;
     const fullText = header + stopList;
 
-    navigator.clipboard.writeText(fullText);
+    // Abrir WhatsApp com o texto codificado
+    const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`;
+    window.open(whatsappUrl, '_blank');
+
     toast({
-        title: "Sequência Copiada!",
-        description: "Itinerário formatado pronto para colar no WhatsApp.",
+        title: "WhatsApp Aberto!",
+        description: "A sequência foi enviada para o aplicativo.",
     });
   };
 
@@ -375,7 +377,7 @@ export function RouteForm({
                                     availableStudents.map(s => (
                                         <div key={s.id} className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-primary/5 transition-colors group">
                                             <div className="min-w-0">
-                                                <p className="text-sm font-black uppercase truncate group-hover:text-primary transition-colors">{s.name}</p>
+                                                <p className="text-sm font-black uppercase group-hover:text-primary transition-colors">{s.name}</p>
                                                 <p className="text-[10px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>
                                             </div>
                                             <Button size="icon" variant="ghost" className="h-10 w-10 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}>
@@ -489,7 +491,7 @@ export function RouteForm({
                 <Button 
                     variant="outline" 
                     className="h-16 px-10 flex-1 text-base uppercase font-black border-green-600/30 text-green-600 hover:bg-green-50"
-                    onClick={handleExportSequence}
+                    onClick={handleExportToWhatsApp}
                     disabled={stops.length === 0}
                 >
                     <MessageCircle className="mr-2 h-6 w-6" />
