@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -19,7 +20,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useMockData } from '@/hooks/use-mock-data';
-import { Users, School, ArrowUp, ArrowDown, Sparkles, Loader2, X, PlusCircle, CheckCircle2 } from 'lucide-react';
+import { Users, School, ArrowUp, ArrowDown, Sparkles, Loader2, X, PlusCircle, CheckCircle2, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -222,7 +223,6 @@ export function RouteForm({
       <div className="flex-1 overflow-y-auto bg-background">
         <div className="p-6 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-                {/* Coluna 1: Configuração e Alunos Disponíveis */}
                 <div className="space-y-6">
                     <div className="space-y-4 bg-muted/20 p-4 rounded-lg border border-dashed">
                         <div className="space-y-2">
@@ -292,7 +292,6 @@ export function RouteForm({
                     </div>
                 </div>
 
-                {/* Coluna 2: Itinerário Final (INCLUÍDOS) */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/5 p-3 rounded-lg border border-primary/20">
                         <div className="flex items-center gap-2">
@@ -338,7 +337,6 @@ export function RouteForm({
                 </div>
             </div>
 
-            {/* Rodapé Interno: Corre junto com o scroll no fim do conteúdo */}
             <div className="pt-10 pb-20 flex flex-col sm:flex-row gap-3 border-t">
                 <DialogClose asChild>
                     <Button variant="ghost" className="h-14 px-8 flex-1">Cancelar</Button>
