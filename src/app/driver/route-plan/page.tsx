@@ -412,7 +412,10 @@ export default function DriverRoutePlanPage() {
 
                     <TabsContent value="itinerario" className="flex-1 overflow-hidden">
                         <ScrollArea className="h-full">
-                            <div className="pl-2 pr-8 py-4 space-y-6 pb-20">
+                            <div className={cn(
+                                "py-4 space-y-6 pb-20",
+                                selectedDirection === 'ida' ? "pl-2 pr-8" : "pl-1 pr-9"
+                            )}>
                                 {!activeStop ? (
                                     <div className="ml-0 mr-2">
                                         <Card className="text-center p-10 bg-green-500/10 border-green-500/30 border-2">
@@ -438,19 +441,19 @@ export default function DriverRoutePlanPage() {
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-3">Próximas Paradas</h3>
                                                 {upcomingStops.map((stop, idx) => (
                                                     <div key={idx}>
-                                                        <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
+                                                        <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm mx-1">
                                                             {stop.type === 'student' ? (
                                                                 <div className="flex-1 min-w-0 flex items-center gap-3">
                                                                     <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as Student).photoUrl || `https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
                                                                     <div className="min-w-0">
-                                                                        <p className="text-sm font-black truncate uppercase">{stop.data.name}</p>
+                                                                        <p className="text-xs font-black truncate uppercase">{stop.data.name}</p>
                                                                         <p className="text-[9px] text-muted-foreground uppercase font-bold">{formatStudentClassInfo(stop.data as Student)}</p>
                                                                     </div>
                                                                 </div>
                                                             ) : (
                                                                 <div className="flex-1 min-w-0 flex items-center gap-3">
                                                                     <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>
-                                                                    <span className="text-sm font-black truncate uppercase">{stop.data.name}</span>
+                                                                    <span className="text-xs font-black truncate uppercase">{stop.data.name}</span>
                                                                 </div>
                                                             )}
                                                             <Badge variant="secondary" className="text-[9px] font-black uppercase">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
@@ -507,7 +510,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
   return (
-    <Card className={cn("w-full shadow-2xl border-primary border-2 mx-auto", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
+    <Card className={cn("w-full shadow-2xl border-primary border-2 mx-1", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
         <CardHeader className="pb-3 border-b bg-muted/10">
             <div className="flex justify-between items-center mb-3">
                 <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase text-primary">Parada Atual</Badge>
@@ -519,7 +522,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                     <AvatarFallback className="text-3xl font-black">{student.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow min-w-0">
-                    <CardTitle className="text-xl font-black truncate uppercase">{student.name}</CardTitle>
+                    <CardTitle className="text-lg font-black truncate uppercase leading-tight">{student.name}</CardTitle>
                     <div className="space-y-1 mt-1">
                         <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase">
                             <span>{formatStudentClassInfo(student)}</span>
@@ -571,7 +574,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
 function NextStopSchoolCard({ school, direction, onAction, students, onStatusChange, onEndEarly }: { school: SchoolData, direction: 'ida' | 'volta', onAction: () => void, students: Student[], onStatusChange: (id: string, status: StudentStatus) => void, onEndEarly: () => void }) {
     const isIda = direction === 'ida';
     return (
-        <Card className="w-full shadow-2xl border-primary border-2 bg-card overflow-hidden mx-auto">
+        <Card className="w-full shadow-2xl border-primary border-2 bg-card overflow-hidden mx-1">
             <CardHeader className="text-center pb-4 bg-primary/10 border-b">
                 <div className="mx-auto w-16 h-16 rounded-full bg-background border-4 border-primary/20 text-primary shadow-lg flex items-center justify-center mb-2"><School className="h-8 w-8" /></div>
                 <Badge className="w-fit mx-auto mb-1 font-black uppercase tracking-widest text-[10px] bg-primary text-white">{isIda ? 'Desembarque Coletivo' : 'Embarque Coletivo'}</Badge>
@@ -590,7 +593,7 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                                 <Avatar className="h-12 w-12 shrink-0"><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/100/100`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-2">
-                                        <p className="text-sm font-black truncate uppercase">{s.name}</p>
+                                        <p className="text-xs font-black truncate uppercase">{s.name}</p>
                                         {hasAlert && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" />}
                                     </div>
                                     <p className="text-[9px] text-primary font-black uppercase">{formatStudentClassInfo(s)}</p>
