@@ -98,6 +98,13 @@ const statusText: Record<StudentStatus, string> = {
   ausente_dia_todo: 'Ausente (Dia Todo)',
 };
 
+// Helper function to format abbreviated student info
+const formatStudentClassInfo = (student: Student) => {
+    const serie = student.serie ? student.serie.split(' ')[0] : '';
+    const turma = student.turma ? student.turma.replace(/Sala/gi, 'SL') : '';
+    return `${serie} • ${turma} • ${student.shift}`;
+};
+
 const GoogleMapMarkers = ({ driverLocation, stops, routePolyline }: { driverLocation: any, stops: Stop[], routePolyline?: string }) => (
     <>
         {routePolyline && <RoutePolyline geoJsonPath={routePolyline} strokeColor="#2ab0c1" />}
@@ -419,7 +426,7 @@ export default function DriverRoutePlanPage() {
                                                                 <Avatar className="h-8 w-8"><AvatarImage src={`https://picsum.photos/seed/student-${stop.id}/40/40`}/><AvatarFallback>S</AvatarFallback></Avatar>
                                                                 <div className="min-w-0">
                                                                     <p className="text-sm font-black truncate uppercase">{stop.data.name}</p>
-                                                                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{(stop.data as Student).serie} • {(stop.data as Student).turma}</p>
+                                                                    <p className="text-[9px] text-muted-foreground uppercase font-bold">{formatStudentClassInfo(stop.data as Student)}</p>
                                                                 </div>
                                                             </div>
                                                         ) : (
@@ -494,9 +501,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                     <CardTitle className="text-xl font-black truncate uppercase">{student.name}</CardTitle>
                     <div className="space-y-1 mt-1">
                         <div className="flex items-center gap-1.5 text-primary font-bold text-xs uppercase">
-                            <span>{student.serie}</span>
-                            <span className="opacity-30">•</span>
-                            <span>{student.turma}</span>
+                            <span>{formatStudentClassInfo(student)}</span>
                         </div>
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                             <MapPin className="h-3 w-3 text-primary" />
@@ -567,7 +572,7 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                                         <p className="text-sm font-black truncate uppercase">{s.name}</p>
                                         {hasAlert && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" />}
                                     </div>
-                                    <p className="text-[9px] text-primary font-black uppercase">{s.serie} • {s.turma}</p>
+                                    <p className="text-[9px] text-primary font-black uppercase">{formatStudentClassInfo(s)}</p>
                                 </div>
                                 <div className="flex gap-2 shrink-0">
                                     <Button size="icon" variant="outline" className="h-10 w-10 text-green-600" onClick={() => onStatusChange(s.id, isIda ? 'desembarcado' : 'a_bordo')}><Check className="h-5 w-5" /></Button>
