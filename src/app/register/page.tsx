@@ -517,7 +517,7 @@ export default function PublicRegistrationPage() {
         {step === 'photo' && (
             <Card className="shadow-2xl border-primary/20 animate-in slide-in-from-bottom-4 duration-500">
                 <CardHeader className="bg-primary/5 border-b text-center">
-                    <CardTitle className="text-lg">Identificação do Aluno</CardTitle>
+                    <CardTitle>Identificação do Aluno</CardTitle>
                     <CardDescription>Esta foto ajuda o motorista no embarque.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-6 pt-8 flex flex-col items-center">
@@ -544,7 +544,7 @@ export default function PublicRegistrationPage() {
                 <CardHeader className="bg-destructive/5 border-b">
                     <div className="flex items-center gap-2 text-destructive">
                         <HeartPulse className="h-5 w-5" />
-                        <CardTitle className="text-lg">Saúde e Cuidados</CardTitle>
+                        <CardTitle>Saúde e Cuidados</CardTitle>
                     </div>
                     <CardDescription>Alertas para o motorista.</CardDescription>
                 </CardHeader>
