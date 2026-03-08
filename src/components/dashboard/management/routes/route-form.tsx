@@ -275,14 +275,28 @@ export function RouteForm({
                                 <SelectTrigger className="bg-background h-14 font-bold">
                                     <SelectValue />
                                 </SelectTrigger>
-                                <SelectContent>
-                                    <SelectItem value="safe" className="flex flex-col items-start gap-0.5 py-3">
-                                        <div className="flex items-center gap-2 font-bold"><ShieldCheck className="h-3.5 w-3.5 text-primary"/> Priorizar Embarque (Segurança Total)</div>
-                                        <p className="text-[10px] text-muted-foreground ml-5 italic leading-tight max-w-[450px]">A van embarca todos os alunos antes de iniciar os desembarques nas escolas.</p>
+                                <SelectContent className="w-[var(--radix-select-trigger-width)] md:min-w-[500px]">
+                                    <SelectItem value="safe" className="py-3">
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2 font-bold text-sm">
+                                                <ShieldCheck className="h-4 w-4 text-primary"/> 
+                                                <span>Priorizar Embarque (Segurança Total)</span>
+                                            </div>
+                                            <p className="text-[11px] text-muted-foreground italic leading-snug pl-6 whitespace-normal">
+                                                A van embarca todos os alunos de todas as escolas antes de iniciar os desembarques.
+                                            </p>
+                                        </div>
                                     </SelectItem>
-                                    <SelectItem value="flexible" className="flex flex-col items-start gap-0.5 py-3">
-                                        <div className="flex items-center gap-2 font-bold"><Zap className="h-3.5 w-3.5 text-amber-500"/> Entrega por Proximidade (Máximo ROI)</div>
-                                        <p className="text-[10px] text-muted-foreground ml-5 italic leading-tight max-w-[450px]">A IA permite deixar alunos se a escola estiver no caminho e o lote dela estiver completo.</p>
+                                    <SelectItem value="flexible" className="py-3">
+                                        <div className="flex flex-col gap-1">
+                                            <div className="flex items-center gap-2 font-bold text-sm">
+                                                <Zap className="h-4 w-4 text-amber-500"/> 
+                                                <span>Entrega por Proximidade (Mais Agilidade)</span>
+                                            </div>
+                                            <p className="text-[11px] text-muted-foreground italic leading-snug pl-6 whitespace-normal">
+                                                A IA sugere deixar os alunos se a escola estiver no caminho, diminuindo o tempo das crianças na van.
+                                            </p>
+                                        </div>
                                     </SelectItem>
                                 </SelectContent>
                             </Select>
