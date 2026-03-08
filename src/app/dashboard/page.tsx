@@ -26,7 +26,8 @@ import {
     BookOpen,
     Sparkles,
     ClipboardCheck,
-    History
+    History,
+    Megaphone
 } from 'lucide-react';
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
@@ -44,28 +45,35 @@ import { OperationalFeed } from '@/components/dashboard/operational-feed';
 // --- Mobile Home Screen Component ---
 function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => void, onShareRegistration: () => void }) {
     const navLinks = [
-        { href: '/dashboard/overview', label: 'Financeiro', icon: LayoutGrid },
+        { href: '/dashboard/financial', label: 'Financeiro', icon: DollarSign },
         { href: '/dashboard/performance', label: 'Performance', icon: BarChart3 },
         { href: '/dashboard/messages', label: 'Mensagens', icon: MessageSquare },
-        { href: '/dashboard/management/contracts', label: 'Contratos', icon: ClipboardCheck },
+        { href: '/dashboard/management/pending-registrations', label: 'Solicitações', icon: UserPlus },
+        { href: '/dashboard/management/trip-requests', label: 'Viagens Extras', icon: Milestone },
+        { href: '/dashboard/management/announcements', label: 'Mural', icon: Megaphone },
     ];
 
     return (
         <div className="p-4 space-y-6">
-            <div>
-                <h1 className="text-3xl font-bold tracking-tight mb-2 text-primary uppercase italic">Guardian</h1>
-                <p className="text-muted-foreground text-xs font-medium">
-                    Gestão inteligente da sua frota escolar.
-                </p>
+            <div className="flex justify-between items-start">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight mb-1 text-primary uppercase italic">Guardian</h1>
+                    <p className="text-muted-foreground text-[10px] font-black uppercase tracking-widest">
+                        Inteligência Operacional
+                    </p>
+                </div>
+                <Badge variant="outline" className="border-primary/20 text-primary font-bold">ADMIN</Badge>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-3">
                 {navLinks.map((link) => (
                     <Link href={link.href} key={link.href} passHref>
-                        <Card className="hover:bg-secondary transition-colors border-primary/10">
-                            <CardHeader className="flex flex-col items-center justify-center text-center p-4">
-                                <link.icon className="h-8 w-8 text-primary mb-2" />
-                                <CardTitle className="text-xs uppercase font-bold tracking-tight">{link.label}</CardTitle>
+                        <Card className="hover:bg-secondary transition-colors border-primary/10 active:scale-95 duration-200">
+                            <CardHeader className="flex flex-col items-center justify-center text-center p-3">
+                                <div className="p-2 rounded-lg bg-primary/10 mb-2">
+                                    <link.icon className="h-5 w-5 text-primary" />
+                                </div>
+                                <CardTitle className="text-[9px] uppercase font-black leading-tight tracking-tighter">{link.label}</CardTitle>
                             </CardHeader>
                         </Card>
                     </Link>
@@ -91,7 +99,7 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
             </Card>
 
             <div className="space-y-2 pb-10">
-                <Button variant="outline" className="w-full h-12 border-primary/30 text-primary font-bold" onClick={onShareRegistration}>
+                <Button variant="outline" className="w-full h-12 border-primary/30 text-primary font-bold shadow-sm" onClick={onShareRegistration}>
                     <UserPlus className="mr-2 h-5 w-5" />
                     CONVIDAR NOVOS PAIS
                 </Button>
@@ -157,7 +165,7 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
           <p className="text-muted-foreground">Monitoramento em tempo real e inteligência financeira.</p>
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-            <Button variant="outline" onClick={onShareRegistration} className="border-primary/30 text-primary">
+            <Button variant="outline" onClick={onShareRegistration} className="border-primary/30 text-primary font-bold">
                 <UserPlus className="mr-2 h-4 w-4" />
                 Convidar Pais
             </Button>
@@ -189,7 +197,6 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {/* O Widget Operacional Agora ganha destaque no Desktop também */}
           <div className="md:col-span-2">
             <OperationalFeed />
           </div>
@@ -216,10 +223,9 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
           </Card>
       </div>
 
-      {/* Resumo Financeiro Consolidado */}
       <OverviewCards filters={filters} />
 
-      <div className="grid gap-8 grid-cols-1 lg:grid-cols-2">
+      <div className="grid gap-8 grid-cols-1 lg:grid-cols-2 pb-10">
         <InvoicesStatusChart filters={filters}/>
         <ExpensesCategoryChart filters={filters} />
       </div>

@@ -28,13 +28,15 @@ export function OperationalFeed() {
     const { toast } = useToast();
 
     const handleSimulateEvent = () => {
+        const now = new Date().toISOString();
+        
         // 1. Simulação de Inteligência (Falta de Aluno)
         addDoc('incidents', {
             category: 'Inteligência: Aluno Ausente',
             description: 'Aluno Enzo Pereira (Falta) removido da Rota 01. Itinerário recalculado com economia de 1.2km.',
             severity: 'Baixa',
             reporter: 'Guardian Intelligence',
-            timestamp: new Date().toISOString(),
+            timestamp: now,
             location: { lat: -23.5580, lng: -46.6600 }
         });
 
@@ -45,14 +47,14 @@ export function OperationalFeed() {
                 description: 'Motorista Juliano Castro reportou lentidão na Av. Paulista. Atraso estimado de 5 minutos.',
                 severity: 'Média',
                 reporter: 'Juliano Castro',
-                timestamp: new Date().toISOString(),
+                timestamp: now,
                 location: { lat: -23.5650, lng: -46.6520 }
             });
-        }, 500);
+        }, 300);
 
         toast({
-            title: "Simulação Operacional Ativada",
-            description: "Eventos de IA e do motorista foram injetados no feed."
+            title: "Simulação Ativada",
+            description: "Eventos de IA e Motorista injetados no feed."
         });
     };
 
@@ -103,13 +105,13 @@ export function OperationalFeed() {
                             variant="ghost" 
                             size="icon" 
                             className="h-8 w-8 text-primary hover:bg-primary/10" 
-                            title="Simular Operação" 
+                            title="Simular Inteligência" 
                             onClick={(e) => {
                                 e.preventDefault();
                                 handleSimulateEvent();
                             }}
                         >
-                            <Zap className="h-4 w-4" />
+                            <Zap className="h-4 w-4 fill-current" />
                         </Button>
                         <Badge variant="outline" className="text-[10px] font-black border-primary text-primary animate-pulse bg-primary/5">LIVE</Badge>
                     </div>
@@ -119,7 +121,7 @@ export function OperationalFeed() {
             <CardContent className="p-0 flex-1 overflow-y-auto">
                 {feedItems.length > 0 ? (
                     <div className="divide-y divide-border">
-                        {feedItems.slice(0, 5).map((item) => (
+                        {feedItems.slice(0, 10).map((item) => (
                             <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors group animate-in fade-in slide-in-from-top-2 duration-500">
                                 <div className="flex gap-3">
                                     <div className={`mt-0.5 p-2 rounded-full border h-fit shrink-0 ${item.color}`}>
@@ -128,7 +130,7 @@ export function OperationalFeed() {
                                     <div className="space-y-1 min-w-0 flex-1">
                                         <div className="flex items-center justify-between gap-2">
                                             <p className="text-sm font-bold truncate uppercase tracking-tight">{item.title}</p>
-                                            <span className="text-[10px] text-muted-foreground whitespace-nowrap font-bold">
+                                            <span className="text-[9px] text-muted-foreground whitespace-nowrap font-black uppercase">
                                                 {format(new Date(item.timestamp), 'HH:mm', { locale: ptBR })}
                                             </span>
                                         </div>
@@ -143,7 +145,7 @@ export function OperationalFeed() {
                 ) : (
                     <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
                         <Clock className="h-8 w-8 mb-2 opacity-20" />
-                        <p className="text-sm">Aguardando eventos...</p>
+                        <p className="text-sm font-bold uppercase tracking-widest text-[10px]">Aguardando eventos...</p>
                     </div>
                 )}
             </CardContent>

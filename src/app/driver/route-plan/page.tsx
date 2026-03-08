@@ -32,6 +32,7 @@ import {
   Check,
   AlertTriangle,
   X,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -506,7 +507,11 @@ export default function DriverRoutePlanPage() {
         )}
 
         {isModalOpen && selectedStudentForModal && <AuthorizedContactsModal isOpen={isModalOpen} onClose={() => setIsModalOpen(false)} studentId={selectedStudentForModal.id} studentName={selectedStudentForModal.name} />}
-        <QrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanSuccess={(id) => { handleStatusChange(id, selectedDirection === 'ida' ? 'a_bordo' : 'desembarcado'); setIsScannerOpen(false); }} />
+        <QrScannerModal isOpen={isScannerOpen} onClose={() => setIsScannerOpen(false)} onScanSuccess={(id) => { 
+            handleStatusChange(id, selectedDirection === 'ida' ? 'a_bordo' : 'desembarcado'); 
+            setIsScannerOpen(false); 
+            toast({ title: "QR Code Identificado!", description: "Status do aluno atualizado." });
+        }} />
     </div>
   );
 }
