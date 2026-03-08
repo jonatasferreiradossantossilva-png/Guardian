@@ -35,7 +35,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { FileText, Sparkles, DollarSign, CalendarDays, School, User } from 'lucide-react';
+import { FileText, Sparkles, DollarSign, CalendarDays, School, User, QrCode } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
@@ -44,6 +44,7 @@ const formSchema = z.object({
   banco: z.string().optional(),
   agencia: z.string().optional(),
   conta: z.string().optional(),
+  chavePix: z.string().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -69,6 +70,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
         banco: '',
         agencia: '',
         conta: '',
+        chavePix: '',
     }
   });
 
@@ -122,6 +124,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');
     generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'N/A');
     generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'N/A');
+    generatedContent = generatedContent.replace(/{{chave_pix}}/g, data.chavePix || 'N/A');
 
     addDoc('contracts', {
         templateId: data.templateId,
@@ -228,9 +231,9 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                     name="banco"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel className="text-xs text-muted-foreground">Banco / Chave Pix</FormLabel>
+                        <FormLabel className="text-xs text-muted-foreground">Instituição Bancária</FormLabel>
                         <FormControl>
-                          <Input placeholder="Ex: NuBank - Chave: email@email.com" {...field} className="h-8 text-xs" />
+                          <Input placeholder="Ex: NuBank ou Banco do Brasil" {...field} className="h-8 text-xs" />
                         </FormControl>
                       </FormItem>
                     )}
@@ -257,6 +260,20 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                       )}
                     />
                   </div>
+                  <FormField
+                    control={form.control}
+                    name="chavePix"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-xs text-primary font-bold flex items-center gap-1">
+                            <QrCode className="h-3 w-3" /> Chave Pix
+                        </FormLabel>
+                        <FormControl>
+                          <Input placeholder="E-mail, CPF ou Aleatória" {...field} className="h-8 text-xs border-primary/20 bg-primary/5" />
+                        </FormControl>
+                      </FormItem>
+                    )}
+                  />
                 </div>
               </AccordionContent>
             </AccordionItem>

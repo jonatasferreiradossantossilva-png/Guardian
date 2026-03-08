@@ -99,7 +99,7 @@ export function ContractTemplateForm({ template, templates, onFormSubmit }: Cont
     '{{aluno_nome}}', '{{responsavel_nome}}', '{{responsavel_cpf}}',
     '{{aluno_endereco}}', '{{escola_nome}}', '{{valor_mensalidade}}', '{{turno}}', 
     '{{dia_vencimento}}', '{{data_geracao}}', '{{ano_letivo}}', '{{banco}}', 
-    '{{agencia}}', '{{conta}}'
+    '{{agencia}}', '{{conta}}', '{{chave_pix}}'
   ];
 
   return (
