@@ -202,7 +202,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     <div>
       <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
         <h1 className="text-3xl font-bold tracking-tight">
-          Gerenciamento de Pais e Responsáveis
+          Pais e Responsáveis
         </h1>
         <div className="flex gap-2 w-full sm:w-auto">
             <Button variant="outline" size="sm" asChild className="hidden md:flex">
