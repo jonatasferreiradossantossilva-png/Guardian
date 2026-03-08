@@ -143,7 +143,6 @@ export default function DriverRoutePlanPage() {
   const [selectedRouteIdForStart, setSelectedRouteIdForStart] = useState<string>('');
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [isOptimizing, setIsOptimizing] = useState(false);
-  const [isPending, startTransition] = useTransition();
   const isOnline = useOnlineStatus();
 
   useEffect(() => {
@@ -190,7 +189,6 @@ export default function DriverRoutePlanPage() {
             if (s.type === 'student') return s.data.status === 'aguardando';
             return orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'a_bordo');
         } else {
-            // NA VOLTA: O ponto da escola é considerado concluído se pelo menos um aluno está a bordo OU se já passamos por ela
             if (s.type === 'school') return orderedStops.some(st => st.type === 'student' && st.data.schoolId === s.id && st.data.status === 'aguardando');
             return s.data.status === 'a_bordo';
         }
@@ -224,7 +222,6 @@ export default function DriverRoutePlanPage() {
     if (!route || !driverProfile) return;
     setIsOptimizing(true);
     try {
-        // RESET UNIVERSAL: Limpa status de todos os alunos da rota antes de começar
         route.studentIds.forEach(id => {
             if (studentsMap.has(id)) {
                 updateDoc('students', id, { status: 'aguardando' });
@@ -287,7 +284,6 @@ export default function DriverRoutePlanPage() {
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
-    // Só encerra se for a ÚLTIMA parada da lista
     if (upcomingStops.length === 0 && (newStatus === 'desembarcado' || newStatus.startsWith('ausente'))) {
         setTimeout(handleEndRoute, 2000);
     }
@@ -300,7 +296,6 @@ export default function DriverRoutePlanPage() {
       studentsAtCurrentStop.forEach(s => updateDoc('students', s.id, { status: targetStatus }));
       toast({ title: isIda ? "Desembarque Coletivo!" : "Embarque Coletivo!" });
 
-      // SÓ ENCERRA NA IDA SE FOR O ÚLTIMO PONTO. NA VOLTA, É O INÍCIO.
       if (isIda && upcomingStops.length === 0) {
           setTimeout(handleEndRoute, 2000);
       }
