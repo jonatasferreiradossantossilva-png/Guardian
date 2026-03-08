@@ -120,6 +120,8 @@ export const initialMockData = {
     trip_requests: [],
     pending_registrations: [],
     announcements: [],
-    incidents: [],
+    incidents: [
+        { id: "inc-init-1", category: "Início de Operação", description: "Frota matinal iniciou atividades. 1 veículo em rota.", severity: "Baixa", reporter: "Sistema", timestamp: new Date().toISOString() }
+    ],
     trip_history: []
 };
