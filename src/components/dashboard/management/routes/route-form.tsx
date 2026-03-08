@@ -336,7 +336,7 @@ export function RouteForm({
                             <div className="max-h-[400px] overflow-y-auto">
                                 {availableStudents.length > 0 ? (
                                     availableStudents.map(s => (
-                                        <div key={s.id} className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-primary/5 transition-colors group">
+                                        <div className="flex items-center justify-between p-4 border-b last:border-0 hover:bg-primary/5 transition-colors group">
                                             <div className="min-w-0">
                                                 <p className="text-sm font-black uppercase truncate group-hover:text-primary transition-colors">{s.name}</p>
                                                 <p className="text-[10px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name} • {getAbbreviatedClass(s)}</p>

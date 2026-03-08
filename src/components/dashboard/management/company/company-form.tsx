@@ -162,7 +162,7 @@ export function CompanyForm() {
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
                         <Mail className="h-3 w-3" /> E-mail de Contato
-                    </Label>
+                    </FormLabel>
                     <FormControl>
                         <Input placeholder="contato@empresa.com.br" {...field} />
                     </FormControl>
