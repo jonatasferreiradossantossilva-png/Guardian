@@ -189,15 +189,12 @@ export function RouteForm({
         
         availableStudents.forEach(s => {
             const studentSchool = schoolsMap.get(s.schoolId);
-            // Adiciona o aluno
             newStops.push({ 
                 id: s.id, 
                 type: 'student' as const, 
                 name: s.name, 
                 details: studentSchool?.name 
             });
-            
-            // Adiciona a escola se ela não existir no itinerário
             const hasSchool = newStops.some(st => st.id === s.schoolId && st.type === 'school');
             if (!hasSchool && studentSchool) {
                 newStops.push({ 
@@ -211,16 +208,12 @@ export function RouteForm({
                 }
             }
         });
-        
         setSelectedSchoolIds(newSchoolIds);
         return newStops;
     });
     
     setIsOptimized(false);
-    toast({ 
-        title: "Inclusão em Massa!", 
-        description: `${availableStudents.length} alunos adicionados ao itinerário.` 
-    });
+    toast({ title: "Inclusão em Massa!", description: `${availableStudents.length} alunos adicionados ao itinerário.` });
   };
 
   const handleOptimizeOrder = async () => {
@@ -266,7 +259,6 @@ export function RouteForm({
 
   const handleExportToWhatsApp = () => {
     if (stops.length === 0) return;
-    
     const stopList = stops.map((s, i) => {
         const num = (i + 1).toString().padStart(2, '0');
         const type = s.type === 'student' ? '👤 ALUNO' : '🏫 ESCOLA';
@@ -277,17 +269,11 @@ export function RouteForm({
         }
         return `${num}. [${type}] ${s.name}${details}`;
     }).join('\n');
-
     const header = `📋 GUARDIAN: ITINERÁRIO\nROTA: ${name || 'Sem nome'}\nTURNO: ${shift || 'Não definido'}\n--------------------------\n`;
     const fullText = header + stopList;
-
     const whatsappUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(fullText)}`;
     window.open(whatsappUrl, '_blank');
-
-    toast({
-        title: "WhatsApp Aberto!",
-        description: "A sequência foi enviada para o aplicativo.",
-    });
+    toast({ title: "WhatsApp Aberto!" });
   };
 
   const handleSubmit = () => {
@@ -311,7 +297,7 @@ export function RouteForm({
       <div className="flex-1 overflow-y-auto bg-background scroll-smooth">
         <div className="p-6 space-y-8">
             <div className="grid grid-cols-1 md:grid-cols-[400px_1fr] gap-8">
-                {/* COLUNA DA ESQUERDA: CONFIGURAÇÃO */}
+                {/* COLUNA DA ESQUERDA */}
                 <div className="space-y-8">
                     <div className="space-y-4 bg-muted/20 p-5 rounded-xl border border-dashed">
                         <div className="space-y-2">
@@ -341,14 +327,7 @@ export function RouteForm({
                         <div className="flex flex-wrap gap-2 p-3 border-2 rounded-xl bg-background shadow-sm">
                             {schools.map(school => (
                                 <div key={school.id} className="flex items-center space-x-2 bg-secondary/30 px-2 py-1.5 rounded-lg border">
-                                    <Checkbox 
-                                        id={`sch-${school.id}`} 
-                                        checked={selectedSchoolIds.includes(school.id)} 
-                                        onCheckedChange={checked => {
-                                            setSelectedSchoolIds(prev => checked ? [...prev, school.id] : prev.filter(id => id !== school.id));
-                                            setIsOptimized(false);
-                                        }} 
-                                    />
+                                    <Checkbox id={`sch-${school.id}`} checked={selectedSchoolIds.includes(school.id)} onCheckedChange={checked => { setSelectedSchoolIds(prev => checked ? [...prev, school.id] : prev.filter(id => id !== school.id)); setIsOptimized(false); }} />
                                     <Label htmlFor={`sch-${school.id}`} className="text-[10px] cursor-pointer font-bold uppercase tracking-tight">{school.name}</Label>
                                 </div>
                             ))}
@@ -356,39 +335,16 @@ export function RouteForm({
                     </div>
 
                     {selectedSchoolIds.length >= 2 && (
-                        <div className="space-y-4 p-5 bg-primary/5 rounded-2xl border-2 border-primary/20 animate-in fade-in slide-in-from-top-4 duration-500">
-                            <div className="space-y-1">
-                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2">
-                                    <Zap className="h-4 w-4" /> Inteligência Guardian
-                                </Label>
-                                <h3 className="text-xs font-black uppercase italic tracking-tight">Estratégia de Roteirização</h3>
-                            </div>
-                            
+                        <div className="space-y-4 p-5 bg-primary/5 rounded-2xl border-2 border-primary/20">
+                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary flex items-center gap-2"><Zap className="h-4 w-4" /> Estratégia de Roteirização</Label>
                             <RadioGroup value={optimizationMode} onValueChange={(v) => { setOptimizationMode(v as any); setIsOptimized(false); }} className="grid grid-cols-1 gap-3">
-                                <div className={cn(
-                                    "relative flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all bg-background",
-                                    optimizationMode === 'safe' ? "border-primary shadow-sm" : "border-border opacity-70"
-                                )} onClick={() => setOptimizationMode('safe')}>
+                                <div className={cn("relative flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all bg-background", optimizationMode === 'safe' ? "border-primary shadow-sm" : "border-border opacity-70")} onClick={() => setOptimizationMode('safe')}>
                                     <div className="mt-1"><RadioGroupItem value="safe" id="safe" /></div>
-                                    <div className="space-y-1 flex-1">
-                                        <Label htmlFor="safe" className="font-black text-[10px] uppercase cursor-pointer">Segurança Total (Regras de Ouro)</Label>
-                                        <p className="text-[9px] text-muted-foreground leading-tight italic">
-                                            A van deve primeiro embarcar TODOS os alunos da lista antes de iniciar qualquer desembarque em escola.
-                                        </p>
-                                    </div>
+                                    <div className="space-y-1 flex-1"><Label htmlFor="safe" className="font-black text-[10px] uppercase cursor-pointer">Segurança Total (Regras de Ouro)</Label><p className="text-[9px] text-muted-foreground leading-tight italic">A van deve primeiro embarcar TODOS os alunos da lista antes de iniciar qualquer desembarque em escola.</p></div>
                                 </div>
-
-                                <div className={cn(
-                                    "relative flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all bg-background",
-                                    optimizationMode === 'flexible' ? "border-amber-500 shadow-sm" : "border-border opacity-70"
-                                )} onClick={() => setOptimizationMode('flexible')}>
+                                <div className={cn("relative flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all bg-background", optimizationMode === 'flexible' ? "border-amber-500 shadow-sm" : "border-border opacity-70")} onClick={() => setOptimizationMode('flexible')}>
                                     <div className="mt-1"><RadioGroupItem value="flexible" id="flexible" /></div>
-                                    <div className="space-y-1 flex-1">
-                                        <Label htmlFor="flexible" className="font-black text-[10px] uppercase text-amber-600 cursor-pointer">Máxima Agilidade (Plano do Motorista)</Label>
-                                        <p className="text-[9px] text-muted-foreground leading-tight italic">
-                                            Permite o desembarque em fases. A IA prioriza a entrega rápida assim que o grupo de uma escola estiver completo no veículo.
-                                        </p>
-                                    </div>
+                                    <div className="space-y-1 flex-1"><Label htmlFor="flexible" className="font-black text-[10px] uppercase text-amber-600 cursor-pointer">Máxima Agilidade (Plano do Motorista)</Label><p className="text-[9px] text-muted-foreground leading-tight italic">Permite o desembarque em fases. A IA prioriza a entrega rápida assim que o grupo de uma escola estiver completo.</p></div>
                                 </div>
                             </RadioGroup>
                         </div>
@@ -397,56 +353,27 @@ export function RouteForm({
                     <div className="space-y-3">
                         <div className="flex items-center justify-between">
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
-                            {availableStudents.length > 0 && (
-                                <Button 
-                                    variant="ghost" 
-                                    size="sm" 
-                                    className="h-6 text-[9px] font-black uppercase text-primary hover:bg-primary/10"
-                                    onClick={handleAddAllAvailable}
-                                >
-                                    <UserPlus className="h-3 w-3 mr-1" /> Adicionar Todos
-                                </Button>
-                            )}
+                            {availableStudents.length > 0 && <Button variant="ghost" size="sm" className="h-6 text-[9px] font-black uppercase text-primary hover:bg-primary/10" onClick={handleAddAllAvailable}><UserPlus className="h-3 w-3 mr-1" /> Adicionar Todos</Button>}
                         </div>
                         <div className="border-2 rounded-xl overflow-hidden bg-background shadow-lg">
                             <div className="p-3 border-b bg-muted/30">
-                                <div className="relative">
-                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                                    <input 
-                                        placeholder="Buscar aluno..." 
-                                        value={studentSearch} 
-                                        onChange={e => setStudentSearch(e.target.value)} 
-                                        className="h-9 border-none focus-visible:ring-0 shadow-none bg-transparent text-sm outline-none w-full pl-9" 
-                                    />
-                                </div>
+                                <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><input placeholder="Buscar aluno..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-9 border-none focus-visible:ring-0 shadow-none bg-transparent text-sm outline-none w-full pl-9" /></div>
                             </div>
                             <div className="max-h-[300px] overflow-y-auto">
                                 {availableStudents.length > 0 ? (
                                     availableStudents.map(s => (
                                         <div key={s.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-primary/5 transition-colors group">
-                                            <div className="min-w-0">
-                                                <p className="text-xs font-black uppercase truncate group-hover:text-primary transition-colors">{s.name}</p>
-                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name}</p>
-                                            </div>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}>
-                                                <PlusCircle className="h-5 w-5" />
-                                            </Button>
+                                            <div className="min-w-0"><p className="text-xs font-black uppercase truncate group-hover:text-primary transition-colors">{s.name}</p><p className="text-[9px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name}</p></div>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}><PlusCircle className="h-5 w-5" /></Button>
                                         </div>
                                     ))
-                                ) : (
-                                    <div key="empty-students" className="p-8 text-center text-muted-foreground">
-                                        <Users className="h-8 w-8 mx-auto mb-2 opacity-20" />
-                                        <p className="text-[9px] font-black uppercase tracking-widest opacity-40 leading-tight">
-                                            Aguardando seleção <br/> de escolas e turno
-                                        </p>
-                                    </div>
-                                )}
+                                ) : <div className="p-8 text-center text-muted-foreground opacity-40"><Users className="h-8 w-8 mx-auto mb-2" /><p className="text-[9px] font-black uppercase tracking-widest">Aguardando seleção de escolas e turno</p></div>}
                             </div>
                         </div>
                     </div>
                 </div>
 
-                {/* COLUNA DA DIREITA: ITINERÁRIO FINAL - LAYOUT DE 3 CAMADAS */}
+                {/* COLUNA DA DIREITA: ITINERÁRIO EM 3 CAMADAS */}
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
                         <div className="flex items-center gap-3">
@@ -454,8 +381,7 @@ export function RouteForm({
                             <Label className="text-sm font-black uppercase tracking-tighter">Itinerário Final Gerado</Label>
                         </div>
                         <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || stops.filter(s => s.type === 'student').length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
-                            {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />}
-                            OTIMIZAR IA
+                            {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />} OTIMIZAR IA
                         </Button>
                     </div>
 
@@ -464,10 +390,7 @@ export function RouteForm({
                             stops.map((stop, idx) => {
                                 const studentObj = stop.type === 'student' ? studentsMap.get(stop.id) : null;
                                 return (
-                                <div key={`${stop.id}-${idx}`} className={cn(
-                                    "flex flex-col gap-1 p-3 border-2 rounded-xl group animate-in fade-in duration-300 shadow-sm",
-                                    stop.type === 'school' ? "bg-primary/5 border-primary/20" : "bg-background border-border"
-                                )}>
+                                <div key={`${stop.id}-${idx}`} className={cn("flex flex-col gap-1 p-3 border-2 rounded-xl group bg-background border-border", stop.type === 'school' && "bg-primary/5 border-primary/20")}>
                                     {/* CAMADA 1: NOME COMPLETO */}
                                     <div className="flex items-center gap-3">
                                         <span className="text-[9px] font-black bg-muted w-5 h-5 flex items-center justify-center rounded-full text-muted-foreground shrink-0">{idx + 1}</span>
@@ -475,66 +398,36 @@ export function RouteForm({
                                     </div>
                                     
                                     {/* CAMADA 2: ESCOLA */}
-                                    <div className="pl-8 flex items-center gap-2">
+                                    <div className="pl-8">
                                         {stop.type === 'school' ? (
                                             <p className="text-[9px] font-black text-primary uppercase tracking-widest">Ponto de Desembarque Final</p>
                                         ) : (
-                                            <div className="flex items-center gap-1.5">
-                                                <School className="h-3 w-3 text-muted-foreground/60" />
-                                                <p className="text-[10px] font-bold text-muted-foreground uppercase">{stop.details}</p>
-                                            </div>
+                                            <div className="flex items-center gap-1.5"><School className="h-3 w-3 text-muted-foreground/60" /><p className="text-[10px] font-bold text-muted-foreground uppercase">{stop.details}</p></div>
                                         )}
                                     </div>
 
-                                    {/* CAMADA 3: METADADOS + BOTÕES ALINHADOS */}
+                                    {/* CAMADA 3: METADADOS + BOTOES */}
                                     <div className="pl-8 mt-1 flex items-center justify-between border-t border-dashed border-muted pt-2">
                                         <div className="text-[10px] font-black text-primary uppercase tracking-tight">
                                             {stop.type === 'student' ? formatStudentMetaAbbrev(studentObj) : "Logística Escola"}
                                         </div>
-                                        
                                         <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
-                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { 
-                                                const newStops = [...stops];
-                                                if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === 0}><ArrowUp className="h-3.5 w-3.5" /></Button>
-                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => {
-                                                const newStops = [...stops];
-                                                if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); }
-                                            }} disabled={idx === stops.length - 1}><ArrowDown className="h-3.5 w-3.5" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { const newStops = [...stops]; if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); } }} disabled={idx === 0}><ArrowUp className="h-3.5 w-3.5" /></Button>
+                                            <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { const newStops = [...stops]; if (idx < stops.length - 1) { [newStops[idx], newStops[idx+1]] = [newStops[idx+1], newStops[idx]]; setStops(newStops); setIsOptimized(false); } }} disabled={idx === stops.length - 1}><ArrowDown className="h-3.5 w-3.5" /></Button>
                                             <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { setStops(prev => prev.filter((_, i) => i !== idx)); setIsOptimized(false); }}><X className="h-3.5 w-3.5" /></Button>
                                         </div>
                                     </div>
                                 </div>
                             )})
-                        ) : (
-                            <div key="empty-itinerary" className="py-24 text-center text-muted-foreground flex flex-col items-center">
-                                <RouteIcon className="h-12 w-12 mb-3 opacity-5" />
-                                <p className="text-[10px] font-black uppercase tracking-widest text-center opacity-30 leading-tight">
-                                    Adicione alunos para <br/> gerar o itinerário
-                                </p>
-                            </div>
-                        )}
+                        ) : <div className="py-24 text-center opacity-30"><RouteIcon className="h-12 w-12 mx-auto mb-3" /><p className="text-[10px] font-black uppercase tracking-widest">Adicione alunos para gerar o itinerário</p></div>}
                     </div>
                 </div>
             </div>
 
             <div className="pt-8 pb-20 flex flex-col sm:flex-row gap-3 border-t mt-10">
-                <DialogClose asChild>
-                    <Button variant="ghost" className="h-14 px-8 flex-1 text-sm uppercase font-bold">Cancelar</Button>
-                </DialogClose>
-                <Button 
-                    variant="outline" 
-                    className="h-14 px-8 flex-1 text-sm uppercase font-black border-green-600/30 text-green-600 hover:bg-green-50"
-                    onClick={handleExportToWhatsApp}
-                    disabled={stops.length === 0}
-                >
-                    <MessageCircle className="mr-2 h-5 w-5" />
-                    Enviar WhatsApp
-                </Button>
-                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-14 text-lg font-black shadow-xl bg-primary text-white hover:bg-primary/90 transition-all">
-                    <CheckCircle2 className="mr-3 h-6 w-6" />
-                    SALVAR ROTA
-                </Button>
+                <DialogClose asChild><Button variant="ghost" className="h-14 px-8 flex-1 text-sm uppercase font-bold">Cancelar</Button></DialogClose>
+                <Button variant="outline" className="h-14 px-8 flex-1 text-sm uppercase font-black border-green-600/30 text-green-600 hover:bg-green-50" onClick={handleExportToWhatsApp} disabled={stops.length === 0}><MessageCircle className="mr-2 h-5 w-5" /> Enviar WhatsApp</Button>
+                <Button onClick={handleSubmit} disabled={isOptimizing || stops.length === 0} className="flex-[2] h-14 text-lg font-black shadow-xl bg-primary text-white hover:bg-primary/90 transition-all"><CheckCircle2 className="mr-3 h-6 w-6" /> SALVAR ROTA</Button>
             </div>
         </div>
       </div>
