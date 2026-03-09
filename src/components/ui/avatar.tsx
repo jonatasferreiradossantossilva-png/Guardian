@@ -27,6 +27,7 @@ const AvatarImage = React.forwardRef<
 >(({ className, src, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
+    // FIX: Ensure empty strings don't trigger browser page-reload errors
     src={src === "" ? undefined : src}
     className={cn("aspect-square h-full w-full", className)}
     {...props}
