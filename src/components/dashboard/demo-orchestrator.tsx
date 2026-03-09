@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState } from "react";
@@ -31,12 +30,8 @@ export function DemoOrchestrator() {
 
     const runOnboarding = async () => {
         setStep('ONBOARDING');
-        const uniqueId = `demo-reg-${Date.now()}`;
-        toast({ 
-            title: "Passo 1: Onboarding Realizado", 
-            description: "Um novo aluno (Lucas Mendes) apareceu na aba 'Solicitações'.",
-            duration: 5000
-        });
+        const timestamp = Date.now();
+        const uniqueId = `demo-reg-${timestamp}`;
         
         addDoc('pending_registrations', {
             id: uniqueId,
@@ -50,17 +45,18 @@ export function DemoOrchestrator() {
             address: { zipCode: "01310-100", street: "Av. Paulista", number: "1500", neighborhood: "Bela Vista", city: "São Paulo", state: "SP" },
             documentData: { cpf: "111.222.333-44", rg: "12.345.678-9", birthDate: "1985-05-20" }
         });
+
+        toast({ 
+            title: "Passo 1: Onboarding Realizado", 
+            description: "Confira a aba 'Solicitações' para ver o novo aluno.",
+            duration: 5000
+        });
     };
 
     const runApproval = () => {
         setStep('APPROVAL');
         const timestamp = Date.now();
         const studentId = `demo-stud-${timestamp}`;
-        toast({ 
-            title: "Passo 2: Aluno Integrado", 
-            description: "O contrato foi gerado. Vá em 'Contratos' ou 'Alunos' para ver o resultado.",
-            duration: 5000
-        });
         
         addDoc('students', {
             id: studentId,
@@ -82,20 +78,26 @@ export function DemoOrchestrator() {
             createdAt: new Date().toISOString(),
             generatedContent: "CONTRATO DE TRANSPORTE DEMO: Lucas Mendes está agora sob proteção do Guardian..."
         });
+
+        toast({ 
+            title: "Passo 2: Aluno Integrado", 
+            description: "O contrato e o cadastro do aluno foram gerados com sucesso.",
+            duration: 5000
+        });
     };
 
     const runLogistics = () => {
         setStep('LOGISTICS');
-        toast({ 
-            title: "Passo 3: Van em Movimento", 
-            description: "Abra o 'Mapa' (no Pai ou Motorista) para ver a van chegando.",
-            duration: 5000
-        });
-        
         updateDoc('locations', 'driver-1', { 
             latitude: -23.5580, 
             longitude: -46.6600,
             timestamp: new Date().toISOString() 
+        });
+
+        toast({ 
+            title: "Passo 3: Van em Movimento", 
+            description: "O GPS da Van 01 foi atualizado para simular a chegada na casa do aluno.",
+            duration: 5000
         });
     };
 
@@ -103,11 +105,6 @@ export function DemoOrchestrator() {
         setStep('FINANCE');
         const timestamp = Date.now();
         const invId = `demo-inv-${timestamp}`;
-        toast({ 
-            title: "Passo 4: Ciclo Financeiro", 
-            description: "Viagem concluída. A fatura foi gerada em 'Financeiro'.",
-            duration: 5000
-        });
         
         addDoc('invoices', {
             id: invId,
@@ -118,7 +115,13 @@ export function DemoOrchestrator() {
             status: 'pending',
             dueDate: new Date().toISOString().split('T')[0]
         });
+
         setStep('DONE');
+        toast({ 
+            title: "Passo 4: Ciclo Financeiro", 
+            description: "Uma nova fatura foi gerada no painel financeiro.",
+            duration: 5000
+        });
     };
 
     const resetDemo = () => {
