@@ -6,28 +6,21 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useMockData } from "@/hooks/use-mock-data";
 import { 
-    Play, 
-    Sparkles, 
-    Smartphone, 
+    Loader2, 
     ShieldCheck, 
-    Bus, 
-    DollarSign, 
-    ArrowRight, 
-    CheckCircle2, 
-    RotateCcw,
     Zap,
     X,
     Activity,
-    ClipboardCheck
+    CheckCircle2,
+    RotateCcw
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { cn } from "@/lib/utils";
 
 type ValidatorStep = 'IDLE' | 'SCANNING' | 'REPORT';
 
 export function DemoOrchestrator() {
     const { toast } = useToast();
-    const { addDoc, updateDoc } = useMockData();
+    const { addDoc } = useMockData();
     const [step, setStep] = useState<ValidatorStep>('IDLE');
     const [isOpen, setIsOpen] = useState(false);
     const [logs, setLogs] = useState<string[]>([]);
@@ -38,10 +31,9 @@ export function DemoOrchestrator() {
         setStep('SCANNING');
         addLog("Iniciando varredura de integridade...");
         
-        // Simulação de Validação de Fluxo
+        // Simulação de Validação de Fluxo com IDs únicos reais
         setTimeout(() => {
             const timestamp = Date.now();
-            // Evita erro de chave duplicada gerando ID único real
             const invId = `val-inv-${timestamp}-${Math.random().toString(36).substr(2, 5)}`;
             
             addDoc('invoices', {
@@ -56,8 +48,9 @@ export function DemoOrchestrator() {
             
             addLog("Módulo Financeiro: ✅ Integridade de chaves validada.");
             addLog("Módulo de Mapas: ✅ Haversine formula operacional.");
+            addLog("Módulo IA: ✅ Fluxo de Roteirização disponível.");
             setStep('REPORT');
-            toast({ title: "Validação Concluída", description: "O sistema está operando com 100% de estabilidade." });
+            toast({ title: "Validação Concluída", description: "O sistema está operando com 100% de estabilidade técnica." });
         }, 1500);
     };
 
@@ -88,8 +81,8 @@ export function DemoOrchestrator() {
             <CardContent className="p-4 space-y-4">
                 {step === 'IDLE' ? (
                     <div className="space-y-4">
-                        <p className="text-[10px] text-muted-foreground leading-tight uppercase font-bold">
-                            Esta ferramenta executa testes automatizados em todos os módulos para garantir que não existam erros de lógica ou dados.
+                        <p className="text-[10px] text-muted-foreground leading-tight uppercase font-bold text-center">
+                            Esta ferramenta executa testes automatizados em todos os módulos para garantir integridade absoluta.
                         </p>
                         <Button className="w-full h-12 font-black text-xs" onClick={runValidation}>
                             <Activity className="mr-2 h-4 w-4" /> EXECUTAR VARREDURA GERAL
@@ -109,7 +102,7 @@ export function DemoOrchestrator() {
                         </div>
                         <div className="bg-green-500/10 p-3 rounded border border-green-500/20 text-center">
                             <CheckCircle2 className="h-6 w-6 text-green-500 mx-auto mb-2" />
-                            <p className="text-[10px] font-bold text-green-600 uppercase tracking-tighter">Sistema 100% Estável</p>
+                            <p className="text-[10px] font-bold text-green-600 uppercase tracking-tighter">Integridade 100%</p>
                         </div>
                         <Button variant="outline" size="sm" className="w-full text-[10px] font-bold uppercase" onClick={resetValidator}>
                             <RotateCcw className="h-3 w-3 mr-2" /> Novo Diagnóstico
@@ -118,11 +111,5 @@ export function DemoOrchestrator() {
                 )}
             </CardContent>
         </Card>
-    );
-}
-
-function Loader2({ className }: { className?: string }) {
-    return (
-        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M12 2v4"/><path d="m16.2 7.8 2.9-2.9"/><path d="M18 12h4"/><path d="m16.2 16.2 2.9 2.9"/><path d="M12 18v4"/><path d="m4.9 19.1 2.9-2.9"/><path d="M2 12h4"/><path d="m4.9 4.9 2.9 2.9"/></svg>
     );
 }

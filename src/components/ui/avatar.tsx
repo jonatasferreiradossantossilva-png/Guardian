@@ -25,7 +25,7 @@ const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
 >(({ className, src, ...props }, ref) => {
-  // Garantir que src nulo ou vazio não quebre o componente de imagem do Radix
+  // Blindagem contra imagens nulas ou vazias
   const safeSrc = (src === "" || src === null) ? undefined : src;
   
   return (
