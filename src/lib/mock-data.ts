@@ -1,13 +1,19 @@
 
 // @ts-nocheck
 /**
- * @fileOverview Dados iniciais blindados para o protótipo do Guardian.
- * Base de conhecimento expandida para demonstrar o Big Data de escolas.
+ * @fileOverview Dados iniciais blindados e enriquecidos para o protótipo do Guardian.
+ * Contém dados massivos de simulação para Financeiro e Performance sem afetar cadastros base.
  */
 
 const now = new Date();
 const getPastDate = (monthsAgo, day = 10) => {
     const d = new Date(now.getFullYear(), now.getMonth() - monthsAgo, day);
+    return d.toISOString().split('T')[0];
+};
+
+const getRecentDay = (daysAgo) => {
+    const d = new Date();
+    d.setDate(d.getDate() - daysAgo);
     return d.toISOString().split('T')[0];
 };
 
@@ -88,10 +94,28 @@ export const initialMockData = {
         "driver-1": { latitude: -23.5500, longitude: -46.6300, timestamp: new Date().toISOString() }
     },
     invoices: [
-        { id: "inv-init-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: getPastDate(0), status: 'paid' },
+        { id: "inv-init-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Novembro", amount: 450, dueDate: getPastDate(0), status: 'paid' },
+        { id: "inv-init-2", studentId: "student-2", parentUserId: "user-pai-1", description: "Mensalidade Novembro", amount: 450, dueDate: getPastDate(0), status: 'paid' },
+        { id: "inv-init-3", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Outubro", amount: 450, dueDate: getPastDate(1), status: 'paid' },
+        { id: "inv-init-4", studentId: "student-2", parentUserId: "user-pai-1", description: "Mensalidade Outubro", amount: 450, dueDate: getPastDate(1), status: 'paid' },
+        { id: "inv-init-5", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Setembro", amount: 450, dueDate: getPastDate(2), status: 'paid' },
+        { id: "inv-init-6", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: getPastDate(3), status: 'overdue' },
+        { id: "inv-init-7", studentId: "student-2", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: getPastDate(3), status: 'pending' },
     ],
-    expenses: [],
-    trip_history: [],
+    expenses: [
+        { id: "exp-1", description: "Diesel - Posto Shell", amount: 1200.50, date: getRecentDay(2), category: "Combustível" },
+        { id: "exp-2", description: "Troca de Óleo e Filtros", amount: 450.00, date: getRecentDay(15), category: "Manutenção" },
+        { id: "exp-3", description: "Salário Motorista Juliano", amount: 3500.00, date: getRecentDay(5), category: "Salários" },
+        { id: "exp-4", description: "Seguro Frota Anual", amount: 2800.00, date: getRecentDay(20), category: "Outros" },
+        { id: "exp-5", description: "Diesel - Posto Ipiranga", amount: 850.30, date: getRecentDay(10), category: "Combustível" },
+    ],
+    trip_history: [
+        { id: "trip-1", date: getRecentDay(1), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 38.2, savingsKm: 4.3, fuelSaved: 32.50 },
+        { id: "trip-2", date: getRecentDay(2), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 39.1, savingsKm: 3.4, fuelSaved: 25.80 },
+        { id: "trip-3", date: getRecentDay(3), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 37.8, savingsKm: 4.7, fuelSaved: 35.25 },
+        { id: "trip-4", date: getRecentDay(4), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 40.5, savingsKm: 2.0, fuelSaved: 15.00 },
+        { id: "trip-5", date: getRecentDay(5), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 38.9, savingsKm: 3.6, fuelSaved: 27.00 },
+    ],
     messages: [],
     announcements: [
         { id: "ann-1", title: "Manutenção da Van BRA2E19", content: "Aviso: A Van 01 passará por revisão preventiva nesta quarta-feira.", priority: "high", target: "all", createdAt: new Date().toISOString() },
