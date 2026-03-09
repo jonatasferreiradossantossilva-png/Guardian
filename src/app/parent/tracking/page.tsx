@@ -201,7 +201,8 @@ export default function ParentTrackingPage() {
   const [isUploading, setIsUploading] = useState(false);
 
   useEffect(() => {
-    setMockUserId(sessionStorage.getItem('mockUserId'));
+    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMockUserId(storedUserId);
     const lastSelectedId = sessionStorage.getItem('selectedStudentId');
     if (lastSelectedId) setSelectedStudentId(lastSelectedId);
   }, []);
