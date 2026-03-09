@@ -30,6 +30,7 @@ export function DemoOrchestrator() {
 
     const runOnboarding = async () => {
         setStep('ONBOARDING');
+        const uniqueId = `demo-reg-${Date.now()}`;
         toast({ 
             title: "Passo 1: Onboarding Realizado", 
             description: "Um novo aluno (Lucas Mendes) apareceu na aba 'Solicitações'.",
@@ -37,7 +38,7 @@ export function DemoOrchestrator() {
         });
         
         addDoc('pending_registrations', {
-            id: "demo-student-99",
+            id: uniqueId,
             parentName: "Ana Pereira",
             email: "ana.pereira@email.com",
             studentName: "Lucas Mendes (DEMO)",
@@ -52,16 +53,15 @@ export function DemoOrchestrator() {
 
     const runApproval = () => {
         setStep('APPROVAL');
+        const studentId = `demo-stud-${Date.now()}`;
         toast({ 
             title: "Passo 2: Aluno Integrado", 
             description: "O contrato foi gerado. Vá em 'Contratos' ou 'Alunos' para ver o resultado.",
             duration: 5000
         });
         
-        updateDoc('pending_registrations', 'demo-student-99', { status: 'approved' });
-        
         addDoc('students', {
-            id: 'demo-student-approved-99',
+            id: studentId,
             name: "Lucas Mendes (DEMO)",
             parentId: "parent-1",
             schoolId: "school-1",
@@ -73,8 +73,8 @@ export function DemoOrchestrator() {
         });
 
         addDoc('contracts', {
-            id: 'demo-contract-99',
-            studentId: 'demo-student-approved-99',
+            id: `demo-cont-${Date.now()}`,
+            studentId: studentId,
             parentUserId: 'user-pai-1',
             status: 'pending_acceptance',
             createdAt: new Date().toISOString(),
@@ -106,8 +106,8 @@ export function DemoOrchestrator() {
         });
         
         addDoc('invoices', {
-            id: 'demo-inv-99',
-            studentId: 'demo-student-approved-99',
+            id: `demo-inv-${Date.now()}`,
+            studentId: 'student-1',
             parentUserId: 'user-pai-1',
             description: "Mensalidade Demo - Lucas Mendes",
             amount: 450,
