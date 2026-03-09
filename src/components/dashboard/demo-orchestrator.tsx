@@ -118,7 +118,7 @@ export function DemoOrchestrator() {
                 <CardTitle className="text-xs font-black uppercase italic text-primary flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4" /> Guardian System Auditor
                 </CardTitle>
-                <Button variant="ghost" size="icon" className="h-6 w-6" onClick={() => setIsOpen(false)}>
+                <Button variant="ghost" size="icon" className="h-4 w-4" onClick={() => setIsOpen(false)}>
                     <X className="h-4 w-4" />
                 </Button>
             </CardHeader>
