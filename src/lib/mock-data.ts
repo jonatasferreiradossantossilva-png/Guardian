@@ -159,7 +159,10 @@ export const initialMockData = {
     authorized_pickups: [],
     trip_requests: [],
     pending_registrations: [],
-    announcements: [],
+    announcements: [
+        { id: "ann-1", title: "Manutenção da Van BRA2E19", content: "Aviso: A Van 01 passará por revisão preventiva nesta quarta-feira. Uma van reserva fará a rota no mesmo horário.", priority: "high", target: "all", createdAt: new Date().toISOString() },
+        { id: "ann-2", title: "Recesso Escolar Julho", content: "Lembramos que o transporte estará suspenso entre os dias 15 e 30 de julho conforme calendário escolar.", priority: "medium", target: "parents", createdAt: new Date(Date.now() - 86400000).toISOString() }
+    ],
     incidents: [
         { id: "inc-init-1", category: "Início de Operação", description: "Frota matinal iniciou atividades. 1 veículo em rota.", severity: "Baixa", reporter: "Sistema", timestamp: new Date().toISOString() }
     ],

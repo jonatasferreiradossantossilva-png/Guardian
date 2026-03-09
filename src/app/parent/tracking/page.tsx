@@ -30,7 +30,8 @@ import {
     Info,
     Loader2,
     Camera,
-    AlertTriangle
+    AlertTriangle,
+    X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -137,7 +138,7 @@ function GoogleMapMarkers({
                   )}
                   <AdvancedMarker position={{ lat: s.latitude, lng: s.longitude }} title={s.name}>
                         <Pin background={isSelected ? '#3b82f6' : '#cbd5e1'} borderColor={'#fff'}>
-                            <Avatar className={cn("h-6 w-6", !isSelected && "grayscale opacity-70")}><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/40/40`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                            <Avatar className={cn("h-6 w-6", !isSelected && "grayscale opacity-70")}><AvatarImage src={s.photoUrl} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                         </Pin>
                   </AdvancedMarker>
                   {school && (
@@ -223,7 +224,7 @@ export default function ParentTrackingPage() {
       return students.find(s => s.id === selectedStudentId) || students[0];
   }, [students, selectedStudentId]);
   
-  const route = useMemo(() => allRoutes?.find(r => r.id === student?.routeId), [allRoutes, student]);
+  const route = useMemo(() => allRoutes?.find(r => r.studentIds.includes(student?.id || '')), [allRoutes, student]);
   const displayLocation = useMemo(() => allLocations?.find(l => l.id === route?.driverId), [allLocations, route]);
   const { data: announcements } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
   const latestAnnouncement = useMemo(() => announcements?.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0], [announcements]);
@@ -316,7 +317,7 @@ export default function ParentTrackingPage() {
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {students.map((s) => (
                     <button key={s.id} onClick={() => handleStudentSelect(s.id)} className={cn("flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0", selectedStudentId === s.id ? "bg-primary border-primary text-primary-foreground shadow-md" : "bg-card border-muted text-muted-foreground")}>
-                        <Avatar className="h-6 w-6"><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/40/40`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                        <Avatar className="h-6 w-6"><AvatarImage src={s.photoUrl} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                         <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
                     </button>
                 ))}
@@ -325,8 +326,22 @@ export default function ParentTrackingPage() {
 
         {/* Latest Announcement Highlight */}
         {latestAnnouncement && (
-            <Link href="/parent/mural" className={cn("block p-3 rounded-lg border-2", latestAnnouncement.priority === 'high' ? "bg-destructive/10 border-destructive text-destructive" : "bg-primary/10 border-primary/20 text-primary")}>
-                <div className="flex items-center justify-between"><div className="flex items-center gap-3"><Megaphone className="h-5 w-5" /><div className="min-w-0"><p className="font-bold text-sm truncate">{latestAnnouncement.title}</p></div></div><ChevronRight className="h-4 w-4" /></div>
+            <Link href="/parent/mural" className={cn(
+                "block p-4 rounded-xl border-2 transition-all active:scale-[0.98]",
+                latestAnnouncement.priority === 'high' ? "bg-destructive/10 border-destructive text-destructive animate-pulse shadow-destructive/20 shadow-lg" : "bg-primary/10 border-primary/20 text-primary"
+            )}>
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className={cn("p-2 rounded-full", latestAnnouncement.priority === 'high' ? "bg-destructive text-white" : "bg-primary text-white")}>
+                            <Megaphone className="h-5 w-5" />
+                        </div>
+                        <div className="min-w-0">
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Aviso Oficial</p>
+                            <p className="font-bold text-sm truncate">{latestAnnouncement.title}</p>
+                        </div>
+                    </div>
+                    <ChevronRight className="h-5 w-5 opacity-50" />
+                </div>
             </Link>
         )}
 
@@ -347,7 +362,7 @@ export default function ParentTrackingPage() {
                     <CardHeader className="bg-primary/5 border-b pb-4">
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16 border-2 border-background shadow-md">
-                                <AvatarImage src={student?.photoUrl || `https://picsum.photos/seed/student-${student?.id}/100/100`} />
+                                <AvatarImage src={student?.photoUrl} />
                                 <AvatarFallback className="text-3xl font-black">{student?.name[0]}</AvatarFallback>
                             </Avatar>
                             <div><CardTitle className="text-xl">Olá, {parent?.name.split(' ')[0]}</CardTitle><CardDescription className="font-medium text-foreground/80">Jornada de {student?.name}</CardDescription></div>

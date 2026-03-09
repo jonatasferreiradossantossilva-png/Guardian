@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect, useCallback } from 'react';
@@ -33,6 +32,7 @@ import {
   AlertTriangle,
   X,
   RotateCcw,
+  Megaphone,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -128,7 +128,7 @@ const GoogleMapMarkers = ({ driverLocation, stops, routePolyline }: { driverLoca
                     {isStudent ? (
                         <Pin background={ hasAlert ? '#dc2626' : '#3b82f6'} borderColor={'#fff'}>
                             <Avatar className="h-6 w-6">
-                                <AvatarImage src={(item as Student).photoUrl || `https://picsum.photos/seed/student-${item.id}/40/40`} />
+                                <AvatarImage src={(item as Student).photoUrl} />
                                 <AvatarFallback>{item.name[0]}</AvatarFallback>
                             </Avatar>
                         </Pin>
@@ -157,6 +157,7 @@ export default function DriverRoutePlanPage() {
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [absentStudentsNames, setAbsentStudentsNames] = useState<string[]>([]);
   const [showAbsenceAlert, setShowAbsenceAlert] = useState(false);
+  const [showAnnouncement, setShowAnnouncement] = useState(true);
   const isOnline = useOnlineStatus();
 
   useEffect(() => {
@@ -175,6 +176,10 @@ export default function DriverRoutePlanPage() {
   const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection('students');
   const { data: schools, isLoading: areSchoolsLoading } = useMockCollection('schools');
   
+  // Announcements for drivers
+  const { data: announcements } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'drivers'] }]);
+  const latestAnnouncement = useMemo(() => announcements?.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0], [announcements]);
+
   useEffect(() => { if (routes?.length && !selectedRouteIdForStart) setSelectedRouteIdForStart(routes[0].id); }, [routes, selectedRouteIdForStart]);
 
   const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s])), [schools]);
@@ -397,6 +402,24 @@ export default function DriverRoutePlanPage() {
                     </div>
                 </div>
 
+                {/* Announcement Banner for Driver */}
+                {latestAnnouncement && showAnnouncement && (
+                    <div className={cn(
+                        "px-4 py-2 border-b flex items-center justify-between gap-3 animate-in slide-in-from-top duration-500",
+                        latestAnnouncement.priority === 'high' ? "bg-destructive text-destructive-foreground" : "bg-primary text-primary-foreground"
+                    )}>
+                        <div className="flex items-center gap-2 min-w-0">
+                            <Megaphone className="h-4 w-4 shrink-0" />
+                            <p className="text-[10px] font-black uppercase truncate leading-tight">
+                                {latestAnnouncement.title}: {latestAnnouncement.content}
+                            </p>
+                        </div>
+                        <button onClick={() => setShowAnnouncement(false)} className="opacity-70 hover:opacity-100">
+                            <X className="h-3 w-3" />
+                        </button>
+                    </div>
+                )}
+
                 <Tabs defaultValue="itinerario" className="flex-1 flex flex-col overflow-hidden">
                     <TabsList className="grid w-full grid-cols-2 h-14 bg-muted p-1 border-b">
                         <TabsTrigger 
@@ -529,7 +552,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
             </div>
             <div className="flex items-center gap-4">
                 <Avatar className="h-20 w-20 border-2 border-primary shadow-xl">
-                    <AvatarImage src={student.photoUrl || `https://picsum.photos/seed/student-${student.id}/100/100`} />
+                    <AvatarImage src={student.photoUrl} />
                     <AvatarFallback className="text-3xl font-black">{student.name[0]}</AvatarFallback>
                 </Avatar>
                 <div className="flex-grow min-w-0">
@@ -605,7 +628,7 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                         const hasAlert = (s.medicalConditions && s.medicalConditions.length > 0) || s.medicalNote;
                         return (
                             <div key={s.id} className={cn("flex items-center gap-2 p-2 rounded-xl border-2 bg-background shadow-sm", hasAlert && "border-destructive/30")}>
-                                <Avatar className="h-10 w-10 shrink-0"><AvatarImage src={s.photoUrl || `https://picsum.photos/seed/student-${s.id}/100/100`} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                                <Avatar className="h-10 w-10 shrink-0"><AvatarImage src={s.photoUrl} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                                 <div className="flex-1 min-w-0">
                                     <div className="flex items-center gap-1">
                                         <p className="text-[11px] font-bold truncate uppercase leading-tight">{s.name}</p>
