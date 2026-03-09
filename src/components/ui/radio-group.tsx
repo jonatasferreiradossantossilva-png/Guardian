@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -30,6 +31,7 @@ const RadioGroupItem = React.forwardRef<
     setMounted(true);
   }, []);
 
+  // Prevenir erros de hidratação e flushSync no React 19
   if (!mounted) {
     return (
         <div className={cn(

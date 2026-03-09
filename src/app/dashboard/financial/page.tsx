@@ -444,7 +444,7 @@ function RevenuesTab() {
                                 </TableHeader>
                                 <TableBody>
                                 {paginatedInvoices.map((invoice) => (
-                                    <TableRow key={invoice.id}>
+                                    <TableRow key={`invoice-${invoice.id}`}>
                                         <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
                                         <TableCell>{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</TableCell>
                                         <TableCell>{invoice.description}</TableCell>
@@ -486,7 +486,7 @@ function RevenuesTab() {
                         </div>
                         <div className="md:hidden space-y-4">
                             {paginatedInvoices.map((invoice) => (
-                                <Card key={invoice.id} className="p-4">
+                                <Card key={`invoice-card-${invoice.id}`} className="p-4">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <p className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</p>
