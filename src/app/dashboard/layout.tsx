@@ -1,6 +1,7 @@
 import { MainSidebar } from "@/components/dashboard/main-sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { DashboardHeader } from "@/components/dashboard/dashboard-header";
+import { DemoOrchestrator } from "@/components/dashboard/demo-orchestrator";
 
 export default function DashboardLayout({
   children,
@@ -17,6 +18,7 @@ export default function DashboardLayout({
             <div className="mx-auto w-full max-w-7xl">{children}</div>
           </main>
         </div>
+        <DemoOrchestrator />
       </div>
     </SidebarProvider>
   );
