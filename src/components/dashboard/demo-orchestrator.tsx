@@ -14,7 +14,8 @@ import {
     ArrowRight, 
     CheckCircle2, 
     RotateCcw,
-    Zap
+    Zap,
+    X
 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { cn } from "@/lib/utils";
@@ -35,7 +36,6 @@ export function DemoOrchestrator() {
             duration: 3000
         });
         
-        // Injeta o aluno na triagem
         addDoc('pending_registrations', {
             id: "demo-student-99",
             parentName: "Ana Pereira",
@@ -58,7 +58,6 @@ export function DemoOrchestrator() {
             duration: 3000
         });
         
-        // Simula o efeito da aprovação
         updateDoc('pending_registrations', 'demo-student-99', { status: 'approved' });
         
         addDoc('contracts', {
@@ -79,7 +78,6 @@ export function DemoOrchestrator() {
             duration: 3000
         });
         
-        // Move a van para perto do endereço demo
         updateDoc('locations', 'driver-1', { 
             latitude: -23.5580, 
             longitude: -46.6600,

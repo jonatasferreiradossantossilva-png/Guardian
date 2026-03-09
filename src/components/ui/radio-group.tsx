@@ -24,9 +24,6 @@ const RadioGroupItem = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
   React.ComponentPropsWithoutRef<typeof RadioGroupPrimitive.Item>
 >(({ className, ...props }, ref) => {
-  // Técnica de "Calmaria": Utilizamos um estado de montagem local para evitar
-  // que o Radix UI tente disparar atualizações síncronas (flushSync) antes
-  // que o React 19 termine o ciclo de renderização inicial.
   const [mounted, setMounted] = React.useState(false);
 
   React.useEffect(() => {
