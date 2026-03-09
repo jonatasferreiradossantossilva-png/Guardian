@@ -1,3 +1,4 @@
+
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais blindados para o protótipo do Guardian.
@@ -158,11 +159,46 @@ As partes aceitam os termos de forma digital através da plataforma Guardian em 
             shift: "Manhã",
             preferredPaymentDay: 10,
             status: "pending_approval",
+            userId: "user-pai-1", // Vinculado à Ana Pereira
             createdAt: new Date(Date.now() - 3600000).toISOString(),
             address: { zipCode: "01310-100", street: "Av. Paulista", number: "1500", neighborhood: "Bela Vista", city: "São Paulo", state: "SP" },
             documentData: { cpf: "111.222.333-44", rg: "12.345.678-9", birthDate: "1985-05-20" },
             medicalConditions: ["Alergia"],
             medicalNote: "Alérgico a picada de abelha."
+        },
+        {
+            id: "reg-test-2",
+            parentName: "Ana Pereira",
+            email: "ana.pereira@email.com",
+            phone: "11987654321",
+            studentName: "Alice Oliveira",
+            schoolId: "school-marjore",
+            studentSerie: " Pré II",
+            studentTurma: "Turma Azul",
+            shift: "Manhã",
+            preferredPaymentDay: 5,
+            status: "pending_approval",
+            userId: "user-pai-1",
+            createdAt: new Date(Date.now() - 7200000).toISOString(),
+            address: { zipCode: "01310-100", street: "Av. Paulista", number: "1500", neighborhood: "Bela Vista", city: "São Paulo", state: "SP" },
+            documentData: { cpf: "111.222.333-44", rg: "12.345.678-9", birthDate: "1985-05-20" }
+        },
+        {
+            id: "reg-test-3",
+            parentName: "Carlos Magno",
+            email: "carlos@email.com",
+            phone: "11911112222",
+            studentName: "Miguel Magno",
+            schoolId: "school-1",
+            studentSerie: "8º Ano Fundamental",
+            studentTurma: "Sala 301",
+            shift: "Manhã",
+            preferredPaymentDay: 15,
+            status: "pending_approval",
+            userId: "user-gen-2",
+            createdAt: new Date(Date.now() - 10800000).toISOString(),
+            address: { zipCode: "04571-010", street: "Av. Engenheiro Luís Carlos Berrini", number: "100", neighborhood: "Brooklin", city: "São Paulo", state: "SP" },
+            documentData: { cpf: "999.888.777-66", rg: "MG-12.345.678", birthDate: "1980-10-10" }
         }
     ],
     predefined_messages: [
