@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState } from "react";
@@ -30,7 +31,6 @@ export function DemoOrchestrator() {
 
     const runOnboarding = async () => {
         setStep('ONBOARDING');
-        // Usando timestamp para garantir ID único e evitar erros de chave no React
         const uniqueId = `demo-reg-${Date.now()}`;
         toast({ 
             title: "Passo 1: Onboarding Realizado", 
@@ -105,7 +105,7 @@ export function DemoOrchestrator() {
         const invId = `demo-inv-${timestamp}`;
         toast({ 
             title: "Passo 4: Ciclo Financeiro", 
-            description: "Viagem concluída. A fatura de R$ 450,00 foi gerada em 'Financeiro'.",
+            description: "Viagem concluída. A fatura foi gerada em 'Financeiro'.",
             duration: 5000
         });
         

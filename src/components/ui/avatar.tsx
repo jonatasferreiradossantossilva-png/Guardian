@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -24,7 +25,6 @@ const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
 >(({ className, src, ...props }, ref) => {
-  // Tratamento seguro para src vazio ou nulo para evitar erros do componente Image do NextJS
   const safeSrc = src === "" || src === null ? undefined : src;
   
   return (

@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -31,7 +32,6 @@ const RadioGroupItem = React.forwardRef<
   }, []);
 
   if (!mounted) {
-    // Evita erros de hidratação e flushSync no React 19 durante o SSR
     return (
         <div className={cn(
             "aspect-square h-4 w-4 rounded-full border border-primary opacity-50",
