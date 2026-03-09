@@ -159,14 +159,49 @@ export const initialMockData = {
         { 
             id: "template-1", 
             name: "Contrato Padrão - Guardian", 
-            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO {{ano_letivo}}\n\nPelo presente instrumento particular, de um lado:\nCONTRATADO: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}.\nCONTRATANTE: {{responsavel_nome}}, portador(a) do CPF {{responsavel_cpf}}, responsável pelo aluno(a) {{aluno_nome}}.\n\nAs partes acima identificadas têm, entre si, justo e acertado o presente Contrato...", 
+            content: "CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO {{ano_letivo}}\n\nPelo presente instrumento particular, de um lado:\nCONTRATADO: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}.\nCONTRANTE: {{responsavel_nome}}, portador(a) do CPF {{responsavel_cpf}}, responsável pelo aluno(a) {{aluno_nome}}.\n\nAs partes acima identificadas têm, entre si, justo e acertado o presente Contrato...", 
             createdAt: new Date().toISOString() 
         }
     ],
     contracts: [],
     authorized_pickups: [],
     trip_requests: [],
-    pending_registrations: [],
+    pending_registrations: [
+        {
+            id: "reg-test-1",
+            parentName: "Juliana Mendes",
+            email: "juliana@email.com",
+            phone: "11977776666",
+            studentName: "Theo Mendes",
+            schoolId: "school-1",
+            studentSerie: "2º Ano Fundamental",
+            studentTurma: "Sala 104",
+            shift: "Manhã",
+            preferredPaymentDay: 10,
+            status: "pending_approval",
+            createdAt: new Date(Date.now() - 3600000).toISOString(),
+            address: { zipCode: "01310-100", street: "Av. Paulista", number: "1500", neighborhood: "Bela Vista", city: "São Paulo", state: "SP" },
+            documentData: { cpf: "111.222.333-44", rg: "12.345.678-9", birthDate: "1985-05-20" },
+            medicalConditions: ["Alergia"],
+            medicalNote: "Alérgico a picada de abelha."
+        },
+        {
+            id: "reg-test-2",
+            parentName: "Ricardo Oliveira",
+            email: "ricardo@email.com",
+            phone: "11955554444",
+            studentName: "Alice Oliveira",
+            schoolId: "school-marjore",
+            studentSerie: "5º Ano Fundamental",
+            studentTurma: "Sala 205",
+            shift: "Tarde",
+            preferredPaymentDay: 5,
+            status: "pending_approval",
+            createdAt: new Date(Date.now() - 7200000).toISOString(),
+            address: { zipCode: "05401-000", street: "Rua Teodoro Sampaio", number: "1000", neighborhood: "Pinheiros", city: "São Paulo", state: "SP" },
+            documentData: { cpf: "555.666.777-88", rg: "98.765.432-1", birthDate: "1982-10-15" }
+        }
+    ],
     predefined_messages: [
         { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
         { id: "pm-2", text: "A van está chegando na escola.", for: "driver" },
