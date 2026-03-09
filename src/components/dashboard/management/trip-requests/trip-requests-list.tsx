@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -11,7 +10,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, MoreHorizontal, X, Clock, Info, DollarSign, Edit } from "lucide-react";
+import { Check, MoreHorizontal, X, Clock, Info, DollarSign, Edit, School } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -58,13 +57,13 @@ type TripRequest = {
 
 type Student = { id: string; name: string };
 type Parent = { id: string; name: string; userId: string };
-type School = { id: string; name: string };
+type SchoolData = { id: string; name: string };
 
 interface TripRequestsListProps {
   initialRequests: TripRequest[];
   initialStudents: Student[];
   initialParents: Parent[];
-  initialSchools: School[];
+  initialSchools: SchoolData[];
 }
 
 const statusVariantMap: Record<TripRequest['status'], 'secondary' | 'default' | 'destructive' | 'outline'> = {
@@ -91,7 +90,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const { toast } = useToast();
   const { updateDoc } = useMockData();
 
-  const [priceDialogRequest, setPriceDialogRequest] = useState<TripRequest | null>(null);
+  const [priceDialogRequest, setPriceDialogRequest] = setPriceDialogRequest = useState<TripRequest | null>(null);
   const [price, setPrice] = useState<number | string>("");
 
   const { data: liveRequests, isLoading: areRequestsLoading } = useMockCollection('trip_requests');
