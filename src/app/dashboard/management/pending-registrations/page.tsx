@@ -102,7 +102,7 @@ export default function PendingRegistrationsPage() {
         let longitude = 0;
         if (address.street && address.city) {
             try {
-                const fullAddress = `${address.street}, ${address.number || ''}, ${address.complement || ''}, ${address.neighborhood || ''}, ${address.city} - ${address.state || ''}`;
+                const fullAddress = `${address.street}, ${address.number || ''}, ${address.neighborhood || ''}, ${address.city} - ${address.state || ''}`;
                 const geoResult = await geocodeAddress({ address: fullAddress });
                 latitude = geoResult.latitude;
                 longitude = geoResult.longitude;

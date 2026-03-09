@@ -216,6 +216,15 @@ export default function ParentTrackingPage() {
   const { data: allRoutes } = useMockCollection("routes");
   const { data: allLocations } = useMockCollection("locations");
   const { data: allSchools } = useMockCollection("schools");
+  const { data: allMessages } = useMockCollection("messages");
+
+  // Simulated unread count for parent
+  const unreadCount = useMemo(() => {
+      if (!allMessages || !mockUserId) return 0;
+      // We simulate unread messages if they were received in the last hour
+      const oneHourAgo = new Date(Date.now() - 3600000);
+      return allMessages.filter(m => m.recipientId === mockUserId && new Date(m.timestamp) > oneHourAgo).length;
+  }, [allMessages, mockUserId]);
 
   useEffect(() => { if (students?.length && !selectedStudentId) handleStudentSelect(students[0].id); }, [students, selectedStudentId]);
 
@@ -291,7 +300,7 @@ export default function ParentTrackingPage() {
     <div className={cn("min-h-screen p-4 space-y-6", journeyDirection === 'ida' ? "bg-background" : "bg-orange-50/10")}>
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold italic">Guardian</h1>
+            <h1 className="text-2xl font-bold italic text-primary">Guardian</h1>
             <Link href="/"><Button variant="ghost">Sair</Button></Link>
         </div>
 
@@ -387,7 +396,21 @@ export default function ParentTrackingPage() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/qrcode"><QrCode className="h-6 w-6 text-primary" /><span>QR Code</span></Link></Button>
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/requests"><RouteIcon className="h-6 w-6 text-primary" /><span>Viagens Avulsas</span></Link></Button>
-                    <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/messages"><MessageCircle className="h-6 w-6 text-primary" /><span>Mensagens</span></Link></Button>
+                    
+                    <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs relative overflow-visible">
+                        <Link href="/parent/messages">
+                            <div className="relative">
+                                <MessageCircle className="h-6 w-6 text-primary" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-black text-white animate-bounce shadow-sm">
+                                        {unreadCount}
+                                    </span>
+                                )}
+                            </div>
+                            <span>Mensagens</span>
+                        </Link>
+                    </Button>
+
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/contract"><FileText className="h-6 w-6 text-primary" /><span>Contrato</span></Link></Button>
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/authorized"><Users className="h-6 w-6 text-primary" /><span>Autorizados</span></Link></Button>
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/financial"><DollarSign className="h-6 w-6 text-primary" /><span>Financeiro</span></Link></Button>
