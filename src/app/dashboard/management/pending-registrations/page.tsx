@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -129,38 +130,33 @@ export default function PendingRegistrationsPage() {
             active: true
         });
 
-        // AUTOMAÇÃO: GERAR CONTRATO IMEDIATO
+        // AUTOMAÇÃO: GERAR CONTRATO IMEDIATO COM INTELIGÊNCIA DE PAGAMENTO
         if (defaultTemplate && company) {
             const studentAddress = `${address.street || ''}, ${address.number || ''} - ${address.neighborhood || ''}`;
             const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
             const schoolYear = new Date().getFullYear().toString();
             
+            // INTELIGÊNCIA DE FRASEADO RECUPERADA
             let paymentPhrase = "";
             const hasBank = !!company.bankName && !!company.bankAgency && !!company.bankAccount;
             const hasPix = !!company.pixKey;
 
             if (hasBank && hasPix) {
-                paymentPhrase = `via: ${company.bankName}, Agência ${company.bankAgency}, Conta ${company.bankAccount} ou através da Chave Pix: ${company.pixKey}`;
+                paymentPhrase = `via: ${company.bankName}, Ag. ${company.bankAgency} / CC ${company.bankAccount} ou Chave Pix: ${company.pixKey}`;
             } else if (hasBank) {
-                paymentPhrase = `via: ${company.bankName}, Agência ${company.bankAgency}, Conta ${company.bankAccount}`;
+                paymentPhrase = `via: ${company.bankName}, Ag. ${company.bankAgency} / CC ${company.bankAccount}`;
             } else if (hasPix) {
                 paymentPhrase = `através da Chave Pix: ${company.pixKey}`;
             } else {
-                paymentPhrase = "a ser definido pelo contratado";
+                paymentPhrase = "conforme definido pela contratada";
             }
 
             let generatedContent = defaultTemplate.content;
             
-            const fullPaymentPattern = /via: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}/g;
-            if (generatedContent.match(fullPaymentPattern)) {
-                generatedContent = generatedContent.replace(fullPaymentPattern, paymentPhrase);
-            } else {
-                generatedContent = generatedContent.replace(/{{banco}}/g, company.bankName || 'N/A');
-                generatedContent = generatedContent.replace(/{{agencia}}/g, company.bankAgency || 'N/A');
-                generatedContent = generatedContent.replace(/{{conta}}/g, company.bankAccount || 'N/A');
-                generatedContent = generatedContent.replace(/{{chave_pix}}/g, company.pixKey || 'N/A');
-            }
-
+            // Substituições Inteligentes
+            generatedContent = generatedContent.replace(/{{pagamento_info}}/g, paymentPhrase);
+            generatedContent = generatedContent.replace(/{{empresa_nome}}/g, company.companyName || 'Guardian Transporte');
+            generatedContent = generatedContent.replace(/{{empresa_cnpj}}/g, company.cnpj || 'N/A');
             generatedContent = generatedContent.replace(/{{aluno_nome}}/g, reg.studentName || 'N/A');
             generatedContent = generatedContent.replace(/{{responsavel_nome}}/g, editableParentName || 'N/A');
             generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, reg.documentData?.cpf || 'N/A');
@@ -386,7 +382,7 @@ export default function PendingRegistrationsPage() {
                             )}
 
                             <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                                <p className="text-[10px] font-bold uppercase tracking-widest text-primary mb-3 flex items-center gap-2">
+                                <p className="text-[10px] font-black uppercase text-primary mb-3 flex items-center gap-2">
                                   <DollarSign className="h-3 w-3" /> Configuração Financeira (Contrato)
                                 </p>
                                 <div className="space-y-4">
@@ -420,7 +416,7 @@ export default function PendingRegistrationsPage() {
                                 </div>
                             </div>
 
-                            <Alert variant="destructive" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
+                            <Alert variant="destructive" className="bg-amber-500/10 text-amber-600 border-amber-500/20 py-2">
                                 <AlertTriangle className="h-4 w-4" />
                                 <AlertDescription className="text-[10px]">A aprovação irá sincronizar endereços, buscar localização GPS e GERAR O CONTRATO AUTOMATICAMENTE.</AlertDescription>
                             </Alert>

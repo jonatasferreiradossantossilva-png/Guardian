@@ -113,6 +113,7 @@ export const initialMockData = {
     ],
     messages: [
         { id: "m-1", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Olá Ana! O contrato de transporte do Enzo e da Valentina já está disponível para sua assinatura digital no painel.", timestamp: new Date(Date.now() - 86400000).toISOString() },
+        { id: "m-2", senderId: "user-motorista-4", recipientId: "user-pai-1", text: "Ana, estou a 5 minutos da sua residência para buscar o Enzo.", timestamp: new Date(Date.now() - 3600000).toISOString() },
     ],
     announcements: [
         { id: "ann-1", title: "Manutenção da Van BRA2E19", content: "Aviso: A Van 01 passará por revisão preventiva nesta quarta-feira.", priority: "high", target: "all", createdAt: new Date().toISOString() },
@@ -128,7 +129,7 @@ export const initialMockData = {
 
 Pelo presente instrumento particular, as partes abaixo qualificadas:
 
-CONTRATADA: {{banco}}, CNPJ: 12.345.678/0001-90, com pagamentos via: Agência {{agencia}}, Conta {{conta}} ou Chave Pix: {{chave_pix}}.
+CONTRATADA: {{empresa_nome}}, CNPJ: {{empresa_cnpj}}, com dados de recebimento {{pagamento_info}}.
 
 CONTRATANTE: {{responsavel_nome}}, portador(a) do CPF {{responsavel_cpf}}, residente em {{aluno_endereco}}, responsável legal pelo aluno(a) {{aluno_nome}}.
 
@@ -187,6 +188,8 @@ As partes aceitam os termos de forma digital através da plataforma Guardian em 
     ],
     predefined_messages: [
         { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
+        { id: "pm-2", text: "O aluno já embarcou com segurança.", for: "monitor" },
+        { id: "pm-3", text: "Vou verificar o contrato e respondo em breve.", for: "parent" },
         { id: "pm-4", text: "Sua fatura do mês já está disponível.", for: "gestor" }
     ],
 };
