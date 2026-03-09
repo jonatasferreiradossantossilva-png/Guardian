@@ -90,10 +90,11 @@ interface SchoolData {
 }
 
 /**
- * Fórmula de Haversine estabilizada e blindada contra ReferenceError.
+ * Fórmula de Haversine estabilizada e blindada.
  */
 function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: number, lng: number}) {
-  if (!coords1 || !coords2) return Infinity;
+  if (!coords1 || !coords2 || !coords1.lat || !coords2.lat) return Infinity;
+  
   const toRad = (val: number) => (val * Math.PI) / 180;
   const R = 6371; // Raio da Terra em km
   
@@ -250,7 +251,10 @@ export default function ParentTrackingPage() {
 
   useEffect(() => {
     if (!student || !displayLocation) return;
-    const dist = haversineDistance({lat: displayLocation.latitude, lng: displayLocation.longitude}, {lat: student.latitude, lng: student.longitude});
+    const dist = haversineDistance(
+        { lat: displayLocation.latitude, lng: displayLocation.longitude }, 
+        { lat: student.latitude, lng: student.longitude }
+    );
     const dir = (route?.direction as 'ida' | 'volta') || 'ida';
     if (dist < 0.8 && ((dir === 'ida' && student.status === 'aguardando') || (dir === 'volta' && student.status === 'a_bordo'))) {
         if (!showProximityAlert) { setShowProximityAlert(true); toast({ title: `🚌 Van do ${student.name.split(' ')[0]} chegando!`, description: "A van entrou num raio de 800m." }); }
@@ -299,8 +303,8 @@ export default function ParentTrackingPage() {
   const smartStops = useMemo(() => {
       if (!students) return [];
       return students.map(s => [
-          { id: `s-${s.id}`, type: 'student', data: s }, 
-          { id: `sch-${s.schoolId}`, type: 'school', data: allSchools?.find(sch => sch.id === s.schoolId) }
+          { id: `s-${s.id}`, type: 'student' as const, data: s }, 
+          { id: `sch-${s.schoolId}`, type: 'school' as const, data: allSchools?.find(sch => sch.id === s.schoolId) }
       ]).flat().filter(Boolean);
   }, [students, allSchools]);
 
