@@ -31,6 +31,7 @@ const RadioGroupItem = React.forwardRef<
   }, []);
 
   if (!mounted) {
+    // Avoid hydration errors and flushSync issues during server-side rendering
     return (
         <div className={cn(
             "aspect-square h-4 w-4 rounded-full border border-primary opacity-50",
