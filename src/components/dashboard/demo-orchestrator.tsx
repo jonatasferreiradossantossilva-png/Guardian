@@ -99,6 +99,7 @@ export function DemoOrchestrator() {
 
     const runFinance = () => {
         setStep('FINANCE');
+        const invId = `demo-inv-${Date.now()}`;
         toast({ 
             title: "Passo 4: Ciclo Financeiro", 
             description: "Viagem concluída. A fatura de R$ 450,00 foi gerada em 'Financeiro'.",
@@ -106,7 +107,7 @@ export function DemoOrchestrator() {
         });
         
         addDoc('invoices', {
-            id: `demo-inv-${Date.now()}`,
+            id: invId,
             studentId: 'student-1',
             parentUserId: 'user-pai-1',
             description: "Mensalidade Demo - Lucas Mendes",
