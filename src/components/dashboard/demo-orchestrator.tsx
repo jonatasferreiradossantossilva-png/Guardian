@@ -31,9 +31,9 @@ export function DemoOrchestrator() {
     const runOnboarding = async () => {
         setStep('ONBOARDING');
         toast({ 
-            title: "Simulando Onboarding (Pai)", 
-            description: "Um novo pai acaba de escanear o documento via IA.",
-            duration: 3000
+            title: "Passo 1: Onboarding Realizado", 
+            description: "Um novo aluno (Lucas Mendes) apareceu na aba 'Solicitações'.",
+            duration: 5000
         });
         
         addDoc('pending_registrations', {
@@ -53,29 +53,41 @@ export function DemoOrchestrator() {
     const runApproval = () => {
         setStep('APPROVAL');
         toast({ 
-            title: "Simulando Aprovação IA", 
-            description: "O gestor aprovou o aluno e o contrato foi gerado.",
-            duration: 3000
+            title: "Passo 2: Aluno Integrado", 
+            description: "O contrato foi gerado. Vá em 'Contratos' ou 'Alunos' para ver o resultado.",
+            duration: 5000
         });
         
         updateDoc('pending_registrations', 'demo-student-99', { status: 'approved' });
         
+        addDoc('students', {
+            id: 'demo-student-approved-99',
+            name: "Lucas Mendes (DEMO)",
+            parentId: "parent-1",
+            schoolId: "school-1",
+            status: "aguardando",
+            shift: "Manhã",
+            active: true,
+            latitude: -23.5580,
+            longitude: -46.6600
+        });
+
         addDoc('contracts', {
             id: 'demo-contract-99',
-            studentId: 'demo-student-99',
+            studentId: 'demo-student-approved-99',
             parentUserId: 'user-pai-1',
             status: 'pending_acceptance',
             createdAt: new Date().toISOString(),
-            generatedContent: "CONTRATO DE TRANSPORTE DEMO..."
+            generatedContent: "CONTRATO DE TRANSPORTE DEMO: Lucas Mendes está agora sob proteção do Guardian..."
         });
     };
 
     const runLogistics = () => {
         setStep('LOGISTICS');
         toast({ 
-            title: "Simulando Movimento GPS", 
-            description: "A van está chegando na casa do Lucas.",
-            duration: 3000
+            title: "Passo 3: Van em Movimento", 
+            description: "Abra o 'Mapa' (no Pai ou Motorista) para ver a van chegando.",
+            duration: 5000
         });
         
         updateDoc('locations', 'driver-1', { 
@@ -88,16 +100,16 @@ export function DemoOrchestrator() {
     const runFinance = () => {
         setStep('FINANCE');
         toast({ 
-            title: "Simulando Faturamento", 
-            description: "Viagem concluída. ROI calculado e fatura enviada.",
-            duration: 3000
+            title: "Passo 4: Ciclo Financeiro", 
+            description: "Viagem concluída. A fatura de R$ 450,00 foi gerada em 'Financeiro'.",
+            duration: 5000
         });
         
         addDoc('invoices', {
             id: 'demo-inv-99',
-            studentId: 'demo-student-99',
+            studentId: 'demo-student-approved-99',
             parentUserId: 'user-pai-1',
-            description: "Mensalidade Demo",
+            description: "Mensalidade Demo - Lucas Mendes",
             amount: 450,
             status: 'pending',
             dueDate: new Date().toISOString().split('T')[0]
@@ -133,28 +145,28 @@ export function DemoOrchestrator() {
                 <div className="space-y-2">
                     <DemoStepItem 
                         icon={<Smartphone />} 
-                        label="1. Onboarding (Pai)" 
+                        label="1. Simular Onboarding" 
                         isActive={step === 'IDLE'} 
                         isDone={step !== 'IDLE'}
                         onClick={runOnboarding}
                     />
                     <DemoStepItem 
                         icon={<ShieldCheck />} 
-                        label="2. Aprovação & Contrato" 
+                        label="2. Aprovar & Contrato" 
                         isActive={step === 'ONBOARDING'} 
                         isDone={['APPROVAL', 'LOGISTICS', 'FINANCE', 'DONE'].includes(step)}
                         onClick={runApproval}
                     />
                     <DemoStepItem 
                         icon={<Bus />} 
-                        label="3. GPS & Proximidade" 
+                        label="3. Simular GPS (800m)" 
                         isActive={step === 'APPROVAL'} 
                         isDone={['LOGISTICS', 'FINANCE', 'DONE'].includes(step)}
                         onClick={runLogistics}
                     />
                     <DemoStepItem 
                         icon={<DollarSign />} 
-                        label="4. Faturamento & ROI" 
+                        label="4. Gerar Fatura & ROI" 
                         isActive={step === 'LOGISTICS'} 
                         isDone={['FINANCE', 'DONE'].includes(step)}
                         onClick={runFinance}
@@ -164,7 +176,7 @@ export function DemoOrchestrator() {
                 {step === 'DONE' && (
                     <div className="bg-green-500/10 p-3 rounded border border-green-500/20 text-center">
                         <CheckCircle2 className="h-8 w-8 text-green-500 mx-auto mb-2" />
-                        <p className="text-[10px] font-bold text-green-600 uppercase">Fluxo Completo Validado!</p>
+                        <p className="text-[10px] font-bold text-green-600 uppercase">Jornada Demo Validada!</p>
                     </div>
                 )}
 
