@@ -9,7 +9,7 @@ import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users, HeartPulse } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
-import { formatDistanceToNow } from 'date-fns';
+import { formatDistanceToNow, format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -25,6 +25,9 @@ export default function PendingRegistrationsPage() {
   const { data: registrations, isLoading } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
   const { data: schools } = useMockCollection('schools');
   const { data: existingParents } = useMockCollection('parents');
+  const { data: templates } = useMockCollection('contract_templates');
+  const { data: companyProfiles } = useMockCollection('company_profile');
+  
   const { updateDoc, addDoc } = useMockData();
   const { toast } = useToast();
 
@@ -35,6 +38,8 @@ export default function PendingRegistrationsPage() {
   const [editableParentName, setEditableParentName] = useState('');
 
   const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
+  const company = companyProfiles?.[0];
+  const defaultTemplate = templates?.[0];
 
   const handleOpenReview = (reg: any) => {
       setSelectedReg(reg);
@@ -70,14 +75,18 @@ export default function PendingRegistrationsPage() {
         );
 
         let parentIdToUse;
+        let parentUserIdToUse;
+
         if (parentMatch) {
             parentIdToUse = parentMatch.id;
+            parentUserIdToUse = parentMatch.userId;
             toast({ title: "Responsável reconhecido", description: `Vinculando novo aluno ao cadastro de ${parentMatch.name}.` });
         } else {
             const newParentId = `parent-${Date.now()}`;
+            parentUserIdToUse = reg.userId || `user-gen-${Date.now()}`;
             addDoc('parents', {
                 id: newParentId,
-                userId: reg.userId || `user-gen-${Date.now()}`, 
+                userId: parentUserIdToUse, 
                 name: editableParentName,
                 email: reg.email,
                 phone: reg.phone,
@@ -102,7 +111,7 @@ export default function PendingRegistrationsPage() {
             }
         }
 
-        addDoc('students', {
+        const newStudentId = addDoc('students', {
             name: reg.studentName,
             schoolId: reg.schoolId,
             parentId: parentIdToUse, 
@@ -119,6 +128,61 @@ export default function PendingRegistrationsPage() {
             medicalNote: reg.medicalNote || '',
             active: true
         });
+
+        // AUTOMAÇÃO: GERAR CONTRATO IMEDIATO
+        if (defaultTemplate && company) {
+            const studentAddress = `${address.street || ''}, ${address.number || ''} - ${address.neighborhood || ''}`;
+            const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+            const schoolYear = new Date().getFullYear().toString();
+            
+            let paymentPhrase = "";
+            const hasBank = !!company.bankName && !!company.bankAgency && !!company.bankAccount;
+            const hasPix = !!company.pixKey;
+
+            if (hasBank && hasPix) {
+                paymentPhrase = `via: ${company.bankName}, Agência ${company.bankAgency}, Conta ${company.bankAccount} ou através da Chave Pix: ${company.pixKey}`;
+            } else if (hasBank) {
+                paymentPhrase = `via: ${company.bankName}, Agência ${company.bankAgency}, Conta ${company.bankAccount}`;
+            } else if (hasPix) {
+                paymentPhrase = `através da Chave Pix: ${company.pixKey}`;
+            } else {
+                paymentPhrase = "a ser definido pelo contratado";
+            }
+
+            let generatedContent = defaultTemplate.content;
+            
+            const fullPaymentPattern = /via: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}/g;
+            if (generatedContent.match(fullPaymentPattern)) {
+                generatedContent = generatedContent.replace(fullPaymentPattern, paymentPhrase);
+            } else {
+                generatedContent = generatedContent.replace(/{{banco}}/g, company.bankName || 'N/A');
+                generatedContent = generatedContent.replace(/{{agencia}}/g, company.bankAgency || 'N/A');
+                generatedContent = generatedContent.replace(/{{conta}}/g, company.bankAccount || 'N/A');
+                generatedContent = generatedContent.replace(/{{chave_pix}}/g, company.pixKey || 'N/A');
+            }
+
+            generatedContent = generatedContent.replace(/{{aluno_nome}}/g, reg.studentName || 'N/A');
+            generatedContent = generatedContent.replace(/{{responsavel_nome}}/g, editableParentName || 'N/A');
+            generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, reg.documentData?.cpf || 'N/A');
+            generatedContent = generatedContent.replace(/{{aluno_endereco}}/g, studentAddress);
+            generatedContent = generatedContent.replace(/{{escola_nome}}/g, schoolsMap.get(reg.schoolId) || 'N/A');
+            generatedContent = generatedContent.replace(/{{valor_mensalidade}}/g, `R$ ${feeNum.toFixed(2).replace('.', ',')}`);
+            generatedContent = generatedContent.replace(/{{turno}}/g, 'Manhã');
+            generatedContent = generatedContent.replace(/{{dia_vencimento}}/g, approvedPreferredPaymentDay);
+            generatedContent = generatedContent.replace(/{{data_geracao}}/g, generationDate);
+            generatedContent = generatedContent.replace(/{{ano_letivo}}/g, schoolYear);
+
+            addDoc('contracts', {
+                templateId: defaultTemplate.id,
+                studentId: newStudentId, 
+                parentUserId: parentUserIdToUse,
+                generatedContent,
+                status: 'pending_acceptance',
+                createdAt: new Date().toISOString(),
+            });
+            
+            toast({ title: "Contrato Gerado!", description: "O contrato automático já está pronto para o pai." });
+        }
 
         updateDoc('pending_registrations', reg.id, { status: 'approved' });
 
@@ -358,7 +422,7 @@ export default function PendingRegistrationsPage() {
 
                             <Alert variant="destructive" className="bg-amber-500/10 text-amber-600 border-amber-500/20">
                                 <AlertTriangle className="h-4 w-4" />
-                                <AlertDescription className="text-[10px]">A aprovação irá sincronizar endereços e buscar a localização GPS automaticamente.</AlertDescription>
+                                <AlertDescription className="text-[10px]">A aprovação irá sincronizar endereços, buscar localização GPS e GERAR O CONTRATO AUTOMATICAMENTE.</AlertDescription>
                             </Alert>
                         </div>
                     </div>
