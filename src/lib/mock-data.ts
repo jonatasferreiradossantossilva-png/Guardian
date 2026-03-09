@@ -2,7 +2,7 @@
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais blindados para o protótipo do Guardian.
- * Configurado com um modelo de contrato robusto e solicitações vinculadas ao usuário de teste.
+ * Base de conhecimento expandida para demonstrar o Big Data de escolas.
  */
 
 const now = new Date();
@@ -50,30 +50,18 @@ export const initialMockData = {
             city: "São Paulo",
             state: "SP",
             zipCode: "01001-000"
-        },
-        {
-            id: "school-marjore",
-            name: "Colégio Marjore Paula",
-            cnpj: "99.888.777/0001-66",
-            active: true,
-            latitude: -23.5600,
-            longitude: -46.6500,
-            street: "Av. Rebouças",
-            number: "500",
-            neighborhood: "Pinheiros",
-            city: "São Paulo",
-            state: "SP",
-            zipCode: "05401-000"
         }
     ],
     school_knowledge_base: [
         { id: "kb-1", name: "Colégio Amos", city: "Carapicuíba", state: "SP", street: "Av. Inocêncio Seráfico", number: "2000", neighborhood: "Centro", zipCode: "06320-290", latitude: -23.5234, longitude: -46.8345 },
         { id: "kb-2", name: "Colégio Albert Einstein", city: "Carapicuíba", state: "SP", street: "Rua Rui Barbosa", number: "150", neighborhood: "Vila Dirce", zipCode: "06333-000", latitude: -23.5345, longitude: -46.8456 },
         { id: "kb-3", name: "E.E. Maria de Lourdes Teixeira", city: "Carapicuíba", state: "SP", street: "Av. Brasil", number: "500", neighborhood: "Cohab", zipCode: "06325-000", latitude: -23.5456, longitude: -46.8567 },
+        { id: "kb-4", name: "Colégio Adventista de Carapicuíba", city: "Carapicuíba", state: "SP", street: "Rua Coração de Maria", number: "45", neighborhood: "Vila Cretti", zipCode: "06317-120", latitude: -23.5255, longitude: -46.8310 },
+        { id: "kb-5", name: "Escola Estadual Toufic Joulian", city: "Carapicuíba", state: "SP", street: "Rua Sandra Maria", number: "100", neighborhood: "Centro", zipCode: "06320-000", latitude: -23.5210, longitude: -46.8380 },
+        { id: "kb-6", name: "Colégio Objetivo Carapicuíba", city: "Carapicuíba", state: "SP", street: "Av. Deputado Emílio Carlos", number: "1200", neighborhood: "Vila Terezinha", zipCode: "06310-160", latitude: -23.5180, longitude: -46.8290 }
     ],
     parents: [
         { id: "parent-1", userId: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", phone: "11987654321", active: true },
-        { id: "parent-2", userId: "user-gen-2", name: "Carlos Magno", email: "carlos@email.com", phone: "11911112222", active: true },
     ],
     students: [
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "5º Ano", turma: "Sala 101", medicalConditions: ["Alergia"], medicalNote: "ALERGIA GRAVE A GLÚTEN E LACTOSE." },
@@ -100,23 +88,15 @@ export const initialMockData = {
         "driver-1": { latitude: -23.5500, longitude: -46.6300, timestamp: new Date().toISOString() }
     },
     invoices: [
-        { id: "inv-ago-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: getPastDate(0), status: 'paid' },
+        { id: "inv-init-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: getPastDate(0), status: 'paid' },
     ],
-    expenses: [
-        { id: "exp-1", description: "Combustível Semanal", amount: 850.00, date: getPastDate(0, 5), category: "Combustível" },
-    ],
-    trip_history: [
-        { id: "trip-1", date: getPastDate(0, 1), driverName: "Juliano Castro", plannedKm: 45.2, actualKm: 38.5, savingsKm: 6.7, fuelSaved: 32.50 },
-    ],
-    messages: [
-        { id: "m-1", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Olá Ana! O contrato de transporte do Enzo e da Valentina já está disponível para sua assinatura digital no painel.", timestamp: new Date(Date.now() - 86400000).toISOString() },
-    ],
+    expenses: [],
+    trip_history: [],
+    messages: [],
     announcements: [
         { id: "ann-1", title: "Manutenção da Van BRA2E19", content: "Aviso: A Van 01 passará por revisão preventiva nesta quarta-feira.", priority: "high", target: "all", createdAt: new Date().toISOString() },
     ],
-    incidents: [
-        { id: "inc-init-1", category: "Início de Operação", description: "Frota matinal iniciou atividades.", severity: "Baixa", reporter: "Sistema", timestamp: new Date().toISOString() }
-    ],
+    incidents: [],
     contract_templates: [
         { 
             id: "template-1", 
@@ -146,44 +126,7 @@ As partes aceitam os termos de forma digital através da plataforma Guardian em 
     contracts: [],
     authorized_pickups: [],
     trip_requests: [],
-    pending_registrations: [
-        {
-            id: "reg-test-1",
-            parentName: "Ana Pereira", // Vinculado à Ana Pereira
-            email: "ana.pereira@email.com",
-            phone: "11987654321",
-            studentName: "Theo Mendes",
-            schoolId: "school-1",
-            studentSerie: "2º Ano Fundamental",
-            studentTurma: "Sala 104",
-            shift: "Manhã",
-            preferredPaymentDay: 10,
-            status: "pending_approval",
-            userId: "user-pai-1",
-            createdAt: new Date(Date.now() - 3600000).toISOString(),
-            address: { zipCode: "01310-100", street: "Av. Paulista", number: "1500", neighborhood: "Bela Vista", city: "São Paulo", state: "SP" },
-            documentData: { cpf: "111.222.333-44", rg: "12.345.678-9", birthDate: "1985-05-20" },
-            medicalConditions: ["Alergia"],
-            medicalNote: "Alérgico a picada de abelha."
-        },
-        {
-            id: "reg-test-2",
-            parentName: "Ana Pereira",
-            email: "ana.pereira@email.com",
-            phone: "11987654321",
-            studentName: "Alice Oliveira",
-            schoolId: "school-marjore",
-            studentSerie: " Pré II",
-            studentTurma: "Turma Azul",
-            shift: "Manhã",
-            preferredPaymentDay: 5,
-            status: "pending_approval",
-            userId: "user-pai-1",
-            createdAt: new Date(Date.now() - 7200000).toISOString(),
-            address: { zipCode: "01310-100", street: "Av. Paulista", number: "1500", neighborhood: "Bela Vista", city: "São Paulo", state: "SP" },
-            documentData: { cpf: "111.222.333-44", rg: "12.345.678-9", birthDate: "1985-05-20" }
-        }
-    ],
+    pending_registrations: [],
     predefined_messages: [
         { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
         { id: "pm-2", text: "O aluno já embarcou com segurança.", for: "monitor" },

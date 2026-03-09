@@ -19,7 +19,7 @@ const RadioGroup = React.forwardRef<
     />
   )
 })
-RadioGroup.displayName = RadioGroupPrimitive.Root.displayName
+RadioGroup.displayName = "RadioGroup"
 
 const RadioGroupItem = React.forwardRef<
   React.ElementRef<typeof RadioGroupPrimitive.Item>,
@@ -31,7 +31,7 @@ const RadioGroupItem = React.forwardRef<
     setMounted(true);
   }, []);
 
-  // Prevenir erros de hidratação e flushSync no React 19
+  // Blindagem contra erros de hidratação e flushSync no React 19
   if (!mounted) {
     return (
         <div className={cn(

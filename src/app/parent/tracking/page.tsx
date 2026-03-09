@@ -90,16 +90,24 @@ interface SchoolData {
     longitude: number;
 }
 
+/**
+ * Fórmula de Haversine estabilizada e blindada contra ReferenceError.
+ */
 function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: number, lng: number}) {
   if (!coords1 || !coords2) return Infinity;
-  const toRad = (x: number) => (x * Math.PI) / 180;
-  const R = 6371; 
+  const toRad = (val: number) => (val * Math.PI) / 180;
+  const R = 6371; // Raio da Terra em km
+  
   const dLat = toRad(coords2.lat - coords1.lat);
   const dLon = toRad(coords2.lng - coords1.lng);
+  
   const lat1Rad = toRad(coords1.lat);
   const lat2Rad = toRad(coords2.lat);
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1Rad) * Math.cos(lat2Rad);
+
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+            Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1Rad) * Math.cos(lat2Rad);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  
   return R * c;
 }
 

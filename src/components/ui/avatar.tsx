@@ -25,7 +25,7 @@ const AvatarImage = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Image>,
   React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Image>
 >(({ className, src, ...props }, ref) => {
-  // Blindagem contra imagens nulas ou vazias
+  // Blindagem contra imagens nulas ou caminhos vazios que causam erro no NextJS
   const safeSrc = (src === "" || src === null) ? undefined : src;
   
   return (
