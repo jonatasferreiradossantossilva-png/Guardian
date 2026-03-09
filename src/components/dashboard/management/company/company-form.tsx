@@ -1,4 +1,3 @@
-
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -179,7 +178,7 @@ export function CompanyForm() {
                     <FormItem>
                     <FormLabel className="font-bold uppercase text-[10px] tracking-widest text-muted-foreground flex items-center gap-2">
                         <MapPin className="h-3 w-3" /> Endereço da Sede
-                    </FormLabel>
+                    </Label>
                     <FormControl>
                         <Input placeholder="Rua, Número, Bairro, Cidade - UF" {...field} />
                     </FormControl>
