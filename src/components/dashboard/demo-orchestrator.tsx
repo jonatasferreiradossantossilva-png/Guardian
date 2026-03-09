@@ -53,7 +53,8 @@ export function DemoOrchestrator() {
 
     const runApproval = () => {
         setStep('APPROVAL');
-        const studentId = `demo-stud-${Date.now()}`;
+        const timestamp = Date.now();
+        const studentId = `demo-stud-${timestamp}`;
         toast({ 
             title: "Passo 2: Aluno Integrado", 
             description: "O contrato foi gerado. Vá em 'Contratos' ou 'Alunos' para ver o resultado.",
@@ -73,7 +74,7 @@ export function DemoOrchestrator() {
         });
 
         addDoc('contracts', {
-            id: `demo-cont-${Date.now()}`,
+            id: `demo-cont-${timestamp}`,
             studentId: studentId,
             parentUserId: 'user-pai-1',
             status: 'pending_acceptance',
@@ -99,7 +100,8 @@ export function DemoOrchestrator() {
 
     const runFinance = () => {
         setStep('FINANCE');
-        const invId = `demo-inv-${Date.now()}`;
+        const timestamp = Date.now();
+        const invId = `demo-inv-${timestamp}`;
         toast({ 
             title: "Passo 4: Ciclo Financeiro", 
             description: "Viagem concluída. A fatura de R$ 450,00 foi gerada em 'Financeiro'.",
