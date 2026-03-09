@@ -2,7 +2,7 @@
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais blindados e enriquecidos para o protótipo do Guardian.
- * Contém dados massivos de simulação para Financeiro e Performance sem afetar cadastros base.
+ * Contém dados massivos de simulação para Financeiro, Performance, Solicitações e Viagens Extras.
  */
 
 const now = new Date();
@@ -116,6 +116,36 @@ export const initialMockData = {
         { id: "trip-4", date: getRecentDay(4), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 40.5, savingsKm: 2.0, fuelSaved: 15.00 },
         { id: "trip-5", date: getRecentDay(5), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 38.9, savingsKm: 3.6, fuelSaved: 27.00 },
     ],
+    trip_requests: [
+        { id: "tr-1", studentId: "student-1", parentUserId: "user-pai-1", schoolId: "school-1", date: getRecentDay(-2), type: "ida_e_volta", shift: "manha", status: "pendente", reason: "Evento extra de robótica na escola.", createdAt: getRecentDay(1) },
+        { id: "tr-2", studentId: "student-2", parentUserId: "user-pai-1", schoolId: "school-1", date: getRecentDay(-1), type: "ida", shift: "tarde", status: "aguardando_aprovacao_pai", amount: 45.00, reason: "Reposição de aula.", createdAt: getRecentDay(2) },
+    ],
+    pending_registrations: [
+        { 
+            id: "reg-1", 
+            parentName: "Ricardo Oliveira", 
+            studentName: "Felipe Oliveira", 
+            email: "ricardo@email.com", 
+            phone: "11977776666", 
+            schoolId: "school-1", 
+            status: "pending_approval", 
+            createdAt: getRecentDay(1),
+            address: { zipCode: "06320-000", street: "Rua Sandra Maria", number: "50", neighborhood: "Centro", city: "Carapicuíba", state: "SP" },
+            documentData: { cpf: "123.456.789-00", rg: "12.345.678-9" }
+        },
+        { 
+            id: "reg-2", 
+            parentName: "Camila Santos", 
+            studentName: "Beatriz Santos", 
+            email: "camila@email.com", 
+            phone: "11955554444", 
+            schoolId: "school-1", 
+            status: "pending_approval", 
+            createdAt: getRecentDay(0),
+            address: { zipCode: "06333-000", street: "Rua Rui Barbosa", number: "100", neighborhood: "Vila Dirce", city: "Carapicuíba", state: "SP" },
+            documentData: { cpf: "987.654.321-11", rg: "98.765.432-1" }
+        }
+    ],
     messages: [],
     announcements: [
         { id: "ann-1", title: "Manutenção da Van BRA2E19", content: "Aviso: A Van 01 passará por revisão preventiva nesta quarta-feira.", priority: "high", target: "all", createdAt: new Date().toISOString() },
@@ -149,8 +179,6 @@ As partes aceitam os termos de forma digital através da plataforma Guardian em 
     ],
     contracts: [],
     authorized_pickups: [],
-    trip_requests: [],
-    pending_registrations: [],
     predefined_messages: [
         { id: "pm-1", text: "Estou a 5 minutos do local.", for: "driver" },
         { id: "pm-2", text: "O aluno já embarcou com segurança.", for: "monitor" },

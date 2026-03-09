@@ -94,7 +94,7 @@ interface SchoolData {
  * Previna erros de referência garantindo que todas as variáveis de coordenadas estejam definidas.
  */
 function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: number, lng: number}) {
-  if (!coords1 || !coords2 || !coords1.lat || !coords2.lat || !coords1.lng || !coords2.lng) return Infinity;
+  if (!coords1 || !coords2 || typeof coords1.lat !== 'number' || typeof coords2.lat !== 'number' || typeof coords1.lng !== 'number' || typeof coords2.lng !== 'number') return Infinity;
   
   const toRad = (val: number) => (val * Math.PI) / 180;
   const R = 6371; // Raio da Terra em km
@@ -251,7 +251,7 @@ export default function ParentTrackingPage() {
   const latestAnnouncement = useMemo(() => announcements?.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0], [announcements]);
 
   useEffect(() => {
-    if (!student || !displayLocation || !student.latitude || !displayLocation.latitude) return;
+    if (!student || !displayLocation || typeof student.latitude !== 'number' || typeof displayLocation.latitude !== 'number') return;
     const dist = haversineDistance(
         { lat: displayLocation.latitude, lng: displayLocation.longitude }, 
         { lat: student.latitude, lng: student.longitude }
