@@ -96,8 +96,8 @@ function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: n
   const dLat = toRad(coords2.lat - coords1.lat);
   const dLon = toRad(coords2.lng - coords1.lng);
   const lat1 = toRad(coords1.lat);
-  const lat2 = toRad(coords1.lat);
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(Lon / 2) * Math.sin(Lon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const lat2 = toRad(coords2.lat);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -138,7 +138,10 @@ function GoogleMapMarkers({
                   )}
                   <AdvancedMarker position={{ lat: s.latitude, lng: s.longitude }} title={s.name}>
                         <Pin background={isSelected ? '#3b82f6' : '#cbd5e1'} borderColor={'#fff'}>
-                            <Avatar className={cn("h-6 w-6", !isSelected && "grayscale opacity-70")}><AvatarImage src={s.photoUrl} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                            <Avatar className={cn("h-6 w-6", !isSelected && "grayscale opacity-70")}>
+                                <AvatarImage src={s.photoUrl || undefined} />
+                                <AvatarFallback>{s.name[0]}</AvatarFallback>
+                            </Avatar>
                         </Pin>
                   </AdvancedMarker>
                   {school && (
@@ -218,11 +221,9 @@ export default function ParentTrackingPage() {
   const { data: allSchools } = useMockCollection("schools");
   const { data: allMessages } = useMockCollection("messages");
 
-  // Notificações reais baseadas nas mensagens recebidas pelo pai
   const unreadCount = useMemo(() => {
       if (!allMessages || !mockUserId) return 0;
-      // Consideramos "não lidas" mensagens enviadas por outros para este pai nos últimos 30 minutos
-      const recentLimit = new Date(Date.now() - 1800000); // 30 min
+      const recentLimit = new Date(Date.now() - 1800000); 
       return allMessages.filter(m => m.recipientId === mockUserId && new Date(m.timestamp) > recentLimit).length;
   }, [allMessages, mockUserId]);
 
@@ -304,7 +305,6 @@ export default function ParentTrackingPage() {
             <Link href="/"><Button variant="ghost">Sair</Button></Link>
         </div>
 
-        {/* Alerta de Foto Pendente */}
         {student && !student.photoUrl && (
             <Card className="border-amber-500/20 bg-amber-500/5 p-4 flex items-center justify-between gap-4 animate-in slide-in-from-top-4 duration-500">
                 <div className="flex items-start gap-3">
@@ -321,19 +321,20 @@ export default function ParentTrackingPage() {
             </Card>
         )}
 
-        {/* Multi-child selector */}
         {students && students.length > 1 && (
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {students.map((s) => (
                     <button key={s.id} onClick={() => handleStudentSelect(s.id)} className={cn("flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0", selectedStudentId === s.id ? "bg-primary border-primary text-primary-foreground shadow-md" : "bg-card border-muted text-muted-foreground")}>
-                        <Avatar className="h-6 w-6"><AvatarImage src={s.photoUrl || null} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                        <Avatar className="h-6 w-6">
+                            <AvatarImage src={s.photoUrl || undefined} />
+                            <AvatarFallback>{s.name[0]}</AvatarFallback>
+                        </Avatar>
                         <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
                     </button>
                 ))}
             </div>
         )}
 
-        {/* Latest Announcement Highlight */}
         {latestAnnouncement && (
             <Link href="/parent/mural" className={cn(
                 "block p-4 rounded-xl border-2 transition-all active:scale-[0.98]",
@@ -354,7 +355,6 @@ export default function ParentTrackingPage() {
             </Link>
         )}
 
-        {/* Tabs System */}
         <Tabs defaultValue="jornada" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-6">
                 <TabsTrigger value="jornada" className="gap-2">
@@ -365,13 +365,12 @@ export default function ParentTrackingPage() {
                 </TabsTrigger>
             </TabsList>
 
-            {/* TAB 1: JOURNEY STATUS & ACTIONS */}
             <TabsContent value="jornada" className="space-y-6 animate-in fade-in duration-300">
                 <Card className="border-2 shadow-xl overflow-hidden">
                     <CardHeader className="bg-primary/5 border-b pb-4">
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16 border-2 border-background shadow-md">
-                                <AvatarImage src={student?.photoUrl || null} />
+                                <AvatarImage src={student?.photoUrl || undefined} />
                                 <AvatarFallback className="text-3xl font-black">{student?.name[0]}</AvatarFallback>
                             </Avatar>
                             <div><CardTitle className="text-xl">Olá, {parent?.name.split(' ')[0]}</CardTitle><CardDescription className="font-medium text-foreground/80">Jornada de {student?.name}</CardDescription></div>
@@ -392,7 +391,6 @@ export default function ParentTrackingPage() {
                     </CardFooter>
                 </Card>
 
-                {/* Shortcut Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/qrcode"><QrCode className="h-6 w-6 text-primary" /><span>QR Code</span></Link></Button>
                     <Button asChild variant="outline" className="flex flex-col h-auto py-4 gap-2 justify-center text-xs"><Link href="/parent/requests"><RouteIcon className="h-6 w-6 text-primary" /><span>Viagens Avulsas</span></Link></Button>
@@ -417,7 +415,6 @@ export default function ParentTrackingPage() {
                 </div>
             </TabsContent>
 
-            {/* TAB 2: LIVE MAP */}
             <TabsContent value="mapa" className="animate-in fade-in duration-300">
                 <Card className="h-[500px] border-2 shadow-2xl overflow-hidden relative">
                     <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-3 left-3 z-[1000] bg-background/80 shadow-sm border-primary/20"><LocateFixed className="h-5 w-5 text-primary" /></Button>
@@ -446,7 +443,6 @@ export default function ParentTrackingPage() {
         </Tabs>
       </div>
 
-      {/* Absence Dialog */}
       <AlertDialog open={isAbsenceDialogOpen} onOpenChange={setIsAbsenceDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader><AlertDialogTitle>Informar Falta</AlertDialogTitle></AlertDialogHeader>
