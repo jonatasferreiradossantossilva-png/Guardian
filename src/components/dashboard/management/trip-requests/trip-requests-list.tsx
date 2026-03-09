@@ -216,6 +216,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                               <Avatar className="h-8 w-8">
                                   <AvatarImage src={`https://picsum.photos/seed/parent-${parentIdForAvatar}/100/100`} />
                                   <AvatarFallback>{(parentName || '?')[0]}</AvatarFallback>
+                              </Avatar>
                               <span>{parentName}</span>
                           </div>
                         </TableCell>
