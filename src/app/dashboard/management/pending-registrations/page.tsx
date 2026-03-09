@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -136,7 +135,6 @@ export default function PendingRegistrationsPage() {
             const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
             const schoolYear = new Date().getFullYear().toString();
             
-            // INTELIGÊNCIA DE FRASEADO RECUPERADA
             let paymentPhrase = "";
             const hasBank = !!company.bankName && !!company.bankAgency && !!company.bankAccount;
             const hasPix = !!company.pixKey;
@@ -153,7 +151,6 @@ export default function PendingRegistrationsPage() {
 
             let generatedContent = defaultTemplate.content;
             
-            // Substituições Inteligentes
             generatedContent = generatedContent.replace(/{{pagamento_info}}/g, paymentPhrase);
             generatedContent = generatedContent.replace(/{{empresa_nome}}/g, company.companyName || 'Guardian Transporte');
             generatedContent = generatedContent.replace(/{{empresa_cnpj}}/g, company.cnpj || 'N/A');
@@ -176,8 +173,16 @@ export default function PendingRegistrationsPage() {
                 status: 'pending_acceptance',
                 createdAt: new Date().toISOString(),
             });
+
+            // NOTIFICAÇÃO AUTOMÁTICA NO PAINEL DO PAI
+            addDoc('messages', {
+                senderId: 'user-admin-1', // ID do Gestor
+                recipientId: parentUserIdToUse,
+                text: `Olá, ${editableParentName.split(' ')[0]}! Boas notícias: o cadastro de ${reg.studentName} foi aprovado. O contrato de transporte já está disponível no seu painel para assinatura digital.`,
+                timestamp: new Date().toISOString()
+            });
             
-            toast({ title: "Contrato Gerado!", description: "O contrato automático já está pronto para o pai." });
+            toast({ title: "Contrato e Notificação Enviados!", description: "O pai já pode assinar digitalmente no painel." });
         }
 
         updateDoc('pending_registrations', reg.id, { status: 'approved' });
