@@ -90,7 +90,6 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const { toast } = useToast();
   const { updateDoc } = useMockData();
 
-  // FIXED: Corrected syntax error in useState declaration
   const [priceDialogRequest, setPriceDialogRequest] = useState<TripRequest | null>(null);
   const [price, setPrice] = useState<number | string>("");
 
@@ -217,7 +216,6 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                               <Avatar className="h-8 w-8">
                                   <AvatarImage src={`https://picsum.photos/seed/parent-${parentIdForAvatar}/100/100`} />
                                   <AvatarFallback>{(parentName || '?')[0]}</AvatarFallback>
-                              </Avatar>
                               <span>{parentName}</span>
                           </div>
                         </TableCell>
