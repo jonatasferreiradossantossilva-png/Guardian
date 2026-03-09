@@ -97,7 +97,7 @@ function haversineDistance(coords1: {lat: number, lng: number}, coords2: {lat: n
   const dLon = toRad(coords2.lng - coords1.lng);
   const lat1 = toRad(coords1.lat);
   const lat2 = toRad(coords1.lat);
-  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(dLon / 2) * Math.sin(dLon / 2) * Math.cos(lat1) * Math.cos(lat2);
+  const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.sin(Lon / 2) * Math.sin(Lon / 2) * Math.cos(lat1) * Math.cos(lat2);
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -218,12 +218,12 @@ export default function ParentTrackingPage() {
   const { data: allSchools } = useMockCollection("schools");
   const { data: allMessages } = useMockCollection("messages");
 
-  // Simulated unread count for parent
+  // Notificações reais baseadas nas mensagens recebidas pelo pai
   const unreadCount = useMemo(() => {
       if (!allMessages || !mockUserId) return 0;
-      // We simulate unread messages if they were received in the last hour
-      const oneHourAgo = new Date(Date.now() - 3600000);
-      return allMessages.filter(m => m.recipientId === mockUserId && new Date(m.timestamp) > oneHourAgo).length;
+      // Consideramos "não lidas" mensagens enviadas por outros para este pai nos últimos 30 minutos
+      const recentLimit = new Date(Date.now() - 1800000); // 30 min
+      return allMessages.filter(m => m.recipientId === mockUserId && new Date(m.timestamp) > recentLimit).length;
   }, [allMessages, mockUserId]);
 
   useEffect(() => { if (students?.length && !selectedStudentId) handleStudentSelect(students[0].id); }, [students, selectedStudentId]);
@@ -326,7 +326,7 @@ export default function ParentTrackingPage() {
             <div className="flex gap-2 overflow-x-auto pb-2 no-scrollbar">
                 {students.map((s) => (
                     <button key={s.id} onClick={() => handleStudentSelect(s.id)} className={cn("flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0", selectedStudentId === s.id ? "bg-primary border-primary text-primary-foreground shadow-md" : "bg-card border-muted text-muted-foreground")}>
-                        <Avatar className="h-6 w-6"><AvatarImage src={s.photoUrl} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
+                        <Avatar className="h-6 w-6"><AvatarImage src={s.photoUrl || null} /><AvatarFallback>{s.name[0]}</AvatarFallback></Avatar>
                         <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
                     </button>
                 ))}
@@ -371,7 +371,7 @@ export default function ParentTrackingPage() {
                     <CardHeader className="bg-primary/5 border-b pb-4">
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16 border-2 border-background shadow-md">
-                                <AvatarImage src={student?.photoUrl} />
+                                <AvatarImage src={student?.photoUrl || null} />
                                 <AvatarFallback className="text-3xl font-black">{student?.name[0]}</AvatarFallback>
                             </Avatar>
                             <div><CardTitle className="text-xl">Olá, {parent?.name.split(' ')[0]}</CardTitle><CardDescription className="font-medium text-foreground/80">Jornada de {student?.name}</CardDescription></div>
@@ -402,7 +402,7 @@ export default function ParentTrackingPage() {
                             <div className="relative">
                                 <MessageCircle className="h-6 w-6 text-primary" />
                                 {unreadCount > 0 && (
-                                    <span className="absolute -top-1.5 -right-1.5 flex h-4 w-4 items-center justify-center rounded-full bg-destructive text-[9px] font-black text-white animate-bounce shadow-sm">
+                                    <span className="absolute -top-1.5 -right-1.5 flex h-5 w-5 items-center justify-center rounded-full bg-destructive text-[10px] font-black text-white animate-bounce shadow-lg border-2 border-background">
                                         {unreadCount}
                                     </span>
                                 )}

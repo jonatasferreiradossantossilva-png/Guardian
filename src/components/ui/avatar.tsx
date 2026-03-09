@@ -15,7 +15,7 @@ const Avatar = React.forwardRef<
       "relative flex h-10 w-10 shrink-0 overflow-hidden rounded-full",
       className
     )}
-    {...props}
+    ...props
   />
 ))
 Avatar.displayName = AvatarPrimitive.Root.displayName
@@ -26,7 +26,7 @@ const AvatarImage = React.forwardRef<
 >(({ className, src, ...props }, ref) => (
   <AvatarPrimitive.Image
     ref={ref}
-    src={src === "" || src === null ? undefined : src}
+    src={src === "" || src === null ? null : src}
     className={cn("aspect-square h-full w-full", className)}
     {...props}
   />

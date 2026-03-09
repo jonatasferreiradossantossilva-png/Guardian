@@ -1,8 +1,7 @@
-
 // @ts-nocheck
 /**
  * @fileOverview Dados iniciais blindados para o protótipo do Guardian.
- * Configurado com um modelo de contrato robusto e multi-cláusulas.
+ * Configurado com um modelo de contrato robusto e solicitações vinculadas ao usuário de teste.
  */
 
 const now = new Date();
@@ -74,12 +73,10 @@ export const initialMockData = {
     parents: [
         { id: "parent-1", userId: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", phone: "11987654321", active: true },
         { id: "parent-2", userId: "user-gen-2", name: "Carlos Magno", email: "carlos@email.com", phone: "11911112222", active: true },
-        { id: "parent-3", userId: "user-gen-3", name: "Carla Dias", email: "carla@email.com", phone: "11933334444", active: true },
     ],
     students: [
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "5º Ano", turma: "Sala 101", medicalConditions: ["Alergia"], medicalNote: "ALERGIA GRAVE A GLÚTEN E LACTOSE." },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5585, longitude: -46.6605, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "3º Ano", turma: "Sala 202", medicalConditions: ["Respiratório"], medicalNote: "Possui bronquite asmática. Bombinha na mochila." },
-        { id: "student-3", name: "Beatriz Costa", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5650, longitude: -46.6520, street: "Av. Paulista", number: "1000", city: "São Paulo", state: "SP", monthlyFee: 420, preferredPaymentDay: 5, serie: "1º Ano", turma: "Sala 303" },
     ],
     drivers: [
         { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo", vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 }
@@ -94,7 +91,7 @@ export const initialMockData = {
             driverId: "driver-1",
             monitorId: "user-monitor-1",
             shift: "Manhã",
-            studentIds: ["school-1", "student-1", "student-2", "student-3"],
+            studentIds: ["school-1", "student-1", "student-2"],
             lastOptimizedAt: new Date().toISOString()
         }
     ],
@@ -103,7 +100,6 @@ export const initialMockData = {
     },
     invoices: [
         { id: "inv-ago-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: getPastDate(0), status: 'paid' },
-        { id: "inv-ago-2", studentId: "student-3", parentUserId: "user-gen-2", description: "Mensalidade Agosto", amount: 420, dueDate: getPastDate(0, 5), status: 'pending' },
     ],
     expenses: [
         { id: "exp-1", description: "Combustível Semanal", amount: 850.00, date: getPastDate(0, 5), category: "Combustível" },
@@ -113,7 +109,6 @@ export const initialMockData = {
     ],
     messages: [
         { id: "m-1", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Olá Ana! O contrato de transporte do Enzo e da Valentina já está disponível para sua assinatura digital no painel.", timestamp: new Date(Date.now() - 86400000).toISOString() },
-        { id: "m-2", senderId: "user-motorista-4", recipientId: "user-pai-1", text: "Ana, estou a 5 minutos da sua residência para buscar o Enzo.", timestamp: new Date(Date.now() - 3600000).toISOString() },
     ],
     announcements: [
         { id: "ann-1", title: "Manutenção da Van BRA2E19", content: "Aviso: A Van 01 passará por revisão preventiva nesta quarta-feira.", priority: "high", target: "all", createdAt: new Date().toISOString() },
@@ -135,7 +130,7 @@ CONTRATANTE: {{responsavel_nome}}, portador(a) do CPF {{responsavel_cpf}}, resid
 
 CLÁUSULA PRIMEIRA - DO OBJETO: O presente contrato tem por objeto a prestação de serviços de transporte escolar diário do referido aluno no trajeto residência/escola/residência para a instituição {{escola_nome}}.
 
-CLÁUSULA SEGUNDA - DO VALOR E PAGAMENTO: Pelos serviços prestados, o CONTRATANTE pagará à CONTRATADA o valor mensal de {{valor_mensalidade}}, com vencimento impreterivelmente todo dia {{dia_vencimento}} de cada mês.
+CLÁUSULA SEGUNDA - DO VALOR E PAGAMENTO: Pelos serviços prestados, o CONTRANTE pagará à CONTRATADA o valor mensal de {{valor_mensalidade}}, com vencimento impreterivelmente todo dia {{dia_vencimento}} de cada mês.
 
 CLÁUSULA TERCEIRA - DOS HORÁRIOS: O transporte será realizado no turno da {{turno}}. O aluno deverá estar pronto no local de embarque no horário estipulado pela contratada, sob pena de seguir viagem para não atrasar os demais passageiros.
 
@@ -153,9 +148,9 @@ As partes aceitam os termos de forma digital através da plataforma Guardian em 
     pending_registrations: [
         {
             id: "reg-test-1",
-            parentName: "Juliana Mendes",
-            email: "juliana@email.com",
-            phone: "11977776666",
+            parentName: "Ana Pereira", // Nome ajustado para vincular à conta de teste 'Pai'
+            email: "ana.pereira@email.com",
+            phone: "11987654321",
             studentName: "Theo Mendes",
             schoolId: "school-1",
             studentSerie: "2º Ano Fundamental",
@@ -168,22 +163,6 @@ As partes aceitam os termos de forma digital através da plataforma Guardian em 
             documentData: { cpf: "111.222.333-44", rg: "12.345.678-9", birthDate: "1985-05-20" },
             medicalConditions: ["Alergia"],
             medicalNote: "Alérgico a picada de abelha."
-        },
-        {
-            id: "reg-test-2",
-            parentName: "Ricardo Oliveira",
-            email: "ricardo@email.com",
-            phone: "11955554444",
-            studentName: "Alice Oliveira",
-            schoolId: "school-marjore",
-            studentSerie: "5º Ano Fundamental",
-            studentTurma: "Sala 205",
-            shift: "Tarde",
-            preferredPaymentDay: 5,
-            status: "pending_approval",
-            createdAt: new Date(Date.now() - 7200000).toISOString(),
-            address: { zipCode: "05401-000", street: "Rua Teodoro Sampaio", number: "1000", neighborhood: "Pinheiros", city: "São Paulo", state: "SP" },
-            documentData: { cpf: "555.666.777-88", rg: "98.765.432-1", birthDate: "1982-10-15" }
         }
     ],
     predefined_messages: [
