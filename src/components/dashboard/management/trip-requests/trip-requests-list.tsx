@@ -90,7 +90,8 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const { toast } = useToast();
   const { updateDoc } = useMockData();
 
-  const [priceDialogRequest, setPriceDialogRequest] = setPriceDialogRequest = useState<TripRequest | null>(null);
+  // FIXED: Corrected syntax error in useState declaration
+  const [priceDialogRequest, setPriceDialogRequest] = useState<TripRequest | null>(null);
   const [price, setPrice] = useState<number | string>("");
 
   const { data: liveRequests, isLoading: areRequestsLoading } = useMockCollection('trip_requests');
