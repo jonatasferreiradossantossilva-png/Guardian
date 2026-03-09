@@ -31,10 +31,10 @@ export function DemoOrchestrator() {
         setStep('SCANNING');
         addLog("Iniciando varredura de integridade...");
         
-        // Simulação de Validação de Fluxo com IDs únicos reais
+        // Simulação de Validação de Fluxo com IDs únicos reais para evitar erros de chaves duplicadas
         setTimeout(() => {
             const timestamp = Date.now();
-            const invId = `val-inv-${timestamp}-${Math.random().toString(36).substr(2, 5)}`;
+            const invId = `val-inv-${timestamp}`;
             
             addDoc('invoices', {
                 id: invId,
