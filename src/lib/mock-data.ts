@@ -1,8 +1,8 @@
 
 // @ts-nocheck
 /**
- * @fileOverview Dados iniciais enriquecidos (Parte 2: CRM e Operação).
- * Contém diversidade de modalidades, alertas de saúde e volume de triagem.
+ * @fileOverview Dados iniciais enriquecidos (Parte 3: Histórico e Comunicação).
+ * Contém volume real de faturamento, telemetria, alunos, triagem, logs e mensagens.
  */
 
 const now = new Date();
@@ -17,6 +17,11 @@ const getRecentDay = (daysAgo) => {
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
     return d.toISOString().split('T')[0];
+};
+
+const getRecentTime = (hoursAgo) => {
+    const d = new Date(now.getTime() - hoursAgo * 60 * 60 * 1000);
+    return d.toISOString();
 };
 
 // Gerador de Histórico de Faturamento (24 meses)
@@ -218,11 +223,20 @@ export const initialMockData = {
             address: { zipCode: "06320-290", street: "Av. Inocêncio Seráfico", number: "200", city: "Carapicuíba", state: "SP" }
         }
     ],
-    messages: [],
+    messages: [
+        { id: "msg-1", senderId: "user-pai-1", recipientId: "user-admin-1", text: "Olá Jonatas! Gostaria de saber se a fatura de Março já está disponível.", timestamp: getRecentTime(48) },
+        { id: "msg-2", senderId: "user-admin-1", recipientId: "user-pai-1", text: "Olá Ana! Sim, acabei de gerar. Você pode ver no seu painel financeiro.", timestamp: getRecentTime(47) },
+        { id: "msg-3", senderId: "user-motorista-4", recipientId: "user-admin-1", text: "Van 01 pronta. Vou iniciar a rota 01 agora.", timestamp: getRecentTime(2) },
+        { id: "msg-4", senderId: "user-admin-1", recipientId: "user-motorista-4", text: "Ok Juliano, boa viagem. Atenção ao trânsito na Av. Paulista.", timestamp: getRecentTime(1.5) },
+    ],
     announcements: [
         { id: "ann-1", title: "Manutenção da Van BRA2E19", content: "Aviso: A Van 01 passará por revisão preventiva nesta quarta-feira.", priority: "high", target: "all", createdAt: new Date().toISOString() },
     ],
-    incidents: [],
+    incidents: [
+        { id: "log-1", category: "Backup de Telemetria", description: "Sincronização de dados de GPS concluída com sucesso.", severity: "Baixa", reporter: "Guardian System", timestamp: getRecentTime(12), location: { lat: -23.55, lng: -46.63 } },
+        { id: "log-2", category: "Manutenção Preditiva", description: "Veículo Mercedes Sprinter (BRA2E19) atingiu o limite de km. Agendamento sugerido.", severity: "Média", reporter: "Guardian Intelligence", timestamp: getRecentTime(5), location: { lat: -23.55, lng: -46.63 } },
+        { id: "log-3", category: "Sincronização GPS", description: "Telemetria da Rota 01 ativa e transmitindo para os pais.", severity: "Baixa", reporter: "Guardian System", timestamp: getRecentTime(1), location: { lat: -23.55, lng: -46.63 } },
+    ],
     contract_templates: [
         { 
             id: "template-1", 
