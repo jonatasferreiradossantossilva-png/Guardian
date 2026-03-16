@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo } from "react";
@@ -175,12 +174,11 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {isLoading && (
+                {isLoading ? (
                   <TableRow>
                     <TableCell colSpan={8} className="text-center h-24">Carregando...</TableCell>
                   </TableRow>
-                )}
-                {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
+                ) : sortedRequests && sortedRequests.length > 0 ? (
                   sortedRequests.map((request) => {
                     const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
                     const parentInfo = parentDataMap.get(request.parentUserId);
@@ -252,11 +250,9 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                     )
                   })
                 ) : (
-                  !isLoading && (
-                    <TableRow>
-                      <TableCell colSpan={8} className="h-24 text-center">Nenhuma solicitação encontrada.</TableCell>
-                    </TableRow>
-                  )
+                  <TableRow>
+                    <TableCell colSpan={8} className="h-24 text-center">Nenhuma solicitação encontrada.</TableCell>
+                  </TableRow>
                 )}
               </TableBody>
             </Table>

@@ -69,6 +69,7 @@ interface Student {
   latitude: number;
   longitude: number;
   schoolId: string;
+  serviceModality?: 'completo' | 'so_ida' | 'so_volta';
   medicalNote?: string;
   medicalConditions?: string[];
   street?: string;
@@ -191,6 +192,11 @@ export default function DriverRoutePlanPage() {
         const student = studentsMap.get(id);
         const school = schoolsMap.get(id);
         if (student && student.active !== false) {
+             // PASSO 2: FILTRO OPERACIONAL DE MODALIDADE
+             const modality = student.serviceModality || 'completo';
+             if (selectedDirection === 'ida' && modality === 'so_volta') return null;
+             if (selectedDirection === 'volta' && modality === 'so_ida') return null;
+
              if (student.shift !== 'Integral' && student.shift !== selectedShift) return null;
              if (selectedDirection === 'ida' && student.status.startsWith('ausente')) return null;
              return { id, type: 'student', data: student as Student };
