@@ -108,7 +108,9 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const studentsMap = useMemo(() => new Map(students?.map(s => [s.id, s.name])), [students]);
   const parentDataMap = useMemo(() => {
     if (!parents) return new Map();
-    return new Map(parents.map(p => [p.userId, { id: p.id, name: p.name }]));
+    const map = new Map();
+    parents.forEach(p => map.set(p.userId, { id: p.id, name: p.name }));
+    return map;
   }, [parents]);
   const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
 
