@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -6,7 +7,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users, HeartPulse } from 'lucide-react';
+import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users, HeartPulse, ArrowRightLeft } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -20,6 +21,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { cn } from '@/lib/utils';
 
 const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
+
+const modalityLabels: Record<string, string> = {
+    'completo': 'Ida e Volta',
+    'so_ida': 'Somente Ida',
+    'so_volta': 'Somente Volta'
+};
 
 export default function PendingRegistrationsPage() {
   const { data: registrations, isLoading } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
@@ -117,6 +124,7 @@ export default function PendingRegistrationsPage() {
             parentId: parentIdToUse, 
             shift: 'Manhã', 
             status: 'aguardando',
+            serviceModality: reg.serviceModality || 'completo',
             ...address,
             latitude,
             longitude,
@@ -234,7 +242,7 @@ export default function PendingRegistrationsPage() {
                       <TableRow>
                         <TableHead>Responsável</TableHead>
                         <TableHead>Aluno</TableHead>
-                        <TableHead>Escola</TableHead>
+                        <TableHead>Modalidade</TableHead>
                         <TableHead>Realizada há</TableHead>
                         <TableHead className="text-right">Ações</TableHead>
                       </TableRow>
@@ -261,7 +269,11 @@ export default function PendingRegistrationsPage() {
                                 {hasAlert && <HeartPulse className="h-3 w-3 text-destructive animate-pulse" title="Alerta Médico" />}
                               </div>
                           </TableCell>
-                          <TableCell>{schoolsMap.get(reg.schoolId) || 'N/A'}</TableCell>
+                          <TableCell>
+                              <Badge variant="outline" className="text-[10px] uppercase font-bold">
+                                {modalityLabels[reg.serviceModality] || 'Completo'}
+                              </Badge>
+                          </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
                             {formatDistanceToNow(new Date(reg.createdAt), { addSuffix: true, locale: ptBR })}
                           </TableCell>
@@ -290,8 +302,8 @@ export default function PendingRegistrationsPage() {
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                      <School className="h-3 w-3" />
-                      <span>{schoolsMap.get(reg.schoolId) || 'N/A'}</span>
+                      <ArrowRightLeft className="h-3 w-3" />
+                      <span>{modalityLabels[reg.serviceModality] || 'Completo'}</span>
                     </div>
                     <Button variant="outline" className="w-full h-9 text-xs" onClick={() => handleOpenReview(reg)}>
                       <Eye className="mr-2 h-3.5 w-3.5" /> Revisar Dados da IA
@@ -362,6 +374,10 @@ export default function PendingRegistrationsPage() {
                                     <div className="grid grid-cols-2 gap-2">
                                         <Detail label="Série" value={selectedReg.studentSerie} />
                                         <Detail label="Turma" value={selectedReg.studentTurma} />
+                                    </div>
+                                    <div className="pt-2 border-t border-dashed">
+                                        <p className="text-[10px] text-primary font-bold uppercase mb-1">Modalidade Contratada</p>
+                                        <Badge variant="outline" className="font-bold">{modalityLabels[selectedReg.serviceModality] || 'Ida e Volta'}</Badge>
                                     </div>
                                 </div>
                             </div>

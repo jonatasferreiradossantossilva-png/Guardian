@@ -24,7 +24,8 @@ import {
   Brain, 
   HeartPulse, 
   DollarSign, 
-  Users 
+  Users,
+  ArrowRightLeft
 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Input } from '@/components/ui/input';
@@ -94,6 +95,7 @@ export default function PublicRegistrationPage() {
   const [studentSerie, setStudentSerie] = useState('');
   const [studentTurma, setStudentTurma] = useState('');
   const [shift, setShift] = useState<string>(''); 
+  const [serviceModality, setServiceModality] = useState<string>('completo');
   const [photoUrl, setPhotoUrl] = useState('');
   
   // Financial
@@ -217,6 +219,7 @@ export default function PublicRegistrationPage() {
         studentSerie,
         studentTurma,
         shift,
+        serviceModality,
         photoUrl,
         preferredPaymentDay: Number(preferredPaymentDay),
         medicalConditions,
@@ -501,6 +504,26 @@ export default function PublicRegistrationPage() {
                                     </Select>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+
+                    <div className="border-t pt-6">
+                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                            <ArrowRightLeft className="h-4 w-4" /> Modalidade do Serviço
+                        </p>
+                        <div className="space-y-4">
+                            <Label>O que você deseja contratar? *</Label>
+                            <Select onValueChange={setServiceModality} value={serviceModality}>
+                                <SelectTrigger className="h-12 border-primary/20">
+                                    <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="completo">Ida e Volta (Completo)</SelectItem>
+                                    <SelectItem value="so_ida">Somente Ida (Casa {">"} Escola)</SelectItem>
+                                    <SelectItem value="so_volta">Somente Volta (Escola {">"} Casa)</SelectItem>
+                                </SelectContent>
+                            </Select>
+                            <p className="text-[10px] text-muted-foreground italic">Nota: O valor da mensalidade será ajustado pelo gestor conforme a modalidade escolhida.</p>
                         </div>
                     </div>
 
