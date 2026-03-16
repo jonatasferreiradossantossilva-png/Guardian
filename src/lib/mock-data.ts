@@ -143,7 +143,7 @@ export const initialMockData = {
             schoolId: "school-1", 
             status: "pending_approval", 
             createdAt: getRecentDay(0),
-            serviceModality: 'so_volta',
+            serviceModality: 'completo',
             address: { zipCode: "06333-000", street: "Rua Rui Barbosa", number: "100", neighborhood: "Vila Dirce", city: "Carapicuíba", state: "SP" },
             documentData: { cpf: "987.654.321-11", rg: "98.765.432-1" }
         }
