@@ -1,11 +1,13 @@
 
 // @ts-nocheck
 /**
- * @fileOverview Dados iniciais blindados e enriquecidos para o protótipo do Guardian.
- * Contém dados massivos de simulação para Financeiro, Performance, Solicitações e Viagens Extras.
+ * @fileOverview Dados iniciais enriquecidos (Parte 1: Financeiro e Performance).
+ * Contém 24 meses de histórico de faturamento, despesas estruturadas e telemetria massiva.
  */
 
 const now = new Date();
+
+// Auxiliares para datas
 const getPastDate = (monthsAgo, day = 10) => {
     const d = new Date(now.getFullYear(), now.getMonth() - monthsAgo, day);
     return d.toISOString().split('T')[0];
@@ -15,6 +17,56 @@ const getRecentDay = (daysAgo) => {
     const d = new Date();
     d.setDate(d.getDate() - daysAgo);
     return d.toISOString().split('T')[0];
+};
+
+// Gerador de Histórico de Faturamento (24 meses)
+const generateInvoices = () => {
+    const invoices = [];
+    const students = [
+        { id: "student-1", name: "Enzo Pereira", parentUserId: "user-pai-1" },
+        { id: "student-2", name: "Valentina Pereira", parentUserId: "user-pai-1" }
+    ];
+
+    for (let i = 0; i < 24; i++) {
+        students.forEach(s => {
+            const date = getPastDate(i);
+            const isPaid = i > 2; // Meses antigos estão pagos
+            invoices.push({
+                id: `inv-hist-${s.id}-${i}`,
+                studentId: s.id,
+                parentUserId: s.parentUserId,
+                description: `Mensalidade - ${date.substring(0, 7)}`,
+                amount: 450,
+                dueDate: date,
+                status: isPaid ? 'paid' : (i === 0 ? 'pending' : 'overdue')
+            });
+        });
+    }
+    return invoices;
+};
+
+// Gerador de Histórico de Viagens (Telemetria ROI)
+const generateTripHistory = () => {
+    const history = [];
+    const drivers = ["Juliano Castro", "Marcos Viana", "Sérgio Lima"];
+    
+    for (let i = 1; i <= 30; i++) {
+        const driver = drivers[i % drivers.length];
+        const planned = 40 + Math.random() * 10;
+        const actual = planned - (1 + Math.random() * 5);
+        const savings = planned - actual;
+        
+        history.push({
+            id: `trip-gen-${i}`,
+            date: getRecentDay(i),
+            driverName: driver,
+            plannedKm: Number(planned.toFixed(1)),
+            actualKm: Number(actual.toFixed(1)),
+            savingsKm: Number(savings.toFixed(1)),
+            fuelSaved: Number((savings * 5.80).toFixed(2)) // R$ 5.80 por KM economizado
+        });
+    }
+    return history;
 };
 
 export const initialMockData = {
@@ -93,29 +145,17 @@ export const initialMockData = {
     locations: {
         "driver-1": { latitude: -23.5500, longitude: -46.6300, timestamp: new Date().toISOString() }
     },
-    invoices: [
-        { id: "inv-init-1", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Novembro", amount: 450, dueDate: getPastDate(0), status: 'paid' },
-        { id: "inv-init-2", studentId: "student-2", parentUserId: "user-pai-1", description: "Mensalidade Novembro", amount: 450, dueDate: getPastDate(0), status: 'paid' },
-        { id: "inv-init-3", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Outubro", amount: 450, dueDate: getPastDate(1), status: 'paid' },
-        { id: "inv-init-4", studentId: "student-2", parentUserId: "user-pai-1", description: "Mensalidade Outubro", amount: 450, dueDate: getPastDate(1), status: 'paid' },
-        { id: "inv-init-5", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Setembro", amount: 450, dueDate: getPastDate(2), status: 'paid' },
-        { id: "inv-init-6", studentId: "student-1", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: getPastDate(3), status: 'overdue' },
-        { id: "inv-init-7", studentId: "student-2", parentUserId: "user-pai-1", description: "Mensalidade Agosto", amount: 450, dueDate: getPastDate(3), status: 'pending' },
-    ],
+    invoices: generateInvoices(),
     expenses: [
+        { id: "exp-fix-1", description: "Seguro Frota Anual", amount: 4800.00, date: getRecentDay(60), category: "Outros" },
+        { id: "exp-fix-2", description: "IPVA Van BRA2E19", amount: 2450.00, date: getRecentDay(120), category: "Impostos" },
         { id: "exp-1", description: "Diesel - Posto Shell", amount: 1200.50, date: getRecentDay(2), category: "Combustível" },
         { id: "exp-2", description: "Troca de Óleo e Filtros", amount: 450.00, date: getRecentDay(15), category: "Manutenção" },
         { id: "exp-3", description: "Salário Motorista Juliano", amount: 3500.00, date: getRecentDay(5), category: "Salários" },
-        { id: "exp-4", description: "Seguro Frota Anual", amount: 2800.00, date: getRecentDay(20), category: "Outros" },
-        { id: "exp-5", description: "Diesel - Posto Ipiranga", amount: 850.30, date: getRecentDay(10), category: "Combustível" },
+        { id: "exp-4", description: "Diesel - Posto Ipiranga", amount: 850.30, date: getRecentDay(10), category: "Combustível" },
+        { id: "exp-5", description: "Higienização Completa", amount: 180.00, date: getRecentDay(8), category: "Manutenção" },
     ],
-    trip_history: [
-        { id: "trip-1", date: getRecentDay(1), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 38.2, savingsKm: 4.3, fuelSaved: 32.50 },
-        { id: "trip-2", date: getRecentDay(2), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 39.1, savingsKm: 3.4, fuelSaved: 25.80 },
-        { id: "trip-3", date: getRecentDay(3), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 37.8, savingsKm: 4.7, fuelSaved: 35.25 },
-        { id: "trip-4", date: getRecentDay(4), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 40.5, savingsKm: 2.0, fuelSaved: 15.00 },
-        { id: "trip-5", date: getRecentDay(5), driverName: "Juliano Castro", plannedKm: 42.5, actualKm: 38.9, savingsKm: 3.6, fuelSaved: 27.00 },
-    ],
+    trip_history: generateTripHistory(),
     trip_requests: [
         { id: "tr-1", studentId: "student-1", parentUserId: "user-pai-1", schoolId: "school-1", date: getRecentDay(-2), type: "ida_e_volta", shift: "manha", status: "pendente", reason: "Evento extra de robótica na escola.", createdAt: getRecentDay(1) },
         { id: "tr-2", studentId: "student-2", parentUserId: "user-pai-1", schoolId: "school-1", date: getRecentDay(-1), type: "ida", shift: "tarde", status: "aguardando_aprovacao_pai", amount: 45.00, reason: "Reposição de aula.", createdAt: getRecentDay(2) },
