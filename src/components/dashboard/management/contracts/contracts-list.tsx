@@ -10,7 +10,7 @@ import {
   TableRow,
 } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { CheckCircle, Clock, FileText, Loader2, MessageCircle, Edit, PlusCircle } from 'lucide-react';
+import { CheckCircle, Clock, FileText, Loader2, MessageCircle, Edit, PlusCircle, ArrowRightLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { useMockCollection } from '@/hooks/use-mock-data';
@@ -28,17 +28,17 @@ type Contract = {
   studentId: string;
   parentUserId: string;
   status: 'pending_acceptance' | 'accepted';
+  serviceModality?: string;
   createdAt: string;
   acceptedAt?: string;
   generatedContent: string;
 };
 
-interface ContractsListProps {
-  initialContracts: Contract[];
-  initialStudents: any[];
-  initialParents: any[];
-  initialTemplates: any[];
-}
+const modalityLabels: Record<string, string> = {
+    'completo': 'Ida e Volta',
+    'so_ida': 'Só Ida',
+    'so_volta': 'Só Volta'
+};
 
 const statusVariantMap: Record<Contract['status'], 'secondary' | 'default'> = {
   pending_acceptance: 'secondary',
@@ -144,9 +144,9 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                 <TableRow className="hover:bg-transparent">
                   <TableHead>Aluno</TableHead>
                   <TableHead>Responsável</TableHead>
+                  <TableHead>Modalidade</TableHead>
                   <TableHead>Gerado em</TableHead>
                   <TableHead>Status</TableHead>
-                  <TableHead>Aceite em</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
@@ -158,6 +158,12 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                     <TableRow key={contract.id} className="hover:bg-muted/30">
                       <TableCell className="font-bold">{studentsMap.get(contract.studentId) || 'N/A'}</TableCell>
                       <TableCell className="text-sm">{parentDataMap.get(contract.parentUserId) || 'N/A'}</TableCell>
+                      <TableCell>
+                          <Badge variant="outline" className="text-[10px] font-bold border-primary/20 text-primary">
+                              <ArrowRightLeft className="mr-1 h-2.5 w-2.5" />
+                              {modalityLabels[contract.serviceModality || 'completo']}
+                          </Badge>
+                      </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{formatDate(contract.createdAt)}</TableCell>
                       <TableCell>
                         <Badge variant={statusVariantMap[contract.status]} className="font-bold uppercase text-[9px] tracking-tight">
@@ -165,7 +171,6 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                           {statusTextMap[contract.status]}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-xs">{formatDate(contract.acceptedAt)}</TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
                             <Button variant="outline" size="sm" onClick={() => handleViewContract(contract)} className="h-8 text-xs font-bold border-primary/20 text-primary">
@@ -210,12 +215,12 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                     </div>
                     <div className="grid grid-cols-2 gap-4 bg-muted/20 p-3 rounded-lg border border-dashed">
                       <div>
-                        <p className="text-[9px] text-muted-foreground font-black uppercase">Gerado</p>
-                        <p className="text-[10px]">{formatDate(contract.createdAt)}</p>
+                        <p className="text-[9px] text-muted-foreground font-black uppercase">Modalidade</p>
+                        <p className="text-[10px] font-bold text-primary">{modalityLabels[contract.serviceModality || 'completo']}</p>
                       </div>
                       <div>
-                        <p className="text-[9px] text-muted-foreground font-black uppercase">Aceite</p>
-                        <p className="text-[10px]">{formatDate(contract.acceptedAt)}</p>
+                        <p className="text-[9px] text-muted-foreground font-black uppercase">Gerado</p>
+                        <p className="text-[10px]">{formatDate(contract.createdAt).split(' às')[0]}</p>
                       </div>
                     </div>
                     <div className="flex flex-wrap gap-2">

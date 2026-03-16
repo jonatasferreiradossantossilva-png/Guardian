@@ -1,4 +1,3 @@
-
 "use client";
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,8 +34,9 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { Input } from '@/components/ui/input';
-import { Sparkles, QrCode } from 'lucide-react';
+import { Sparkles, QrCode, ArrowRightLeft } from 'lucide-react';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { Badge } from '@/components/ui/badge';
 
 const formSchema = z.object({
   studentId: z.string({ required_error: 'Selecione um aluno.' }).min(1, { message: 'Selecione um aluno.' }),
@@ -49,13 +49,17 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-interface ContractGenerateFormProps {
-  students: any[];
-  parents: any[];
-  templates: any[];
-  existingContracts: any[];
-  onFormSubmit: () => void;
-}
+const modalityLabels: Record<string, string> = {
+    'completo': 'Ida e Volta',
+    'so_ida': 'Somente Ida',
+    'so_volta': 'Somente Volta'
+};
+
+const modalityContractPhrase: Record<string, string> = {
+    'completo': 'residência/escola/residência',
+    'so_ida': 'exclusivamente da residência para a escola',
+    'so_volta': 'exclusivamente da escola para a residência'
+};
 
 export function ContractGenerateForm({ students, parents, templates, existingContracts, onFormSubmit }: ContractGenerateFormProps) {
   const { toast } = useToast();
@@ -76,7 +80,6 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     }
   });
 
-  // Auto-fill from company profile
   useEffect(() => {
     if (company) {
         form.reset({
@@ -122,6 +125,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     const studentAddress = `${student.street || ''}, ${student.number || ''} - ${student.neighborhood || ''}`;
     const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
     const schoolYear = new Date().getFullYear().toString();
+    const modality = student.serviceModality || 'completo';
 
     // INTELLIGENT PHRASING LOGIC
     let paymentPhrase = "";
@@ -140,13 +144,15 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
 
     let generatedContent = template.content;
     
-    // Replace the entire payment line if it follows the standard pattern
+    // Inject Modality Info
+    generatedContent = generatedContent.replace(/{{modalidade_servico}}/g, modalityLabels[modality] || 'Ida e Volta');
+    generatedContent = generatedContent.replace(/residência\/escola\/residência/g, modalityContractPhrase[modality] || 'residência/escola/residência');
+
+    // Replace payment info
     const fullPaymentPattern = /via: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}/g;
-    
     if (generatedContent.match(fullPaymentPattern)) {
         generatedContent = generatedContent.replace(fullPaymentPattern, paymentPhrase);
     } else {
-        // Individual replacements if the pattern is broken
         generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');
         generatedContent = generatedContent.replace(/{{agencia}}/g, data.agencia || 'N/A');
         generatedContent = generatedContent.replace(/{{conta}}/g, data.conta || 'N/A');
@@ -171,12 +177,13 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
         parentUserId: parent.userId,
         generatedContent,
         status: 'pending_acceptance',
+        serviceModality: modality,
         createdAt: new Date().toISOString(),
     });
 
     toast({
       title: 'Contrato Gerado!',
-      description: `O contrato para ${student.name} já está disponível para o pai assinar.`,
+      description: `O contrato para ${student.name} (${modalityLabels[modality]}) já está disponível.`,
     });
     onFormSubmit();
   };
@@ -189,7 +196,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
             Gerar Contrato Inteligente
         </DialogTitle>
         <DialogDescription>
-          Selecione o aluno e o modelo. O sistema puxará os dados do seu perfil automaticamente.
+          Selecione o aluno. O sistema adaptará as cláusulas à modalidade contratada.
         </DialogDescription>
       </DialogHeader>
       
@@ -221,7 +228,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
               {selectedStudentData && (
                   <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 space-y-3 animate-in fade-in slide-in-from-top-2">
                       <p className="text-[10px] font-black uppercase text-primary tracking-widest flex items-center gap-2">
-                          <Sparkles className="h-3 w-3" /> Dados Recuperados
+                          <Sparkles className="h-3 w-3" /> Contexto do Contrato
                       </p>
                       <div className="grid grid-cols-2 gap-3">
                           <div className="space-y-1">
@@ -229,8 +236,10 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                               <p className="text-sm font-black text-foreground">R$ {selectedStudentData.student.monthlyFee?.toFixed(2).replace('.', ',') || '0,00'}</p>
                           </div>
                           <div className="space-y-1">
-                              <p className="text-[9px] text-muted-foreground font-bold uppercase">Vencimento</p>
-                              <p className="text-sm font-black text-foreground">Todo dia {selectedStudentData.student.preferredPaymentDay || '10'}</p>
+                              <p className="text-[9px] text-muted-foreground font-bold uppercase">Modalidade</p>
+                              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px] px-1.5 py-0">
+                                  {modalityLabels[selectedStudentData.student.serviceModality || 'completo']}
+                              </Badge>
                           </div>
                       </div>
                   </div>
