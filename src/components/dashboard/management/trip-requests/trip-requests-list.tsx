@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, MoreHorizontal, X, Clock, Info, DollarSign, School, Calendar } from "lucide-react";
+import { Check, MoreHorizontal, X, Clock, Info, DollarSign, School, Calendar, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -33,9 +33,9 @@ import {
 import { Input } from "@/components/ui/input";
 import {
   Tooltip,
-  TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  TooltipContent,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
 import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
@@ -92,7 +92,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const { updateDoc } = useMockData();
 
   const [priceDialogRequest, setPriceDialogRequest] = useState<TripRequest | null>(null);
-  const [price, setPrice] = useState<number | string>("");
+  const [price, setPrice] = useState<string>("");
 
   const { data: liveRequests, isLoading: areRequestsLoading } = useMockCollection('trip_requests');
   const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
@@ -177,15 +177,17 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
               <TableBody>
                 {isLoading ? (
                   <TableRow>
-                    <TableCell colSpan={8} className="text-center h-24">Carregando...</TableCell>
+                    <TableCell colSpan={8} className="text-center h-24">
+                      <Loader2 className="animate-spin mx-auto h-6 w-6 text-primary" />
+                    </TableCell>
                   </TableRow>
                 ) : sortedRequests && sortedRequests.length > 0 ? (
                   sortedRequests.map((request) => {
-                    const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
+                    const studentName = studentsMap.get(request.studentId) || 'Aluno';
                     const parentInfo = parentDataMap.get(request.parentUserId);
-                    const parentName = parentInfo?.name || 'Responsável não encontrado';
+                    const parentName = parentInfo?.name || 'Responsável';
                     const parentIdForAvatar = parentInfo?.id;
-                    const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
+                    const schoolName = schoolsMap.get(request.schoolId) || 'N/A';
 
                     return (
                       <TableRow key={request.id}>
@@ -259,13 +261,13 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
             </Table>
           </div>
           <div className="md:hidden space-y-4">
-            {isLoading && <div className="flex justify-center py-10"><Clock className="animate-spin" /></div>}
+            {isLoading && <div className="flex justify-center py-10"><Loader2 className="animate-spin text-primary" /></div>}
             {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
               sortedRequests.map((request) => {
-                const studentName = studentsMap.get(request.studentId) || 'Aluno não encontrado';
+                const studentName = studentsMap.get(request.studentId) || 'Aluno';
                 const parentInfo = parentDataMap.get(request.parentUserId);
-                const parentName = parentInfo?.name || 'Responsável não encontrado';
-                const schoolName = schoolsMap.get(request.schoolId) || 'Não informada';
+                const parentName = parentInfo?.name || 'Responsável';
+                const schoolName = schoolsMap.get(request.schoolId) || 'N/A';
 
                 return (
                   <Card key={request.id} className="overflow-hidden">

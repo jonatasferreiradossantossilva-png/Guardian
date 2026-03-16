@@ -1,8 +1,8 @@
 
 // @ts-nocheck
 /**
- * @fileOverview Dados iniciais enriquecidos (Parte 1: Financeiro e Performance).
- * Contém 24 meses de histórico de faturamento, despesas estruturadas e telemetria massiva.
+ * @fileOverview Dados iniciais enriquecidos (Parte 2: CRM e Operação).
+ * Contém diversidade de modalidades, alertas de saúde e volume de triagem.
  */
 
 const now = new Date();
@@ -22,15 +22,17 @@ const getRecentDay = (daysAgo) => {
 // Gerador de Histórico de Faturamento (24 meses)
 const generateInvoices = () => {
     const invoices = [];
-    const students = [
+    const studentList = [
         { id: "student-1", name: "Enzo Pereira", parentUserId: "user-pai-1" },
-        { id: "student-2", name: "Valentina Pereira", parentUserId: "user-pai-1" }
+        { id: "student-2", name: "Valentina Pereira", parentUserId: "user-pai-1" },
+        { id: "student-3", name: "Bernardo Silva", parentUserId: "user-pai-2" },
+        { id: "student-4", name: "Alice Souza", parentUserId: "user-pai-3" }
     ];
 
     for (let i = 0; i < 24; i++) {
-        students.forEach(s => {
+        studentList.forEach(s => {
             const date = getPastDate(i);
-            const isPaid = i > 2; // Meses antigos estão pagos
+            const isPaid = i > 2; 
             invoices.push({
                 id: `inv-hist-${s.id}-${i}`,
                 studentId: s.id,
@@ -63,7 +65,7 @@ const generateTripHistory = () => {
             plannedKm: Number(planned.toFixed(1)),
             actualKm: Number(actual.toFixed(1)),
             savingsKm: Number(savings.toFixed(1)),
-            fuelSaved: Number((savings * 5.80).toFixed(2)) // R$ 5.80 por KM economizado
+            fuelSaved: Number((savings * 5.80).toFixed(2)) 
         });
     }
     return history;
@@ -92,6 +94,8 @@ export const initialMockData = {
         { id: "user-admin-1", name: "Jonatas Gestor", email: "admin@guardian.com", profile: 'gestor', active: true },
         { id: "user-motorista-4", name: "Juliano Castro", email: "juliano.castro@rotasegura.com", profile: 'motorista', active: true },
         { id: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", profile: 'pai', active: true },
+        { id: "user-pai-2", name: "Carlos Silva", email: "carlos.silva@email.com", profile: 'pai', active: true },
+        { id: "user-pai-3", name: "Beatriz Souza", email: "beatriz.souza@email.com", profile: 'pai', active: true },
         { id: "user-monitor-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", profile: 'monitor', active: true },
     ],
     schools: [
@@ -108,22 +112,38 @@ export const initialMockData = {
             city: "São Paulo",
             state: "SP",
             zipCode: "01001-000"
+        },
+        {
+            id: "school-2",
+            name: "Colégio Albert Einstein",
+            cnpj: "98.765.432/0001-11",
+            active: true,
+            latitude: -23.5345,
+            longitude: -46.8456,
+            street: "Rua Rui Barbosa",
+            number: "150",
+            neighborhood: "Vila Dirce",
+            city: "Carapicuíba",
+            state: "SP",
+            zipCode: "06333-000"
         }
     ],
     school_knowledge_base: [
         { id: "kb-1", name: "Colégio Amos", city: "Carapicuíba", state: "SP", street: "Av. Inocêncio Seráfico", number: "2000", neighborhood: "Centro", zipCode: "06320-290", latitude: -23.5234, longitude: -46.8345 },
         { id: "kb-2", name: "Colégio Albert Einstein", city: "Carapicuíba", state: "SP", street: "Rua Rui Barbosa", number: "150", neighborhood: "Vila Dirce", zipCode: "06333-000", latitude: -23.5345, longitude: -46.8456 },
-        { id: "kb-3", name: "E.E. Maria de Lourdes Teixeira", city: "Carapicuíba", state: "SP", street: "Av. Brasil", number: "500", neighborhood: "Cohab", zipCode: "06325-000", latitude: -23.5456, longitude: -46.8567 },
-        { id: "kb-4", name: "Colégio Adventista de Carapicuíba", city: "Carapicuíba", state: "SP", street: "Rua Coração de Maria", number: "45", neighborhood: "Vila Cretti", zipCode: "06317-120", latitude: -23.5255, longitude: -46.8310 },
-        { id: "kb-5", name: "Escola Estadual Toufic Joulian", city: "Carapicuíba", state: "SP", street: "Rua Sandra Maria", number: "100", neighborhood: "Centro", zipCode: "06320-000", latitude: -23.5210, longitude: -46.8380 },
-        { id: "kb-6", name: "Colégio Objetivo Carapicuíba", city: "Carapicuíba", state: "SP", street: "Av. Deputado Emílio Carlos", number: "1200", neighborhood: "Vila Terezinha", zipCode: "06310-160", latitude: -23.5180, longitude: -46.8290 }
+        { id: "kb-3", name: "E.E. Maria de Lourdes Teixeira", city: "Carapicuíba", state: "SP", street: "Av. Brasil", number: "500", neighborhood: "Cohab", zipCode: "06325-000", latitude: -23.5456, longitude: -46.8567 }
     ],
     parents: [
         { id: "parent-1", userId: "user-pai-1", name: "Ana Pereira", email: "ana.pereira@email.com", phone: "11987654321", active: true },
+        { id: "parent-2", userId: "user-pai-2", name: "Carlos Silva", email: "carlos.silva@email.com", phone: "11977778888", active: true },
+        { id: "parent-3", userId: "user-pai-3", name: "Beatriz Souza", email: "beatriz.souza@email.com", phone: "11966665555", active: true },
     ],
     students: [
         { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "5º Ano", turma: "Sala 101", medicalConditions: ["Alergia"], medicalNote: "ALERGIA GRAVE A GLÚTEN E LACTOSE.", serviceModality: 'completo' },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-1", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5585, longitude: -46.6605, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "3º Ano", turma: "Sala 202", medicalConditions: ["Respiratório"], medicalNote: "Possui bronquite asmática. Bombinha na mochila.", serviceModality: 'completo' },
+        { id: "student-3", name: "Bernardo Silva", schoolId: "school-2", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5234, longitude: -46.8345, street: "Av. Inocêncio Seráfico", number: "50", city: "Carapicuíba", state: "SP", monthlyFee: 300, preferredPaymentDay: 5, serie: "1º Ano Médio", serviceModality: 'so_ida' },
+        { id: "student-4", name: "Alice Souza", schoolId: "school-2", parentId: "parent-3", shift: "Tarde", status: "aguardando", active: true, latitude: -23.5345, longitude: -46.8456, street: "Rua Rui Barbosa", number: "200", city: "Carapicuíba", state: "SP", monthlyFee: 320, preferredPaymentDay: 15, serie: "7º Ano", medicalConditions: ["Diabetes"], medicalNote: "Uso de insulina após o almoço.", serviceModality: 'so_volta' },
+        { id: "student-5", name: "Pedro Santos", schoolId: "school-1", parentId: "parent-2", shift: "Manhã", status: "aguardando", active: true, latitude: -23.5500, longitude: -46.6400, street: "Rua Augusta", number: "500", city: "São Paulo", state: "SP", monthlyFee: 480, medicalConditions: ["Mobilidade"], medicalNote: "Cadeira de rodas. Necessita auxílio no embarque.", serviceModality: 'completo' }
     ],
     drivers: [
         { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo", vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 }
@@ -138,7 +158,7 @@ export const initialMockData = {
             driverId: "driver-1",
             monitorId: "user-monitor-1",
             shift: "Manhã",
-            studentIds: ["school-1", "student-1", "student-2"],
+            studentIds: ["school-1", "student-1", "student-2", "student-5", "student-3"],
             lastOptimizedAt: new Date().toISOString()
         }
     ],
@@ -152,8 +172,6 @@ export const initialMockData = {
         { id: "exp-1", description: "Diesel - Posto Shell", amount: 1200.50, date: getRecentDay(2), category: "Combustível" },
         { id: "exp-2", description: "Troca de Óleo e Filtros", amount: 450.00, date: getRecentDay(15), category: "Manutenção" },
         { id: "exp-3", description: "Salário Motorista Juliano", amount: 3500.00, date: getRecentDay(5), category: "Salários" },
-        { id: "exp-4", description: "Diesel - Posto Ipiranga", amount: 850.30, date: getRecentDay(10), category: "Combustível" },
-        { id: "exp-5", description: "Higienização Completa", amount: 180.00, date: getRecentDay(8), category: "Manutenção" },
     ],
     trip_history: generateTripHistory(),
     trip_requests: [
@@ -183,9 +201,21 @@ export const initialMockData = {
             schoolId: "school-1", 
             status: "pending_approval", 
             createdAt: getRecentDay(0),
-            serviceModality: 'completo',
+            serviceModality: 'so_volta',
             address: { zipCode: "06333-000", street: "Rua Rui Barbosa", number: "100", neighborhood: "Vila Dirce", city: "Carapicuíba", state: "SP" },
             documentData: { cpf: "987.654.321-11", rg: "98.765.432-1" }
+        },
+        { 
+            id: "reg-3", 
+            parentName: "Marcos Vinicius", 
+            studentName: "Matheus Vinicius", 
+            email: "marcos@email.com", 
+            phone: "11944443333", 
+            schoolId: "school-2", 
+            status: "pending_approval", 
+            createdAt: getRecentDay(2),
+            serviceModality: 'so_ida',
+            address: { zipCode: "06320-290", street: "Av. Inocêncio Seráfico", number: "200", city: "Carapicuíba", state: "SP" }
         }
     ],
     messages: [],
