@@ -11,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Check, MoreHorizontal, X, Clock, Info, DollarSign, Edit, School, Calendar } from "lucide-react";
+import { Check, MoreHorizontal, X, Clock, Info, DollarSign, School, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -160,7 +160,6 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
           <CardDescription>Aprove, rejeite e defina valores para as solicitações de transporte avulso.</CardDescription>
         </CardHeader>
         <CardContent>
-          {/* Desktop View */}
           <div className="hidden md:block">
             <Table>
               <TableHeader>
@@ -237,14 +236,14 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                             <DropdownMenuContent align="end">
                                 <DropdownMenuLabel>Ações</DropdownMenuLabel>
                                 <DropdownMenuItem onClick={() => handleStatusChange(request.id, 'aprovada')} disabled={request.status !== 'pendente'}>
-                                    <Check className="mr-2" /> Aprovar Direto
+                                    <Check className="mr-2 h-4 w-4" /> Aprovar Direto
                                 </DropdownMenuItem>
                                 <DropdownMenuItem onClick={() => setPriceDialogRequest(request)} disabled={request.status !== 'pendente'}>
-                                    <DollarSign className="mr-2" /> Atribuir Valor
+                                    <DollarSign className="mr-2 h-4 w-4" /> Atribuir Valor
                                 </DropdownMenuItem>
                                 <DropdownMenuSeparator />
                                 <DropdownMenuItem className="text-red-600" onClick={() => handleStatusChange(request.id, 'rejeitada')}>
-                                    <X className="mr-2"/> Rejeitar
+                                    <X className="mr-2 h-4 w-4"/> Rejeitar
                                 </DropdownMenuItem>
                             </DropdownMenuContent>
                           </DropdownMenu>
@@ -262,7 +261,6 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
               </TableBody>
             </Table>
           </div>
-          {/* Mobile View */}
           <div className="md:hidden space-y-4">
             {isLoading && <div className="flex justify-center py-10"><Clock className="animate-spin" /></div>}
             {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
@@ -299,7 +297,10 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                         </div>
                         <div>
                           <p className="text-[10px] uppercase font-bold text-muted-foreground">Data</p>
-                          <p>{request.date.split('-').reverse().join('/')}</p>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            <span>{request.date.split('-').reverse().join('/')}</span>
+                          </div>
                         </div>
                         <div>
                           <p className="text-[10px] uppercase font-bold text-muted-foreground">Tipo</p>
@@ -352,7 +353,6 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
         </CardContent>
       </Card>
       
-      {/* Assign Price Dialog */}
       <Dialog open={!!priceDialogRequest} onOpenChange={() => setPriceDialogRequest(null)}>
         <DialogContent className="sm:max-w-md">
             <DialogHeader>
