@@ -1,3 +1,4 @@
+
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -10,7 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Edit, Trash2, Search, Loader2, HeartPulse } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Edit, Trash2, Search, Loader2, HeartPulse, ArrowRightLeft } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import {
@@ -48,6 +49,7 @@ type Student = {
   parentId: string;
   shift: 'Manhã' | 'Tarde' | 'Integral';
   status: string;
+  serviceModality?: 'completo' | 'so_ida' | 'so_volta';
   street?: string;
   number?: string;
   city?: string;
@@ -67,6 +69,12 @@ interface StudentsListProps {
   initialSchools: School[];
   initialParents: Parent[];
 }
+
+const modalityLabels: Record<string, string> = {
+    'completo': 'Ida e Volta',
+    'so_ida': 'Só Ida',
+    'so_volta': 'Só Volta'
+};
 
 const ITEMS_PER_PAGE = 10;
 
@@ -220,8 +228,8 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                   <TableHead>Escola</TableHead>
                   <TableHead>Responsável</TableHead>
                   <TableHead>Turno</TableHead>
-                  <TableHead>Série/Turma</TableHead>
-                  <TableHead>Status (Embarque)</TableHead>
+                  <TableHead>Modalidade</TableHead>
+                  <TableHead>Status</TableHead>
                   <TableHead>Situação</TableHead>
                   <TableHead className="text-right">Ações</TableHead>
                 </TableRow>
@@ -255,14 +263,19 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                                 {student.name}
                                 {hasAlert && <HeartPulse className="h-3.5 w-3.5 text-destructive" />}
                             </span>
+                            <p className="text-[10px] text-muted-foreground">{formatSerieTurma(student)}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>{schoolsMap.get(student.schoolId) || 'N/A'}</TableCell>
                       <TableCell>{parentsMap.get(student.parentId) || 'N/A'}</TableCell>
                       <TableCell><Badge variant="outline">{student.shift}</Badge></TableCell>
-                      <TableCell>{formatSerieTurma(student)}</TableCell>
-                      <TableCell><Badge variant="secondary" className="capitalize">{student.status}</Badge></TableCell>
+                      <TableCell>
+                          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px]">
+                              {modalityLabels[student.serviceModality || 'completo']}
+                          </Badge>
+                      </TableCell>
+                      <TableCell><Badge variant="secondary" className="capitalize text-[10px]">{student.status}</Badge></TableCell>
                        <TableCell>
                         <Badge variant={student.active !== false ? 'default' : 'secondary'} className={student.active !== false ? 'bg-green-600' : ''}>
                           {student.active !== false ? 'Ativo' : 'Inativo'}
@@ -313,29 +326,28 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
                                     {student.name}
                                     {hasAlert && <HeartPulse className="h-3.5 w-3.5 text-destructive" />}
                                 </p>
-                                {hasAlert && <p className="text-[10px] text-destructive font-bold uppercase">Atenção Médica</p>}
+                                <p className="text-[10px] text-muted-foreground">{formatSerieTurma(student)}</p>
                             </div>
                             </div>
                         </div>
                         <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
                         <div>
-                            <p className="text-muted-foreground text-xs">Escola</p>
-                            <p className="font-medium">{schoolsMap.get(student.schoolId) || 'N/A'}</p>
+                            <p className="text-muted-foreground text-xs font-bold uppercase">Modalidade</p>
+                            <div className="flex items-center gap-1.5 mt-1 text-primary">
+                                <ArrowRightLeft className="h-3 w-3" />
+                                <span className="font-bold">{modalityLabels[student.serviceModality || 'completo']}</span>
+                            </div>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-xs">Responsável</p>
-                            <p className="font-medium">{parentsMap.get(student.parentId) || 'N/A'}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground text-xs">Turno</p>
+                            <p className="text-muted-foreground text-xs uppercase font-bold">Turno</p>
                             <Badge variant="outline" className="mt-1">{student.shift}</Badge>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-xs">Série/Turma</p>
-                            <p className="font-medium mt-1">{formatSerieTurma(student)}</p>
+                            <p className="text-muted-foreground text-xs uppercase font-bold">Escola</p>
+                            <p className="font-medium truncate">{schoolsMap.get(student.schoolId) || 'N/A'}</p>
                         </div>
                         <div>
-                            <p className="text-muted-foreground text-xs">Situação</p>
+                            <p className="text-muted-foreground text-xs uppercase font-bold">Situação</p>
                             <Badge variant={student.active !== false ? 'default' : 'secondary'} className={student.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
                             {student.active !== false ? 'Ativo' : 'Inativo'}
                             </Badge>

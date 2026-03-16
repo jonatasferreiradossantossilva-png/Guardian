@@ -1,3 +1,4 @@
+
 'use client';
 
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -31,7 +32,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo, useRef } from 'react';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
-import { Copy, Loader2, HeartPulse, CalendarDays, Search, Sparkles, MapPin, Camera, User, Users, Apple, Activity, Wind, Accessibility, Brain, AlertTriangle } from 'lucide-react';
+import { Copy, Loader2, HeartPulse, CalendarDays, Search, Sparkles, MapPin, Camera, User, Users, Apple, Activity, Wind, Accessibility, Brain, AlertTriangle, ArrowRightLeft } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { Textarea } from '@/components/ui/textarea';
@@ -76,6 +77,7 @@ const formSchema = z.object({
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
   shift: z.enum(['Manhã', 'Tarde', 'Integral'], { required_error: 'Selecione um turno.' }),
+  serviceModality: z.enum(['completo', 'so_ida', 'so_volta']).default('completo'),
   monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
   preferredPaymentDay: z.coerce.number().int().min(1).max(31).optional(),
   medicalNote: z.string().optional(),
@@ -122,6 +124,7 @@ const defaultValues: StudentFormValues = {
   schoolId: '',
   parentId: '',
   shift: 'Manhã',
+  serviceModality: 'completo',
   monthlyFee: undefined,
   preferredPaymentDay: 10,
   medicalNote: '',
@@ -266,6 +269,7 @@ export function StudentForm({
         schoolId: student.schoolId || '',
         parentId: student.parentId || '',
         shift: student.shift || 'Manhã',
+        serviceModality: student.serviceModality || 'completo',
         monthlyFee: student.monthlyFee,
         preferredPaymentDay: student.preferredPaymentDay,
         medicalNote: student.medicalNote || '',
@@ -631,7 +635,7 @@ export function StudentForm({
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 border-t pt-4 mt-4 pb-10">
                 <div className="md:col-span-2">
                     <p className="text-sm font-bold flex items-center gap-2 mb-3">
-                        <CalendarDays className="h-4 w-4 text-primary" /> Configurações Financeiras
+                        <CalendarDays className="h-4 w-4 text-primary" /> Configurações Operacionais
                     </p>
                 </div>
                 <FormField
@@ -639,7 +643,7 @@ export function StudentForm({
                   name="shift"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Turno *</FormLabel>
+                      <FormLabel>Turno Principal *</FormLabel>
                       <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger><SelectValue placeholder="Selecione o turno" /></SelectTrigger>
@@ -655,11 +659,35 @@ export function StudentForm({
                   )}
                 />
                 <FormField
+                  control={form.control}
+                  name="serviceModality"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center gap-2">
+                        <ArrowRightLeft className="h-3 w-3 text-primary" /> Modalidade
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger className="bg-primary/5 border-primary/20 font-bold">
+                            <SelectValue />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="completo">Ida e Volta</SelectItem>
+                          <SelectItem value="so_ida">Somente Ida</SelectItem>
+                          <SelectItem value="so_volta">Somente Volta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
                     control={form.control}
                     name="monthlyFee"
                     render={({ field }) => (
                         <FormItem>
-                            <FormLabel>Mensalidade (R$)</FormLabel>
+                            <FormLabel>Valor da Mensalidade (R$)</FormLabel>
                             <FormControl><Input type="number" step="any" placeholder="Ex: 450.00" {...field} value={field.value ?? ''} /></FormControl>
                             <FormMessage />
                         </FormItem>
@@ -669,7 +697,7 @@ export function StudentForm({
                     control={form.control}
                     name="preferredPaymentDay"
                     render={({ field }) => (
-                        <FormItem className="md:col-span-2">
+                        <FormItem>
                             <FormLabel>Dia de Vencimento</FormLabel>
                             <Select onValueChange={(v) => field.onChange(Number(v))} value={field.value?.toString()}>
                                 <FormControl>
