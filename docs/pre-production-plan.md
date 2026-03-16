@@ -1,37 +1,34 @@
 
-# Plano de Pré-Produção - Guardian Intelligence
+# Plano Técnico de Pré-Produção - Guardian Intelligence
 
-Este documento detalha os passos necessários para a transição do protótipo estável para o ambiente de produção real (MVP Scale).
+Este documento detalha as especificações de engenharia necessárias para a transição do protótipo para o ambiente de produção real.
 
-## 1. Migração de Dados e Infraestrutura Real
-- **Virada do Firebase:** Substituir o `MockDataProvider` pela conexão real com o Firestore.
-- **Sincronização de Blueprint:** Atualizar o `backend.json` com as novas entidades criadas (Avisos, Histórico de ROI, Triagem, Mensagens Predefinidas).
-- **Carga de Dados Inicial:** Importar a base de 190.000 escolas para o Firestore para permitir a busca instantânea em produção.
+## 1. Migração de Persistência (Firebase Real-time)
+- **Hooks de Dados:** Substituir `@/hooks/use-mock-data` pelos hooks nativos em `@/firebase/index.ts` (`useCollection` e `useDoc`).
+- **Segurança (Security Rules):** 
+    - Implementar RBAC (Role-Based Access Control) via coleções `/roles_admin`, `/roles_driver` e `/roles_monitor`.
+    - Bloquear leituras transversais: `allow read: if resource.data.parentUserId == request.auth.uid`.
+- **Persistência Offline:** Ativar `enableIndexedDbPersistence` para garantir que o motorista não perca o checklist em áreas de sombra de sinal.
 
-## 2. Autenticação e Segurança (RBAC)
-- **Implementação do Auth:** Substituir o login simulado pelo `Firebase Authentication` (Email/Senha e Google).
-- **Regras de Segurança (Firestore Rules):** Implementar o modelo de permissões real:
-    - **Gestores:** Acesso total (CRUD) a todas as coleções.
-    - **Motoristas:** Escrita apenas em sua localização e atualização de status dos alunos de sua rota.
-    - **Pais:** Leitura estrita apenas dos dados de seus próprios filhos, faturas e mensagens enviadas/recebidas.
-- **Vínculos de UID:** Mapear os IDs de usuário reais para os documentos de `parents` e `drivers`.
+## 2. Infraestrutura e Segredos (DevOps)
+- **Gestão de Chaves:** Migrar `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` e `GEOAPIFY_API_KEY` para o `apphosting.yaml` como segredos criptografados.
+- **Blueprint de Dados:** Atualizar o `docs/backend.json` com as definições de `zod` para garantir que o Firestore receba apenas dados sanitizados.
 
-## 3. Estratégia Mobile (Android & iOS)
-- **Configuração PWA (Fast Release):**
-    - Criar `manifest.json` e configurar Service Workers para instalação direta pelo navegador (sem taxas de loja).
-    - Definir ícones e splash screens do Guardian.
-- **Preparação Nativa (App Stores):**
-    - Integrar **Capacitor.js** para gerar os pacotes `.apk` (Android) e `.ipa` (iOS).
-    - Validar fluxos de permissão de Câmera (OCR/QR Code) e GPS (Telemetria) em background para iOS.
+## 3. Estratégia Mobile Native (Capacitor.js)
+- **Build de Loja:** 
+    - Instalação do `@capacitor/core` e `@capacitor/cli`.
+    - Configuração de `webDir: 'out'` para suporte ao `next export`.
+- **Acesso a Hardware:**
+    - **GPS:** Uso do plugin `Geolocation` para rastreamento em background (essencial para o Alerta de 800m).
+    - **Câmera:** Integração com `Capacitor Camera` para OCR de documentos com maior resolução que a API Web.
 
-## 4. Resiliência de IA e Telemetria
-- **Hardening de Prompts:** Refinar as instruções do Gemini para lidar com fotos de documentos com baixa iluminação ou borrões.
-- **Slicing de Waypoints:** Validar o limite da API Geoapify para rotas com mais de 25 paradas, garantindo que o traçado do mapa nunca quebre.
-- **Cálculo de Proximidade:** Migrar a fórmula de Haversine para uma Cloud Function ou garantir sua execução eficiente no cliente para evitar latência nos alertas de 800m.
+## 4. Otimização de Custos (FinOps)
+- **Telemetria por Delta:** Implementar lógica de envio de posição apenas se `delta_distancia > 30m` ou `delta_tempo > 30s`. Isso reduzirá as escritas no Firestore em até 70%.
+- **Cache de Roteirização:** Implementar `LocalStorage` para armazenar as polilinhas das rotas do dia, evitando chamadas repetitivas à API paga da Geoapify.
 
-## 5. Validação Jurídica e Financeira
-- **Assinatura Digital:** Validar o motor de preenchimento automático de contratos com um consultor jurídico.
-- **Gateway de Pagamento:** Substituir o simulador de Pix por um webhook real (ex: Stark Bank, EFI ou Mercado Pago) para confirmação automática de mensalidades.
+## 5. Gateway Financeiro Real
+- **Integração Webhook:** Substituir o simulador por uma integração via `Server Actions` com APIs de Pix (Stark Bank, EFI ou Mercado Pago).
+- **Conciliação:** Automação do status da `Invoice` de `pending` para `paid` via recebimento de notificação do banco (Webhook).
 
 ---
-**Status Atual:** Sistema Saneado (Erro Zero) e pronto para início da Fase 1 de Migração.
+**Status Técnico:** Sistema Saneado (Build OK) e pronto para início da Fase 1.
