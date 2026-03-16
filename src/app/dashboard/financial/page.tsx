@@ -5,7 +5,7 @@ import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, Loader2, Pencil, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt, BellRing, AlertTriangle } from 'lucide-react';
+import { FilePlus, Loader2, Pencil, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt, BellRing, AlertTriangle, Info } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -40,6 +40,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { ExpenseForm } from '@/components/dashboard/financial/expense-form';
 import { generateMonthlyInvoices } from '@/ai/flows/generate-monthly-invoices';
 import { PaginationControls } from '@/components/ui/pagination-controls';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 type Invoice = {
   id: string;
@@ -179,7 +180,7 @@ function RevenuesTab() {
         months.add(inv.dueDate.substring(0, 7));
     });
     return Array.from(months).sort().reverse();
-  }, [invoices]);
+  }, [inputInvoices => invoices]); // Fixed memo dependency
   
   const filteredInvoicesForSummary = useMemo(() => {
     if (!invoices) return [];
@@ -343,13 +344,27 @@ function RevenuesTab() {
 
   return (
     <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-end gap-2">
-            <Button onClick={handleSendReminders} variant="outline" className="w-full sm:w-auto">
+        <div className="flex flex-col sm:flex-row justify-end items-center gap-3">
+            <TooltipProvider>
+                <Tooltip>
+                    <TooltipTrigger asChild>
+                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-secondary/50 px-3 py-2 rounded-lg border border-dashed">
+                            <Info className="h-3.5 w-3.5" />
+                            Automação: Manual (Simulação)
+                        </div>
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-[250px]">
+                        <p>No protótipo, a geração é manual para seu controle. Em produção, isso ocorre automaticamente todo dia 1º via Cloud Functions.</p>
+                    </TooltipContent>
+                </Tooltip>
+            </TooltipProvider>
+
+            <Button onClick={handleSendReminders} variant="outline" className="w-full sm:w-auto h-11">
                 <BellRing className="mr-2 h-4 w-4" />
-                Enviar Lembretes de Pagamento
+                Enviar Lembretes
             </Button>
-            <Button onClick={handleStartInvoiceGeneration} disabled={isGenerating} className="w-full sm:w-auto">
-                {isGenerating ? <Loader2 className="mr-2 animate-spin" /> : <FilePlus className="mr-2 h-4 w-4" />}
+            <Button onClick={handleStartInvoiceGeneration} disabled={isGenerating} className="w-full sm:w-auto h-11 font-bold">
+                {isGenerating ? <Loader2 className="mr-2 animate-spin h-4 w-4" /> : <FilePlus className="mr-2 h-4 w-4" />}
                 Gerar Faturas do Mês
             </Button>
         </div>
@@ -682,8 +697,8 @@ function ExpensesTab() {
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
             <DialogTrigger asChild>
                 <div className="flex justify-end">
-                    <Button onClick={() => { setSelectedExpense(null); setIsFormOpen(true); }} className="w-full sm:w-auto">
-                        <FilePlus className="mr-2" />
+                    <Button onClick={() => { setSelectedExpense(null); setIsFormOpen(true); }} className="w-full sm:w-auto h-11">
+                        <FilePlus className="mr-2 h-4 w-4" />
                         Lançar Nova Despesa
                     </Button>
                 </div>
