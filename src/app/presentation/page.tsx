@@ -12,12 +12,16 @@ import {
     CheckCircle2,
     Activity,
     ShieldCheck,
-    Smartphone
+    Smartphone,
+    ArrowLeft,
+    CheckCircle
 } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
+import { PlaceHolderImages } from '@/lib/placeholder-images';
 
 const Slide = ({ children, className = '', id = '' }: { children: React.ReactNode, className?: string, id?: string }) => (
   <section id={id} className={cn("min-h-screen w-full flex flex-col justify-center items-center p-6 lg:p-20 overflow-hidden relative border-b", className)}>
@@ -27,31 +31,37 @@ const Slide = ({ children, className = '', id = '' }: { children: React.ReactNod
   </section>
 );
 
-const TechCard = ({ icon, title, value, description }: { icon: React.ReactNode, title: string, value: string, description: string }) => (
-    <div className="bg-background/40 backdrop-blur-xl rounded-2xl p-6 md:p-8 border border-primary/20 h-full hover:border-primary/50 transition-all shadow-xl">
-        <div className="flex items-center gap-3 mb-4">
-            <div className="text-primary bg-primary/10 p-2 rounded-lg">{icon}</div>
-            <h3 className="text-xs font-black text-muted-foreground uppercase tracking-widest">{title}</h3>
+const ModuleSlideItem = ({ title, role, imageId, description }: { title: string, role: string, imageId: string, description: string }) => {
+    const img = PlaceHolderImages.find(i => i.id === imageId);
+    return (
+        <div className="bg-background/40 backdrop-blur-xl rounded-2xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-xl">
+            <div className="relative aspect-video w-full">
+                <Image src={img?.imageUrl || ""} alt={title} fill unoptimized className="object-cover" data-ai-hint={img?.imageHint} />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                <Badge className="absolute top-4 right-4 bg-primary font-black uppercase text-[9px]">{role}</Badge>
+            </div>
+            <div className="p-6 space-y-2">
+                <h3 className="text-xl font-black uppercase italic tracking-tighter text-primary">{title}</h3>
+                <p className="text-sm text-foreground/80 font-bold leading-relaxed">{description}</p>
+            </div>
         </div>
-        <p className="text-4xl md:text-6xl font-black text-primary tracking-tighter italic mb-4">{value}</p>
-        <p className="text-sm md:text-base text-foreground/80 leading-relaxed font-bold">{description}</p>
-    </div>
-);
+    );
+};
 
 export default function PresentationPage() {
     return (
         <main className="bg-background text-foreground antialiased selection:bg-primary/20">
-            {/* Navegação fixa para mobilidade no deck */}
+            {/* Fixed Navigation */}
             <div className="fixed top-4 right-4 z-50 flex gap-2">
                 <Button asChild variant="outline" size="sm" className="shadow-lg bg-background/80 backdrop-blur font-bold uppercase text-[10px]">
-                    <Link href="/login">Voltar ao Site</Link>
+                    <Link href="/login"><ArrowLeft className="mr-2 h-3 w-3" /> Voltar ao Site</Link>
                 </Button>
                 <Button asChild size="sm" className="shadow-lg font-bold uppercase text-[10px]">
-                    <Link href="/">Painel Live</Link>
+                    <Link href="/">Abrir Sistema</Link>
                 </Button>
             </div>
             
-            {/* Slide 1: O Impacto */}
+            {/* Slide 1: Cover */}
             <Slide className="bg-secondary/10">
                 <div className="absolute inset-0 bg-[grid-line] opacity-10" />
                 <Badge className="mb-8 bg-primary text-primary-foreground font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px]">
@@ -61,95 +71,79 @@ export default function PresentationPage() {
                     <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full" />
                     <Rocket className="w-20 h-20 md:w-32 md:h-32 text-primary relative z-10 drop-shadow-2xl" />
                 </div>
-                <h1 className="text-5xl md:text-[140px] font-black tracking-tighter text-foreground uppercase italic leading-[0.8] text-center">
+                <h1 className="text-6xl md:text-[160px] font-black tracking-tighter text-foreground uppercase italic leading-[0.8] text-center">
                     Guardian
                 </h1>
-                <p className="mt-12 text-lg md:text-4xl text-muted-foreground max-w-4xl text-center font-bold leading-tight px-4">
-                    Inteligência para um mercado que movimenta <span className="text-primary italic">R$ 18 Bilhões</span> no Brasil.
+                <p className="mt-12 text-xl md:text-5xl text-muted-foreground max-w-4xl text-center font-bold leading-tight px-4">
+                    Inteligência para um mercado bilionário <br/> de <span className="text-primary italic">Ativos em Movimento</span>.
                 </p>
                 <div className="mt-20 flex flex-col items-center gap-2 animate-bounce opacity-40">
-                    <p className="text-[10px] font-black uppercase tracking-[0.3em]">Scroll para navegar</p>
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em]">Scroll para os módulos</p>
                     <ArrowDownRight className="h-5 w-5 rotate-45" />
                 </div>
             </Slide>
 
-            {/* Slide 2: O Problema */}
+            {/* Slide 2: The Core Experience (Módulos Detalhados) */}
             <Slide className="bg-background">
+                <div className="space-y-4 text-center mb-16">
+                    <Badge variant="outline" className="border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">ECOSSISTEMA INTEGRADO</Badge>
+                    <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter">Uma Solução <span className="text-primary">Multi-Face</span></h2>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
+                    <ModuleSlideItem 
+                        title="Gestão Central" 
+                        role="GESTOR" 
+                        imageId="ob-15-triage" 
+                        description="Auditoria de ROI e faturamento automatizado via inteligência bancária." 
+                    />
+                    <ModuleSlideItem 
+                        title="Navegação IA" 
+                        role="MOTORISTA" 
+                        imageId="ob-16-gps" 
+                        description="Traçado otimizado em tempo real reduzindo desvios e gastos de diesel." 
+                    />
+                    <ModuleSlideItem 
+                        title="Check-in Seguro" 
+                        role="MONITOR" 
+                        imageId="ob-12-health" 
+                        description="Validação visual de alunos e alertas de saúde pulsantes no embarque." 
+                    />
+                    <ModuleSlideItem 
+                        title="Live Tracking" 
+                        role="PAIS" 
+                        imageId="ob-3-welcome" 
+                        description="Segurança máxima com alertas de proximidade e comunicação direta." 
+                    />
+                </div>
+            </Slide>
+
+            {/* Slide 3: Prova de ROI (The Business Case) */}
+            <Slide className="bg-primary/[0.03]">
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center w-full">
                     <div className="space-y-8 text-center lg:text-left">
-                        <Badge variant="destructive" className="font-black tracking-widest px-4 py-1">O GARGALO</Badge>
+                        <Badge variant="destructive" className="font-black tracking-widest px-4 py-1">O RESULTADO</Badge>
                         <h2 className="text-4xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
-                            Margens <br/><span className="text-primary">Esmagadas</span>
+                            Margens <br/><span className="text-primary">Escaláveis</span>
                         </h2>
                         <p className="text-lg md:text-2xl text-muted-foreground font-medium leading-tight">
-                            O frotista escolar opera no escuro, perdendo dinheiro com desvios de rota, manutenção tardia e burocracia manual.
+                            Transformamos o rastreio passivo em um dashboard de economia direta. O frotista sabe exatamente quanto lucrou em cada rota.
                         </p>
+                        <div className="flex flex-col gap-4">
+                            <BenefitItem text="Redução de 14.2% no custo de combustível." />
+                            <BenefitItem text="Aumento de 30% na vida útil dos pneus via telemetria." />
+                            <BenefitItem text="Redução de 95% na burocracia de cadastro (OCR)." />
+                        </div>
                     </div>
                     <div className="grid grid-cols-2 gap-4 w-full">
-                        <StatItem label="Desperdício Combustível" value="15%" />
-                        <StatItem label="Custo Manutenção" value="+40%" />
-                        <StatItem label="Tempo de Cadastro" value="2-3 Dias" />
-                        <StatItem label="Risco Jurídico" value="Crítico" />
+                        <StatItem label="Retorno sobre Investimento" value="4.2x" />
+                        <StatItem label="Escolas Mapeadas (INEP)" value="190k" />
+                        <StatItem label="Custo Infra (FinOps)" value="~R$ 0" />
+                        <StatItem label="Segurança Jurídica" value="100%" />
                     </div>
                 </div>
             </Slide>
 
-            {/* Slide 3: Diferenciais Técnicos */}
-            <Slide className="bg-primary/[0.03]">
-                 <h2 className="text-4xl md:text-7xl font-black text-center mb-16 uppercase italic tracking-tighter leading-none">
-                    Unicidade <span className="text-primary">Técnica</span>
-                 </h2>
-                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full px-4">
-                    <TechCard 
-                        icon={<Bot />} 
-                        title="OCR Intelligence" 
-                        value="Instante"
-                        description="Leitura automática de documentos via Gemini IA. Redução de 95% no tempo de onboarding de novos alunos."
-                    />
-                    <TechCard 
-                        icon={<Database />} 
-                        title="Proprietary Data" 
-                        value="190k"
-                        description="Base INEP integrada para geolocalização de escolas. Zero erro de GPS no traçado das rotas."
-                    />
-                    <TechCard 
-                        icon={<TrendingDown />} 
-                        title="ROI Telemetry" 
-                        value="Provado"
-                        description="Comparativo real: KM Planejado (IA) vs. KM Real (GPS). Economia de diesel visível a cada viagem."
-                    />
-                 </div>
-            </Slide>
-
-            {/* Slide 4: FinOps e Escala */}
-            <Slide>
-                <div className="max-w-4xl w-full space-y-12 px-4">
-                    <div className="text-center space-y-4">
-                        <Badge className="bg-primary/10 text-primary border-primary/20 font-black px-4 py-1 uppercase text-[10px]">Soberania de Custos</Badge>
-                        <h2 className="text-4xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">Feito para <span className="text-primary">Crescer</span></h2>
-                    </div>
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
-                        <div className="space-y-6">
-                            <CheckItem title="Arquitetura Híbrida" description="Uso inteligente de Google Maps + OpenStreetMap para manter o custo de software próximo a zero." />
-                            <CheckItem title="Telemetria por Delta" description="Otimização de escritas no banco de dados para suportar frotas gigantes sem custos proibitivos." />
-                            <CheckItem title="Zero-Digit Contract" description="Contratos gerados e aceitos digitalmente. Eliminação completa de papel e arquivamento manual." />
-                        </div>
-                        <div className="bg-primary/5 rounded-[2.5rem] p-1 border-2 border-primary/20">
-                            <div className="bg-background rounded-[2.4rem] p-8 md:p-12 shadow-2xl relative overflow-hidden">
-                                <div className="absolute top-0 right-0 p-8 opacity-10 text-primary"><Zap size={120}/></div>
-                                <p className="text-[10px] font-black uppercase tracking-widest text-primary mb-4">Roadmap Operacional</p>
-                                <div className="space-y-4">
-                                    <div className="flex items-center gap-3"><div className="h-2 w-2 rounded-full bg-primary" /><p className="text-xs font-bold uppercase italic">Faturamento Automático (Pix/Webhook)</p></div>
-                                    <div className="flex items-center gap-3"><div className="h-2 w-2 rounded-full bg-primary" /><p className="text-xs font-bold uppercase italic">Mural de Avisos via Push</p></div>
-                                    <div className="flex items-center gap-3 opacity-40"><div className="h-2 w-2 rounded-full bg-muted-foreground" /><p className="text-xs font-bold uppercase italic">Seguro por Viagem (Marketplace)</p></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </Slide>
-
-            {/* Slide 5: The Ask */}
+            {/* Slide 4: The Ask */}
             <Slide className="bg-black text-white">
                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_var(--tw-gradient-stops))] from-primary/20 via-transparent to-transparent opacity-50" />
                  <h2 className="text-5xl md:text-[120px] font-black text-center mb-12 uppercase italic tracking-tighter leading-[0.8] relative z-10">
@@ -158,7 +152,7 @@ export default function PresentationPage() {
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full relative z-10 px-4">
                     <div className="bg-white/5 backdrop-blur-md border border-white/10 p-10 rounded-[2rem] text-center space-y-4">
                         <p className="text-primary font-black uppercase tracking-[0.4em] text-xs">Busca de Capital</p>
-                        <p className="text-7xl md:text-9xl font-black tracking-tighter italic">R$ 150k</p>
+                        <p className="text-7xl md:text-9xl font-black tracking-tighter italic text-white">R$ 150k</p>
                         <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Equity: 10%</p>
                     </div>
                     <div className="bg-primary p-10 rounded-[2rem] text-black flex flex-col justify-center space-y-6">
@@ -180,23 +174,18 @@ export default function PresentationPage() {
 
 function StatItem({ label, value }: { label: string, value: string }) {
     return (
-        <div className="bg-secondary/20 p-4 rounded-xl border border-dashed border-primary/20 text-center space-y-1">
-            <p className="text-2xl md:text-3xl font-black text-foreground italic">{value}</p>
-            <p className="text-[9px] font-black uppercase text-muted-foreground tracking-widest">{label}</p>
+        <div className="bg-secondary/20 p-6 rounded-2xl border border-dashed border-primary/20 text-center space-y-1">
+            <p className="text-3xl md:text-5xl font-black text-foreground italic tracking-tighter">{value}</p>
+            <p className="text-[10px] font-black uppercase text-muted-foreground tracking-widest">{label}</p>
         </div>
     );
 }
 
-function CheckItem({ title, description }: { title: string, description: string }) {
+function BenefitItem({ text }: { text: string }) {
     return (
-        <div className="flex gap-4 group">
-            <div className="h-6 w-6 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-white transition-all shrink-0">
-                <CheckCircle2 className="h-4 w-4" />
-            </div>
-            <div className="space-y-1">
-                <p className="font-black text-sm uppercase italic tracking-tight">{title}</p>
-                <p className="text-xs text-muted-foreground leading-tight font-medium">{description}</p>
-            </div>
+        <div className="flex items-center gap-3">
+            <CheckCircle className="text-green-500 h-6 w-6 shrink-0" />
+            <span className="font-bold text-base uppercase tracking-tight italic">{text}</span>
         </div>
     );
 }
