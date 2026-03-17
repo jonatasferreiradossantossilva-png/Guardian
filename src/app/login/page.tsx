@@ -11,21 +11,64 @@ import {
   Users,
   ClipboardCheck,
   ArrowRight,
-  CheckCircle2,
-  Zap,
+  ArrowDownRight,
   Bot,
   Database,
   TrendingDown,
   Gauge,
-  Smartphone,
-  ArrowDownRight
+  Zap,
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 export default function LandingPage() {
   const getImg = (id: string) => PlaceHolderImages.find(img => img.id === id);
+
+  const modules = [
+    {
+      id: 'gestor',
+      icon: <Shield className="h-6 w-6" />,
+      title: "O Painel do Gestor",
+      subtitle: "Visão 360º da Frota",
+      badge: "ADMIN",
+      description: "Controle financeiro automatizado, auditoria de ROI (KM IA vs KM Real), gestão de contratos digitais e manutenção preditiva da frota.",
+      images: [getImg('ob-15-triage'), getImg('ob-14-notification'), getImg('ob-10-finance'), getImg('ob-11-summary')]
+    },
+    {
+      id: 'motorista',
+      icon: <Car className="h-6 w-6" />,
+      title: "App do Motorista",
+      subtitle: "Navegação e Telemetria",
+      badge: "DRIVER",
+      description: "Itinerário otimizado por IA, telemetria inteligente que economiza dados e GPS integrado que atualiza os pais automaticamente.",
+      images: [getImg('ob-16-gps'), getImg('ob-7-address'), getImg('ob-4-scan')]
+    },
+    {
+      id: 'monitor',
+      icon: <ClipboardCheck className="h-6 w-6" />,
+      title: "Terminal do Monitor",
+      subtitle: "Segurança no Embarque",
+      badge: "ASSISTANT",
+      description: "Checklist visual com fotos dos alunos, alertas de saúde críticos (alergias/medicação) e validação de responsáveis via foto.",
+      images: [getImg('ob-12-health'), getImg('ob-9-class'), getImg('ob-5-identity')]
+    },
+    {
+      id: 'pais',
+      icon: <Users className="h-6 w-6" />,
+      title: "Portal dos Pais",
+      subtitle: "Tranquilidade em Tempo Real",
+      badge: "PARENT",
+      description: "Acompanhamento no mapa, alerta de proximidade (800m), pagamento via Pix Copia-e-Cola e comunicação direta com a van.",
+      images: [getImg('ob-3-welcome'), getImg('ob-17-sign'), getImg('ob-6-contact'), getImg('ob-13-done')]
+    }
+  ];
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/20 antialiased">
@@ -73,11 +116,10 @@ export default function LandingPage() {
               </div>
             </div>
           </div>
-          {/* Decorative Elements */}
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-primary/5 rounded-full blur-[120px] pointer-events-none" />
         </section>
 
-        {/* Modules Section: DETALHANDO POR PERFIS */}
+        {/* Modules Section */}
         <section id="modulos" className="w-full py-24 bg-background border-b">
           <div className="container mx-auto px-4">
             <div className="text-center mb-20 space-y-4">
@@ -86,42 +128,9 @@ export default function LandingPage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-              {/* GESTOR */}
-              <ModuleCard 
-                icon={<Shield className="h-6 w-6" />}
-                title="O Painel do Gestor"
-                subtitle="Visão 360º da Frota"
-                description="Controle financeiro automatizado, auditoria de ROI (KM IA vs KM Real), gestão de contratos digitais e manutenção preditiva da frota."
-                image={getImg('ob-15-triage')}
-                badge="ADMIN"
-              />
-              {/* MOTORISTA */}
-              <ModuleCard 
-                icon={<Car className="h-6 w-6" />}
-                title="App do Motorista"
-                subtitle="Navegação e Telemetria"
-                description="Itinerário otimizado por IA, telemetria inteligente que economiza dados e GPS integrado que atualiza os pais automaticamente."
-                image={getImg('ob-16-gps')}
-                badge="DRIVER"
-              />
-              {/* MONITOR */}
-              <ModuleCard 
-                icon={<ClipboardCheck className="h-6 w-6" />}
-                title="Terminal do Monitor"
-                subtitle="Segurança no Embarque"
-                description="Checklist visual com fotos dos alunos, alertas de saúde críticos (alergias/medicação) e validação de responsáveis via foto."
-                image={getImg('ob-12-health')}
-                badge="ASSISTANT"
-              />
-              {/* PAIS */}
-              <ModuleCard 
-                icon={<Users className="h-6 w-6" />}
-                title="Portal dos Pais"
-                subtitle="Tranquilidade em Tempo Real"
-                description="Acompanhamento no mapa, alerta de proximidade (800m), pagamento via Pix Copia-e-Cola e comunicação direta com a van."
-                image={getImg('ob-3-welcome')}
-                badge="PARENT"
-              />
+              {modules.map((m) => (
+                <ModuleCard key={m.id} {...m} />
+              ))}
             </div>
           </div>
         </section>
@@ -214,23 +223,39 @@ export default function LandingPage() {
   );
 }
 
-function ModuleCard({ icon, title, subtitle, description, image, badge }: { icon: React.ReactNode, title: string, subtitle: string, description: string, image: any, badge: string }) {
+function ModuleCard({ icon, title, subtitle, description, images, badge }: { icon: React.ReactNode, title: string, subtitle: string, description: string, images: any[], badge: string }) {
   return (
     <Card className="border-2 border-border/50 bg-background hover:border-primary/40 transition-all group overflow-hidden flex flex-col">
+      {/* Visual First - Carousel of screens */}
       <div className="relative aspect-video w-full bg-muted overflow-hidden">
-        <Image 
-          src={image?.imageUrl || "https://picsum.photos/seed/placeholder/800/450"} 
-          alt={title}
-          fill
-          unoptimized
-          className="object-cover transition-transform duration-700 group-hover:scale-110"
-          data-ai-hint={image?.imageHint || "app screen"}
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-        <div className="absolute top-4 left-4">
+        <Carousel 
+          opts={{ loop: true, align: "start" }} 
+          plugins={[Autoplay({ delay: 3000, stopOnInteraction: false })]}
+          className="w-full h-full"
+        >
+          <CarouselContent>
+            {images.map((img, index) => (
+              <CarouselItem key={index}>
+                <div className="relative aspect-video w-full">
+                  <Image 
+                    src={img?.imageUrl || "https://picsum.photos/seed/placeholder/800/450"} 
+                    alt={img?.description || title}
+                    fill
+                    unoptimized
+                    className="object-cover"
+                    data-ai-hint={img?.imageHint || "app screen"}
+                  />
+                </div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+        </Carousel>
+        
+        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent pointer-events-none" />
+        <div className="absolute top-4 left-4 z-10">
           <Badge className="bg-primary text-white font-black text-[9px] tracking-widest uppercase">{badge}</Badge>
         </div>
-        <div className="absolute bottom-4 left-6 flex items-center gap-3 text-white">
+        <div className="absolute bottom-4 left-6 flex items-center gap-3 text-white z-10">
           <div className="p-2 bg-primary/20 backdrop-blur-md rounded-lg border border-white/20">{icon}</div>
           <div className="min-w-0">
             <p className="text-xl font-black uppercase italic leading-none">{title}</p>
@@ -238,10 +263,11 @@ function ModuleCard({ icon, title, subtitle, description, image, badge }: { icon
           </div>
         </div>
       </div>
+
       <CardContent className="p-8 flex-1 flex flex-col justify-between">
         <p className="text-muted-foreground leading-relaxed font-medium">{description}</p>
         <Button variant="ghost" className="w-fit p-0 h-auto mt-6 text-xs font-black uppercase tracking-widest text-primary hover:bg-transparent hover:translate-x-2 transition-all">
-          Saber mais <ArrowRight className="ml-2 h-4 w-4" />
+          Conhecer Módulo <ArrowRight className="ml-2 h-4 w-4" />
         </Button>
       </CardContent>
     </Card>

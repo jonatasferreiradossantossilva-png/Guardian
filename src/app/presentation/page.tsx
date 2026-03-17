@@ -9,12 +9,14 @@ import {
     Gauge, 
     Zap, 
     ArrowDownRight,
-    CheckCircle2,
-    Activity,
-    ShieldCheck,
-    Smartphone,
     ArrowLeft,
-    CheckCircle
+    CheckCircle,
+    Shield,
+    Car,
+    Users,
+    ClipboardCheck,
+    Activity,
+    Smartphone
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -22,6 +24,12 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
+import {
+  Carousel,
+  CarouselContent,
+  CarouselItem,
+} from "@/components/ui/carousel";
+import Autoplay from "embla-carousel-autoplay";
 
 const Slide = ({ children, className = '', id = '' }: { children: React.ReactNode, className?: string, id?: string }) => (
   <section id={id} className={cn("min-h-screen w-full flex flex-col justify-center items-center p-6 lg:p-20 overflow-hidden relative border-b", className)}>
@@ -31,14 +39,37 @@ const Slide = ({ children, className = '', id = '' }: { children: React.ReactNod
   </section>
 );
 
-const ModuleSlideItem = ({ title, role, imageId, description }: { title: string, role: string, imageId: string, description: string }) => {
-    const img = PlaceHolderImages.find(i => i.id === imageId);
+const ModuleSlideItem = ({ title, role, imageIds, description }: { title: string, role: string, imageIds: string[], description: string }) => {
+    const images = imageIds.map(id => PlaceHolderImages.find(i => i.id === id)).filter(Boolean);
+    
     return (
-        <div className="bg-background/40 backdrop-blur-xl rounded-2xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-xl">
-            <div className="relative aspect-video w-full">
-                <Image src={img?.imageUrl || ""} alt={title} fill unoptimized className="object-cover" data-ai-hint={img?.imageHint} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                <Badge className="absolute top-4 right-4 bg-primary font-black uppercase text-[9px]">{role}</Badge>
+        <div className="bg-background/40 backdrop-blur-xl rounded-2xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-xl group">
+            {/* Visual Presentation First */}
+            <div className="relative aspect-video w-full bg-muted">
+                <Carousel 
+                  opts={{ loop: true }} 
+                  plugins={[Autoplay({ delay: 2500 })]}
+                  className="w-full h-full"
+                >
+                  <CarouselContent>
+                    {images.map((img, index) => (
+                      <CarouselItem key={index}>
+                        <div className="relative aspect-video w-full">
+                          <Image 
+                            src={img?.imageUrl || ""} 
+                            alt={title} 
+                            fill 
+                            unoptimized 
+                            className="object-cover" 
+                            data-ai-hint={img?.imageHint} 
+                          />
+                        </div>
+                      </CarouselItem>
+                    ))}
+                  </CarouselContent>
+                </Carousel>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent pointer-events-none" />
+                <Badge className="absolute top-4 right-4 bg-primary font-black uppercase text-[9px] z-10">{role}</Badge>
             </div>
             <div className="p-6 space-y-2">
                 <h3 className="text-xl font-black uppercase italic tracking-tighter text-primary">{title}</h3>
@@ -83,36 +114,37 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* Slide 2: The Core Experience (Módulos Detalhados) */}
+            {/* Slide 2: The Core Experience (Mini Apresentações) */}
             <Slide className="bg-background">
                 <div className="space-y-4 text-center mb-16">
-                    <Badge variant="outline" className="border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">ECOSSISTEMA INTEGRADO</Badge>
-                    <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter">Uma Solução <span className="text-primary">Multi-Face</span></h2>
+                    <Badge variant="outline" className="border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">PRODUTO MULTI-FACE</Badge>
+                    <h2 className="text-4xl md:text-7xl font-black uppercase italic tracking-tighter">O Guardian em <span className="text-primary">Ação</span></h2>
+                    <p className="text-muted-foreground text-sm uppercase font-bold tracking-widest">Fotos reais da interface do sistema</p>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
                     <ModuleSlideItem 
                         title="Gestão Central" 
                         role="GESTOR" 
-                        imageId="ob-15-triage" 
-                        description="Auditoria de ROI e faturamento automatizado via inteligência bancária." 
+                        imageIds={['ob-15-triage', 'ob-14-notification', 'ob-10-finance', 'ob-11-summary']} 
+                        description="Auditoria de ROI em tempo real e faturamento automatizado." 
                     />
                     <ModuleSlideItem 
                         title="Navegação IA" 
                         role="MOTORISTA" 
-                        imageId="ob-16-gps" 
-                        description="Traçado otimizado em tempo real reduzindo desvios e gastos de diesel." 
+                        imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} 
+                        description="Traçado otimizado reduzindo drasticamente o consumo de diesel." 
                     />
                     <ModuleSlideItem 
                         title="Check-in Seguro" 
                         role="MONITOR" 
-                        imageId="ob-12-health" 
-                        description="Validação visual de alunos e alertas de saúde pulsantes no embarque." 
+                        imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} 
+                        description="Segurança máxima com alertas de saúde e validação por foto." 
                     />
                     <ModuleSlideItem 
                         title="Live Tracking" 
                         role="PAIS" 
-                        imageId="ob-3-welcome" 
-                        description="Segurança máxima com alertas de proximidade e comunicação direta." 
+                        imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-6-contact', 'ob-13-done']} 
+                        description="Tranquilidade absoluta com alerta de proximidade e contrato digital." 
                     />
                 </div>
             </Slide>
@@ -163,7 +195,7 @@ export default function PresentationPage() {
                             <div className="flex justify-between"><span>20% Operação</span><span>Infra Escalonável</span></div>
                         </div>
                         <Button className="w-full h-14 bg-black text-white font-black uppercase italic hover:bg-black/80 shadow-2xl" asChild>
-                            <Link href="/login">Investir no Futuro</Link>
+                            <Link href="/">Investir no Futuro</Link>
                         </Button>
                     </div>
                  </div>
