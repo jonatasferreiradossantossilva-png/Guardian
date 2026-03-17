@@ -23,15 +23,20 @@ import {
     ArrowLeft,
     ChevronRight,
     Sparkles,
-    Activity,
     Shield,
-    Check
+    Check,
+    BarChart3,
+    QrCode,
+    Activity,
+    HeartPulse,
+    FileText,
+    Milestone
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import {
@@ -49,11 +54,11 @@ const Slide = ({ children, className = '', id = '' }: { children: React.ReactNod
   </section>
 );
 
-const ModulePreview = ({ title, role, imageIds }: { title: string, role: string, imageIds: string[] }) => {
+const ModulePreview = ({ title, role, imageIds, features }: { title: string, role: string, imageIds: string[], features: string[] }) => {
     const images = imageIds.map(id => PlaceHolderImages.find(i => i.id === id)).filter(Boolean);
     return (
-        <div className="bg-background rounded-2xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-2xl group">
-            {/* FOTO PRIMEIRO (CARROSSEL) */}
+        <div className="bg-background rounded-3xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-2xl group">
+            {/* 1. FOTO EM DESTAQUE */}
             <div className="relative aspect-video w-full bg-black/5 overflow-hidden">
                 <Carousel 
                   opts={{ loop: true, align: "start" }} 
@@ -64,7 +69,7 @@ const ModulePreview = ({ title, role, imageIds }: { title: string, role: string,
                     {images.map((img, index) => (
                       <CarouselItem key={index} className="pl-0 basis-full">
                         <div className="relative aspect-video w-full h-full p-2">
-                          <div className="relative w-full h-full rounded-lg overflow-hidden border bg-background shadow-inner">
+                          <div className="relative w-full h-full rounded-2xl overflow-hidden border bg-background shadow-inner">
                             <Image 
                                 src={img?.imageUrl || ""} 
                                 alt={title} 
@@ -81,9 +86,16 @@ const ModulePreview = ({ title, role, imageIds }: { title: string, role: string,
                 </Carousel>
                 <Badge className="absolute top-3 right-3 bg-primary font-black uppercase text-[8px] z-10 shadow-lg">{role}</Badge>
             </div>
-            {/* RESUMO DEPOIS */}
-            <div className="p-4 bg-muted/10 border-t">
-                <p className="text-xs font-black uppercase italic tracking-tighter text-primary">{title}</p>
+            {/* 2. FUNCIONALIDADES RESUMIDAS */}
+            <div className="p-6 bg-muted/10 border-t flex-1">
+                <p className="text-sm font-black uppercase italic tracking-tighter text-primary mb-4">{title}</p>
+                <div className="flex flex-wrap gap-1.5">
+                    {features.map((f, i) => (
+                        <Badge key={i} variant="outline" className="text-[8px] font-black uppercase border-primary/20 text-muted-foreground bg-background">
+                            {f}
+                        </Badge>
+                    ))}
+                </div>
             </div>
         </div>
     );
@@ -100,17 +112,17 @@ export default function PresentationPage() {
             </div>
             
             {/* 1. O PROBLEMA */}
-            <Slide className="bg-destructive/5">
+            <Slide className="bg-destructive/[0.03]">
                 <Badge className="mb-8 bg-destructive text-white font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px]">
-                    01. O Problema Atual
+                    01. O Desafio Atual
                 </Badge>
                 <h2 className="text-5xl md:text-8xl font-black tracking-tighter text-foreground uppercase italic leading-[0.8] text-center mb-12">
-                    Operação <br/> no <span className="text-destructive">Escuro.</span>
+                    Operação <br/> Sem <span className="text-destructive">Visibilidade.</span>
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-                    <ProblemCard icon={<AlertTriangle className="text-destructive" />} title="Cadê a van?" desc="Pais ansiosos e sem visibilidade geram centenas de mensagens de WhatsApp que o motorista não pode ler." />
-                    <ProblemCard icon={<MessageSquare className="text-destructive" />} title="Fricção de Contato" description="Avisos de falta e atrasos se perdem no caos das mensagens, resultando em quilometragem desperdiçada." />
-                    <ProblemCard icon={<Shield className="text-destructive" />} title="Risco Jurídico" description="Falta de registros digitais de quem embarcou ou foi entregue gera insegurança total para o transportador." />
+                    <ProblemCard icon={<AlertTriangle className="text-destructive" />} title="Incerteza dos Pais" description="Onde está meu filho? A falta de rastro gera ansiedade e centenas de mensagens de WhatsApp que o motorista não pode ler." />
+                    <ProblemCard icon={<MessageSquare className="text-destructive" />} title="Caos Logístico" description="Avisos de faltas tardios resultam em rotas ineficientes e desperdício de combustível todos os dias." />
+                    <ProblemCard icon={<Shield className="text-destructive" />} title="Insegurança Jurídica" description="Sem registros digitais de embarque e desembarque, o transportador fica vulnerável a contestações e incidentes." />
                 </div>
                 <div className="mt-16 animate-bounce opacity-40">
                     <ChevronRight className="h-8 w-8 rotate-90" />
@@ -120,7 +132,7 @@ export default function PresentationPage() {
             {/* 2. A SOLUÇÃO */}
             <Slide className="bg-background">
                 <Badge className="mb-8 bg-primary text-primary-foreground font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px]">
-                    02. A Nossa Solução
+                    02. A Revolução Guardian
                 </Badge>
                 <div className="relative mb-8">
                     <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full animate-pulse" />
@@ -130,47 +142,47 @@ export default function PresentationPage() {
                     Guardian: <br/><span className="text-primary">O Cérebro da Frota.</span>
                 </h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 w-full">
-                    <SolutionBadge icon={<LocateFixed />} text="Rastreamento Realtime" />
-                    <SolutionBadge icon={<Bell />} text="Alerta de Chegada (800m)" />
+                    <SolutionBadge icon={<LocateFixed />} text="Mapa em Tempo Real" />
+                    <SolutionBadge icon={<Bell />} text="Alerta Automático (800m)" />
                     <SolutionBadge icon={<UserCheck />} text="Check-in por QR/Foto" />
-                    <SolutionBadge icon={<MessageSquare />} text="Chat Operacional" />
+                    <SolutionBadge icon={<DollarSign />} text="Pagamento Pix Instantâneo" />
                 </div>
             </Slide>
 
             {/* 3. COMO FUNCIONA */}
             <Slide className="bg-secondary/5">
                 <Badge className="mb-12 bg-primary/10 text-primary font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px] border border-primary/20">
-                    03. O Fluxo de Valor
+                    03. Fluxo de Valor
                 </Badge>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 w-full relative">
                     <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-primary/20 -translate-y-1/2 z-0" />
-                    <StepItem step="1" icon={<Play />} title="Start" desc="Motorista inicia a rota otimizada pela IA" />
-                    <StepItem step="2" icon={<MapIcon />} title="Live" desc="Pais acompanham o trajeto no mapa vivo" />
-                    <StepItem step="3" icon={<Bell />} title="Smart Alert" desc="App notifica a chegada automaticamente" />
-                    <StepItem step="4" icon={<CheckCircle2 />} title="Log" desc="Confirmação de embarque gera log jurídico" />
+                    <StepItem step="1" icon={<Play />} title="Start Inteligente" desc="Motorista inicia rota otimizada por IA para menor consumo." />
+                    <StepItem step="2" icon={<MapIcon />} title="Acompanhamento" desc="Pais visualizam a van em movimento no mapa vivo." />
+                    <StepItem step="3" icon={<Bell />} title="Smart Notification" desc="App avisa a chegada automaticamente ao entrar no raio de 800m." />
+                    <StepItem step="4" icon={<CheckCircle2 />} title="Log Digital" desc="Embarque validado gera comprovante digital e segurança jurídica." />
                 </div>
             </Slide>
 
             {/* 4. TELAS DO APLICATIVO */}
             <Slide className="bg-background">
-                <Badge variant="outline" className="mb-12 border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">04. O Produto em Ação</Badge>
+                <Badge variant="outline" className="mb-12 border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">04. O Ecossistema Guardian</Badge>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-                    <ModulePreview title="Painel de Gestão" role="GESTOR" imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} />
-                    <ModulePreview title="Navegação GPS" role="DRIVER" imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} />
-                    <ModulePreview title="Checklist de Bordo" role="ASSISTANT" imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} />
-                    <ModulePreview title="Tracking Parental" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-13-done']} />
+                    <ModulePreview title="Gestão & Performance" role="GESTOR" imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} features={["ROI de KM", "Triagem OCR", "Faturas Aut.", "Mural Avisos"]} />
+                    <ModulePreview title="Navegação Assistida" role="DRIVER" imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} features={["GPS Realtime", "Itinerário IA", "Relato Transito", "Status Rota"]} />
+                    <ModulePreview title="Controle de Bordo" role="ASSISTANT" imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} features={["Alertas Saúde", "Check-in QR", "Foto Aluno", "Mensagens Rápidas"]} />
+                    <ModulePreview title="Painel da Família" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-13-done']} features={["Mapa Vivo", "Viagens Avulsas", "Pix Instantâneo", "Contratos"]} />
                 </div>
             </Slide>
 
             {/* 5. BENEFÍCIOS */}
             <Slide className="bg-primary/[0.03]">
                 <Badge className="mb-12 bg-primary/10 text-primary font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px] border border-primary/20">
-                    05. Benefícios Reais
+                    05. Vantagens Competitivas
                 </Badge>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-                    <BenefitSection title="Para os Pais" icon={<Users className="text-primary" />} items={["Segurança jurídica", "Zero ansiedade (Mapa)", "Previsão de chegada"]} />
-                    <BenefitSection title="Para o Motorista" icon={<Car className="text-primary" />} items={["Menor gasto de Diesel", "Check-in sem papel", "Faturamento automático"]} />
-                    <BenefitSection title="Para a Escola" icon={<School className="text-primary" />} items={["Controle do pátio", "Auditoria da frota", "Diferencial de ensino"]} />
+                    <BenefitSection title="Para os Pais" icon={<Users className="text-primary" />} items={["Segurança Jurídica", "Fim da ansiedade (Mapa)", "Previsão exata de chegada", "Pagamento facilitado"]} />
+                    <BenefitSection title="Para o Motorista" icon={<Car className="text-primary" />} items={["Economia real de combustível", "Check-in sem papel", "Gestão de inadimplência", "Rota inteligente"]} />
+                    <BenefitSection title="Para a Escola" icon={<School className="text-primary" />} items={["Controle do fluxo no pátio", "Auditoria da frota", "Diferencial tecnológico", "Certificação de segurança"]} />
                 </div>
             </Slide>
 
@@ -181,27 +193,27 @@ export default function PresentationPage() {
                  </Badge>
                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 w-full max-w-4xl">
                     <div className="bg-white/5 backdrop-blur-md border border-white/10 p-8 rounded-3xl space-y-6">
-                        <h3 className="text-2xl font-black uppercase italic text-primary">Revenue Streams</h3>
+                        <h3 className="text-2xl font-black uppercase italic text-primary">Receita Recorrente</h3>
                         <div className="space-y-4">
                             <div className="flex justify-between border-b border-white/10 pb-2">
-                                <span className="text-sm font-bold uppercase">Assinatura por Van</span>
+                                <span className="text-sm font-bold uppercase">Assinatura p/ Van</span>
                                 <span className="text-primary font-black">R$ 149/mês</span>
                             </div>
                             <div className="flex justify-between border-b border-white/10 pb-2">
-                                <span className="text-sm font-bold uppercase">Taxa de Telemetria</span>
+                                <span className="text-sm font-bold uppercase">Taxa p/ Aluno</span>
                                 <span className="text-primary font-black">R$ 2/aluno</span>
                             </div>
                             <div className="flex justify-between border-b border-white/10 pb-2">
-                                <span className="text-sm font-bold uppercase">Guardian Enterprise</span>
+                                <span className="text-sm font-bold uppercase">Enterprise</span>
                                 <span className="text-primary font-black">Sob consulta</span>
                             </div>
                         </div>
                     </div>
                     <div className="bg-primary p-8 rounded-3xl text-black flex flex-col justify-center text-center space-y-4">
-                        <p className="text-[10px] font-black uppercase tracking-[0.4em]">Ready to Scale?</p>
-                        <p className="text-5xl font-black tracking-tighter italic">INVESTOR DECK</p>
+                        <p className="text-[10px] font-black uppercase tracking-[0.4em]">Pronto para escalar?</p>
+                        <p className="text-5xl font-black tracking-tighter italic">BUSINESS DECK</p>
                         <Button className="w-full h-14 bg-black text-white font-black uppercase italic hover:bg-black/80" asChild>
-                            <Link href="/">Iniciar Parceria</Link>
+                            <Link href="/">Falar com um Consultor</Link>
                         </Button>
                     </div>
                  </div>
@@ -210,12 +222,12 @@ export default function PresentationPage() {
     );
 }
 
-function ProblemCard({ icon, title, description, desc }: { icon: React.ReactNode, title: string, description?: string, desc?: string }) {
+function ProblemCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
         <Card className="border-2 border-destructive/10 bg-background/50 backdrop-blur text-center p-6">
             <div className="mb-4 flex justify-center">{icon}</div>
             <CardTitle className="text-lg uppercase italic font-black mb-2">{title}</CardTitle>
-            <p className="text-muted-foreground text-xs font-medium leading-relaxed">{description || desc}</p>
+            <p className="text-muted-foreground text-xs font-medium leading-relaxed">{description}</p>
         </Card>
     );
 }

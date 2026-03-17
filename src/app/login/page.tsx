@@ -13,16 +13,20 @@ import {
   ArrowRight,
   ArrowDownRight,
   Bot,
-  Database,
   TrendingDown,
-  Gauge,
   Zap,
-  HelpCircle,
   ExternalLink,
   MessageSquare,
-  AlertTriangle,
   ChevronRight,
-  Sparkles
+  Sparkles,
+  FileText,
+  DollarSign,
+  Milestone,
+  CheckCircle2,
+  Activity,
+  HeartPulse,
+  QrCode,
+  MapPin
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -42,37 +46,41 @@ export default function LandingPage() {
     {
       id: 'gestor',
       icon: <Shield className="h-5 w-5" />,
-      title: "O Painel do Gestor",
-      subtitle: "Gestão Financeira & ROI",
+      title: "Painel do Gestor",
+      subtitle: "Inteligência & ROI",
       badge: "ADMIN",
-      description: "Controle de faturas, auditoria de KM e manutenção preditiva em um só lugar.",
+      features: ["Faturamento Automático", "Triagem OCR (Gemini)", "Contratos Digitais", "Base INEP (190k Escolas)", "Mural de Avisos", "Auditoria de KM"],
+      description: "Controle total da saúde financeira e administrativa da frota com automação de ponta.",
       images: [getImg('ob-15-triage'), getImg('ob-14-notification'), getImg('ob-10-finance'), getImg('ob-11-summary')]
     },
     {
       id: 'motorista',
       icon: <Car className="h-5 w-5" />,
       title: "App do Motorista",
-      subtitle: "GPS e Itinerário Otimizado",
+      subtitle: "Logística Otimizada",
       badge: "DRIVER",
-      description: "Rotas calculadas por IA para menor consumo e máxima pontualidade.",
+      features: ["GPS em Tempo Real", "Itinerário IA", "Relato de Incidentes", "Modo Pausa", "Navegação Assistida", "Histórico de Viagens"],
+      description: "Redução de custos com rotas calculadas para menor consumo e máxima pontualidade.",
       images: [getImg('ob-16-gps'), getImg('ob-7-address'), getImg('ob-4-scan')]
     },
     {
       id: 'monitor',
       icon: <ClipboardCheck className="h-5 w-5" />,
-      title: "Terminal do Monitor",
-      subtitle: "Segurança e Check-in",
+      title: "Módulo do Monitor",
+      subtitle: "Segurança de Bordo",
       badge: "ASSISTANT",
-      description: "Checklist com foto e alertas médicos críticos em tempo real.",
+      features: ["Alertas Médicos Críticos", "Checklist Visual", "Check-in por QR Code", "Contatos de Emergência", "Mensagens Rápidas"],
+      description: "Zero papel no embarque com identificação por foto e controle de saúde em tempo real.",
       images: [getImg('ob-12-health'), getImg('ob-9-class'), getImg('ob-5-identity')]
     },
     {
       id: 'pais',
       icon: <Users className="h-5 w-5" />,
       title: "Portal dos Pais",
-      subtitle: "Tranquilidade Realtime",
+      subtitle: "Transparência Total",
       badge: "PARENT",
-      description: "Mapa ao vivo, alerta 800m e pagamento Pix instantâneo.",
+      features: ["Mapa ao Vivo", "Alerta 800m", "Viagens Avulsas", "Pagamento Pix", "Assinatura Digital", "Chat Direto"],
+      description: "Tranquilidade absoluta para a família com acompanhamento em tempo real da jornada escolar.",
       images: [getImg('ob-3-welcome'), getImg('ob-17-sign'), getImg('ob-6-contact'), getImg('ob-13-done')]
     }
   ];
@@ -87,7 +95,7 @@ export default function LandingPage() {
             <span className="uppercase italic tracking-tighter text-xl text-foreground">Guardian</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
-            <Link href="#modulos" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors">Módulos</Link>
+            <Link href="#modulos" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors">Funcionalidades</Link>
             <Button asChild size="sm" className="font-bold h-9">
               <Link href="/">Acessar Painel</Link>
             </Button>
@@ -104,20 +112,20 @@ export default function LandingPage() {
           <div className="container mx-auto px-4 relative z-10 text-center">
             <div className="flex flex-col items-center space-y-8 max-w-4xl mx-auto">
               <Badge variant="outline" className="px-4 py-1.5 border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[10px] bg-primary/5">
-                Inteligência para Transporte Escolar
+                Inteligência de Ativos Escolares
               </Badge>
               <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-none uppercase italic">
                 O Cérebro da sua <span className="text-primary">Operação.</span>
               </h1>
               <p className="max-w-2xl text-lg md:text-2xl text-muted-foreground font-medium leading-relaxed">
-                Reduza custos com <span className="text-foreground font-bold italic">Telemetria ROI</span> e blinde sua segurança jurídica com IA Generativa.
+                Maximize o lucro com <span className="text-foreground font-bold italic">Telemetria ROI</span> e garanta segurança total com IA Generativa.
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
                 <Button size="lg" className="w-full sm:w-auto h-16 px-10 text-lg font-black uppercase italic shadow-2xl shadow-primary/20" asChild>
                   <Link href="/">Acessar Plataforma <ArrowRight className="ml-2 h-5 w-5" /></Link>
                 </Button>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 px-10 text-lg font-black uppercase italic border-2" asChild>
-                  <Link href="/presentation">Ver Pitch Deck <ArrowDownRight className="ml-2 h-5 w-5" /></Link>
+                  <Link href="/presentation">Ver Pitch de Negócio <ArrowDownRight className="ml-2 h-5 w-5" /></Link>
                 </Button>
               </div>
             </div>
@@ -128,11 +136,11 @@ export default function LandingPage() {
         <section id="modulos" className="w-full py-24 bg-background border-b">
           <div className="container mx-auto px-4">
             <div className="text-center mb-20 space-y-4">
-              <h2 className="text-3xl md:text-6xl font-black uppercase italic tracking-tighter text-primary">Plataforma Unificada</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto font-medium uppercase text-xs tracking-widest">Interface Especializada para Cada Agente</p>
+              <h2 className="text-3xl md:text-6xl font-black uppercase italic tracking-tighter text-primary">Plataforma 360°</h2>
+              <p className="text-muted-foreground max-w-2xl mx-auto font-medium uppercase text-xs tracking-widest">Tecnologia especializada para cada agente do ecossistema</p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
               {modules.map((m) => (
                 <ModuleCard key={m.id} {...m} />
               ))}
@@ -140,20 +148,57 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/* Prova de ROI */}
+        <section className="w-full py-24 bg-primary/5 border-b">
+            <div className="container mx-auto px-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
+                    <div className="space-y-6">
+                        <Badge className="bg-primary text-white font-black">PROVA DE VALOR</Badge>
+                        <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
+                            Menos Diesel, <br/>Mais <span className="text-primary">Rentabilidade.</span>
+                        </h2>
+                        <p className="text-muted-foreground text-lg">
+                            Nosso algoritmo de otimização de rota reduz em média 12% a quilometragem diária da frota, gerando economia imediata de combustível e manutenção.
+                        </p>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="p-4 bg-background rounded-xl border border-primary/20">
+                                <p className="text-3xl font-black text-primary italic">-12%</p>
+                                <p className="text-[10px] font-bold uppercase text-muted-foreground">KM Rodado/Mês</p>
+                            </div>
+                            <div className="p-4 bg-background rounded-xl border border-primary/20">
+                                <p className="text-3xl font-black text-primary italic">Zero</p>
+                                <p className="text-[10px] font-bold uppercase text-muted-foreground">Inadimplência Pix</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="relative aspect-video rounded-3xl overflow-hidden border-4 border-primary/20 shadow-2xl">
+                        <Image 
+                            src="https://lh3.googleusercontent.com/d/1i2uAifpZptoHOGO7MRox0C-YklPCc37O" 
+                            alt="ROI Map" 
+                            fill 
+                            unoptimized 
+                            className="object-cover"
+                            data-ai-hint="gps map"
+                        />
+                    </div>
+                </div>
+            </div>
+        </section>
+
         {/* CTA Final */}
-        <section className="w-full py-32 bg-secondary/5 text-center relative overflow-hidden">
+        <section className="w-full py-32 bg-background text-center relative overflow-hidden">
           <div className="container mx-auto px-4 relative z-10">
             <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic leading-none mb-10">
-              Pronto para a <br/><span className="text-primary">Nova Geração?</span>
+              Transforme sua <br/><span className="text-primary">Van em Empresa.</span>
             </h2>
             <Button asChild size="lg" className="h-20 px-16 text-xl font-black uppercase italic shadow-2xl hover:scale-105 transition-transform">
-              <Link href="/">Entrar no Sistema <ArrowRight className="ml-3 h-6 w-6" /></Link>
+              <Link href="/">Começar Agora <ArrowRight className="ml-3 h-6 w-6" /></Link>
             </Button>
           </div>
         </section>
       </main>
 
-      <footer className="w-full border-t py-12 px-4 bg-background">
+      <footer className="w-full border-t py-12 px-4 bg-muted/20">
         <div className="container mx-auto flex flex-col md:flex-row justify-between items-center gap-8 text-center md:text-left">
           <div className="flex items-center gap-2 font-bold opacity-50">
             <Rocket className="h-5 w-5 text-primary" />
@@ -168,11 +213,11 @@ export default function LandingPage() {
   );
 }
 
-function ModuleCard({ icon, title, subtitle, description, images, badge }: { icon: React.ReactNode, title: string, subtitle: string, description: string, images: any[], badge: string }) {
+function ModuleCard({ icon, title, subtitle, description, images, badge, features }: { icon: React.ReactNode, title: string, subtitle: string, description: string, images: any[], badge: string, features: string[] }) {
   return (
     <Card className="border-2 border-border/50 bg-background hover:border-primary/40 transition-all group overflow-hidden flex flex-col shadow-xl">
-      {/* Visual First - Interface Showcase */}
-      <div className="relative aspect-video w-full bg-black/5 overflow-hidden">
+      {/* 1. FOTO EM DESTAQUE (CARROSSEL) */}
+      <div className="relative aspect-video w-full bg-black/5 overflow-hidden border-b">
         <Carousel 
           opts={{ loop: true, align: "start" }} 
           plugins={[Autoplay({ delay: 3000, stopOnInteraction: false })]}
@@ -181,7 +226,7 @@ function ModuleCard({ icon, title, subtitle, description, images, badge }: { ico
           <CarouselContent className="-ml-0">
             {images.map((img, index) => (
               <CarouselItem key={index} className="pl-0 basis-full">
-                <div className="relative aspect-video w-full h-full p-4">
+                <div className="relative aspect-video w-full h-full p-2">
                   <div className="relative w-full h-full rounded-lg overflow-hidden border shadow-2xl bg-background">
                     <Image 
                         src={img?.imageUrl || "https://picsum.photos/seed/placeholder/800/450"} 
@@ -203,8 +248,9 @@ function ModuleCard({ icon, title, subtitle, description, images, badge }: { ico
         </div>
       </div>
 
-      <CardContent className="p-8 flex-1 flex flex-col justify-between bg-muted/5">
-        <div className="space-y-4">
+      {/* 2. RESUMO E FUNCIONALIDADES */}
+      <CardContent className="p-6 md:p-8 flex-1 flex flex-col bg-muted/5">
+        <div className="space-y-6">
             <div className="flex items-center gap-3">
                 <div className="p-2.5 bg-primary/10 rounded-xl text-primary border border-primary/20">{icon}</div>
                 <div>
@@ -212,10 +258,24 @@ function ModuleCard({ icon, title, subtitle, description, images, badge }: { ico
                     <p className="text-[10px] font-bold uppercase tracking-widest text-primary mt-1">{subtitle}</p>
                 </div>
             </div>
+            
             <p className="text-muted-foreground leading-relaxed font-medium text-sm">{description}</p>
+
+            <div className="space-y-3">
+                <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground border-b pb-1">Funcionalidades Chave</p>
+                <div className="flex flex-wrap gap-1.5">
+                    {features.map((f, i) => (
+                        <Badge key={i} variant="secondary" className="text-[9px] font-bold py-0.5 px-2 bg-background border border-primary/10">
+                            {f}
+                        </Badge>
+                    ))}
+                </div>
+            </div>
         </div>
-        <Button variant="ghost" className="w-fit p-0 h-auto mt-6 text-xs font-black uppercase tracking-widest text-primary hover:bg-transparent hover:translate-x-2 transition-all">
-          Ver funcionalidades <ArrowRight className="ml-2 h-4 w-4" />
+        <Button variant="ghost" className="w-fit p-0 h-auto mt-8 text-xs font-black uppercase tracking-widest text-primary hover:bg-transparent hover:translate-x-2 transition-all" asChild>
+          <Link href="/">
+            Ver na prática <ArrowRight className="ml-2 h-4 w-4" />
+          </Link>
         </Button>
       </CardContent>
     </Card>
