@@ -59,7 +59,7 @@ const ModulePreview = ({ title, role, imageIds, features }: { title: string, rol
     const images = imageIds.map(id => PlaceHolderImages.find(i => i.id === id)).filter(Boolean);
     return (
         <div className="bg-background rounded-3xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-2xl group">
-            {/* 1. FOTO EM DESTAQUE */}
+            {/* 1. FOTO EM DESTAQUE - VISUAL FIRST */}
             <div className="relative aspect-video w-full bg-black/5 overflow-hidden">
                 <Carousel 
                   opts={{ loop: true, align: "start" }} 
@@ -175,7 +175,7 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* 5. DIFERENCIAL E MERCADO (NEW) */}
+            {/* 5. DIFERENCIAL E MERCADO */}
             <Slide className="bg-primary/[0.03]">
                 <Badge className="mb-12 bg-primary/10 text-primary font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px] border border-primary/20">
                     05. Superioridade Guardian

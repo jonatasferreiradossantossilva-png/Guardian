@@ -151,7 +151,7 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* NEW: Comparativo de Mercado Section */}
+        {/* Comparativo de Mercado Section */}
         <section id="comparativo" className="w-full py-24 bg-background border-b overflow-hidden">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16 space-y-4">
@@ -279,7 +279,7 @@ export default function LandingPage() {
 function ModuleCard({ icon, title, subtitle, description, images, badge, features }: { icon: React.ReactNode, title: string, subtitle: string, description: string, images: any[], badge: string, features: string[] }) {
   return (
     <Card className="border-2 border-border/50 bg-background hover:border-primary/40 transition-all group overflow-hidden flex flex-col shadow-xl">
-      {/* 1. FOTO EM DESTAQUE (CARROSSEL) */}
+      {/* 1. FOTO EM DESTAQUE - VISUAL FIRST */}
       <div className="relative aspect-video w-full bg-black/5 overflow-hidden border-b">
         <Carousel 
           opts={{ loop: true, align: "start" }} 
