@@ -26,7 +26,9 @@ import {
   Activity,
   HeartPulse,
   QrCode,
-  MapPin
+  MapPin,
+  X,
+  Check
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -96,6 +98,7 @@ export default function LandingPage() {
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             <Link href="#modulos" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors">Funcionalidades</Link>
+            <Link href="#comparativo" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors">Comparativo</Link>
             <Button asChild size="sm" className="font-bold h-9">
               <Link href="/">Acessar Painel</Link>
             </Button>
@@ -146,6 +149,66 @@ export default function LandingPage() {
               ))}
             </div>
           </div>
+        </section>
+
+        {/* NEW: Comparativo de Mercado Section */}
+        <section id="comparativo" className="w-full py-24 bg-background border-b overflow-hidden">
+            <div className="container mx-auto px-4">
+                <div className="text-center mb-16 space-y-4">
+                    <h2 className="text-3xl md:text-6xl font-black uppercase italic tracking-tighter text-primary">Por que o Guardian?</h2>
+                    <p className="text-muted-foreground max-w-2xl mx-auto font-medium uppercase text-xs tracking-widest">O comparativo técnico que define a liderança</p>
+                </div>
+
+                <div className="max-w-5xl mx-auto overflow-x-auto rounded-3xl border-2 border-primary/10 shadow-2xl bg-muted/5">
+                    <table className="w-full text-left">
+                        <thead>
+                            <tr className="border-b-2 border-primary/10 bg-primary/5">
+                                <th className="p-6 text-sm font-black uppercase tracking-widest">Recurso Estratégico</th>
+                                <th className="p-6 text-sm font-black uppercase tracking-widest text-muted-foreground/60">Apps Tradicionais</th>
+                                <th className="p-6 text-sm font-black uppercase tracking-widest text-primary italic">Guardian Intelligence</th>
+                            </tr>
+                        </thead>
+                        <tbody className="divide-y divide-primary/5">
+                            <ComparisonRow 
+                                feature="Cadastro de Alunos" 
+                                traditional="Manual e demorado (Erro Humano)" 
+                                guardian="Leitura via OCR Gemini (30 segundos)" 
+                                isWin={true} 
+                            />
+                            <ComparisonRow 
+                                feature="Base de Escolas" 
+                                traditional="Cadastro manual repetitivo" 
+                                guardian="190 mil escolas INEP integradas" 
+                                isWin={true} 
+                            />
+                            <ComparisonRow 
+                                feature="Consumo de Dados/Bateria" 
+                                traditional="Alto (Transmissão contínua)" 
+                                guardian="Delta de Telemetria (-70% de carga)" 
+                                isWin={true} 
+                            />
+                            <ComparisonRow 
+                                feature="Roteirização" 
+                                traditional="Estática ou baseada em experiência" 
+                                guardian="IA Otimizadora (Economia de Diesel)" 
+                                isWin={true} 
+                            />
+                            <ComparisonRow 
+                                feature="Faturamento" 
+                                traditional="Controle em planilhas ou manual" 
+                                guardian="Automático com Pix e Conciliação" 
+                                isWin={true} 
+                            />
+                            <ComparisonRow 
+                                feature="Segurança de Bordo" 
+                                traditional="Nenhuma ou lista de papel" 
+                                guardian="Alertas Médicos Críticos e Foto Aluno" 
+                                isWin={true} 
+                            />
+                        </tbody>
+                    </table>
+                </div>
+            </div>
         </section>
 
         {/* Prova de ROI */}
@@ -280,4 +343,29 @@ function ModuleCard({ icon, title, subtitle, description, images, badge, feature
       </CardContent>
     </Card>
   );
+}
+
+function ComparisonRow({ feature, traditional, guardian, isWin }: { feature: string, traditional: string, guardian: string, isWin: boolean }) {
+    return (
+        <tr className="group hover:bg-primary/5 transition-colors">
+            <td className="p-6">
+                <p className="text-xs font-black uppercase tracking-tight text-foreground">{feature}</p>
+            </td>
+            <td className="p-6">
+                <div className="flex items-center gap-2 text-muted-foreground/60 text-xs font-medium">
+                    <X className="h-3.5 w-3.5" />
+                    <span>{traditional}</span>
+                </div>
+            </td>
+            <td className="p-6">
+                <div className={cn(
+                    "flex items-center gap-2 text-xs font-bold",
+                    isWin ? "text-primary" : "text-foreground"
+                )}>
+                    <Check className="h-4 w-4" />
+                    <span>{guardian}</span>
+                </div>
+            </td>
+        </tr>
+    );
 }

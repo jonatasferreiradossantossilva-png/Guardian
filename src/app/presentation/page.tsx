@@ -30,7 +30,8 @@ import {
     Activity,
     HeartPulse,
     FileText,
-    Milestone
+    Milestone,
+    X
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -174,15 +175,44 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* 5. BENEFÍCIOS */}
+            {/* 5. DIFERENCIAL E MERCADO (NEW) */}
             <Slide className="bg-primary/[0.03]">
                 <Badge className="mb-12 bg-primary/10 text-primary font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px] border border-primary/20">
-                    05. Vantagens Competitivas
+                    05. Superioridade Guardian
                 </Badge>
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
-                    <BenefitSection title="Para os Pais" icon={<Users className="text-primary" />} items={["Segurança Jurídica", "Fim da ansiedade (Mapa)", "Previsão exata de chegada", "Pagamento facilitado"]} />
-                    <BenefitSection title="Para o Motorista" icon={<Car className="text-primary" />} items={["Economia real de combustível", "Check-in sem papel", "Gestão de inadimplência", "Rota inteligente"]} />
-                    <BenefitSection title="Para a Escola" icon={<School className="text-primary" />} items={["Controle do fluxo no pátio", "Auditoria da frota", "Diferencial tecnológico", "Certificação de segurança"]} />
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 w-full">
+                    <div className="space-y-8">
+                        <h3 className="text-3xl font-black uppercase italic tracking-tighter">O Fim das <span className="text-primary">Soluções Genéricas.</span></h3>
+                        <div className="space-y-4">
+                            <ComparisonPoint 
+                                title="Engenharia de Custo Zero" 
+                                desc="Enquanto concorrentes pagam fortunas ao Google Maps, usamos Mapas Híbridos e Haversine local para escalar com margem de lucro recorde."
+                            />
+                            <ComparisonPoint 
+                                title="Triagem via OCR Gemini" 
+                                desc="Eliminamos a digitação. Pais cadastram filhos em 30s. Líderes de mercado ainda dependem de formulários manuais extensos."
+                            />
+                            <ComparisonPoint 
+                                title="Telemetria por Delta" 
+                                desc="Nossa lógica economiza 70% de bateria e tráfego de dados no celular do motorista comparado aos apps convencionais."
+                            />
+                        </div>
+                    </div>
+                    <div className="bg-background rounded-3xl border-2 border-primary/20 shadow-2xl p-8 space-y-6">
+                        <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Comparativo Direto</p>
+                        <div className="space-y-4">
+                            <ComparisonLine label="Cadastro" traditional="Manual" guardian="OCR Instantâneo" />
+                            <ComparisonLine label="Mapa" traditional="Google Only (Caro)" guardian="Híbrido (Inteligente)" />
+                            <ComparisonLine label="Roteirização" traditional="Estática" guardian="IA Otimizadora (ROI)" />
+                            <ComparisonLine label="Faturamento" traditional="Papel/WhatsApp" guardian="Pix Automático" />
+                        </div>
+                        <div className="pt-4 border-t border-primary/10">
+                            <div className="flex items-center gap-2 text-primary font-black italic">
+                                <TrendingUp className="h-5 w-5" />
+                                <span>+12% de Lucro Real por Van</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </Slide>
 
@@ -256,21 +286,26 @@ function StepItem({ step, icon, title, desc }: { step: string, icon: React.React
     );
 }
 
-function BenefitSection({ title, icon, items }: { title: string, icon: React.ReactNode, items: string[] }) {
+function ComparisonPoint({ title, desc }: { title: string, desc: string }) {
     return (
-        <Card className="p-6 bg-background rounded-3xl border-2 border-primary/10 shadow-sm space-y-6">
-            <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-lg">{icon}</div>
-                <h3 className="text-lg font-black uppercase italic tracking-tighter">{title}</h3>
+        <div className="flex gap-4">
+            <div className="mt-1 p-1 bg-primary/20 rounded text-primary h-fit"><Check className="h-4 w-4" /></div>
+            <div>
+                <p className="text-sm font-black uppercase italic tracking-tight">{title}</p>
+                <p className="text-xs text-muted-foreground font-medium leading-relaxed">{desc}</p>
             </div>
-            <ul className="space-y-3">
-                {items.map((item, i) => (
-                    <li key={i} className="flex items-center gap-2 text-[11px] font-bold text-muted-foreground">
-                        <Check className="h-3 w-3 text-primary shrink-0" />
-                        {item}
-                    </li>
-                ))}
-            </ul>
-        </Card>
+        </div>
+    );
+}
+
+function ComparisonLine({ label, traditional, guardian }: { label: string, traditional: string, guardian: string }) {
+    return (
+        <div className="space-y-1.5">
+            <p className="text-[9px] font-black uppercase tracking-widest text-muted-foreground">{label}</p>
+            <div className="grid grid-cols-2 gap-4">
+                <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50 line-through"><X className="h-3 w-3" /> {traditional}</div>
+                <div className="flex items-center gap-2 text-[10px] text-primary font-bold"><CheckCircle2 className="h-3 w-3" /> {guardian}</div>
+            </div>
+        </div>
     );
 }
