@@ -52,8 +52,8 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="relative w-full py-20 lg:py-32 overflow-hidden bg-secondary/5 border-b">
-          <div className="container mx-auto px-4 relative z-10">
-            <div className="flex flex-col items-center text-center space-y-8 max-w-4xl mx-auto">
+          <div className="container mx-auto px-4 relative z-10 text-center">
+            <div className="flex flex-col items-center space-y-8 max-w-4xl mx-auto">
               <Badge variant="outline" className="px-4 py-1.5 border-primary/30 text-primary font-black uppercase tracking-[0.3em] text-[10px] bg-primary/5">
                 Inteligência para Transporte Escolar
               </Badge>
@@ -65,7 +65,7 @@ export default function LandingPage() {
               </p>
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full">
                 <Button size="lg" className="w-full sm:w-auto h-16 px-10 text-lg font-black uppercase italic shadow-2xl shadow-primary/20" asChild>
-                  <Link href="/">Começar Agora <ArrowRight className="ml-2 h-5 w-5" /></Link>
+                  <Link href="/">Acessar Plataforma <ArrowRight className="ml-2 h-5 w-5" /></Link>
                 </Button>
                 <Button size="lg" variant="outline" className="w-full sm:w-auto h-16 px-10 text-lg font-black uppercase italic border-2" asChild>
                   <Link href="/presentation">Ver Pitch Deck <ArrowDownRight className="ml-2 h-5 w-5" /></Link>
@@ -78,7 +78,7 @@ export default function LandingPage() {
         </section>
 
         {/* Modules Section: DETALHANDO POR PERFIS */}
-        <section id="modulos" className="w-full py-24 bg-background">
+        <section id="modulos" className="w-full py-24 bg-background border-b">
           <div className="container mx-auto px-4">
             <div className="text-center mb-20 space-y-4">
               <h2 className="text-3xl md:text-6xl font-black uppercase italic tracking-tighter">Uma Plataforma, <span className="text-primary">Quatro Experiências</span></h2>

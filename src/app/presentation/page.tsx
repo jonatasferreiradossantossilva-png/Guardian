@@ -79,7 +79,7 @@ export default function PresentationPage() {
                 </p>
                 <div className="mt-20 flex flex-col items-center gap-2 animate-bounce opacity-40">
                     <p className="text-[10px] font-black uppercase tracking-[0.3em]">Scroll para os módulos</p>
-                    <ArrowDownRight className="h-5 w-5 rotate-45" />
+                    <ArrowDownRight className="h-5 w-5" />
                 </div>
             </Slide>
 
