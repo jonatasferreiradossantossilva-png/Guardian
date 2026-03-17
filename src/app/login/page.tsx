@@ -44,8 +44,8 @@ export default function LandingPage() {
       <main className="flex-1">
         {/* Hero Section */}
         <section className="w-full py-12 md:py-24 lg:py-32 bg-secondary/10">
-          <div className="container mx-auto px-4">
-            <div className="flex flex-col items-center text-center space-y-8 max-w-4xl mx-auto">
+          <div className="container mx-auto px-4 text-center">
+            <div className="flex flex-col items-center space-y-8 max-w-4xl mx-auto">
               <Badge variant="outline" className="px-4 py-1 border-primary/30 text-primary font-black uppercase tracking-widest text-[10px]">
                 Inteligência para Transporte Escolar
               </Badge>
@@ -102,20 +102,20 @@ export default function LandingPage() {
         {/* ROI Showdown */}
         <section className="w-full py-20 bg-primary/[0.02]">
             <div className="container mx-auto px-4">
-                <div className="grid lg:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+                    <div className="space-y-6 text-center lg:text-left">
                         <Badge className="bg-primary text-primary-foreground font-bold">ARQUITETURA FINOPS</Badge>
                         <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-tight">Engenharia de <span className="text-primary">Escala</span></h2>
                         <p className="text-lg text-muted-foreground leading-relaxed">
                             Reduzimos o custo de software a quase zero. Nossa abordagem híbrida de telemetria consome 70% menos recursos, garantindo lucratividade mesmo com frotas gigantes.
                         </p>
-                        <div className="space-y-3">
+                        <div className="space-y-3 inline-block text-left mx-auto lg:mx-0">
                             <BenefitItem text="Cálculo de Proximidade (800m) local via Haversine (Custo Zero)." />
                             <BenefitItem text="Geração de contratos automáticos adaptados à modalidade." />
                             <BenefitItem text="Itinerário otimizado reduzindo distância em até 12%." />
                         </div>
                     </div>
-                    <div className="relative">
+                    <div className="relative w-full max-w-lg mx-auto">
                         <div className="bg-card rounded-2xl p-8 border shadow-2xl overflow-hidden">
                             <div className="flex items-center gap-4 border-b border-dashed pb-6 mb-6">
                                 <div className="p-3 bg-primary/10 rounded-xl text-primary"><Activity size={24} /></div>
@@ -148,8 +148,8 @@ export default function LandingPage() {
         </section>
 
         {/* CTA Final */}
-        <section className="w-full py-24 bg-secondary/5">
-            <div className="container mx-auto text-center px-4">
+        <section className="w-full py-24 bg-secondary/5 text-center">
+            <div className="container mx-auto px-4">
                  <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tighter italic leading-none mb-8">O próximo passo é <span className="text-primary">seu.</span></h2>
                  <p className="max-w-xl mx-auto text-muted-foreground text-lg mb-10">
                     Junte-se à frota que está redefinindo a lucratividade no transporte escolar através de dados reais.
@@ -167,7 +167,9 @@ export default function LandingPage() {
             <Rocket className="h-5 w-5 text-primary" />
             <span className="uppercase italic tracking-tighter">Guardian</span>
           </div>
-          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest">&copy; {new Date().getFullYear()} - Inteligência para Transporte Escolar</p>
+          <p className="text-xs font-medium text-muted-foreground uppercase tracking-widest text-center md:text-left">
+            &copy; {new Date().getFullYear()} - Inteligência para Transporte Escolar
+          </p>
           <div className="flex items-center gap-6">
             <Link href="/presentation" className="text-xs font-bold uppercase hover:text-primary transition-colors">Pitch Deck</Link>
             <Link href="/login" className="text-xs font-bold uppercase hover:text-primary transition-colors">Diferenciais</Link>
@@ -180,7 +182,7 @@ export default function LandingPage() {
 
 function FeatureCard({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) {
     return (
-        <Card className="border-2 bg-background hover:border-primary/40 transition-all group">
+        <Card className="border-2 bg-background hover:border-primary/40 transition-all group h-full">
             <CardHeader>
                 <div className="p-3 bg-secondary rounded-xl w-fit mb-2 group-hover:bg-primary/10 transition-colors">
                     {icon}
