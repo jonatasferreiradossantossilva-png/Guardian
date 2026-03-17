@@ -161,7 +161,7 @@ export default function PresentationPage() {
                  </h2>
                  <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full relative z-10 px-4">
                     <div className="bg-white/5 backdrop-blur-md border border-white/10 p-10 rounded-[2rem] text-center space-y-4">
-                        <p className="text-primary font-black uppercase tracking-[0.3em] text-xs">Busca de Capital</p>
+                        <p className="text-primary font-black uppercase tracking-[0.4em] text-xs">Busca de Capital</p>
                         <p className="text-7xl md:text-9xl font-black tracking-tighter italic">R$ 150k</p>
                         <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Equity: 10%</p>
                     </div>
