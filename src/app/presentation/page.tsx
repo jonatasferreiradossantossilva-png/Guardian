@@ -53,6 +53,7 @@ const ModulePreview = ({ title, role, imageIds }: { title: string, role: string,
     const images = imageIds.map(id => PlaceHolderImages.find(i => i.id === id)).filter(Boolean);
     return (
         <div className="bg-background rounded-2xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-2xl group">
+            {/* FOTO PRIMEIRO (CARROSSEL) */}
             <div className="relative aspect-video w-full bg-black/5 overflow-hidden">
                 <Carousel 
                   opts={{ loop: true, align: "start" }} 
@@ -63,7 +64,7 @@ const ModulePreview = ({ title, role, imageIds }: { title: string, role: string,
                     {images.map((img, index) => (
                       <CarouselItem key={index} className="pl-0 basis-full">
                         <div className="relative aspect-video w-full h-full p-2">
-                          <div className="relative w-full h-full rounded-lg overflow-hidden border bg-background">
+                          <div className="relative w-full h-full rounded-lg overflow-hidden border bg-background shadow-inner">
                             <Image 
                                 src={img?.imageUrl || ""} 
                                 alt={title} 
@@ -78,9 +79,10 @@ const ModulePreview = ({ title, role, imageIds }: { title: string, role: string,
                     ))}
                   </CarouselContent>
                 </Carousel>
-                <Badge className="absolute top-3 right-3 bg-primary font-black uppercase text-[8px] z-10">{role}</Badge>
+                <Badge className="absolute top-3 right-3 bg-primary font-black uppercase text-[8px] z-10 shadow-lg">{role}</Badge>
             </div>
-            <div className="p-4 bg-muted/10">
+            {/* RESUMO DEPOIS */}
+            <div className="p-4 bg-muted/10 border-t">
                 <p className="text-xs font-black uppercase italic tracking-tighter text-primary">{title}</p>
             </div>
         </div>
@@ -153,10 +155,10 @@ export default function PresentationPage() {
             <Slide className="bg-background">
                 <Badge variant="outline" className="mb-12 border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">04. O Produto em Ação</Badge>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-                    <ModulePreview title="Painel de Gestão" role="GESTOR" imageIds={['ob-15-triage', 'ob-10-finance']} />
-                    <ModulePreview title="Navegação GPS" role="DRIVER" imageIds={['ob-16-gps', 'ob-7-address']} />
-                    <ModulePreview title="Checklist de Bordo" role="ASSISTANT" imageIds={['ob-12-health', 'ob-9-class']} />
-                    <ModulePreview title="Tracking Parental" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign']} />
+                    <ModulePreview title="Painel de Gestão" role="GESTOR" imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} />
+                    <ModulePreview title="Navegação GPS" role="DRIVER" imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} />
+                    <ModulePreview title="Checklist de Bordo" role="ASSISTANT" imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} />
+                    <ModulePreview title="Tracking Parental" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-13-done']} />
                 </div>
             </Slide>
 
@@ -208,7 +210,7 @@ export default function PresentationPage() {
     );
 }
 
-function ProblemCard({ icon, title, description }: { icon: React.ReactNode, title: string, description?: string, desc?: string }) {
+function ProblemCard({ icon, title, description, desc }: { icon: React.ReactNode, title: string, description?: string, desc?: string }) {
     return (
         <Card className="border-2 border-destructive/10 bg-background/50 backdrop-blur text-center p-6">
             <div className="mb-4 flex justify-center">{icon}</div>
