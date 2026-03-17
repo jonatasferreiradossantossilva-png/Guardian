@@ -7,17 +7,13 @@ import {
     Database, 
     TrendingDown, 
     Gauge, 
-    ShieldCheck, 
-    Activity, 
-    Smartphone, 
     Zap, 
-    FileText, 
-    School, 
     ArrowDownRight,
     CheckCircle2,
-    Users,
-    MapPinned,
-    Globe
+    Activity,
+    ShieldCheck,
+    Smartphone,
+    Truck
 } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -69,7 +65,7 @@ export default function PresentationPage() {
                     <div className="absolute inset-0 bg-primary/20 blur-[80px] rounded-full" />
                     <Rocket className="w-24 h-24 md:w-32 md:h-32 text-primary relative z-10 drop-shadow-2xl" />
                 </div>
-                <h1 className="text-6xl md:text-[140px] font-black tracking-tighter text-foreground uppercase italic leading-[0.8] text-center">
+                <h1 className="text-5xl md:text-[140px] font-black tracking-tighter text-foreground uppercase italic leading-[0.8] text-center">
                     Guardian
                 </h1>
                 <p className="mt-12 text-xl md:text-4xl text-muted-foreground max-w-4xl text-center font-bold leading-tight">
@@ -86,10 +82,10 @@ export default function PresentationPage() {
                 <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
                     <div className="space-y-8">
                         <Badge variant="destructive" className="font-black tracking-widest px-4 py-1">O GARGALO</Badge>
-                        <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
+                        <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-none text-center lg:text-left">
                             Margens <br/><span className="text-primary">Esmagadas</span>
                         </h2>
-                        <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-tight">
+                        <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-tight text-center lg:text-left">
                             O frotista escolar hoje opera no escuro, perdendo dinheiro com desvios de rota, manutenção tardia e burocracia manual.
                         </p>
                     </div>
@@ -107,7 +103,7 @@ export default function PresentationPage() {
                  <h2 className="text-4xl md:text-7xl font-black text-center mb-16 uppercase italic tracking-tighter leading-none">
                     Unicidade <span className="text-primary">Técnica</span>
                  </h2>
-                 <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
+                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full">
                     <TechCard 
                         icon={<Bot />} 
                         title="OCR Intelligence" 
@@ -149,15 +145,15 @@ export default function PresentationPage() {
                                 <div className="space-y-4">
                                     <div className="flex items-center gap-3">
                                         <div className="h-2 w-2 rounded-full bg-primary" />
-                                        <p className="text-sm font-bold uppercase italic">Faturamento Automático (Pix/Webhook)</p>
+                                        <p className="text-xs md:text-sm font-bold uppercase italic">Faturamento Automático (Pix/Webhook)</p>
                                     </div>
                                     <div className="flex items-center gap-3">
                                         <div className="h-2 w-2 rounded-full bg-primary" />
-                                        <p className="text-sm font-bold uppercase italic">Mural de Avisos em Push</p>
+                                        <p className="text-xs md:text-sm font-bold uppercase italic">Mural de Avisos em Push</p>
                                     </div>
                                     <div className="flex items-center gap-3 opacity-40">
                                         <div className="h-2 w-2 rounded-full bg-muted-foreground" />
-                                        <p className="text-sm font-bold uppercase italic">Seguro por Viagem (Marketplace)</p>
+                                        <p className="text-xs md:text-sm font-bold uppercase italic">Seguro por Viagem (Marketplace)</p>
                                     </div>
                                 </div>
                             </div>
@@ -172,15 +168,15 @@ export default function PresentationPage() {
                  <h2 className="text-5xl md:text-9xl font-black text-center mb-12 uppercase italic tracking-tighter leading-[0.8] relative z-10">
                     The <span className="text-primary">Ask</span>
                  </h2>
-                 <div className="grid md:grid-cols-2 gap-8 w-full relative z-10">
-                    <div className="bg-white/5 backdrop-blur-md border border-white/10 p-10 rounded-[2rem] text-center space-y-4">
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full relative z-10">
+                    <div className="bg-white/5 backdrop-blur-md border border-white/10 p-6 md:p-10 rounded-[2rem] text-center space-y-4">
                         <p className="text-primary font-black uppercase tracking-[0.3em] text-xs">Busca de Capital</p>
-                        <p className="text-7xl md:text-9xl font-black tracking-tighter italic">R$ 150k</p>
+                        <p className="text-6xl md:text-9xl font-black tracking-tighter italic">R$ 150k</p>
                         <p className="text-muted-foreground font-bold uppercase tracking-widest text-sm">Equity: 10%</p>
                     </div>
-                    <div className="bg-primary p-10 rounded-[2rem] text-black flex flex-col justify-center space-y-6">
-                        <h3 className="text-3xl font-black uppercase italic tracking-tighter leading-none">Uso do <br/>Capital</h3>
-                        <div className="space-y-3 font-black uppercase text-xs tracking-tight">
+                    <div className="bg-primary p-6 md:p-10 rounded-[2rem] text-black flex flex-col justify-center space-y-6">
+                        <h3 className="text-2xl md:text-3xl font-black uppercase italic tracking-tighter leading-none">Uso do <br/>Capital</h3>
+                        <div className="space-y-3 font-black uppercase text-[10px] md:text-xs tracking-tight">
                             <div className="flex justify-between border-b border-black/20 pb-2"><span>60% Produto & IA</span><span>Telemetria ROI</span></div>
                             <div className="flex justify-between border-b border-black/20 pb-2"><span>20% Marketing</span><span>Aquisição B2B</span></div>
                             <div className="flex justify-between"><span>20% Operação</span><span>Infra Escalonável</span></div>
@@ -198,7 +194,7 @@ export default function PresentationPage() {
 function StatItem({ label, value }: { label: string, value: string }) {
     return (
         <div className="bg-secondary/20 p-6 rounded-2xl border border-dashed border-primary/20 text-center space-y-1">
-            <p className="text-3xl font-black text-foreground italic">{value}</p>
+            <p className="text-2xl md:text-3xl font-black text-foreground italic">{value}</p>
             <p className="text-[9px] md:text-[10px] font-black uppercase text-muted-foreground tracking-widest">{label}</p>
         </div>
     );

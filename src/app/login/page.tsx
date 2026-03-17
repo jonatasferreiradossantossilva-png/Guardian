@@ -1,40 +1,22 @@
 
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import {
-  CheckCircle,
-  Users,
-  Car,
-  Bot,
-  Shield,
-  DollarSign,
   Rocket,
-  Map,
-  ShieldCheck,
-  Wallet,
-  Briefcase,
-  Target,
-  MessageSquareX,
-  Sparkles,
-  Milestone,
-  User,
-  FileText,
-  QrCode,
-  BellRing,
-  BarChart,
-  Activity,
-  Gauge,
-  HeartPulse,
-  MapPinned,
-  TrendingDown,
-  ExternalLink,
+  Bot,
   Database,
+  TrendingDown,
+  Gauge,
   Zap,
   ArrowDownRight,
+  CheckCircle,
+  Activity,
+  ShieldCheck,
+  Smartphone,
+  ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
-import Image from 'next/image';
 
 export default function LandingPage() {
   return (
@@ -91,7 +73,7 @@ export default function LandingPage() {
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16 space-y-4">
                     <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">Vantagem <span className="text-primary">Competitiva</span></h2>
-                    <p className="text-muted-foreground max-w-2xl mx-auto font-medium">Tecnologia proprietária desenhada para eliminar a burocracia e maximizar a margem de lucro.</p>
+                    <p className="text-muted-foreground max-w-2xl mx-auto font-medium text-sm md:text-base">Tecnologia proprietária desenhada para eliminar a burocracia e maximizar a margem de lucro.</p>
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     <FeatureCard 
@@ -147,12 +129,12 @@ export default function LandingPage() {
                                 </div>
                             </div>
                             <div className="space-y-6">
-                                <div className="flex justify-between items-end border-b pb-4">
+                                <div className="flex flex-col sm:flex-row justify-between items-end border-b pb-4 gap-4">
                                     <div className="space-y-1">
                                         <p className="text-xs text-muted-foreground uppercase font-bold">KM Planejado (IA)</p>
                                         <p className="text-3xl font-black tabular-nums tracking-tighter">42.4 km</p>
                                     </div>
-                                    <ArrowDownRight className="text-muted-foreground opacity-20 mb-1" />
+                                    <ArrowDownRight className="text-muted-foreground opacity-20 mb-1 hidden sm:block" />
                                     <div className="space-y-1 text-right">
                                         <p className="text-xs text-muted-foreground uppercase font-bold">KM Real (GPS)</p>
                                         <p className="text-3xl font-black tabular-nums tracking-tighter text-green-500">38.1 km</p>
@@ -160,7 +142,7 @@ export default function LandingPage() {
                                 </div>
                                 <div className="pt-4 text-center">
                                     <p className="text-xs font-black text-green-600 uppercase tracking-widest mb-2">Impacto Financeiro Direto</p>
-                                    <p className="text-5xl font-black tracking-tighter italic">R$ 24,94 <span className="text-xl text-muted-foreground not-italic">/viagem</span></p>
+                                    <p className="text-4xl md:text-5xl font-black tracking-tighter italic">R$ 24,94 <span className="text-xl text-muted-foreground not-italic">/viagem</span></p>
                                 </div>
                             </div>
                         </div>
@@ -173,11 +155,11 @@ export default function LandingPage() {
         <section className="w-full py-32 bg-secondary/5 relative overflow-hidden">
             <div className="container mx-auto text-center px-4">
                  <h2 className="text-5xl sm:text-7xl font-black uppercase tracking-tighter italic leading-none mb-8">O próximo passo é <span className="text-primary">seu</span>.</h2>
-                 <p className="mt-4 max-w-2xl mx-auto text-muted-foreground text-xl mb-12 font-medium">
+                 <p className="mt-4 max-w-2xl mx-auto text-muted-foreground text-lg md:text-xl mb-12 font-medium">
                     Junte-se à frota que está redefinindo a lucratividade no transporte escolar brasileiro através de dados reais.
                 </p>
                 <div className="flex flex-col sm:flex-row justify-center gap-4">
-                    <Button asChild size="lg" className="h-16 px-12 text-xl font-black uppercase italic shadow-2xl shadow-primary/30">
+                    <Button asChild size="lg" className="h-16 px-12 text-xl font-black uppercase italic shadow-2xl shadow-primary/30 w-full sm:w-auto">
                         <Link href="/">Começar Agora</Link>
                     </Button>
                 </div>
@@ -191,7 +173,7 @@ export default function LandingPage() {
             <Rocket className="h-5 w-5 text-primary" />
             <span className="uppercase italic tracking-tighter">Guardian</span>
           </div>
-          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest">&copy; {new Date().getFullYear()} - Inteligência p/ Transporte Escolar</p>
+          <p className="text-xs font-bold text-muted-foreground uppercase tracking-widest text-center md:text-left">&copy; {new Date().getFullYear()} - Inteligência p/ Transporte Escolar</p>
           <div className="flex items-center gap-6">
             <Link href="/presentation" className="text-xs font-black uppercase hover:text-primary transition-colors">Pitch Deck</Link>
             <Link href="/login" className="text-xs font-black uppercase hover:text-primary transition-colors">Sobre</Link>
@@ -225,7 +207,7 @@ function BenefitItem({ text }: { text: string }) {
     return (
         <div className="flex items-center gap-3 p-4 rounded-xl bg-background border hover:border-primary/30 transition-colors">
             <CheckCircle className="text-green-500 h-5 w-5 shrink-0" />
-            <span className="font-bold text-sm uppercase tracking-tight">{text}</span>
+            <span className="font-bold text-[10px] md:text-sm uppercase tracking-tight">{text}</span>
         </div>
     );
 }
