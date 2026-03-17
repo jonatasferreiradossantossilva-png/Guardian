@@ -43,137 +43,108 @@ export default function LandingPage() {
         <div className="container flex h-14 max-w-screen-2xl items-center justify-between px-4 mx-auto">
           <Link href="/login" className="flex items-center gap-2 font-bold">
             <Rocket className="h-6 w-6 text-primary" />
-            <span>Guardian</span>
+            <span className="uppercase italic tracking-tighter">Guardian</span>
           </Link>
           <nav className="hidden items-center gap-4 md:flex">
             <Button variant="ghost" asChild>
               <Link href="#problema">O Problema</Link>
             </Button>
             <Button variant="ghost" asChild>
-              <Link href="#features">Funcionalidades</Link>
-            </Button>
-            <Button variant="ghost" asChild>
               <Link href="#diferenciais">Diferenciais</Link>
             </Button>
+            <Button variant="ghost" asChild>
+              <Link href="/presentation" className="text-primary font-bold">Pitch Deck (Investidores)</Link>
+            </Button>
             <Button asChild>
-              <Link href="/">Entrar</Link>
+              <Link href="/">Acessar Plataforma</Link>
             </Button>
           </nav>
-           <Button variant="ghost" className="md:hidden" asChild>
+           <Button variant="ghost" className="md:hidden font-bold" asChild>
               <Link href="/">Entrar</Link>
             </Button>
         </div>
       </header>
 
       <main className="flex-1">
-        {/* Hero Section */}
-        <section className="w-full py-20 md:py-32 lg:py-40 bg-secondary/50">
-          <div className="container mx-auto text-center px-4">
-            <h1 className="text-4xl font-extrabold tracking-tighter sm:text-5xl md:text-6xl lg:text-7xl">
-              A jornada do seu filho, <span className="text-primary">protegida e otimizada.</span>
+        {/* Hero Section - Foco em Inteligência e ROI */}
+        <section className="w-full py-24 md:py-32 lg:py-48 bg-secondary/30 relative overflow-hidden">
+          <div className="absolute inset-0 bg-[grid-line] opacity-10" />
+          <div className="container mx-auto text-center px-4 relative z-10">
+            <Badge className="mb-6 bg-primary/10 text-primary border-primary/20 font-black tracking-[0.2em] px-4 py-1">A PRIMEIRA IA PARA TRANSPORTE ESCOLAR</Badge>
+            <h1 className="text-5xl font-black tracking-tighter sm:text-6xl md:text-7xl lg:text-8xl uppercase italic leading-none">
+              A era do <span className="text-primary">rastreio passivo</span> acabou.
             </h1>
-            <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground md:text-xl">
-              A primeira plataforma de inteligência operacional com Big Data de escolas. Reduza custos, aumente a segurança e tenha o controle total da sua frota com setup instantâneo via IA.
+            <p className="mx-auto mt-8 max-w-3xl text-xl text-muted-foreground md:text-2xl font-medium leading-relaxed">
+              Bem-vindo ao Guardian. Inteligência operacional que prova seu ROI através de telemetria de alta precisão e automação total de back-office.
             </p>
-            <div className="mt-8 flex flex-wrap justify-center gap-4">
-              <Button size="lg" asChild>
-                <Link href="/">Agendar uma Demonstração</Link>
+            <div className="mt-12 flex flex-wrap justify-center gap-4">
+              <Button size="lg" className="h-16 px-10 text-lg font-black uppercase italic shadow-xl shadow-primary/20" asChild>
+                <Link href="/">Entrar no Sistema</Link>
               </Button>
-              <Button size="lg" variant="outline" asChild>
-                <Link href="/presentation">Ver Pitch Deck</Link>
+              <Button size="lg" variant="outline" className="h-16 px-10 text-lg font-black uppercase italic border-2" asChild>
+                <Link href="/presentation">Ver Pitch Deck <ArrowDownRight className="ml-2" /></Link>
               </Button>
             </div>
           </div>
         </section>
 
-        {/* The Problem Section */}
-        <section id="problema" className="w-full py-20 md:py-28">
+        {/* Diferenciais Únicos - Por que investir? */}
+        <section id="diferenciais" className="w-full py-24 bg-primary/5">
             <div className="container mx-auto px-4">
-                <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl uppercase tracking-tighter italic">Sua Operação Está Vazando Dinheiro e Segurança</h2>
-                <p className="mt-4 max-w-3xl mx-auto text-center text-muted-foreground md:text-lg">
-                    Troque o "achismo" por dados reais. Nós monitoramos cada quilômetro e cada alerta de saúde para garantir uma operação lucrativa e segura.
-                </p>
-                <div className="mt-12 grid md:grid-cols-3 gap-8">
-                    <StatCard 
-                        icon={<Activity size={32} />} 
-                        title="Fuga de Rota" 
-                        value="Redução de 14%"
-                        description="Identificamos desvios e rotas ineficientes comparando o planejado com o real via telemetria GPS."
-                    />
-                    <StatCard 
-                        icon={<Gauge size={32} />} 
-                        title="Custo de Manutenção" 
-                        value="-25% em oficina"
-                        description="Nossa manutenção preditiva baseada no KM real evita quebras catastróficas e paradas não planejadas."
-                    />
-                    <StatCard 
-                        icon={<HeartPulse size={32} />} 
-                        title="Risco de Saúde" 
-                        value="Prevenção Ativa"
-                        description="Alertas médicos pulsantes no embarque garantem que condições críticas nunca sejam esquecidas pela equipe."
-                    />
-                </div>
-            </div>
-        </section>
-
-        {/* Comparison Section (The Differentiator) */}
-        <section className="w-full py-20 bg-primary/5">
-            <div className="container mx-auto px-4">
-                <div className="grid md:grid-cols-2 gap-12 items-center">
+                <div className="grid md:grid-cols-2 gap-16 items-center">
                     <div>
-                        <Badge className="mb-4 bg-primary text-primary-foreground">Diferencial de Mercado</Badge>
-                        <h2 className="text-3xl font-bold mb-6">Por que o Guardian é único?</h2>
-                        <div className="space-y-6">
-                            <div className="flex gap-4">
-                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><Database className="text-primary"/></div>
+                        <Badge className="mb-4 bg-primary text-primary-foreground font-bold">ÚNICO NO MERCADO</Badge>
+                        <h2 className="text-4xl font-black mb-8 uppercase italic tracking-tighter leading-none">Por que o Guardian é um <span className="text-primary">investimento imbatível</span>?</h2>
+                        <div className="space-y-8">
+                            <div className="flex gap-5">
+                                <div className="bg-primary/10 p-4 rounded-2xl h-fit border border-primary/20 shadow-sm"><Database className="text-primary h-6 w-6"/></div>
                                 <div>
-                                    <h4 className="font-bold">Base Nacional de Escolas</h4>
-                                    <p className="text-sm text-muted-foreground">Possuímos uma base proprietária de 190.000 escolas ativas. Cadastre instituições instantaneamente sem depender de cadastros manuais.</p>
+                                    <h4 className="font-black uppercase tracking-tight text-lg italic">Base Nacional de 190k Escolas</h4>
+                                    <p className="text-muted-foreground leading-relaxed font-medium">Nossa maior barreira de entrada. Um banco de dados proprietário que elimina a digitação manual e garante rotas perfeitas desde o dia 1.</p>
                                 </div>
                             </div>
-                            <div className="flex gap-4">
-                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><Zap className="text-primary"/></div>
+                            <div className="flex gap-5">
+                                <div className="bg-primary/10 p-4 rounded-2xl h-fit border border-primary/20 shadow-sm"><Zap className="text-primary h-6 w-6"/></div>
                                 <div>
-                                    <h4 className="font-bold">Onboarding via IA (OCR)</h4>
-                                    <p className="text-sm text-muted-foreground">O pai faz o trabalho via leitura automática de documentos e link público. Eliminamos a burocracia do cadastro tradicional.</p>
+                                    <h4 className="font-black uppercase tracking-tight text-lg italic">Onboarding Automatizado via OCR</h4>
+                                    <p className="text-muted-foreground leading-relaxed font-medium">O pai faz o cadastro via IA. Reduzimos o custo de aquisição de clientes e eliminamos erros de burocracia documental.</p>
                                 </div>
                             </div>
-                            <div className="flex gap-4">
-                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><Milestone className="text-primary"/></div>
+                            <div className="flex gap-5">
+                                <div className="bg-primary/10 p-4 rounded-2xl h-fit border border-primary/20 shadow-sm"><Activity className="text-primary h-6 w-6"/></div>
                                 <div>
-                                    <h4 className="font-bold">Modalidades Flexíveis</h4>
-                                    <p className="text-sm text-muted-foreground">Suporte nativo para "Só Ida" ou "Só Volta". Maximize a ocupação do veículo atendendo pais com diferentes necessidades.</p>
+                                    <h4 className="font-black uppercase tracking-tight text-lg italic">Prova de ROI em Tempo Real</h4>
+                                    <p className="text-muted-foreground leading-relaxed font-medium">Mostramos exatamente quanto combustível foi economizado comparando o planejado com o real capturado pelo GPS.</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                    <Card className="border-primary/20 shadow-2xl overflow-hidden bg-background">
-                        <CardHeader className="bg-secondary/50 border-b">
+                    <Card className="border-4 border-primary/30 shadow-2xl overflow-hidden bg-background rounded-[2.5rem]">
+                        <CardHeader className="bg-secondary/50 border-b p-8">
                             <div className="flex justify-between items-center">
-                                <CardTitle className="text-lg flex items-center gap-2">
-                                    <Activity className="h-5 w-5 text-primary" />
-                                    Painel de Performance (ROI)
+                                <CardTitle className="text-xl font-black uppercase italic tracking-tight flex items-center gap-2">
+                                    <Activity className="h-6 w-6 text-primary" />
+                                    Painel de Performance (Live)
                                 </CardTitle>
-                                <Badge variant="outline" className="animate-pulse border-primary text-primary font-bold">LIVE</Badge>
+                                <Badge variant="outline" className="animate-pulse border-primary text-primary font-black px-3">INVESTOR VIEW</Badge>
                             </div>
-                            <CardDescription>Comparativo real de economia de combustível</CardDescription>
                         </CardHeader>
-                        <CardContent className="p-6 space-y-6">
-                            <div className="flex items-center justify-between border-b border-dashed pb-4">
+                        <CardContent className="p-10 space-y-8">
+                            <div className="flex items-center justify-between border-b-2 border-dashed pb-8">
                                 <div>
-                                    <p className="text-3xl font-black text-green-500">-14.2%</p>
-                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Gasto de Combustível</p>
+                                    <p className="text-5xl font-black text-green-500 tracking-tighter">-14.2%</p>
+                                    <p className="text-[11px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-1">Custos Operacionais</p>
                                 </div>
                                 <div className="text-right">
-                                    <p className="text-3xl font-black text-primary">96.5%</p>
-                                    <p className="text-[10px] uppercase font-bold text-muted-foreground tracking-widest">Adesão à Rota IA</p>
+                                    <p className="text-5xl font-black text-primary tracking-tighter">96.5%</p>
+                                    <p className="text-[11px] uppercase font-black text-muted-foreground tracking-[0.2em] mt-1">Conformidade GPS</p>
                                 </div>
                             </div>
-                            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10 relative">
-                                <Sparkles className="absolute right-2 top-2 h-4 w-4 text-primary/40" />
-                                <p className="text-[10px] font-black uppercase text-primary mb-1">Decisão da Inteligência</p>
-                                <p className="text-xs text-muted-foreground italic leading-relaxed">
-                                    "O aluno Enzo Pereira comunicou ausência via App. Recalculando rota... Economia estimada: 1.2km neste trajeto."
+                            <div className="p-6 bg-primary/5 rounded-2xl border-2 border-primary/10 relative shadow-inner">
+                                <Sparkles className="absolute right-4 top-4 h-6 w-6 text-primary/40" />
+                                <p className="text-[11px] font-black uppercase text-primary mb-2 tracking-widest">Algoritmo Guardian</p>
+                                <p className="text-sm text-foreground/80 italic leading-relaxed font-medium">
+                                    "Identificada economia de 1.4km na Rota Sul através do redimensionamento dinâmico após aviso de falta via App. <span className="text-primary font-bold">ROI: R$ 8,12 economizados nesta viagem.</span>"
                                 </p>
                             </div>
                         </CardContent>
@@ -182,80 +153,29 @@ export default function LandingPage() {
             </div>
         </section>
 
-        {/* Features Section */}
-        <section id="features" className="w-full py-20 md:py-28">
-          <div className="container mx-auto px-4">
-            <h2 className="text-3xl font-bold text-center sm:text-4xl md:text-5xl uppercase tracking-tighter italic mb-12">
-              Inteligência Completa em Todas as Pontas
-            </h2>
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {/* Feature Card: Gestor */}
-              <Card className="flex flex-col border-primary/20 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3"><BarChart className="text-primary"/>Painel do Gestor (ROI)</CardTitle>
-                  <CardDescription>Dados estratégicos para quem decide o futuro da empresa.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 justify-between space-y-4">
-                  <div className="relative aspect-video rounded-md overflow-hidden border">
-                     <Image src="https://picsum.photos/seed/analytics-ui/600/400" alt="Dashboard ROI" fill style={{ objectFit: 'cover' }} data-ai-hint="dashboard data" />
-                  </div>
-                  <div className="space-y-4 pt-4">
-                    <FeatureItem icon={Activity} title="Analytics Planejado vs. Real" description="Veja exatamente onde sua van economizou quilometragem em relação ao planejado pela IA." />
-                    <FeatureItem icon={Database} title="Base Nacional de Escolas" description="Cadastro rápido de instituições através de nossa inteligência de dados regionalizada." />
-                    <FeatureItem icon={DollarSign} title="Faturamento Automatizado" description="Geração de faturas e lembretes inteligentes via WhatsApp com confirmação instantânea." />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Feature Card: Motorista & Monitor */}
-              <Card className="flex flex-col border-primary/20 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3"><Car className="text-primary"/>App da Equipe de Bordo</CardTitle>
-                  <CardDescription>Segurança total e facilidade operacional no dia a dia.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 justify-between space-y-4">
-                  <div className="relative aspect-video rounded-md overflow-hidden border">
-                     <Image src="https://picsum.photos/seed/crew-app/600/400" alt="App Equipe" fill style={{ objectFit: 'cover' }} data-ai-hint="mobile app interface" />
-                  </div>
-                  <div className="space-y-4 pt-4">
-                    <FeatureItem icon={HeartPulse} title="Alertas Médicos Pulsantes" description="Identificação visual imediata de alunos com alergias ou necessidades especiais no momento do embarque." />
-                    <FeatureItem icon={QrCode} title="Check-in por QR Code" description="Validação visual com foto do aluno e registro de posição GPS, garantindo conformidade e segurança." />
-                    <FeatureItem icon={ShieldCheck} title="Modo Offline Inteligente" description="Funcionamento total sem internet, com sincronização automática de dados de telemetria e presenças." />
-                  </div>
-                </CardContent>
-              </Card>
-
-              {/* Feature Card: Pais */}
-              <Card className="flex flex-col border-primary/20 shadow-lg hover:shadow-primary/20 hover:scale-[1.02] transition-all duration-300">
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-3"><Users className="text-primary"/>App dos Pais</CardTitle>
-                  <CardDescription>Tranquilidade total com a jornada do filho.</CardDescription>
-                </CardHeader>
-                <CardContent className="flex flex-col flex-1 justify-between space-y-4">
-                   <div className="relative aspect-video rounded-md overflow-hidden border">
-                     <Image src="https://picsum.photos/seed/parent-app/600/400" alt="App Pais" fill style={{ objectFit: 'cover' }} data-ai-hint="tracking app" />
-                  </div>
-                  <div className="space-y-4 pt-4">
-                    <FeatureItem icon={Map} title="Tracking de Alta Precisão" description="Acompanhe a van no mapa com atualizações fluidas e previsão de chegada inteligente." />
-                    <FeatureItem icon={BellRing} title="Alerta de Proximidade (800m)" description="Notificação push automática apenas quando a van entra no raio crítico da sua residência." />
-                    <FeatureItem icon={FileText} title="Contratos & Multi-filhos" description="Visualize e aceite contratos digitalmente. Gerencie a jornada de todos os filhos em uma única tela." />
-                  </div>
-                </CardContent>
-              </Card>
+        {/* Seção Problema - Curto e Direto */}
+        <section id="problema" className="w-full py-24 border-t">
+            <div className="container mx-auto px-4 text-center">
+                <h2 className="text-4xl font-black mb-16 uppercase italic tracking-tighter">O Custo da <span className="text-destructive">Ineficiência</span></h2>
+                <div className="grid md:grid-cols-3 gap-12">
+                    <StatCardSmall icon={<TrendingDown className="h-10 w-10 text-red-500" />} title="Desvio de Rota" description="Vans rodando quilômetros extras desnecessários sem supervisão centralizada." />
+                    <StatCardSmall icon={<Gauge className="h-10 w-10 text-orange-500" />} title="Manutenção Reativa" description="Consertos emergenciais custam 40% mais que a prevenção via telemetria." />
+                    <StatCardSmall icon={<HeartPulse className="h-10 w-10 text-primary" />} title="Risco de Saúde" description="Monitoramento de alergias e condições críticas que previne incidentes graves." />
+                </div>
             </div>
-          </div>
         </section>
 
-        {/* CTA Section */}
-        <section id="cta" className="w-full py-20 md:py-28 bg-primary/5">
+        {/* CTA Section Final */}
+        <section className="w-full py-32 bg-background relative overflow-hidden">
+            <div className="absolute inset-0 bg-primary/5 -z-10" />
             <div className="container mx-auto text-center px-4">
-                 <h2 className="text-3xl font-bold sm:text-4xl md:text-5xl uppercase tracking-tighter italic">Leve sua frota para a era dos dados</h2>
-                 <p className="mt-4 max-w-xl mx-auto text-muted-foreground md:text-lg mb-8">
-                    Agende uma demonstração e veja como a nossa inteligência operacional pode transformar seus custos em lucro comprovado.
+                 <h2 className="text-5xl font-black sm:text-6xl uppercase tracking-tighter italic leading-none mb-8">Vamos liderar essa <span className="text-primary">transformação</span>?</h2>
+                 <p className="mt-4 max-w-2xl mx-auto text-muted-foreground text-xl mb-12 font-medium">
+                    A primeira plataforma de gestão que coloca o dinheiro de volta no bolso do frotista através de dados reais.
                 </p>
-                <div className="flex justify-center">
-                    <Button asChild size="lg" className="h-14 px-12 text-lg font-bold">
-                        <Link href="/">Agendar Demonstração Gratuita</Link>
+                <div className="flex justify-center gap-4">
+                    <Button asChild size="lg" className="h-16 px-12 text-xl font-black uppercase italic shadow-2xl shadow-primary/20">
+                        <Link href="/">Entrar no Sistema</Link>
                     </Button>
                 </div>
             </div>
@@ -264,12 +184,12 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="w-full border-t px-4">
-        <div className="container mx-auto py-6 flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground gap-4">
-          <p>&copy; {new Date().getFullYear()} Guardian. Todos os direitos reservados.</p>
-          <div className="flex items-center gap-2">
-            <Rocket className="h-4 w-4 text-primary" />
-            <span className="font-bold uppercase italic text-[10px]">Inteligência Operacional para Transporte</span>
+      <footer className="w-full border-t px-4 bg-muted/30">
+        <div className="container mx-auto py-10 flex flex-col sm:flex-row justify-between items-center text-sm text-muted-foreground gap-6">
+          <p className="font-bold">&copy; {new Date().getFullYear()} Guardian. Direitos Reservados.</p>
+          <div className="flex items-center gap-3">
+            <Rocket className="h-5 w-5 text-primary" />
+            <span className="font-black uppercase italic text-[11px] tracking-widest text-primary">Inteligência Operacional p/ Transporte Escolar</span>
           </div>
         </div>
       </footer>
@@ -277,25 +197,10 @@ export default function LandingPage() {
   );
 }
 
-const FeatureItem = ({ icon: Icon, title, description }: { icon: React.ElementType, title: string, description: string }) => (
-  <div className="flex items-start gap-4 text-left">
-    <div className="bg-primary/10 p-2 rounded-lg shrink-0">
-        <Icon className="h-5 w-5 text-primary" />
-    </div>
-    <div>
-        <h4 className="font-semibold text-foreground">{title}</h4>
-        <p className="text-xs text-muted-foreground leading-relaxed">{description}</p>
-    </div>
-  </div>
-);
-
-const StatCard = ({ icon, title, value, description }: { icon: React.ReactNode, title: string, value: string, description: string }) => (
-    <div className="bg-background/50 rounded-xl p-6 border border-primary/20 backdrop-blur-sm h-full flex flex-col items-center text-center hover:bg-secondary/50 transition-colors">
-        <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary border-2 border-primary/20 mb-4">
-            {icon}
-        </div>
-        <h3 className="text-lg font-semibold text-foreground">{title}</h3>
-        <p className="text-4xl font-bold text-primary my-2">{value}</p>
-        <p className="text-sm text-muted-foreground">{description}</p>
+const StatCardSmall = ({ icon, title, description }: { icon: React.ReactNode, title: string, description: string }) => (
+    <div className="space-y-4">
+        <div className="mx-auto bg-muted/50 p-5 rounded-full w-fit border-2 border-border/50">{icon}</div>
+        <h3 className="text-xl font-black uppercase italic tracking-tighter">{title}</h3>
+        <p className="text-muted-foreground font-medium leading-relaxed max-w-xs mx-auto">{description}</p>
     </div>
 );
