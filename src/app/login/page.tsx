@@ -17,6 +17,8 @@ import {
   TrendingDown,
   Gauge,
   Zap,
+  HelpCircle,
+  ExternalLink
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -285,3 +287,4 @@ function TechMiniCard({ icon, title, description }: { icon: React.ReactNode, tit
     </div>
   );
 }
+    
