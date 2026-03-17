@@ -45,9 +45,8 @@ export function DemoOrchestrator() {
         setTimeout(() => {
             const timestamp = Date.now();
             
-            // Validação Financeira Real: Criar dado dinâmico para evitar erro de chaves duplicadas
+            // Validação Financeira Real
             addDoc('invoices', {
-                id: `audit-inv-${timestamp}`,
                 studentId: 'student-1',
                 parentUserId: 'user-pai-1',
                 description: "Auditoria de Integridade Operacional",
