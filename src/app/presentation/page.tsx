@@ -4,7 +4,6 @@
 import { 
     Rocket, 
     AlertTriangle, 
-    Clock, 
     MessageSquare, 
     ShieldCheck, 
     LocateFixed, 
@@ -18,12 +17,9 @@ import {
     School, 
     Car, 
     Users, 
-    Smartphone,
-    ArrowDownRight,
-    ArrowLeft,
-    ChevronRight,
+    ArrowLeft, 
+    ChevronRight, 
     Sparkles,
-    Shield,
     Check,
     BarChart3,
     QrCode,
@@ -31,7 +27,8 @@ import {
     HeartPulse,
     FileText,
     Milestone,
-    X
+    X,
+    ArrowDownRight
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -123,7 +120,7 @@ export default function PresentationPage() {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full">
                     <ProblemCard icon={<AlertTriangle className="text-destructive" />} title="Incerteza dos Pais" description="Onde está meu filho? A falta de rastro gera ansiedade e centenas de mensagens de WhatsApp que o motorista não pode ler." />
                     <ProblemCard icon={<MessageSquare className="text-destructive" />} title="Caos Logístico" description="Avisos de faltas tardios resultam em rotas ineficientes e desperdício de combustível todos os dias." />
-                    <ProblemCard icon={<Shield className="text-destructive" />} title="Insegurança Jurídica" description="Sem registros digitais de embarque e desembarque, o transportador fica vulnerável a contestações e incidentes." />
+                    <ProblemCard icon={<ShieldCheck className="text-destructive" />} title="Insegurança Jurídica" description="Sem registros digitais de embarque e desembarque, o transportador fica vulnerável a contestações e incidentes." />
                 </div>
                 <div className="mt-16 animate-bounce opacity-40">
                     <ChevronRight className="h-8 w-8 rotate-90" />
