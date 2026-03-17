@@ -164,17 +164,17 @@ export default function PresentationPage() {
                         <div className="space-y-3">
                             <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Provamos a economia real de combustível (ROI)." />
                             <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Base Proprietária de 190k escolas (Custo Zero)." />
-                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Onboarding em 17 passos (Link Público + OCR)." />
+                            <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Onboarding Inteligente (Link Público + OCR)." />
                             <MarketComparisonItem icon={<CheckCircle className="text-primary" />} text="Alertas médicos pulsantes no terminal de bordo." />
                         </div>
                     </div>
                 </div>
             </Slide>
 
-            {/* Slide 5: 17-Step Zero Friction Journey */}
+            {/* Slide 5: Onboarding Express */}
             <Slide>
                  <Badge className="mb-4 bg-primary text-primary-foreground font-black tracking-widest">O GRANDE DIFERENCIAL COMERCIAL</Badge>
-                 <h2 className="text-4xl md:text-5xl font-black text-center mb-12 uppercase italic tracking-tighter">Onboarding Express: Do Convite ao Contrato</h2>
+                 <h2 className="text-4xl md:text-5xl font-black text-center mb-12 uppercase italic tracking-tighter">Onboarding Inteligente: Do Convite ao Contrato</h2>
                  <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 w-full">
                     <ProcessStep icon={<Smartphone />} label="Convite WhatsApp" />
                     <ProcessStep icon={<Sparkles />} label="Leitura via IA" />
@@ -184,8 +184,7 @@ export default function PresentationPage() {
                     <ProcessStep icon={<FileText />} label="Contrato Digital" />
                  </div>
                  <p className="mt-12 text-center text-xl text-muted-foreground max-w-4xl font-medium">
-                    Reduzimos o tempo de onboarding de <strong>45 minutos para 2 minutos</strong>. 
-                    O pai faz o trabalho pesado via Inteligência Artificial, e o gestor apenas valida a rota otimizada.
+                    O pai faz o trabalho pesado via Inteligência Artificial (OCR), validando endereços e aceitando contratos em segundos. O gestor apenas valida e inicia a operação.
                  </p>
             </Slide>
 
@@ -289,14 +288,14 @@ export default function PresentationPage() {
     );
 }
 
-const MarketComparisonItem = ({ icon, text, isNegative }: { icon: React.ReactNode, text: string, isNegative?: boolean }) => (
+const MarketComparisonItem = ({ icon, text, isNegative }: { icon: React.Node, text: string, isNegative?: boolean }) => (
     <div className={`flex items-center gap-3 p-4 rounded-xl border ${isNegative ? 'bg-secondary/30 border-muted' : 'bg-primary/5 border-primary/20 shadow-sm'}`}>
         <div className="shrink-0">{icon}</div>
         <span className="text-sm font-bold text-foreground/80">{text}</span>
     </div>
 );
 
-const ProcessStep = ({ icon, label }: { icon: React.ReactNode, label: string }) => (
+const ProcessStep = ({ icon, label }: { icon: React.Node, label: string }) => (
     <div className="flex flex-col items-center text-center gap-3 p-5 rounded-xl bg-secondary/30 border border-border/50 hover:border-primary/30 transition-colors group">
         <div className="p-4 rounded-full bg-background text-primary shadow-sm group-hover:scale-110 transition-transform">
             {icon}

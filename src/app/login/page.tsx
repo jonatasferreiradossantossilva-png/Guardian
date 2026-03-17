@@ -73,7 +73,7 @@ export default function LandingPage() {
               A jornada do seu filho, <span className="text-primary">protegida e otimizada.</span>
             </h1>
             <p className="mx-auto mt-6 max-w-3xl text-lg text-muted-foreground md:text-xl">
-              A primeira plataforma de inteligência operacional com Big Data de escolas. Reduza custos, aumente a segurança e tenha o controle total da sua frota com setup instantâneo.
+              A primeira plataforma de inteligência operacional com Big Data de escolas. Reduza custos, aumente a segurança e tenha o controle total da sua frota com setup instantâneo via IA.
             </p>
             <div className="mt-8 flex flex-wrap justify-center gap-4">
               <Button size="lg" asChild>
@@ -134,15 +134,15 @@ export default function LandingPage() {
                             <div className="flex gap-4">
                                 <div className="bg-primary/10 p-3 rounded-lg h-fit"><Zap className="text-primary"/></div>
                                 <div>
-                                    <h4 className="font-bold">Onboarding Expresso (17 Passos)</h4>
-                                    <p className="text-sm text-muted-foreground">O pai faz o trabalho via IA (OCR) e link público. Reduzimos o tempo de cadastro de 45 minutos para apenas 2 minutos.</p>
+                                    <h4 className="font-bold">Onboarding via IA (OCR)</h4>
+                                    <p className="text-sm text-muted-foreground">O pai faz o trabalho via leitura automática de documentos e link público. Eliminamos a burocracia do cadastro tradicional.</p>
                                 </div>
                             </div>
                             <div className="flex gap-4">
-                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><ShieldCheck className="text-primary"/></div>
+                                <div className="bg-primary/10 p-3 rounded-lg h-fit"><Milestone className="text-primary"/></div>
                                 <div>
-                                    <h4 className="font-bold">Soberania de Dados & GPS</h4>
-                                    <p className="text-sm text-muted-foreground">Geocodificação validada e alerta de proximidade 800m. Garantimos que a van nunca se perca ou chegue sem aviso.</p>
+                                    <h4 className="font-bold">Modalidades Flexíveis</h4>
+                                    <p className="text-sm text-muted-foreground">Suporte nativo para "Só Ida" ou "Só Volta". Maximize a ocupação do veículo atendendo pais com diferentes necessidades.</p>
                                 </div>
                             </div>
                         </div>
