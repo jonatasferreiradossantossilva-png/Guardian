@@ -45,16 +45,16 @@ const ModuleSlideItem = ({ title, role, imageIds, description }: { title: string
     return (
         <div className="bg-background/40 backdrop-blur-xl rounded-2xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-xl group">
             {/* Visual Presentation First */}
-            <div className="relative aspect-video w-full bg-muted">
+            <div className="relative aspect-video w-full bg-muted overflow-hidden">
                 <Carousel 
-                  opts={{ loop: true }} 
-                  plugins={[Autoplay({ delay: 2500 })]}
+                  opts={{ loop: true, align: "start" }} 
+                  plugins={[Autoplay({ delay: 2500, stopOnInteraction: false })]}
                   className="w-full h-full"
                 >
-                  <CarouselContent>
+                  <CarouselContent className="-ml-0">
                     {images.map((img, index) => (
-                      <CarouselItem key={index}>
-                        <div className="relative aspect-video w-full">
+                      <CarouselItem key={index} className="pl-0 basis-full">
+                        <div className="relative aspect-video w-full h-full">
                           <Image 
                             src={img?.imageUrl || ""} 
                             alt={title} 

@@ -77,7 +77,7 @@ export default function LandingPage() {
         <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 mx-auto">
           <Link href="/login" className="flex items-center gap-2 font-bold group">
             <Rocket className="h-6 w-6 text-primary transition-transform group-hover:scale-110" />
-            <span className="uppercase italic tracking-tighter text-xl">Guardian</span>
+            <span className="uppercase italic tracking-tighter text-xl text-foreground">Guardian</span>
           </Link>
           <nav className="hidden items-center gap-6 md:flex">
             <Link href="#modulos" className="text-xs font-black uppercase tracking-widest hover:text-primary transition-colors">Módulos</Link>
@@ -233,10 +233,10 @@ function ModuleCard({ icon, title, subtitle, description, images, badge }: { ico
           plugins={[Autoplay({ delay: 3000, stopOnInteraction: false })]}
           className="w-full h-full"
         >
-          <CarouselContent>
+          <CarouselContent className="-ml-0">
             {images.map((img, index) => (
-              <CarouselItem key={index}>
-                <div className="relative aspect-video w-full">
+              <CarouselItem key={index} className="pl-0 basis-full">
+                <div className="relative aspect-video w-full h-full">
                   <Image 
                     src={img?.imageUrl || "https://picsum.photos/seed/placeholder/800/450"} 
                     alt={img?.description || title}
