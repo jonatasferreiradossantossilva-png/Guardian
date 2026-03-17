@@ -80,16 +80,16 @@ export default function PresentationPage() {
             {/* Slide 2: O Problema (Visceral) */}
             <Slide className="bg-background">
                 <div className="grid lg:grid-cols-2 gap-12 items-center w-full">
-                    <div className="space-y-8">
+                    <div className="space-y-8 text-center lg:text-left">
                         <Badge variant="destructive" className="font-black tracking-widest px-4 py-1">O GARGALO</Badge>
-                        <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-none text-center lg:text-left">
+                        <h2 className="text-5xl md:text-8xl font-black uppercase italic tracking-tighter leading-none">
                             Margens <br/><span className="text-primary">Esmagadas</span>
                         </h2>
-                        <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-tight text-center lg:text-left">
+                        <p className="text-xl md:text-2xl text-muted-foreground font-medium leading-tight">
                             O frotista escolar hoje opera no escuro, perdendo dinheiro com desvios de rota, manutenção tardia e burocracia manual.
                         </p>
                     </div>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full">
                         <StatItem label="Desperdício Combustível" value="15%" />
                         <StatItem label="Custo Manutenção Reativa" value="+40%" />
                         <StatItem label="Tempo de Cadastro (Dias)" value="2-3" />
