@@ -161,7 +161,7 @@ export default function PresentationPage() {
                     <ModulePreview title="Gestão & Performance" role="GESTOR" imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} features={["ROI de KM", "Triagem OCR", "Faturas Aut.", "Mural Avisos"]} />
                     <ModulePreview title="Navegação Assistida" role="DRIVER" imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} features={["GPS Realtime", "Itinerário IA", "Relato Transito", "Status Rota"]} />
                     <ModulePreview title="Controle de Bordo" role="ASSISTANT" imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} features={["Alertas Saúde", "Check-in QR", "Foto Aluno", "Mensagens Rápidas"]} />
-                    <ModulePreview title="Painel da Família" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-13-done']} features={["Mapa Vivo", "Viagens Avulsas", "Pix Instantâneo", "Contratos"]} />
+                    <ModulePreview title="Painel da Família" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-6-contact', 'ob-13-done']} features={["Mapa Vivo", "Viagens Avulsas", "Pix Instantâneo", "Contratos"]} />
                 </div>
             </Slide>
 
