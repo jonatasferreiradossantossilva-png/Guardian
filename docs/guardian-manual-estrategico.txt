@@ -1,15 +1,25 @@
 
 ================================================================================
-GUARDIAN INTELLIGENCE - MANUAL ESTRATÉGICO E TÉCNICO
+GUARDIAN INTELLIGENCE - REGISTRO HISTÓRICO E MANUAL ESTRATÉGICO
 "A jornada do seu filho, protegida em tempo real."
 ================================================================================
 
-1. RESUMO EXECUTIVO
+1. RESUMO DA EVOLUÇÃO DO PROJETO (HISTÓRICO DA CONVERSA)
 --------------------------------------------------------------------------------
-O Guardian é uma plataforma de inteligência operacional para o ecossistema de 
-transporte escolar. Diferente de rastreadores comuns, o Guardian utiliza IA 
-Generativa e engenharia de baixo custo para maximizar o lucro do transportador 
-e garantir segurança jurídica e física total para os pais e alunos.
+O Guardian nasceu da necessidade de transformar o transporte escolar de um 
+serviço "no escuro" para uma plataforma de inteligência operacional de elite.
+
+MARCOS DA JORNADA:
+- FASE 1 (Fundação): Definição do Tech Stack robusto (Next.js 15, Tailwind, 
+  Firebase) e criação dos perfis de acesso (Gestor, Motorista, Monitor, Pais).
+- FASE 2 (Engenharia de Custo): Implementação de Mapas Híbridos e Haversine 
+  local para escala sem custos abusivos de API.
+- FASE 3 (Inteligência Artificial): Integração do OCR Gemini para cadastro 
+  instantâneo via foto e Algoritmo de Otimização de Rota (TSP).
+- FASE 4 (Refinamento Comercial): Criação do Pitch Deck de 6 telas e Landing 
+  Page focada em ROI, Performance e Faturamento automático via Pix.
+- FASE 5 (Consolidação): Reformulação visual para "Visual First" com carrosséis 
+  automáticos e Battlecard de superioridade técnica contra líderes do mercado.
 
 2. OS 4 PILARES DE ENGENHARIA (DIFERENCIAIS ÚNICOS)
 --------------------------------------------------------------------------------
@@ -29,21 +39,7 @@ D. Mapas Híbridos (FinOps):
    Visualização via Leaflet/OpenStreetMap para escala e Google Maps apenas 
    onde a precisão de satélite é crítica. Redução drástica nos custos de API.
 
-3. ECOSSISTEMA DE MÓDULOS
---------------------------------------------------------------------------------
-[GESTOR]: Dashboard financeiro, auditoria de KM (ROI), controle de contratos 
-digitais, triagem de novos alunos e mural de avisos com prioridade.
-
-[MOTORISTA]: Navegação assistida por IA, relato de incidentes com resumo 
-automático, modo pausa e itinerário dinâmico que se cura a cada falta.
-
-[MONITOR]: Checklist visual com foto do aluno, alertas médicos críticos 
-(alergias, diabetes, TEA), check-in por QR Code e contatos de emergência.
-
-[PAIS]: Mapa ao vivo, alerta de proximidade (800m), faturamento via Pix com 
-conciliação automática, assinatura digital de contrato e chat direto.
-
-4. BATTLECARD: GUARDIAN VS. MERCADO
+3. BATTLECARD: GUARDIAN VS. LÍDERES DO MERCADO
 --------------------------------------------------------------------------------
 RECURSO             | APPS TRADICIONAIS        | GUARDIAN INTELLIGENCE
 --------------------------------------------------------------------------------
@@ -55,22 +51,29 @@ Roteirização        | Memória do Motorista     | IA Otimizadora (ROI 12%)
 Financeiro          | Planilha e WhatsApp      | Pix com Conciliação Aut.
 Segurança Bordo     | Papel / Nenhuma          | Foto Aluno e Alertas Médicos
 
-5. ESTRUTURA DO PITCH DECK (6 TELAS IDEAIS)
+4. ESTRUTURA DA APRESENTAÇÃO DE ELITE (6 TELAS)
 --------------------------------------------------------------------------------
-Tela 1: O PROBLEMA - O caos da falta de visibilidade e riscos jurídicos.
-Tela 2: A SOLUÇÃO - Guardian como o "Cérebro da Frota".
-Tela 3: COMO FUNCIONA - O fluxo Start -> Mapa -> Alerta -> Check-in.
-Tela 4: SHOWCASE - Telas reais de Performance, Faturas e Viagens Extras.
-Tela 5: DIFERENCIAIS - Por que somos tecnicamente imbatíveis (ROI).
+Tela 1: O PROBLEMA - A dor da incerteza dos pais e o caos operacional.
+Tela 2: A SOLUÇÃO - Guardian como o "Cérebro da Frota" e inteligência ativa.
+Tela 3: COMO FUNCIONA - Fluxo lógico: Start -> Mapa -> Alerta -> Check-in.
+Tela 4: SHOWCASE - Carrosséis das telas de Performance, Faturas e GPS.
+Tela 5: DIFERENCIAIS - Prova técnica de superioridade e margem de lucro.
 Tela 6: BUSINESS - Modelo escalável: Assinatura por Van + Taxa por Aluno.
 
-6. TECH STACK
+5. MÓDULOS E FUNCIONALIDADES CHAVE
 --------------------------------------------------------------------------------
-- Frontend: Next.js 15 (App Router)
-- UI: Tailwind CSS + Shadcn UI (Visual Industrial Premium)
-- Backend: Firebase (Firestore + Auth)
-- AI: Google Genkit + Gemini 1.5 Flash
-- Maps: Google Maps API + Leaflet/OSM
-- Roteirização: Geoapify API
+[GESTOR]: Dashboard Financeiro, Auditoria de KM (ROI), OCR de Triagem, 
+Contratos Digitais, Mural de Avisos, Gestão de Escolas INEP.
+
+[MOTORISTA]: GPS Realtime, Itinerário IA, Relato de Incidentes, Modo Pausa, 
+Navegação Assistida, Histórico de Viagens.
+
+[MONITOR]: Alertas Médicos Críticos (Alergias, TEA), Checklist por Foto, 
+Check-in QR Code, Contatos de Emergência, Mensagens Predefinidas.
+
+[PAIS]: Mapa ao Vivo, Alerta Proximidade (800m), Viagens Avulsas, 
+Pagamento Pix, Assinatura Digital de Contrato, Chat Direto.
+
 --------------------------------------------------------------------------------
 Guardian - Inteligência que move o futuro do transporte escolar.
+Documento gerado em colaboração entre o Gestor e o Prototipador IA.

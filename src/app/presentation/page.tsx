@@ -56,7 +56,6 @@ const ModulePreview = ({ title, role, imageIds, features }: { title: string, rol
     const images = imageIds.map(id => PlaceHolderImages.find(i => i.id === id)).filter(Boolean);
     return (
         <div className="bg-background rounded-3xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-2xl group">
-            {/* 1. FOTO EM DESTAQUE - VISUAL FIRST */}
             <div className="relative aspect-video w-full bg-black/5 overflow-hidden">
                 <Carousel 
                   opts={{ loop: true, align: "start" }} 
@@ -84,7 +83,6 @@ const ModulePreview = ({ title, role, imageIds, features }: { title: string, rol
                 </Carousel>
                 <Badge className="absolute top-3 right-3 bg-primary font-black uppercase text-[8px] z-10 shadow-lg">{role}</Badge>
             </div>
-            {/* 2. FUNCIONALIDADES RESUMIDAS */}
             <div className="p-6 bg-muted/10 border-t flex-1">
                 <p className="text-sm font-black uppercase italic tracking-tighter text-primary mb-4">{title}</p>
                 <div className="flex flex-wrap gap-1.5">
@@ -102,14 +100,12 @@ const ModulePreview = ({ title, role, imageIds, features }: { title: string, rol
 export default function PresentationPage() {
     return (
         <main className="bg-background text-foreground antialiased selection:bg-primary/20">
-            {/* Navigation Overlay */}
             <div className="fixed top-4 left-4 z-50">
                 <Button asChild variant="outline" size="sm" className="shadow-lg bg-background/80 backdrop-blur font-bold uppercase text-[10px]">
                     <Link href="/login"><ArrowLeft className="mr-2 h-3 w-3" /> Voltar</Link>
                 </Button>
             </div>
             
-            {/* 1. O PROBLEMA */}
             <Slide className="bg-destructive/[0.03]">
                 <Badge className="mb-8 bg-destructive text-white font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px]">
                     01. O Desafio Atual
@@ -127,7 +123,6 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* 2. A SOLUÇÃO */}
             <Slide className="bg-background">
                 <Badge className="mb-8 bg-primary text-primary-foreground font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px]">
                     02. A Revolução Guardian
@@ -147,7 +142,6 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* 3. COMO FUNCIONA */}
             <Slide className="bg-secondary/5">
                 <Badge className="mb-12 bg-primary/10 text-primary font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px] border border-primary/20">
                     03. Fluxo de Valor
@@ -161,7 +155,6 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* 4. TELAS DO APLICATIVO */}
             <Slide className="bg-background">
                 <Badge variant="outline" className="mb-12 border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">04. O Ecossistema Guardian</Badge>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
@@ -172,7 +165,6 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* 5. DIFERENCIAL E MERCADO */}
             <Slide className="bg-primary/[0.03]">
                 <Badge className="mb-12 bg-primary/10 text-primary font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px] border border-primary/20">
                     05. Superioridade Guardian
@@ -213,7 +205,6 @@ export default function PresentationPage() {
                 </div>
             </Slide>
 
-            {/* 6. MODELO DE NEGÓCIO */}
             <Slide className="bg-black text-white">
                  <Badge className="mb-12 bg-primary text-black font-black tracking-[0.4em] px-6 py-2 uppercase text-[10px]">
                     06. Rentabilidade & Escala
