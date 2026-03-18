@@ -11,12 +11,12 @@ import {
   Users,
   ClipboardCheck,
   ArrowRight,
-  ArrowDownRight,
   TrendingDown,
   CheckCircle2,
   Check,
   X,
-  Play
+  Play,
+  ArrowDownRight
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -40,9 +40,9 @@ export default function LandingPage() {
       subtitle: "Inteligência & ROI",
       badge: "ADMIN",
       steps: [
-        "Cadastra Frota e Escolas (Base INEP)",
+        "Setup de Frota e Escolas (Base INEP)",
         "Triagem OCR de novos alunos",
-        "Geração de Contratos e Faturas Pix"
+        "Controle de Faturamento e ROI"
       ],
       features: ["Faturamento Automático", "Triagem OCR (Gemini)", "Contratos Digitais", "Base INEP (190k Escolas)", "Mural de Avisos", "Auditoria de KM"],
       description: "Controle total da saúde financeira e administrativa da frota com automação de ponta.",
@@ -55,9 +55,9 @@ export default function LandingPage() {
       subtitle: "Logística Otimizada",
       badge: "DRIVER",
       steps: [
-        "Seleciona rota e inicia viagem",
-        "Segue Itinerário Otimizado pela IA",
-        "Reporta incidentes em tempo real"
+        "Seleção de Rota e Início de Viagem",
+        "Navegação via Itinerário IA",
+        "Relato de Incidentes em Tempo Real"
       ],
       features: ["GPS em Tempo Real", "Itinerário IA", "Relato de Incidentes", "Modo Pausa", "Navegação Assistida", "Histórico de Viagens"],
       description: "Redução de custos com rotas calculadas para menor consumo e máxima pontualidade.",
@@ -70,9 +70,9 @@ export default function LandingPage() {
       subtitle: "Segurança de Bordo",
       badge: "ASSISTANT",
       steps: [
-        "Consulta Checklist com foto do aluno",
-        "Monitora Alertas Médicos Críticos",
-        "Valida embarque via QR Code"
+        "Checklist Visual com fotos dos alunos",
+        "Monitoramento de Alertas Médicos",
+        "Check-in via QR Code ou Manual"
       ],
       features: ["Alertas Médicos Críticos", "Checklist Visual", "Check-in por QR Code", "Contatos de Emergência", "Mensagens Rápidas"],
       description: "Zero papel no embarque com identificação por foto e controle de saúde em tempo real.",
@@ -86,8 +86,8 @@ export default function LandingPage() {
       badge: "PARENT",
       steps: [
         "Cadastro Instantâneo via Foto (OCR)",
-        "Acompanha a Van no Mapa ao Vivo",
-        "Paga mensalidades via Pix"
+        "Acompanhamento da Van no Mapa",
+        "Pagamento de Mensalidades via Pix"
       ],
       features: ["Mapa ao Vivo", "Alerta 800m", "Viagens Avulsas", "Pagamento Pix", "Assinatura Digital", "Chat Direto"],
       description: "Tranquilidade absoluta para a família com acompanhamento em tempo real da jornada escolar.",
