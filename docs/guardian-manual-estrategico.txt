@@ -23,25 +23,51 @@ MARCOS ALCANÇADOS NA CONVERSA:
 - FASE 6 (Refinamento de Elite): Reformulação visual "Visual First" com 
   carrosséis automáticos e Battlecard de superioridade técnica.
 
-2. OS 4 PILARES DE ENGENHARIA (DIFERENCIAIS ÚNICOS)
+2. PASSO A PASSO OPERACIONAL (POR MÓDULO)
+--------------------------------------------------------------------------------
+[GESTOR - O CÉREBRO ADM]
+1. SETUP: Cadastra Escolas (via INEP), Veículos e Equipe.
+2. CONVITE: Envia o link de cadastro público para os pais via WhatsApp.
+3. TRIAGEM: Revisa os dados capturados pela IA (OCR) e define a mensalidade.
+4. FORMALIZAÇÃO: Gera o contrato digital e a primeira fatura Pix.
+5. AUDITORIA: Monitora o ROI de combustível e a performance dos motoristas.
+
+[MOTORISTA - O CAPITÃO DA ROTA]
+1. JORNADA: Seleciona a Rota e o Turno (Manhã/Tarde).
+2. LOGÍSTICA: Segue o itinerário otimizado pela IA para menor consumo.
+3. TELEMETRIA: GPS transmite localização em tempo real (Delta de 30m/30s).
+4. INCIDENTES: Reporta trânsito ou perigos que alertam gestor e pais.
+5. HISTÓRICO: Consulta a economia de KM gerada pela adesão à rota IA.
+
+[MONITOR - O GUARDIÃO DO EMBARQUE]
+1. CHECKLIST: Acessa a lista visual com fotos dos alunos da parada.
+2. SAÚDE: Identifica badges de alertas médicos (Alergias, TEA, Diabetes).
+3. VALIDAÇÃO: Realiza o check-in via QR Code ou confirmação manual.
+4. COMUNICAÇÃO: Envia mensagens rápidas ("Chegando", "Embarcado") aos pais.
+5. SEGURANÇA: Garante que o aluno desembarque apenas para pessoas autorizadas.
+
+[PAIS - A TRANQUILIDADE DA FAMÍLIA]
+1. ONBOARDING: Tira foto do RG e o cadastro é preenchido pela IA em 30s.
+2. JURÍDICO: Analisa e aceita o contrato digital direto no aplicativo.
+3. MAPA VIVO: Acompanha o deslocamento real da van no mapa interativo.
+4. SMART ALERT: Recebe notificação push quando a van entra no raio de 800m.
+5. FINANCEIRO: Paga a mensalidade via Pix e solicita viagens avulsas.
+
+3. OS 4 PILARES DE ENGENHARIA (DIFERENCIAIS ÚNICOS)
 --------------------------------------------------------------------------------
 A. OCR de Documentos (Gemini IA): 
-   Elimina formulários manuais. O pai tira foto do RG/CNH e a IA extrai dados
-   com 99% de precisão em 30 segundos.
+   Elimina formulários manuais. O pai tira foto do documento e a IA extrai dados.
 
 B. Base INEP Integrada:
-   Acesso nativo a 190.000 instituições de ensino brasileiras. Busca semântica
-   que preenche endereço e coordenadas GPS instantaneamente.
+   Acesso nativo a 190.000 instituições de ensino brasileiras.
 
 C. Telemetria por Delta (FinOps):
-   Lógica inteligente que só transmite dados se houver movimento > 30m ou 
-   tempo > 30s. Economia de 70% de bateria e dados no celular do motorista.
+   Economia de 70% de bateria e dados. Só transmite se houver movimento.
 
 D. Mapas Híbridos:
-   Visualização via Leaflet/OpenStreetMap para escala e Google Maps apenas 
-   onde a precisão de satélite é crítica. Redução drástica nos custos de API.
+   Visualização via Leaflet/OSM para escala e Google apenas no crítico.
 
-3. BATTLECARD: GUARDIAN VS. LÍDERES DO MERCADO
+4. BATTLECARD: GUARDIAN VS. MERCADO
 --------------------------------------------------------------------------------
 RECURSO             | APPS TRADICIONAIS        | GUARDIAN INTELLIGENCE
 --------------------------------------------------------------------------------
@@ -51,31 +77,5 @@ Custo de Infra      | Repasse Google Maps      | Mapas Híbridos (Custo Zero)
 Bateria Celular     | Drenagem Contínua        | Telemetria Delta (-70%)
 Roteirização        | Memória do Motorista     | IA Otimizadora (ROI 12%)
 Financeiro          | Planilha e WhatsApp      | Pix com Conciliação Aut.
-Segurança Bordo     | Papel / Nenhuma          | Foto Aluno e Alertas Médicos
-
-4. ESTRUTURA DA APRESENTAÇÃO DE ELITE (6 TELAS)
---------------------------------------------------------------------------------
-Tela 1: O PROBLEMA - A dor da incerteza dos pais e o caos logístico.
-Tela 2: A SOLUÇÃO - Guardian como o "Cérebro da Frota" e inteligência ativa.
-Tela 3: COMO FUNCIONA - Fluxo lógico: Start -> Mapa -> Alerta -> Check-in.
-Tela 4: SHOWCASE - Carrosséis das telas de Performance, Faturas e GPS.
-Tela 5: DIFERENCIAIS - Prova técnica de superioridade e margem de lucro.
-Tela 6: BUSINESS - Modelo escalável: Assinatura por Van + Taxa por Aluno.
-
-5. MÓDULOS E FUNCIONALIDADES CHAVE
---------------------------------------------------------------------------------
-[GESTOR]: Dashboard Financeiro, Auditoria de KM (ROI), OCR de Triagem, 
-Contratos Digitais, Mural de Avisos, Gestão de Escolas INEP.
-
-[MOTORISTA]: GPS Realtime, Itinerário IA, Relato de Incidentes, Modo Pausa, 
-Navegação Assistida, Histórico de Viagens.
-
-[MONITOR]: Alertas Médicos Críticos (Alergias, TEA), Checklist por Foto, 
-Check-in QR Code, Contatos de Emergência, Mensagens Predefinidas.
-
-[PAIS]: Mapa ao Vivo, Alerta Proximidade (800m), Viagens Avulsas, 
-Pagamento Pix, Assinatura Digital de Contrato, Chat Direto.
-
 --------------------------------------------------------------------------------
 Guardian - Inteligência que move o futuro do transporte escolar.
-Documento gerado em colaboração entre o Gestor e o Prototipador IA.

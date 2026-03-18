@@ -21,12 +21,6 @@ import {
     ChevronRight, 
     Sparkles,
     Check,
-    BarChart3,
-    QrCode,
-    Activity,
-    HeartPulse,
-    FileText,
-    Milestone,
     X,
     ArrowDownRight
 } from 'lucide-react';
@@ -52,7 +46,7 @@ const Slide = ({ children, className = '', id = '' }: { children: React.ReactNod
   </section>
 );
 
-const ModulePreview = ({ title, role, imageIds, features }: { title: string, role: string, imageIds: string[], features: string[] }) => {
+const ModulePreview = ({ title, role, imageIds, features, steps }: { title: string, role: string, imageIds: string[], features: string[], steps: string[] }) => {
     const images = imageIds.map(id => PlaceHolderImages.find(i => i.id === id)).filter(Boolean);
     return (
         <div className="bg-background rounded-3xl border border-primary/20 overflow-hidden flex flex-col h-full hover:border-primary/50 transition-all shadow-2xl group">
@@ -83,9 +77,19 @@ const ModulePreview = ({ title, role, imageIds, features }: { title: string, rol
                 </Carousel>
                 <Badge className="absolute top-3 right-3 bg-primary font-black uppercase text-[8px] z-10 shadow-lg">{role}</Badge>
             </div>
-            <div className="p-6 bg-muted/10 border-t flex-1">
-                <p className="text-sm font-black uppercase italic tracking-tighter text-primary mb-4">{title}</p>
-                <div className="flex flex-wrap gap-1.5">
+            <div className="p-6 bg-muted/10 border-t flex-1 flex flex-col gap-4">
+                <p className="text-sm font-black uppercase italic tracking-tighter text-primary">{title}</p>
+                
+                <div className="space-y-1.5">
+                    {steps.map((step, i) => (
+                        <div key={i} className="flex items-center gap-2 text-[10px] font-bold text-foreground">
+                            <span className="w-3.5 h-3.5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[8px] font-black shrink-0">{i+1}</span>
+                            {step}
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex flex-wrap gap-1.5 mt-auto">
                     {features.map((f, i) => (
                         <Badge key={i} variant="outline" className="text-[8px] font-black uppercase border-primary/20 text-muted-foreground bg-background">
                             {f}
@@ -117,9 +121,6 @@ export default function PresentationPage() {
                     <ProblemCard icon={<AlertTriangle className="text-destructive" />} title="Incerteza dos Pais" description="Onde está meu filho? A falta de rastro gera ansiedade e centenas de mensagens de WhatsApp que o motorista não pode ler." />
                     <ProblemCard icon={<MessageSquare className="text-destructive" />} title="Caos Logístico" description="Avisos de faltas tardios resultam em rotas ineficientes e desperdício de combustível todos os dias." />
                     <ProblemCard icon={<ShieldCheck className="text-destructive" />} title="Insegurança Jurídica" description="Sem registros digitais de embarque e desembarque, o transportador fica vulnerável a contestações e incidentes." />
-                </div>
-                <div className="mt-16 animate-bounce opacity-40">
-                    <ChevronRight className="h-8 w-8 rotate-90" />
                 </div>
             </Slide>
 
@@ -158,10 +159,10 @@ export default function PresentationPage() {
             <Slide className="bg-background">
                 <Badge variant="outline" className="mb-12 border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">04. O Ecossistema Guardian</Badge>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-                    <ModulePreview title="Gestão & Performance" role="GESTOR" imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} features={["ROI de KM", "Triagem OCR", "Faturas Aut.", "Mural Avisos"]} />
-                    <ModulePreview title="Navegação Assistida" role="DRIVER" imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} features={["GPS Realtime", "Itinerário IA", "Relato Transito", "Status Rota"]} />
-                    <ModulePreview title="Controle de Bordo" role="ASSISTANT" imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} features={["Alertas Saúde", "Check-in QR", "Foto Aluno", "Mensagens Rápidas"]} />
-                    <ModulePreview title="Painel da Família" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-6-contact', 'ob-13-done']} features={["Mapa Vivo", "Viagens Avulsas", "Pix Instantâneo", "Contratos"]} />
+                    <ModulePreview title="Gestão & Performance" role="GESTOR" imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} features={["ROI de KM", "Triagem OCR", "Faturas Aut.", "Mural Avisos"]} steps={["Setup de Frota e Escolas", "Triagem OCR de Alunos", "Controle de Faturamento"]} />
+                    <ModulePreview title="Navegação Assistida" role="DRIVER" imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} features={["GPS Realtime", "Itinerário IA", "Relato Transito", "Status Rota"]} steps={["Seleção de Rota e Turno", "Itinerário IA Otimizado", "Relato de Incidentes"]} />
+                    <ModulePreview title="Controle de Bordo" role="ASSISTANT" imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} features={["Alertas Saúde", "Check-in QR", "Foto Aluno", "Mensagens Rápidas"]} steps={["Checklist Visual por Parada", "Monitoramento Alertas Médicos", "Validar Embarque QR Code"]} />
+                    <ModulePreview title="Painel da Família" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-6-contact', 'ob-13-done']} features={["Mapa Vivo", "Viagens Avulsas", "Pix Instantâneo", "Contratos"]} steps={["Cadastro via OCR em 30s", "Mapa em Tempo Real", "Pagamento Pix e Contratos"]} />
                 </div>
             </Slide>
 

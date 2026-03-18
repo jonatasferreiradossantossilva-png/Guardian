@@ -12,23 +12,11 @@ import {
   ClipboardCheck,
   ArrowRight,
   ArrowDownRight,
-  Bot,
   TrendingDown,
-  Zap,
-  ExternalLink,
-  MessageSquare,
-  ChevronRight,
-  Sparkles,
-  FileText,
-  DollarSign,
-  Milestone,
   CheckCircle2,
-  Activity,
-  HeartPulse,
-  QrCode,
-  MapPin,
+  Check,
   X,
-  Check
+  Play
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';
@@ -51,9 +39,14 @@ export default function LandingPage() {
       title: "Painel do Gestor",
       subtitle: "Inteligência & ROI",
       badge: "ADMIN",
+      steps: [
+        "Cadastra Frota e Escolas (Base INEP)",
+        "Triagem OCR de novos alunos",
+        "Geração de Contratos e Faturas Pix"
+      ],
       features: ["Faturamento Automático", "Triagem OCR (Gemini)", "Contratos Digitais", "Base INEP (190k Escolas)", "Mural de Avisos", "Auditoria de KM"],
       description: "Controle total da saúde financeira e administrativa da frota com automação de ponta.",
-      images: [getImg('ob-15-triage'), getImg('ob-14-notification'), getImg('ob-10-finance'), getImg('ob-11-summary')]
+      images: [getImg('ob-15-triage'), getImg('ob-10-finance'), getImg('ob-14-notification'), getImg('ob-11-summary')]
     },
     {
       id: 'motorista',
@@ -61,6 +54,11 @@ export default function LandingPage() {
       title: "App do Motorista",
       subtitle: "Logística Otimizada",
       badge: "DRIVER",
+      steps: [
+        "Seleciona rota e inicia viagem",
+        "Segue Itinerário Otimizado pela IA",
+        "Reporta incidentes em tempo real"
+      ],
       features: ["GPS em Tempo Real", "Itinerário IA", "Relato de Incidentes", "Modo Pausa", "Navegação Assistida", "Histórico de Viagens"],
       description: "Redução de custos com rotas calculadas para menor consumo e máxima pontualidade.",
       images: [getImg('ob-16-gps'), getImg('ob-7-address'), getImg('ob-4-scan')]
@@ -71,6 +69,11 @@ export default function LandingPage() {
       title: "Módulo do Monitor",
       subtitle: "Segurança de Bordo",
       badge: "ASSISTANT",
+      steps: [
+        "Consulta Checklist com foto do aluno",
+        "Monitora Alertas Médicos Críticos",
+        "Valida embarque via QR Code"
+      ],
       features: ["Alertas Médicos Críticos", "Checklist Visual", "Check-in por QR Code", "Contatos de Emergência", "Mensagens Rápidas"],
       description: "Zero papel no embarque com identificação por foto e controle de saúde em tempo real.",
       images: [getImg('ob-12-health'), getImg('ob-9-class'), getImg('ob-5-identity')]
@@ -81,6 +84,11 @@ export default function LandingPage() {
       title: "Portal dos Pais",
       subtitle: "Transparência Total",
       badge: "PARENT",
+      steps: [
+        "Cadastro Instantâneo via Foto (OCR)",
+        "Acompanha a Van no Mapa ao Vivo",
+        "Paga mensalidades via Pix"
+      ],
       features: ["Mapa ao Vivo", "Alerta 800m", "Viagens Avulsas", "Pagamento Pix", "Assinatura Digital", "Chat Direto"],
       description: "Tranquilidade absoluta para a família com acompanhamento em tempo real da jornada escolar.",
       images: [getImg('ob-3-welcome'), getImg('ob-17-sign'), getImg('ob-6-contact'), getImg('ob-13-done')]
@@ -89,7 +97,6 @@ export default function LandingPage() {
 
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground selection:bg-primary/20 antialiased">
-      {/* Navigation */}
       <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container flex h-16 max-w-screen-2xl items-center justify-between px-4 mx-auto">
           <Link href="/login" className="flex items-center gap-2 font-bold group">
@@ -110,7 +117,6 @@ export default function LandingPage() {
       </header>
 
       <main className="flex-1">
-        {/* Hero Section */}
         <section className="relative w-full py-20 lg:py-32 overflow-hidden border-b bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-primary/10 via-background to-background">
           <div className="container mx-auto px-4 relative z-10 text-center">
             <div className="flex flex-col items-center space-y-8 max-w-4xl mx-auto">
@@ -135,12 +141,11 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Modules Section */}
         <section id="modulos" className="w-full py-24 bg-background border-b">
           <div className="container mx-auto px-4">
             <div className="text-center mb-20 space-y-4">
               <h2 className="text-3xl md:text-6xl font-black uppercase italic tracking-tighter text-primary">Plataforma 360°</h2>
-              <p className="text-muted-foreground max-w-2xl mx-auto font-medium uppercase text-xs tracking-widest">Tecnologia especializada para cada agente do ecossistema</p>
+              <p className="text-muted-foreground max-w-2xl mx-auto font-medium uppercase text-xs tracking-widest">A jornada do usuário passo a passo</p>
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
@@ -151,7 +156,6 @@ export default function LandingPage() {
           </div>
         </section>
 
-        {/* Comparativo de Mercado Section */}
         <section id="comparativo" className="w-full py-24 bg-background border-b overflow-hidden">
             <div className="container mx-auto px-4">
                 <div className="text-center mb-16 space-y-4">
@@ -211,45 +215,7 @@ export default function LandingPage() {
             </div>
         </section>
 
-        {/* Prova de ROI */}
-        <section className="w-full py-24 bg-primary/5 border-b">
-            <div className="container mx-auto px-4">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-12 items-center">
-                    <div className="space-y-6">
-                        <Badge className="bg-primary text-white font-black">PROVA DE VALOR</Badge>
-                        <h2 className="text-4xl md:text-6xl font-black uppercase italic tracking-tighter leading-none">
-                            Menos Diesel, <br/>Mais <span className="text-primary">Rentabilidade.</span>
-                        </h2>
-                        <p className="text-muted-foreground text-lg">
-                            Nosso algoritmo de otimização de rota reduz em média 12% a quilometragem diária da frota, gerando economia imediata de combustível e manutenção.
-                        </p>
-                        <div className="grid grid-cols-2 gap-4">
-                            <div className="p-4 bg-background rounded-xl border border-primary/20">
-                                <p className="text-3xl font-black text-primary italic">-12%</p>
-                                <p className="text-[10px] font-bold uppercase text-muted-foreground">KM Rodado/Mês</p>
-                            </div>
-                            <div className="p-4 bg-background rounded-xl border border-primary/20">
-                                <p className="text-3xl font-black text-primary italic">Zero</p>
-                                <p className="text-[10px] font-bold uppercase text-muted-foreground">Inadimplência Pix</p>
-                            </div>
-                        </div>
-                    </div>
-                    <div className="relative aspect-video rounded-3xl overflow-hidden border-4 border-primary/20 shadow-2xl">
-                        <Image 
-                            src="https://lh3.googleusercontent.com/d/1i2uAifpZptoHOGO7MRox0C-YklPCc37O" 
-                            alt="ROI Map" 
-                            fill 
-                            unoptimized 
-                            className="object-cover"
-                            data-ai-hint="gps map"
-                        />
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        {/* CTA Final */}
-        <section className="w-full py-32 bg-background text-center relative overflow-hidden">
+        <section className="w-full py-24 bg-primary/5 border-b text-center">
           <div className="container mx-auto px-4 relative z-10">
             <h2 className="text-5xl md:text-7xl font-black uppercase tracking-tighter italic leading-none mb-10">
               Transforme sua <br/><span className="text-primary">Van em Empresa.</span>
@@ -276,10 +242,9 @@ export default function LandingPage() {
   );
 }
 
-function ModuleCard({ icon, title, subtitle, description, images, badge, features }: { icon: React.ReactNode, title: string, subtitle: string, description: string, images: any[], badge: string, features: string[] }) {
+function ModuleCard({ icon, title, subtitle, description, images, badge, features, steps }: { icon: React.ReactNode, title: string, subtitle: string, description: string, images: any[], badge: string, features: string[], steps: string[] }) {
   return (
     <Card className="border-2 border-border/50 bg-background hover:border-primary/40 transition-all group overflow-hidden flex flex-col shadow-xl">
-      {/* 1. FOTO EM DESTAQUE - VISUAL FIRST */}
       <div className="relative aspect-video w-full bg-black/5 overflow-hidden border-b">
         <Carousel 
           opts={{ loop: true, align: "start" }} 
@@ -311,7 +276,6 @@ function ModuleCard({ icon, title, subtitle, description, images, badge, feature
         </div>
       </div>
 
-      {/* 2. RESUMO E FUNCIONALIDADES */}
       <CardContent className="p-6 md:p-8 flex-1 flex flex-col bg-muted/5">
         <div className="space-y-6">
             <div className="flex items-center gap-3">
@@ -322,6 +286,18 @@ function ModuleCard({ icon, title, subtitle, description, images, badge, feature
                 </div>
             </div>
             
+            <div className="space-y-2">
+                <p className="text-[9px] font-black uppercase tracking-widest text-primary border-b border-primary/20 pb-1">Fluxo Operacional</p>
+                <div className="space-y-1.5">
+                    {steps.map((step, i) => (
+                        <div key={i} className="flex items-center gap-2 text-xs font-medium text-foreground">
+                            <span className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[9px] font-black shrink-0">{i+1}</span>
+                            {step}
+                        </div>
+                    ))}
+                </div>
+            </div>
+
             <p className="text-muted-foreground leading-relaxed font-medium text-sm">{description}</p>
 
             <div className="space-y-3">
