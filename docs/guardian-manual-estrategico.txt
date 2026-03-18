@@ -4,22 +4,24 @@ GUARDIAN INTELLIGENCE - REGISTRO HISTÓRICO E MANUAL ESTRATÉGICO
 "A jornada do seu filho, protegida em tempo real."
 ================================================================================
 
-1. RESUMO DA EVOLUÇÃO DO PROJETO (HISTÓRICO DA CONVERSA)
+1. RESUMO DA EVOLUÇÃO DO PROJETO (HISTÓRICO DA JORNADA)
 --------------------------------------------------------------------------------
 O Guardian nasceu da necessidade de transformar o transporte escolar de um 
 serviço "no escuro" para uma plataforma de inteligência operacional de elite.
 
-MARCOS DA JORNADA:
+MARCOS ALCANÇADOS NA CONVERSA:
 - FASE 1 (Fundação): Definição do Tech Stack robusto (Next.js 15, Tailwind, 
   Firebase) e criação dos perfis de acesso (Gestor, Motorista, Monitor, Pais).
-- FASE 2 (Engenharia de Custo): Implementação de Mapas Híbridos e Haversine 
-  local para escala sem custos abusivos de API.
+- FASE 2 (Gestão de Ativos): Implementação de busca de escolas via Base INEP 
+  (190k instituições) e cadastro de frota com manutenção preditiva.
 - FASE 3 (Inteligência Artificial): Integração do OCR Gemini para cadastro 
   instantâneo via foto e Algoritmo de Otimização de Rota (TSP).
-- FASE 4 (Refinamento Comercial): Criação do Pitch Deck de 6 telas e Landing 
-  Page focada em ROI, Performance e Faturamento automático via Pix.
-- FASE 5 (Consolidação): Reformulação visual para "Visual First" com carrosséis 
-  automáticos e Battlecard de superioridade técnica contra líderes do mercado.
+- FASE 4 (Engenharia de Custo): Implementação de Mapas Híbridos e Haversine 
+  local para escala sem custos abusivos de API Google Maps.
+- FASE 5 (Finanças e Contratos): Faturamento automático via Pix, motor de 
+  geração de contratos digitais e gestão de inadimplência.
+- FASE 6 (Refinamento de Elite): Reformulação visual "Visual First" com 
+  carrosséis automáticos e Battlecard de superioridade técnica.
 
 2. OS 4 PILARES DE ENGENHARIA (DIFERENCIAIS ÚNICOS)
 --------------------------------------------------------------------------------
@@ -31,11 +33,11 @@ B. Base INEP Integrada:
    Acesso nativo a 190.000 instituições de ensino brasileiras. Busca semântica
    que preenche endereço e coordenadas GPS instantaneamente.
 
-C. Telemetria por Delta (Economia Real):
+C. Telemetria por Delta (FinOps):
    Lógica inteligente que só transmite dados se houver movimento > 30m ou 
    tempo > 30s. Economia de 70% de bateria e dados no celular do motorista.
 
-D. Mapas Híbridos (FinOps):
+D. Mapas Híbridos:
    Visualização via Leaflet/OpenStreetMap para escala e Google Maps apenas 
    onde a precisão de satélite é crítica. Redução drástica nos custos de API.
 
@@ -53,7 +55,7 @@ Segurança Bordo     | Papel / Nenhuma          | Foto Aluno e Alertas Médicos
 
 4. ESTRUTURA DA APRESENTAÇÃO DE ELITE (6 TELAS)
 --------------------------------------------------------------------------------
-Tela 1: O PROBLEMA - A dor da incerteza dos pais e o caos operacional.
+Tela 1: O PROBLEMA - A dor da incerteza dos pais e o caos logístico.
 Tela 2: A SOLUÇÃO - Guardian como o "Cérebro da Frota" e inteligência ativa.
 Tela 3: COMO FUNCIONA - Fluxo lógico: Start -> Mapa -> Alerta -> Check-in.
 Tela 4: SHOWCASE - Carrosséis das telas de Performance, Faturas e GPS.
