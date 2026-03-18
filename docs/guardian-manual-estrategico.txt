@@ -1,0 +1,76 @@
+
+================================================================================
+GUARDIAN INTELLIGENCE - MANUAL ESTRATÉGICO E TÉCNICO
+"A jornada do seu filho, protegida em tempo real."
+================================================================================
+
+1. RESUMO EXECUTIVO
+--------------------------------------------------------------------------------
+O Guardian é uma plataforma de inteligência operacional para o ecossistema de 
+transporte escolar. Diferente de rastreadores comuns, o Guardian utiliza IA 
+Generativa e engenharia de baixo custo para maximizar o lucro do transportador 
+e garantir segurança jurídica e física total para os pais e alunos.
+
+2. OS 4 PILARES DE ENGENHARIA (DIFERENCIAIS ÚNICOS)
+--------------------------------------------------------------------------------
+A. OCR de Documentos (Gemini IA): 
+   Elimina formulários manuais. O pai tira foto do RG/CNH e a IA extrai dados
+   com 99% de precisão em 30 segundos.
+
+B. Base INEP Integrada:
+   Acesso nativo a 190.000 instituições de ensino brasileiras. Busca semântica
+   que preenche endereço e coordenadas GPS instantaneamente.
+
+C. Telemetria por Delta (Economia Real):
+   Lógica inteligente que só transmite dados se houver movimento > 30m ou 
+   tempo > 30s. Economia de 70% de bateria e dados no celular do motorista.
+
+D. Mapas Híbridos (FinOps):
+   Visualização via Leaflet/OpenStreetMap para escala e Google Maps apenas 
+   onde a precisão de satélite é crítica. Redução drástica nos custos de API.
+
+3. ECOSSISTEMA DE MÓDULOS
+--------------------------------------------------------------------------------
+[GESTOR]: Dashboard financeiro, auditoria de KM (ROI), controle de contratos 
+digitais, triagem de novos alunos e mural de avisos com prioridade.
+
+[MOTORISTA]: Navegação assistida por IA, relato de incidentes com resumo 
+automático, modo pausa e itinerário dinâmico que se cura a cada falta.
+
+[MONITOR]: Checklist visual com foto do aluno, alertas médicos críticos 
+(alergias, diabetes, TEA), check-in por QR Code e contatos de emergência.
+
+[PAIS]: Mapa ao vivo, alerta de proximidade (800m), faturamento via Pix com 
+conciliação automática, assinatura digital de contrato e chat direto.
+
+4. BATTLECARD: GUARDIAN VS. MERCADO
+--------------------------------------------------------------------------------
+RECURSO             | APPS TRADICIONAIS        | GUARDIAN INTELLIGENCE
+--------------------------------------------------------------------------------
+Cadastro            | Manual e Demorado        | 30s via OCR Gemini (IA)
+Busca de Escola     | Digitação de Endereço    | 190k Escolas INEP Nativas
+Custo de Infra      | Repasse Google Maps      | Mapas Híbridos (Custo Zero)
+Bateria Celular     | Drenagem Contínua        | Telemetria Delta (-70%)
+Roteirização        | Memória do Motorista     | IA Otimizadora (ROI 12%)
+Financeiro          | Planilha e WhatsApp      | Pix com Conciliação Aut.
+Segurança Bordo     | Papel / Nenhuma          | Foto Aluno e Alertas Médicos
+
+5. ESTRUTURA DO PITCH DECK (6 TELAS IDEAIS)
+--------------------------------------------------------------------------------
+Tela 1: O PROBLEMA - O caos da falta de visibilidade e riscos jurídicos.
+Tela 2: A SOLUÇÃO - Guardian como o "Cérebro da Frota".
+Tela 3: COMO FUNCIONA - O fluxo Start -> Mapa -> Alerta -> Check-in.
+Tela 4: SHOWCASE - Telas reais de Performance, Faturas e Viagens Extras.
+Tela 5: DIFERENCIAIS - Por que somos tecnicamente imbatíveis (ROI).
+Tela 6: BUSINESS - Modelo escalável: Assinatura por Van + Taxa por Aluno.
+
+6. TECH STACK
+--------------------------------------------------------------------------------
+- Frontend: Next.js 15 (App Router)
+- UI: Tailwind CSS + Shadcn UI (Visual Industrial Premium)
+- Backend: Firebase (Firestore + Auth)
+- AI: Google Genkit + Gemini 1.5 Flash
+- Maps: Google Maps API + Leaflet/OSM
+- Roteirização: Geoapify API
+--------------------------------------------------------------------------------
+Guardian - Inteligência que move o futuro do transporte escolar.
