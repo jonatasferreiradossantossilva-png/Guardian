@@ -40,9 +40,13 @@ export default function LandingPage() {
       subtitle: "Inteligência & ROI",
       badge: "ADMIN",
       steps: [
-        "Setup de Frota e Escolas (Base INEP)",
-        "Triagem OCR de novos alunos",
-        "Controle de Faturamento e ROI"
+        "Setup (escolas/veículos/equipe)",
+        "Convite aos pais via WhatsApp",
+        "Triagem com OCR/IA",
+        "Formalização com contrato digital e Pix",
+        "[NOVO] Ativação de Rota",
+        "Auditoria de ROI e performance [NOVO] (Alertas Proativos)",
+        "[NOVO] Gestão de Inadimplência"
       ],
       features: ["Faturamento Automático", "Triagem OCR (Gemini)", "Contratos Digitais", "Base INEP (190k Escolas)", "Mural de Avisos", "Auditoria de KM"],
       description: "Controle total da saúde financeira e administrativa da frota com automação de ponta.",
@@ -55,9 +59,13 @@ export default function LandingPage() {
       subtitle: "Logística Otimizada",
       badge: "DRIVER",
       steps: [
-        "Seleção de Rota e Início de Viagem",
-        "Navegação via Itinerário IA",
-        "Relato de Incidentes em Tempo Real"
+        "Seleção de rota e turno",
+        "Logística pela rota otimizada pela IA",
+        "Telemetria GPS em tempo real",
+        "[NOVO] Fluxo de \"aluno ausente\"",
+        "Reporte de incidentes [NOVO] (Categorias Pré-definidas)",
+        "Consulta de histórico de economia",
+        "[NOVO] Encerramento formal de rota"
       ],
       features: ["GPS em Tempo Real", "Itinerário IA", "Relato de Incidentes", "Modo Pausa", "Navegação Assistida", "Histórico de Viagens"],
       description: "Redução de custos com rotas calculadas para menor consumo e máxima pontualidade.",
@@ -70,9 +78,14 @@ export default function LandingPage() {
       subtitle: "Segurança de Bordo",
       badge: "ASSISTANT",
       steps: [
-        "Checklist Visual com fotos dos alunos",
-        "Monitoramento de Alertas Médicos",
-        "Check-in via QR Code ou Manual"
+        "[NOVO] Definição de perfil e UX adaptada",
+        "Checklist visual com fotos dos alunos",
+        "Identificação de badges de saúde (TEA, Alergias, Diabetes)",
+        "Check-in via QR Code ou manual",
+        "Mensagens rápidas aos pais",
+        "Validação de desembarque para pessoas autorizadas",
+        "[NOVO] Protocolo de desembarque não autorizado",
+        "[NOVO] Fluxo de \"pai não apareceu\""
       ],
       features: ["Alertas Médicos Críticos", "Checklist Visual", "Check-in por QR Code", "Contatos de Emergência", "Mensagens Rápidas"],
       description: "Zero papel no embarque com identificação por foto e controle de saúde em tempo real.",
@@ -85,9 +98,13 @@ export default function LandingPage() {
       subtitle: "Transparência Total",
       badge: "PARENT",
       steps: [
-        "Cadastro Instantâneo via Foto (OCR)",
-        "Acompanhamento da Van no Mapa",
-        "Pagamento de Mensalidades via Pix"
+        "Onboarding com OCR do RG em 30s",
+        "Aceite do contrato digital",
+        "Mapa ao vivo da van",
+        "[NOVO] Fluxo de ausência programada",
+        "Smart Alert a 800m",
+        "Pagamento Pix e solicitação de viagens avulsas [NOVO] (Solicitação → Aprovação → Notificação)",
+        "[NOVO] Visão de múltiplos filhos"
       ],
       features: ["Mapa ao Vivo", "Alerta 800m", "Viagens Avulsas", "Pagamento Pix", "Assinatura Digital", "Chat Direto"],
       description: "Tranquilidade absoluta para a família com acompanhamento em tempo real da jornada escolar.",
@@ -290,9 +307,9 @@ function ModuleCard({ icon, title, subtitle, description, images, badge, feature
                 <p className="text-[9px] font-black uppercase tracking-widest text-primary border-b border-primary/20 pb-1">Fluxo Operacional</p>
                 <div className="space-y-1.5">
                     {steps.map((step, i) => (
-                        <div key={i} className="flex items-center gap-2 text-xs font-medium text-foreground">
-                            <span className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[9px] font-black shrink-0">{i+1}</span>
-                            {step}
+                        <div key={i} className="flex items-start gap-2 text-xs font-medium text-foreground">
+                            <span className="w-4 h-4 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[9px] font-black shrink-0 mt-0.5">{i+1}</span>
+                            <span className="leading-tight">{step}</span>
                         </div>
                     ))}
                 </div>

@@ -82,9 +82,9 @@ const ModulePreview = ({ title, role, imageIds, features, steps }: { title: stri
                 
                 <div className="space-y-1.5">
                     {steps.map((step, i) => (
-                        <div key={i} className="flex items-center gap-2 text-[10px] font-bold text-foreground">
-                            <span className="w-3.5 h-3.5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[8px] font-black shrink-0">{i+1}</span>
-                            {step}
+                        <div key={i} className="flex items-start gap-2 text-[10px] font-bold text-foreground">
+                            <span className="w-3.5 h-3.5 rounded-full bg-primary/20 text-primary flex items-center justify-center text-[8px] font-black shrink-0 mt-0.5">{i+1}</span>
+                            <span className="leading-tight">{step}</span>
                         </div>
                     ))}
                 </div>
@@ -159,10 +159,67 @@ export default function PresentationPage() {
             <Slide className="bg-background">
                 <Badge variant="outline" className="mb-12 border-primary/30 text-primary font-black px-4 py-1 uppercase text-[10px] tracking-widest">04. O Ecossistema Guardian</Badge>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-                    <ModulePreview title="Gestão & Performance" role="GESTOR" imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} features={["ROI de KM", "Triagem OCR", "Faturas Aut.", "Mural Avisos"]} steps={["Setup de Frota e Escolas", "Triagem OCR de Alunos", "Controle de Faturamento"]} />
-                    <ModulePreview title="Navegação Assistida" role="DRIVER" imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} features={["GPS Realtime", "Itinerário IA", "Relato Transito", "Status Rota"]} steps={["Seleção de Rota e Turno", "Itinerário IA Otimizado", "Relato de Incidentes"]} />
-                    <ModulePreview title="Controle de Bordo" role="ASSISTANT" imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} features={["Alertas Saúde", "Check-in QR", "Foto Aluno", "Mensagens Rápidas"]} steps={["Checklist Visual por Parada", "Monitoramento Alertas Médicos", "Validar Embarque QR Code"]} />
-                    <ModulePreview title="Painel da Família" role="PARENT" imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-6-contact', 'ob-13-done']} features={["Mapa Vivo", "Viagens Avulsas", "Pix Instantâneo", "Contratos"]} steps={["Cadastro via OCR em 30s", "Mapa em Tempo Real", "Pagamento Pix e Contratos"]} />
+                    <ModulePreview 
+                        title="Gestão & Performance" 
+                        role="GESTOR" 
+                        imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} 
+                        features={["ROI de KM", "Triagem OCR", "Faturas Aut.", "Mural Avisos"]} 
+                        steps={[
+                            "Setup (escolas/veículos/equipe)",
+                            "Convite aos pais via WhatsApp",
+                            "Triagem com OCR/IA",
+                            "Formalização com contrato digital e Pix",
+                            "[NOVO] Ativação de Rota",
+                            "Auditoria de ROI e performance [NOVO] (Alertas Proativos)",
+                            "[NOVO] Gestão de Inadimplência"
+                        ]} 
+                    />
+                    <ModulePreview 
+                        title="Navegação Assistida" 
+                        role="DRIVER" 
+                        imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} 
+                        features={["GPS Realtime", "Itinerário IA", "Relato Transito", "Status Rota"]} 
+                        steps={[
+                            "Seleção de rota e turno",
+                            "Logística pela rota otimizada pela IA",
+                            "Telemetria GPS em tempo real",
+                            "[NOVO] Fluxo de \"aluno ausente\"",
+                            "Reporte de incidentes [NOVO] (Categorias Pré-definidas)",
+                            "Consulta de histórico de economia",
+                            "[NOVO] Encerramento formal de rota"
+                        ]} 
+                    />
+                    <ModulePreview 
+                        title="Controle de Bordo" 
+                        role="ASSISTANT" 
+                        imageIds={['ob-12-health', 'ob-9-class', 'ob-5-identity']} 
+                        features={["Alertas Saúde", "Check-in QR", "Foto Aluno", "Mensagens Rápidas"]} 
+                        steps={[
+                            "[NOVO] Definição de perfil e UX adaptada",
+                            "Checklist visual com fotos dos alunos",
+                            "Identificação de badges de saúde (TEA, Alergias, Diabetes)",
+                            "Check-in via QR Code ou manual",
+                            "Mensagens rápidas aos pais",
+                            "Validação de desembarque para pessoas autorizadas",
+                            "[NOVO] Protocolo de desembarque não autorizado",
+                            "[NOVO] Fluxo de \"pai não apareceu\""
+                        ]} 
+                    />
+                    <ModulePreview 
+                        title="Painel da Família" 
+                        role="PARENT" 
+                        imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-6-contact', 'ob-13-done']} 
+                        features={["Mapa Vivo", "Viagens Avulsas", "Pix Instantâneo", "Contratos"]} 
+                        steps={[
+                            "Onboarding com OCR do RG em 30s",
+                            "Aceite do contrato digital",
+                            "Mapa ao vivo da van",
+                            "[NOVO] Fluxo de ausência programada",
+                            "Smart Alert a 800m",
+                            "Pagamento Pix e solicitação de viagens avulsas [NOVO] (Solicitação → Aprovação → Notificação)",
+                            "[NOVO] Visão de múltiplos filhos"
+                        ]} 
+                    />
                 </div>
             </Slide>
 
