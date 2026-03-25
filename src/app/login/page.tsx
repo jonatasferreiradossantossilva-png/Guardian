@@ -197,7 +197,7 @@ export default function LandingPage() {
                                 isWin={true} 
                             />
                             <ComparisonRow 
-                                feature="Base de Escolas" 
+                                feature="Busca de Escolas" 
                                 traditional="Cadastro manual repetitivo" 
                                 guardian="190 mil escolas INEP integradas" 
                                 isWin={true} 
