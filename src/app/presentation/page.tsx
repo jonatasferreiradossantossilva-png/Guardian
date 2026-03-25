@@ -22,7 +22,9 @@ import {
     Sparkles,
     Check,
     X,
-    ArrowDownRight
+    ArrowDownRight,
+    ClipboardCheck,
+    Activity
 } from 'lucide-react';
 import Link from 'next/link';
 import Image from 'next/image';

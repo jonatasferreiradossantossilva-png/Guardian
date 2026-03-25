@@ -48,7 +48,7 @@ export default function LandingPage() {
         "Auditoria de ROI e performance [NOVO] (Alertas Proativos)",
         "[NOVO] Gestão de Inadimplência"
       ],
-      features: ["Faturamento Automático", "Triagem OCR (Gemini)", "Contratos Digitais", "Base INEP (190k Escolas)", "Mural de Avisos", "Auditoria de KM"],
+      features: ["Faturamento Automático", "Triagem OCR (Gemini)", "Contratos Digitais", "Base INEP (190k Escolas)", "Mural de Avisos", "Auditoria de KM", "Alertas Proativos de ROI", "Gestão de Recebíveis Pix"],
       description: "Controle total da saúde financeira e administrativa da frota com automação de ponta.",
       images: [getImg('ob-15-triage'), getImg('ob-10-finance'), getImg('ob-14-notification'), getImg('ob-11-summary')]
     },
@@ -67,7 +67,7 @@ export default function LandingPage() {
         "Consulta de histórico de economia",
         "[NOVO] Encerramento formal de rota"
       ],
-      features: ["GPS em Tempo Real", "Itinerário IA", "Relato de Incidentes", "Modo Pausa", "Navegação Assistida", "Histórico de Viagens"],
+      features: ["GPS em Tempo Real", "Itinerário IA", "Relato de Incidentes", "Modo Pausa", "Navegação Assistida", "Histórico de Viagens", "Economia de Diesel Estimada", "Checklist Visual"],
       description: "Redução de custos com rotas calculadas para menor consumo e máxima pontualidade.",
       images: [getImg('ob-16-gps'), getImg('ob-7-address'), getImg('ob-4-scan')]
     },
@@ -87,7 +87,7 @@ export default function LandingPage() {
         "[NOVO] Protocolo de desembarque não autorizado",
         "[NOVO] Fluxo de \"pai não apareceu\""
       ],
-      features: ["Alertas Médicos Críticos", "Checklist Visual", "Check-in por QR Code", "Contatos de Emergência", "Mensagens Rápidas"],
+      features: ["Alertas Médicos Críticos", "Checklist Visual", "Check-in por QR Code", "Contatos de Emergência", "Mensagens Rápidas", "Protocolo de Segurança", "Validação por Foto"],
       description: "Zero papel no embarque com identificação por foto e controle de saúde em tempo real.",
       images: [getImg('ob-12-health'), getImg('ob-9-class'), getImg('ob-5-identity')]
     },
@@ -106,7 +106,7 @@ export default function LandingPage() {
         "Pagamento Pix e solicitação de viagens avulsas [NOVO] (Solicitação → Aprovação → Notificação)",
         "[NOVO] Visão de múltiplos filhos"
       ],
-      features: ["Mapa ao Vivo", "Alerta 800m", "Viagens Avulsas", "Pagamento Pix", "Assinatura Digital", "Chat Direto"],
+      features: ["Mapa ao Vivo", "Alerta 800m", "Viagens Avulsas", "Pagamento Pix", "Assinatura Digital", "Chat Direto", "Multi-filhos", "Ausência Programada"],
       description: "Tranquilidade absoluta para a família com acompanhamento em tempo real da jornada escolar.",
       images: [getImg('ob-3-welcome'), getImg('ob-17-sign'), getImg('ob-6-contact'), getImg('ob-13-done')]
     }
