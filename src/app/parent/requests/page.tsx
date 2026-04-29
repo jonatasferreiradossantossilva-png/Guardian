@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
@@ -21,7 +20,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Dialog, DialogTrigger } from '@/components/ui/dialog';
+import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { TripRequestForm } from '@/components/parent/requests/request-form';
@@ -32,7 +31,9 @@ type TripRequest = {
   studentId: string;
   parentUserId: string;
   schoolId: string;
-  date: string;
+  date?: string;
+  startDate?: string;
+  endDate?: string;
   type: 'ida' | 'volta' | 'ida_e_volta';
   shift: 'manha' | 'tarde';
   status: 'pendente' | 'aprovada' | 'rejeitada' | 'aguardando_aprovacao_pai';
@@ -55,7 +56,6 @@ const statusTextMap: Record<TripRequest['status'], string> = {
   aguardando_aprovacao_pai: 'Aguardando Sua Aprovação',
 };
 
-
 const typeMap = {
     'ida': 'Ida para a escola',
     'volta': 'Volta da escola',
@@ -70,12 +70,17 @@ export default function TripRequestsPage() {
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TripRequest | null>(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    const storedUserId = sessionStorage.getItem('mockUserId');
+    setMounted(true);
+    let storedUserId = sessionStorage.getItem('mockUserId');
+    if (!storedUserId) {
+      storedUserId = 'user_parent_1'; // Safe fallback for dev/demo
+      sessionStorage.setItem('mockUserId', storedUserId);
+    }
     setMockUserId(storedUserId);
     
-    // Phase 2: Context Sync
     const lastSelectedId = sessionStorage.getItem('selectedStudentId');
     setSelectedStudentId(lastSelectedId);
   }, []);
@@ -83,24 +88,17 @@ export default function TripRequestsPage() {
   const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
   const parent = useMemo(() => parents?.[0], [parents]);
   
-  const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
+  const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined) as { data: any[] | undefined };
   
-  // Phase 2: Target Student
   const student = useMemo(() => {
       if (!students || students.length === 0) return null;
       if (!selectedStudentId) return students[0];
-      return students.find(s => s.id === selectedStudentId) || students[0];
+      return students.find((s: any) => s.id === selectedStudentId) || students[0];
   }, [students, selectedStudentId]);
-
-  const { data: schools } = useMockCollection('schools');
-  const studentSchool = useMemo(() => {
-    if (!student || !schools) return null;
-    return schools.find(s => s.id === student.schoolId);
-  }, [student, schools]);
 
   const { data: tripRequests, isLoading } = useMockCollection('trip_requests', student ? [
     { field: 'studentId', op: '==', value: student.id }
-  ] : undefined);
+  ] : undefined) as { data: TripRequest[] | undefined, isLoading: boolean };
   
   const handleFormSubmit = () => {
     setIsFormOpen(false);
@@ -109,15 +107,15 @@ export default function TripRequestsPage() {
 
   const handleApproval = (request: TripRequest, approved: boolean) => {
     const newStatus = approved ? 'aprovada' : 'rejeitada';
-    updateDoc('trip_requests', request.id, { status: newStatus });
+    (updateDoc as any)('trip_requests', request.id, { status: newStatus });
     
     if (approved && request.amount) {
-        addDoc('invoices', {
+        (addDoc as any)('invoices', {
             studentId: request.studentId,
             parentUserId: request.parentUserId,
-            description: `Viagem Avulsa - ${request.date.split('-').reverse().join('/')}`,
+            description: `Viagem Avulsa - ${request.startDate?.split('-').reverse().join('/') || request.date?.split('-').reverse().join('/')}`,
             amount: request.amount,
-            dueDate: request.date,
+            dueDate: request.startDate || request.date || new Date().toISOString().split('T')[0],
             status: 'pending'
         });
         toast({
@@ -126,8 +124,8 @@ export default function TripRequestsPage() {
         });
     } else {
         toast({
-          title: `Solicitação ${approved ? 'aprovada' : 'rejeitada'}!`,
-          description: `Sua decisão foi registrada.`,
+            title: `Solicitação ${approved ? 'aprovada' : 'rejeitada'}!`,
+            description: `Sua decisão foi registrada.`,
         });
     }
   };
@@ -142,8 +140,10 @@ export default function TripRequestsPage() {
     setIsFormOpen(true);
   };
 
+  if (!mounted) return null;
+
   return (
-    <div className="min-h-screen bg-background text-foreground p-4">
+    <div className="min-h-screen bg-background text-foreground p-4 pb-32 md:pb-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Button asChild variant="outline" size="icon">
@@ -157,8 +157,8 @@ export default function TripRequestsPage() {
           <CardHeader>
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                 <div>
-                    <CardTitle className="flex items-center gap-2"><Route/>Viagens Avulsas</CardTitle>
-                    <CardDescription className="mt-2 text-primary font-semibold">Aluno(a): {student?.name}</CardDescription>
+                    <CardTitle className="flex items-center gap-2">Viagens Avulsas</CardTitle>
+                    <CardDescription className="mt-2 text-primary font-semibold">Aluno(a): {student?.name || 'Carregando...'}</CardDescription>
                     <CardDescription className="mt-1">Solicite um transporte extra para o aluno.</CardDescription>
                 </div>
                 <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -173,7 +173,6 @@ export default function TripRequestsPage() {
                             request={selectedRequest || undefined}
                             studentId={student.id}
                             schoolId={student.schoolId}
-                            schoolName={studentSchool?.name}
                             parentUserId={mockUserId}
                             onFormSubmit={handleFormSubmit}
                         />
@@ -206,12 +205,21 @@ export default function TripRequestsPage() {
                     {!isLoading && sortedRequests && sortedRequests.length > 0 ? (
                     sortedRequests.map((request) => (
                         <TableRow key={request.id}>
-                        <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
+                        <TableCell className="font-medium">
+                            {request.startDate ? (
+                                <span>
+                                    {request.startDate.split('-').reverse().join('/')}
+                                    {request.endDate && request.endDate !== request.startDate && ` - ${request.endDate.split('-').reverse().join('/')}`}
+                                </span>
+                            ) : (
+                                request.date?.split('-').reverse().join('/')
+                            )}
+                        </TableCell>
                         <TableCell>{typeMap[request.type]}</TableCell>
                         <TableCell className="capitalize">{request.shift}</TableCell>
                         <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
                         <TableCell>
-                            <Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge>
+                            <Badge variant={(statusVariantMap[request.status] || 'secondary') as any} className="capitalize">{(statusTextMap[request.status] || 'Pendente')}</Badge>
                         </TableCell>
                         <TableCell className="text-right">
                             {request.status === 'aguardando_aprovacao_pai' ? (
@@ -269,12 +277,19 @@ export default function TripRequestsPage() {
                                 <div className="space-y-1">
                                     <div className="flex items-center gap-2 text-sm font-bold">
                                         <Calendar className="h-3.5 w-3.5 text-primary" />
-                                        {request.date.split('-').reverse().join('/')}
+                                        {request.startDate ? (
+                                            <span>
+                                                {request.startDate.split('-').reverse().join('/')}
+                                                {request.endDate && request.endDate !== request.startDate && ` - ${request.endDate.split('-').reverse().join('/')}`}
+                                            </span>
+                                        ) : (
+                                            request.date?.split('-').reverse().join('/')
+                                        )}
                                     </div>
                                     <p className="text-sm text-muted-foreground">{typeMap[request.type]}</p>
                                 </div>
-                                <Badge variant={statusVariantMap[request.status]} className="text-[10px] uppercase">
-                                    {statusTextMap[request.status].replace('Sua ', '')}
+                                <Badge variant={(statusVariantMap[request.status] || 'secondary') as any} className="text-[10px] uppercase">
+                                    {(statusTextMap[request.status] || 'Pendente').replace('Sua ', '')}
                                 </Badge>
                             </div>
 

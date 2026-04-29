@@ -77,7 +77,7 @@ const formSchema = z.object({
   schoolId: z.string().min(1, { message: 'Selecione uma escola.' }),
   parentId: z.string().min(1, { message: 'Selecione um responsável.' }),
   shift: z.enum(['Manhã', 'Tarde', 'Integral'], { required_error: 'Selecione um turno.' }),
-  serviceModality: z.enum(['completo', 'so_ida', 'so_volta']).default('completo'),
+  serviceModality: z.enum(['completo', 'so_ida', 'so_volta', 'avulso']).default('completo'),
   monthlyFee: z.coerce.number().min(0, { message: 'O valor deve ser R$ 0 ou maior.' }).optional(),
   preferredPaymentDay: z.coerce.number().int().min(1).max(31).optional(),
   medicalNote: z.string().optional(),
@@ -97,21 +97,10 @@ const formSchema = z.object({
 
 type StudentFormValues = z.infer<typeof formSchema>;
 
-type School = { id: string; name: string };
-type Parent = { 
-  id: string; 
-  name: string;
-  zipCode?: string;
-  street?: string;
-  number?: string;
-  complement?: string;
-  neighborhood?: string;
-  city?: string;
-  state?: string;
-};
+import { Student, SchoolData as School, User as Parent } from '@/types/mock-data';
 
 interface StudentFormProps {
-  student?: { id: string; monthlyFee?: number; preferredPaymentDay?: number; photoUrl?: string } & Partial<StudentFormValues>;
+  student?: Student;
   schools: School[];
   parents: Parent[];
   onFormSubmit: () => void;
@@ -173,7 +162,7 @@ export function StudentForm({
       return allStudents.filter(s => s.parentId === parentId && s.id !== student?.id);
   }, [parentId, allStudents, student?.id]);
 
-  const handleCopyFromSibling = (sibling: any) => {
+  const handleCopyFromSibling = (sibling: Student) => {
       form.setValue('zipCode', sibling.zipCode || '');
       form.setValue('street', sibling.street || '');
       form.setValue('number', sibling.number || '');
@@ -419,7 +408,7 @@ export function StudentForm({
                         <SelectTrigger><SelectValue placeholder="Selecione um responsável" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {parents.map(parent => (
+                        {parents.map((parent: Parent) => (
                           <SelectItem key={parent.id} value={parent.id}>{parent.name}</SelectItem>
                         ))}
                       </SelectContent>
@@ -436,7 +425,7 @@ export function StudentForm({
                           <Users className="h-3 w-3" /> Irmão(s) detectado(s):
                       </p>
                       <div className="flex flex-wrap gap-2">
-                          {siblings.map(sibling => (
+                          {siblings.map((sibling: Student) => (
                               <Button 
                                 key={sibling.id} 
                                 type="button" 
@@ -622,7 +611,7 @@ export function StudentForm({
                         <SelectTrigger><SelectValue placeholder="Selecione uma escola" /></SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {schools.map(school => (
+                        {schools.map((school: School) => (
                           <SelectItem key={school.id} value={school.id}>{school.name}</SelectItem>
                         ))}
                       </SelectContent>

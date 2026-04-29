@@ -29,6 +29,8 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useMockData } from '@/hooks/use-mock-data';
+import { safeString, safeArray } from '@/lib/safe-render';
+
 
 const formSchema = z.object({
   monitorId: z.string().optional(),
@@ -56,9 +58,10 @@ export function MonitorQuickEditForm({
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      monitorId: route.monitorId || 'none',
+      monitorId: safeString(route.monitorId) || 'none',
     },
   });
+
 
   const onSubmit = (data: FormValues) => {
     const newMonitorId = data.monitorId === 'none' ? '' : data.monitorId;
@@ -78,9 +81,10 @@ export function MonitorQuickEditForm({
       <DialogHeader>
         <DialogTitle>Trocar Monitor da Rota</DialogTitle>
         <DialogDescription>
-          Selecione um novo monitor para a rota "{route.name}" ou remova o atual.
+          Selecione um novo monitor para a rota "{safeString(route.name)}" ou remova o atual.
         </DialogDescription>
       </DialogHeader>
+
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4 py-4">
             <FormField
@@ -97,10 +101,11 @@ export function MonitorQuickEditForm({
                             </FormControl>
                             <SelectContent>
                                 <SelectItem value="none">Nenhum Monitor</SelectItem>
-                                {monitors.map(a => (
-                                    <SelectItem key={a.id} value={a.id}>{a.name}</SelectItem>
+                                {safeArray<Monitor>(monitors).map((a: Monitor) => (
+                                    <SelectItem key={a.id} value={a.id}>{safeString(a.name)}</SelectItem>
                                 ))}
                             </SelectContent>
+
                         </Select>
                         <FormMessage />
                     </FormItem>

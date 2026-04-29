@@ -1,106 +1,105 @@
-
 {
   "placeholderImages": [
     {
       "id": "ob-1-invite",
       "description": "Convite WhatsApp",
-      "imageUrl": "https://lh3.googleusercontent.com/d/17ieurMJ2jEAb12TB97d4upD3QvPpzxKt",
+      "imageUrl": "/mockups/guardian_driver_gps.png",
       "imageHint": "whatsapp invite"
     },
     {
       "id": "ob-2-received",
       "description": "Link Recebido",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1vBY8HOyLOmKOepMydQUA7oN4iLRI2OBH",
+      "imageUrl": "/mockups/guardian_driver_gps.png",
       "imageHint": "whatsapp message"
     },
     {
       "id": "ob-3-welcome",
       "description": "Boas-vindas",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1qk_srYuKWuWhdm37dZnFf6UvhrlEO_qI",
+      "imageUrl": "/mockups/guardian_parent_app.png",
       "imageHint": "mobile welcome"
     },
     {
       "id": "ob-4-scan",
       "description": "Leitura via IA",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1do_AwgSF-Plv4TbIu_nb4SzY9ycreuGd",
+      "imageUrl": "/mockups/guardian_qr_scanner.png",
       "imageHint": "document scan"
     },
     {
       "id": "ob-5-identity",
       "description": "Dados de Identidade",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1LLASPQgatNoSbuMA4bcB1MQ-2gZQbxi1",
+      "imageUrl": "/mockups/guardian_qr_scanner.png",
       "imageHint": "identity data"
     },
     {
       "id": "ob-6-contact",
       "description": "E-mail e WhatsApp",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1fa1_ijDaaGLK3X8yhl7Xa-uQzxC6peig",
+      "imageUrl": "/mockups/guardian_parent_app.png",
       "imageHint": "contact info"
     },
     {
       "id": "ob-7-address",
       "description": "Local de Embarque",
-      "imageUrl": "https://lh3.googleusercontent.com/d/13aN71i_tSlEnMK9khmC5IbmrysqNc2x2",
+      "imageUrl": "/mockups/guardian_driver_gps.png",
       "imageHint": "address setup"
     },
     {
       "id": "ob-8-school",
       "description": "Escola de Destino",
-      "imageUrl": "https://lh3.googleusercontent.com/d/13IQX0_YHwUpcJ9paTQgde2Xc5Kf7-gj1",
+      "imageUrl": "/mockups/guardian_driver_gps.png",
       "imageHint": "school search"
     },
     {
       "id": "ob-9-class",
       "description": "Série e Turma",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1XO4__DPeZitE3Wvm2DU1vP2zcLr8QMsi",
+      "imageUrl": "/mockups/guardian_qr_scanner.png",
       "imageHint": "student class"
     },
     {
       "id": "ob-10-finance",
       "description": "Plano Financeiro",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1g8xxyNPuQqTWeD3YUuVxhA0Z6jTDz6p-",
+      "imageUrl": "/mockups/guardian_manager_dashboard.png",
       "imageHint": "finance setup"
     },
     {
       "id": "ob-11-summary",
       "description": "Revisão do Cadastro",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1MzIhmo9OhMkyyIkhiW5FylBu8IrWEKjv",
+      "imageUrl": "/mockups/guardian_parent_app.png",
       "imageHint": "form review"
     },
     {
       "id": "ob-12-health",
       "description": "Alertas de Saúde",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1-o5B8hK8OdGI9Lt23h_a3dUw_YTkNmQW",
+      "imageUrl": "/mockups/guardian_qr_scanner.png",
       "imageHint": "health alerts"
     },
     {
       "id": "ob-13-done",
       "description": "Cadastro Enviado",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1DliIkJSN4tU84tYv_V1KNwyTI1cSXBF-",
+      "imageUrl": "/mockups/guardian_parent_app.png",
       "imageHint": "success screen"
     },
     {
       "id": "ob-14-notification",
       "description": "Alerta para o Gestor",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1xpdobdVQtGsANQZByzvh4h3CK6kK2jbI",
+      "imageUrl": "/mockups/guardian_manager_dashboard.png",
       "imageHint": "admin notification"
     },
     {
       "id": "ob-15-triage",
       "description": "Lista de Triagem",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1FigK2WEVaol7l_XhxKcLJrf2gWiQPnWU",
+      "imageUrl": "/mockups/guardian_manager_dashboard.png",
       "imageHint": "triage list"
     },
     {
       "id": "ob-16-gps",
       "description": "Validação de Rota",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1i2uAifpZptoHOGO7MRox0C-YklPCc37O",
+      "imageUrl": "/mockups/guardian_driver_gps.png",
       "imageHint": "gps map"
     },
     {
       "id": "ob-17-sign",
       "description": "Aceite do Contrato",
-      "imageUrl": "https://lh3.googleusercontent.com/d/1E52UE3uzdXGGw_WeZzY8Y9WwFIaE1Ey3",
+      "imageUrl": "/mockups/guardian_parent_app.png",
       "imageHint": "contract sign"
     }
   ]

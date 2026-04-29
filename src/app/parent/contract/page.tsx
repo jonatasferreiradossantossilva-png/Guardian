@@ -30,6 +30,7 @@ export default function ParentContractPage() {
     useEffect(() => {
         const storedUserId = sessionStorage.getItem('mockUserId');
         setMockUserId(storedUserId);
+        console.log('[DEBUG] ParentContractPage mockUserId:', storedUserId);
         
         const lastSelectedId = sessionStorage.getItem('selectedStudentId');
         setSelectedStudentId(lastSelectedId);
@@ -144,11 +145,17 @@ export default function ParentContractPage() {
                         </CardContent>
                         {contract.status === 'pending_acceptance' && (
                             <CardFooter className="flex-col items-start gap-4 border-t pt-6 print:hidden bg-muted/5">
-                                <div className="flex items-center space-x-2">
-                                    <Checkbox id="terms" checked={hasAgreed} onCheckedChange={(checked) => setHasAgreed(checked as boolean)} />
+                                <div className="flex items-center space-x-3 bg-muted/30 p-3 rounded-lg border border-primary/10">
+                                    <input 
+                                        type="checkbox" 
+                                        id="terms" 
+                                        checked={hasAgreed} 
+                                        onChange={(e) => setHasAgreed(e.target.checked)}
+                                        className="h-5 w-5 rounded border-primary/30 text-primary focus:ring-primary cursor-pointer"
+                                    />
                                     <label
                                         htmlFor="terms"
-                                        className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                        className="text-sm font-medium leading-none cursor-pointer select-none"
                                     >
                                         Li e concordo com todos os termos do contrato de transporte do(a) {student?.name}.
                                     </label>

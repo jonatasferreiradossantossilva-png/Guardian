@@ -20,17 +20,11 @@ const ValidateApiOutputSchema = z.object({
 
 export type ValidateApiOutput = z.infer<typeof ValidateApiOutputSchema>;
 
-export const validateGeoapifyApi = ai.defineFlow(
-  {
-    name: 'validateGeoapifyApi',
-    inputSchema: z.void(),
-    outputSchema: ValidateApiOutputSchema,
-  },
-  async () => {
+export async function validateGeoapifyApi(): Promise<ValidateApiOutput> {
     const apiKey = process.env.GEOAPIFY_API_KEY;
-    const results = {
-      geocoding: { status: 'error' as const, message: 'Não testado' },
-      routing: { status: 'error' as const, message: 'Não testado' },
+    const results: ValidateApiOutput = {
+      geocoding: { status: 'error', message: 'Não testado' },
+      routing: { status: 'error', message: 'Não testado' },
     };
 
     if (!apiKey) {
@@ -70,5 +64,4 @@ export const validateGeoapifyApi = ai.defineFlow(
     }
 
     return results;
-  }
-);
+}

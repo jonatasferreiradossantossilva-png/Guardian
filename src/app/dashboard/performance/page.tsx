@@ -28,7 +28,7 @@ export default function PerformancePage() {
     if (!history) return [];
     
     // Agrupar por data
-    const grouped = history.reduce((acc, trip) => {
+    const grouped = history.reduce((acc: any, trip: any) => {
         const date = trip.date;
         if (!date) return acc; // Defensive check
 
@@ -45,13 +45,13 @@ export default function PerformancePage() {
         return acc;
     }, {} as Record<string, any>);
 
-    return Object.values(grouped).sort((a,b) => a.day.localeCompare(b.day)).slice(-5);
+    return Object.values(grouped).sort((a: any, b: any) => a.day.localeCompare(b.day)).slice(-5);
   }, [history]);
 
   // Rankings de Motoristas baseados em economia real
   const driverPerformance = useMemo(() => {
     if (!history) return [];
-    const drivers = history.reduce((acc, trip) => {
+    const drivers = history.reduce((acc: any, trip: any) => {
         const driverName = trip.driverName || 'Desconhecido';
         if (!acc[driverName]) acc[driverName] = { name: driverName, savings: 0, count: 0, score: 0 };
         acc[driverName].savings += Number(trip.savingsKm || 0);
@@ -60,20 +60,20 @@ export default function PerformancePage() {
     }, {} as Record<string, any>);
 
     return Object.values(drivers)
-        .map(d => ({
+        .map((d: any) => ({
             ...d,
             score: Math.min(100, 80 + (d.savings / d.count) * 5),
             savingsPct: ((d.savings / (d.savings + 50 + 0.001)) * 100).toFixed(0) + '%',
             status: d.score > 90 ? 'Excelente' : d.score > 80 ? 'Bom' : 'Média'
         }))
-        .sort((a,b) => b.savings - a.savings);
+        .sort((a: any, b: any) => b.savings - a.savings);
   }, [history]);
 
   const stats = useMemo(() => {
       if (!history) return { totalFuelSaved: 0, totalKmSaved: 0, efficiency: 0 };
-      const fuel = history.reduce((sum, t) => sum + Number(t.fuelSaved || 0), 0);
-      const km = history.reduce((sum, t) => sum + Number(t.savingsKm || 0), 0);
-      const totalReal = history.reduce((sum, t) => sum + Number(t.actualKm || 0), 0);
+      const fuel = history.reduce((sum: number, t: any) => sum + Number(t.fuelSaved || 0), 0);
+      const km = history.reduce((sum: number, t: any) => sum + Number(t.savingsKm || 0), 0);
+      const totalReal = history.reduce((sum: number, t: any) => sum + Number(t.actualKm || 0), 0);
       const efficiency = (totalReal + km) > 0 ? (km / (totalReal + km)) * 100 : 0;
       return { totalFuelSaved: fuel, totalKmSaved: km, efficiency };
   }, [history]);
@@ -82,8 +82,8 @@ export default function PerformancePage() {
     if (!vehicles) return [];
     
     return vehicles
-      .filter(v => v.active)
-      .map(v => {
+      .filter((v: any) => v.active)
+      .map((v: any) => {
         const kmSinceLast = (v.currentOdometer || 0) - (v.lastMaintenanceOdometer || 0);
         const remaining = (v.maintenanceInterval || 10000) - kmSinceLast;
         
@@ -96,15 +96,15 @@ export default function PerformancePage() {
             isUrgent: remaining < 1000
         };
       })
-      .sort((a, b) => a.remaining - b.remaining)
+      .sort((a: any, b: any) => a.remaining - b.remaining)
       .slice(0, 3);
   }, [vehicles]);
 
   return (
     <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Performance & Inteligência</h1>
-        <p className="text-muted-foreground">Compare a eficiência da IA com a operação real da frota.</p>
+        <h1 className="text-3xl font-bold tracking-tight">Performance e Logística</h1>
+        <p className="text-muted-foreground">Compare a eficiência do otimizador com a operação real da frota.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
@@ -145,7 +145,7 @@ export default function PerformancePage() {
             <div className="flex items-center justify-between">
               <div>
                 <CardTitle>Eficiência de Roteirização</CardTitle>
-                <CardDescription>Comparativo de KM Planejado (IA) vs. KM Real (GPS)</CardDescription>
+                <CardDescription>Comparativo de KM Planejado (Smart) vs. KM Real (GPS)</CardDescription>
               </div>
               <Sparkles className="h-5 w-5 text-primary animate-pulse" />
             </div>
@@ -209,7 +209,7 @@ export default function PerformancePage() {
             <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                     <Zap className="h-5 w-5 text-primary" />
-                    Insight da Inteligência Guardian
+                    Insight da Logística Guardian
                 </CardTitle>
             </CardHeader>
             <CardContent>
@@ -217,7 +217,7 @@ export default function PerformancePage() {
                     Sua frota economizou <strong>{stats.totalKmSaved.toFixed(1)}km</strong> desde que começou a usar o Guardian. 
                     Isso evitou a emissão de aproximadamente <strong>{(stats.totalKmSaved * 0.15).toFixed(1)}kg de CO2</strong>.
                     <br/><br/>
-                    <span className="text-muted-foreground italic">Dica: Os desvios diminuíram 8% esta semana. O monitoramento em tempo real está disciplinando a execução das rotas otimizadas pela IA.</span>
+                    <span className="text-muted-foreground italic">Dica: Os desvios diminuíram 8% esta semana. O monitoramento em tempo real está disciplinando a execução das rotas otimizadas pelo sistema.</span>
                 </p>
             </CardContent>
          </Card>
@@ -235,7 +235,7 @@ export default function PerformancePage() {
                 {areVehiclesLoading ? (
                     <div className="flex items-center justify-center py-10"><Loader2 className="animate-spin" /></div>
                 ) : maintenanceAlerts.length > 0 ? (
-                    maintenanceAlerts.map((alert) => (
+                    maintenanceAlerts.map((alert: any) => (
                         <div key={alert.id} className={cn(
                             "flex items-center justify-between p-3 rounded-md border",
                             alert.isUrgent ? "border-destructive/20 bg-destructive/5" : "border-muted bg-muted/20"

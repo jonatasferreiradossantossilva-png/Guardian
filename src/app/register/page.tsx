@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -25,9 +25,12 @@ import {
   HeartPulse, 
   DollarSign, 
   Users,
-  ArrowRightLeft
+  ArrowRightLeft,
+  KeyRound
 } from 'lucide-react';
+import { maskCPF, maskPhone, maskCEP, unmask } from '@/lib/masks';
 import { useToast } from '@/hooks/use-toast';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
@@ -41,8 +44,10 @@ import { Textarea } from '@/components/ui/textarea';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { SmartMap } from '@/components/shared/smart-map';
+import { geocodeAddress } from '@/ai/flows/geocode-address';
 
-type Step = 'welcome' | 'scan' | 'review' | 'form' | 'photo' | 'health' | 'success';
+type Step = 'welcome' | 'scan' | 'review' | 'form' | 'photo' | 'health' | 'access' | 'success';
 
 const SERIE_OPTIONS = [
     "Berçário / Maternal",
@@ -72,8 +77,21 @@ const HEALTH_CATEGORIES = [
 
 const PAYMENT_DAYS = Array.from({ length: 31 }, (_, i) => (i + 1).toString());
 
-export default function PublicRegistrationPage() {
+import { useSearchParams } from 'next/navigation';
+
+// ... dentro do componente principal ...
+function RegisterContent() {
+  const searchParams = useSearchParams();
+  const [isMounted, setIsMounted] = useState(false);
+  
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  const registrationType = searchParams.get('type') || 'mensalista';
+
   const [step, setStep] = useState<Step>('welcome');
+  // ... resto do estado ...
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const { toast } = useToast();
@@ -88,6 +106,7 @@ export default function PublicRegistrationPage() {
   const [parentBirthDate, setParentBirthDate] = useState('');
   const [email, setEmail] = useState('');
   const [phone, setPhone] = useState('');
+  const [pin, setPin] = useState('');
   
   // Student Data
   const [studentName, setStudentName] = useState('');
@@ -113,12 +132,16 @@ export default function PublicRegistrationPage() {
   const [neighborhood, setNeighborhood] = useState('');
   const [city, setCity] = useState('');
   const [state, setState] = useState('');
+  const [latitude, setLatitude] = useState<number | null>(null);
+  const [longitude, setLongitude] = useState<number | null>(null);
+  const [isGeocoding, setIsGeocoding] = useState(false);
+  const [mapTrigger, setMapTrigger] = useState(0);
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (isMounted) {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
-  }, [step]);
+  }, [step, isMounted]);
 
   const isFormValid = () => {
       return (
@@ -204,13 +227,36 @@ export default function PublicRegistrationPage() {
     }
   }, [zipCode, toast]);
 
+  // AUTO-GEOCODING: Quando rua e número mudam, busca coordenadas sugeridas
+  useEffect(() => {
+    if (street.length > 5 && number.length >= 1 && city.length > 3) {
+        const timer = setTimeout(async () => {
+            setIsGeocoding(true);
+            try {
+                const fullAddress = `${street}, ${number} - ${neighborhood}, ${city} - ${state}`;
+                const result = await geocodeAddress({ address: fullAddress });
+                if (result) {
+                    setLatitude(result.latitude);
+                    setLongitude(result.longitude);
+                    setMapTrigger(prev => prev + 1);
+                }
+            } catch (e) {
+                console.warn("Geocodificação automática silenciosa falhou");
+            } finally {
+                setIsGeocoding(false);
+            }
+        }, 1500); // Debounce para não gastar API enquanto digita o número
+        return () => clearTimeout(timer);
+    }
+  }, [street, number, city, neighborhood, state]);
+
   const handleFinalSubmit = () => {
     if (!isFormValid()) {
         toast({ title: "Dados incompletos", description: "Por favor, preencha todos os campos obrigatórios marcados com *", variant: "destructive" });
         return;
     }
 
-    addDoc('pending_registrations', {
+    (addDoc as any)('pending_registrations', {
         parentName,
         email,
         phone,
@@ -226,8 +272,10 @@ export default function PublicRegistrationPage() {
         medicalNote,
         status: 'pending_approval',
         createdAt: new Date().toISOString(),
-        address: { zipCode, street, number, complement, neighborhood, city, state },
-        documentData: { cpf: parentCpf, rg: parentRg, birthDate: parentBirthDate }
+        address: { zipCode, street, number, complement, neighborhood, city, state, latitude, longitude },
+        documentData: { cpf: parentCpf, rg: parentRg, birthDate: parentBirthDate },
+        pin, // Novo campo de acesso
+        registrationType: registrationType // Identificador mestre para o gestor
     });
 
     setStep('success');
@@ -263,15 +311,21 @@ export default function PublicRegistrationPage() {
               <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mb-4 border-2 border-primary/20">
                 <UserPlus className="text-primary h-8 w-8" />
               </div>
-              <CardTitle className="text-2xl font-bold">Cadastro Guardian</CardTitle>
-              <CardDescription>Inicie seu cadastro para formalizar o transporte escolar do seu filho.</CardDescription>
+              <CardTitle className="text-2xl font-bold">
+                {!isMounted ? 'Carregando...' : (registrationType === 'avulso' ? 'Cadastro de Viagem Avulsa' : 'Cadastro Guardian')}
+              </CardTitle>
+              <CardDescription>
+                {!isMounted ? 'Preparando formulário seguro...' : (registrationType === 'avulso' 
+                  ? 'Solicite transporte extra para seu filho de forma rápida e segura.' 
+                  : 'Inicie seu cadastro para formalizar o transporte escolar do seu filho.')}
+              </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
                 <div className="space-y-4">
                     <div className="flex items-start gap-3">
                         <div className="bg-primary/20 p-2 rounded-lg mt-1"><Smartphone className="h-4 w-4 text-primary" /></div>
                         <div>
-                            <p className="font-semibold text-sm">Leitura via IA</p>
+                            <p className="font-semibold text-sm">Leitura Inteligente</p>
                             <p className="text-xs text-muted-foreground">Tire uma foto do seu documento para preenchimento automático.</p>
                         </div>
                     </div>
@@ -309,13 +363,36 @@ export default function PublicRegistrationPage() {
                 <CardContent className="space-y-6">
                     <div className="aspect-[3/2] bg-muted/50 rounded-xl border-2 border-dashed border-primary/20 flex flex-col items-center justify-center text-center p-6 relative overflow-hidden">
                         {isProcessing ? (
-                            <div className="flex flex-col items-center gap-4 animate-in fade-in duration-500">
-                                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                                <div className="space-y-1">
-                                    <p className="font-bold text-primary flex items-center justify-center gap-2">
-                                        <Sparkles className="h-4 w-4" /> Analisando Dados...
-                                    </p>
-                                    <p className="text-xs text-muted-foreground">Mapeando campos oficiais do documento</p>
+                            <div className="flex flex-col items-center gap-4 animate-in fade-in duration-500 relative w-full h-full justify-center overflow-hidden">
+                                {/* Laser Line (Framer Motion for guaranteed visibility) */}
+                                <motion.div 
+                                    className="absolute inset-x-0 h-1 bg-primary shadow-[0_0_20px_#2ab0c1] z-30"
+                                    initial={{ top: "-10%" }}
+                                    animate={{ top: "110%" }}
+                                    transition={{ 
+                                        duration: 2, 
+                                        repeat: Infinity, 
+                                        ease: "linear" 
+                                    }}
+                                />
+
+                                {/* Scanning Overlay */}
+                                <div className="absolute inset-0 bg-primary/5 backdrop-blur-[1px] z-10" />
+                                
+                                {/* Scanning Frame Corners */}
+                                <div className="absolute top-4 left-4 w-10 h-10 border-t-4 border-l-4 border-primary rounded-tl-xl z-20 shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
+                                <div className="absolute top-4 right-4 w-10 h-10 border-t-4 border-r-4 border-primary rounded-tr-xl z-20 shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
+                                <div className="absolute bottom-4 left-4 w-10 h-10 border-b-4 border-l-4 border-primary rounded-bl-xl z-20 shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
+                                <div className="absolute bottom-4 right-4 w-10 h-10 border-b-4 border-r-4 border-primary rounded-br-xl z-20 shadow-[0_0_10px_rgba(var(--primary),0.3)]" />
+
+                                <div className="relative z-30 flex flex-col items-center gap-4 bg-background/40 p-6 rounded-2xl backdrop-blur-md border border-white/10 shadow-2xl">
+                                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                                    <div className="space-y-1 text-center">
+                                        <p className="font-bold text-primary flex items-center justify-center gap-2 text-lg">
+                                            <Sparkles className="h-5 w-5 animate-pulse" /> Analisando Dados...
+                                        </p>
+                                        <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-black">Escaneando Documento</p>
+                                    </div>
                                 </div>
                             </div>
                         ) : (
@@ -327,15 +404,15 @@ export default function PublicRegistrationPage() {
                         )}
                     </div>
                 </CardContent>
-                <CardFooter className="flex flex-col gap-2">
+                <CardFooter className="flex flex-col gap-3 pt-4">
                     <input type="file" accept="image/*" capture="environment" className="hidden" ref={fileInputRef} onChange={handleFileChange} />
-                    <Button className="w-full h-12 font-bold" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}>
+                    <Button className="w-full h-14 text-base font-bold shadow-lg" onClick={() => fileInputRef.current?.click()} disabled={isProcessing}>
                         <Camera className="mr-2 h-5 w-5" />
                         Tirar Foto Agora
                     </Button>
-                    <div className="grid grid-cols-2 gap-2 w-full">
-                        <Button variant="outline" onClick={() => setStep('welcome')} disabled={isProcessing}>Voltar</Button>
-                        <Button variant="secondary" onClick={() => setStep('form')} disabled={isProcessing}>Pular para Manual</Button>
+                    <div className="flex flex-col sm:flex-row gap-2 w-full">
+                        <Button variant="outline" className="flex-1 h-12" onClick={() => setStep('welcome')} disabled={isProcessing}>Voltar</Button>
+                        <Button variant="secondary" className="flex-1 h-12" onClick={() => setStep('form')} disabled={isProcessing}>Pular p/ Manual</Button>
                     </div>
                 </CardFooter>
             </Card>
@@ -348,20 +425,31 @@ export default function PublicRegistrationPage() {
                         <Sparkles className="h-5 w-5" />
                         <CardTitle className="text-lg">Revisar Dados Extraídos</CardTitle>
                     </div>
-                    <CardDescription>A IA capturou estes campos. Ajuste se necessário.</CardDescription>
+                    <CardDescription>O sistema capturou estes campos. Ajuste se necessário.</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4 pt-6">
-                    <div className="space-y-2">
-                        <Label>Nome Completo</Label>
+                    <div className="space-y-2 animate-in slide-in-from-left duration-300">
+                        <div className="flex items-center justify-between">
+                            <Label>Nome Completo</Label>
+                            <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20 gap-1">
+                                <Sparkles className="h-2 w-2" /> Extraído por IA
+                            </Badge>
+                        </div>
                         <Input value={parentName} onChange={e => setParentName(e.target.value)} className="font-bold border-primary/30" />
                     </div>
                     <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>CPF</Label>
+                        <div className="space-y-2 animate-in slide-in-from-left delay-75 duration-300">
+                            <div className="flex items-center justify-between">
+                                <Label>CPF</Label>
+                                <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20">IA</Badge>
+                            </div>
                             <Input value={parentCpf} onChange={e => setParentCpf(e.target.value)} />
                         </div>
-                        <div className="space-y-2">
-                            <Label>RG</Label>
+                        <div className="space-y-2 animate-in slide-in-from-left delay-150 duration-300">
+                            <div className="flex items-center justify-between">
+                                <Label>RG</Label>
+                                <Badge variant="outline" className="text-[10px] bg-primary/5 text-primary border-primary/20">IA</Badge>
+                            </div>
                             <Input value={parentRg} onChange={e => setParentRg(e.target.value)} />
                         </div>
                     </div>
@@ -385,46 +473,46 @@ export default function PublicRegistrationPage() {
         {step === 'form' && (
           <Card className="shadow-2xl border-primary/20 flex flex-col h-[90vh]">
             <CardHeader className="border-b bg-muted/30 shrink-0">
-              <CardTitle className="text-lg">Finalizar Inscrição</CardTitle>
-              <CardDescription>Complete com seus contatos e endereço.</CardDescription>
+              <CardTitle className="text-base md:text-lg">Finalizar Inscrição</CardTitle>
+              <CardDescription className="text-xs">Complete com seus contatos e endereço.</CardDescription>
             </CardHeader>
             
             <ScrollArea className="flex-1">
                 <CardContent className="space-y-6 pt-6 pb-10">
                     <div className="space-y-4">
-                        <p className="text-sm font-bold flex items-center gap-2 text-primary">
+                        <div className="text-sm font-bold flex items-center gap-2 text-primary">
                             <User className="h-4 w-4" /> Identificação do Responsável
-                        </p>
+                        </div>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Nome Completo *</Label>
-                                <Input value={parentName} onChange={e => setParentName(e.target.value)} />
+                                <Label htmlFor="parentName">Nome Completo *</Label>
+                                <Input id="parentName" value={parentName} onChange={e => setParentName(e.target.value)} />
                             </div>
                             <div className="grid grid-cols-2 gap-4">
                                 <div className="space-y-2">
-                                    <Label>CPF *</Label>
-                                    <Input value={parentCpf} onChange={e => setParentCpf(e.target.value)} />
+                                    <Label htmlFor="parentCpf">CPF *</Label>
+                                    <Input id="parentCpf" value={parentCpf} onChange={e => setParentCpf(maskCPF(e.target.value))} maxLength={14} />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>RG</Label>
-                                    <Input value={parentRg} onChange={e => setParentRg(e.target.value)} />
+                                    <Label htmlFor="parentRg">RG</Label>
+                                    <Input id="parentRg" value={parentRg} onChange={e => setParentRg(e.target.value)} />
                                 </div>
                             </div>
                         </div>
                     </div>
 
                     <div className="space-y-4 border-t pt-6">
-                        <p className="text-sm font-bold flex items-center gap-2 text-primary">
+                        <div className="text-sm font-bold flex items-center gap-2 text-primary">
                             <Smartphone className="h-4 w-4" /> Contato
-                        </p>
+                        </div>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                             <div className="space-y-2">
-                                <Label>E-mail *</Label>
-                                <Input type="email" value={email} onChange={e => setEmail(e.target.value)} />
+                                <Label htmlFor="email">E-mail *</Label>
+                                <Input id="email" type="email" value={email} onChange={e => setEmail(e.target.value)} />
                             </div>
                             <div className="space-y-2">
-                                <Label>WhatsApp *</Label>
-                                <Input value={phone} onChange={e => setPhone(e.target.value)} />
+                                <Label htmlFor="phone">WhatsApp *</Label>
+                                <Input id="phone" value={phone} onChange={e => setPhone(maskPhone(e.target.value))} />
                             </div>
                         </div>
                     </div>
@@ -436,31 +524,72 @@ export default function PublicRegistrationPage() {
                         <div className="space-y-4">
                             <div className="grid grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                    <Label>CEP *</Label>
+                                    <Label htmlFor="zipCode">CEP *</Label>
                                     <div className="relative">
-                                        <Input value={zipCode} onChange={e => setZipCode(e.target.value)} />
+                                        <Input id="zipCode" value={zipCode} onChange={e => setZipCode(maskCEP(e.target.value))} maxLength={9} />
                                         {isFetchingCep && <Loader2 className="absolute right-2 top-3 h-4 w-4 animate-spin text-muted-foreground" />}
                                     </div>
                                 </div>
                                 <div className="space-y-2 col-span-2">
-                                    <Label>Rua *</Label>
-                                    <Input value={street} onChange={e => setStreet(e.target.value)} />
+                                    <Label htmlFor="street">Rua *</Label>
+                                    <Input id="street" value={street} onChange={e => setStreet(e.target.value)} />
                                 </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                                 <div className="space-y-2">
-                                    <Label>Número *</Label>
-                                    <Input value={number} onChange={e => setNumber(e.target.value)} />
+                                    <Label htmlFor="number">Número *</Label>
+                                    <Input id="number" value={number} onChange={e => setNumber(e.target.value)} />
                                 </div>
                                 <div className="space-y-2">
                                     <Label>Complemento</Label>
                                     <Input value={complement} onChange={e => setComplement(e.target.value)} placeholder="Ex: Apto 42" />
                                 </div>
                                 <div className="space-y-2">
-                                    <Label>Bairro</Label>
-                                    <Input value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
+                                    <Label htmlFor="neighborhood">Bairro</Label>
+                                    <Input id="neighborhood" value={neighborhood} onChange={e => setNeighborhood(e.target.value)} />
                                 </div>
                             </div>
+                            <div className="grid grid-cols-2 gap-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="city">Cidade *</Label>
+                                    <Input id="city" value={city} onChange={e => setCity(e.target.value)} />
+                                </div>
+                                <div className="space-y-2">
+                                    <Label htmlFor="state">Estado *</Label>
+                                    <Input id="state" value={state} onChange={e => setState(e.target.value)} maxLength={2} placeholder="SP" />
+                                </div>
+                            </div>
+
+                            {/* MAPA DE AJUSTE DE PINO */}
+                            {latitude && longitude && (
+                                <div className="space-y-2 pt-2 animate-in zoom-in-95 duration-500">
+                                    <Label className="text-xs text-primary font-bold flex items-center gap-1">
+                                        <MapPin className="h-3 w-3" /> Confirme seu local de embarque
+                                    </Label>
+                                    <div className="h-[200px] rounded-lg border overflow-hidden relative shadow-inner">
+                                        <SmartMap 
+                                            center={{ lat: latitude, lng: longitude }}
+                                            zoom={16}
+                                            stops={[]}
+                                            forcedMode="osm"
+                                            editableMarker={{ latitude, longitude }}
+                                            onPositionChange={(lat, lng) => {
+                                                setLatitude(lat);
+                                                setLongitude(lng);
+                                            }}
+                                            recenterTrigger={mapTrigger}
+                                        />
+                                        {isGeocoding && (
+                                            <div className="absolute inset-0 bg-background/40 flex items-center justify-center z-[1000]">
+                                                <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                                            </div>
+                                        )}
+                                    </div>
+                                    <p className="text-[10px] text-muted-foreground text-center">
+                                        Arraste o pino vermelho se o endereço sugerido estiver impreciso.
+                                    </p>
+                                </div>
+                            )}
                         </div>
                     </div>
                     
@@ -470,15 +599,15 @@ export default function PublicRegistrationPage() {
                         </p>
                         <div className="space-y-4">
                             <div className="space-y-2">
-                                <Label>Nome do Filho(a) *</Label>
-                                <Input value={studentName} onChange={e => setStudentName(e.target.value)} />
+                                <Label htmlFor="studentName">Nome do Filho(a) *</Label>
+                                <Input id="studentName" value={studentName} onChange={e => setStudentName(e.target.value)} />
                             </div>
                             <div className="space-y-2">
                                 <Label>Escola de Destino *</Label>
                                 <Select onValueChange={setSelectedSchoolId} value={selectedSchoolId}>
                                     <SelectTrigger><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
                                     <SelectContent>
-                                        {schools?.map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                                        {schools?.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                                     </SelectContent>
                                 </Select>
                             </div>
@@ -527,20 +656,22 @@ export default function PublicRegistrationPage() {
                         </div>
                     </div>
 
-                    <div className="border-t pt-6">
-                        <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
-                            <DollarSign className="h-4 w-4" /> Preferências Financeiras
-                        </p>
-                        <div className="space-y-2">
-                            <Label>Dia de Vencimento Sugerido</Label>
-                            <Select onValueChange={setPreferredPaymentDay} value={preferredPaymentDay}>
-                                <SelectTrigger><SelectValue placeholder="Escolha um dia..." /></SelectTrigger>
-                                <SelectContent>
-                                    {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
-                                </SelectContent>
-                            </Select>
+                    {isMounted && registrationType !== 'avulso' && (
+                        <div className="border-t pt-6">
+                            <p className="text-sm font-bold mb-4 flex items-center gap-2 text-primary">
+                                <DollarSign className="h-4 w-4" /> Preferências Financeiras
+                            </p>
+                            <div className="space-y-2">
+                                <Label>Dia de Vencimento Sugerido</Label>
+                                <Select onValueChange={setPreferredPaymentDay} value={preferredPaymentDay}>
+                                    <SelectTrigger><SelectValue placeholder="Escolha um dia..." /></SelectTrigger>
+                                    <SelectContent>
+                                        {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </CardContent>
             </ScrollArea>
 
@@ -603,7 +734,55 @@ export default function PublicRegistrationPage() {
                     </div>
                 </CardContent>
                 <CardFooter className="flex flex-col gap-2 border-t pt-6 bg-muted/20">
-                    <Button className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-700" onClick={handleFinalSubmit}>Finalizar e Enviar para Aprovação</Button>
+                    <Button 
+                      className="w-full h-14 text-base font-bold bg-primary hover:bg-primary/90 whitespace-normal text-center" 
+                      onClick={() => setStep('access')}
+                    >
+                      Segurança de Acesso
+                      <ArrowRight className="ml-2 h-5 w-5 shrink-0" />
+                    </Button>
+                </CardFooter>
+            </Card>
+        )}
+
+        {step === 'access' && (
+            <Card className="shadow-2xl border-primary/20 animate-in zoom-in-95 duration-500">
+                <CardHeader className="bg-primary/5 border-b text-center">
+                    <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center mb-2">
+                        <KeyRound className="text-primary h-6 w-6" />
+                    </div>
+                    <CardTitle>Segurança de Acesso</CardTitle>
+                    <CardDescription>Crie um PIN de 6 dígitos para acessar o app.</CardDescription>
+                </CardHeader>
+                <CardContent className="space-y-6 pt-8">
+                    <div className="space-y-4">
+                        <p className="text-sm text-center text-muted-foreground">
+                            Você usará seu **CPF** e este **PIN** para acompanhar a van em tempo real assim que o cadastro for aprovado.
+                        </p>
+                        <div className="space-y-2">
+                            <Label>Defina seu PIN de 6 dígitos *</Label>
+                            <Input 
+                                type="password" 
+                                inputMode="numeric"
+                                pattern="\d*"
+                                maxLength={6}
+                                placeholder="000000"
+                                className="text-center text-2xl tracking-[1em] font-mono h-16"
+                                value={pin}
+                                onChange={(e) => setPin(e.target.value.replace(/\D/g, ''))}
+                            />
+                        </div>
+                    </div>
+                </CardContent>
+                <CardFooter className="flex flex-col gap-3 border-t pt-6 bg-muted/20">
+                    <Button 
+                        className="w-full h-14 text-base font-bold bg-green-600 hover:bg-green-700 whitespace-normal leading-tight" 
+                        onClick={handleFinalSubmit}
+                        disabled={pin.length < 4}
+                    >
+                        Concluir e Enviar p/ Aprovação
+                    </Button>
+                    <Button variant="ghost" onClick={() => setStep('health')}>Voltar</Button>
                 </CardFooter>
             </Card>
         )}
@@ -627,5 +806,13 @@ export default function PublicRegistrationPage() {
         )}
       </div>
     </div>
+  );
+}
+
+export default function PublicRegistrationPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen bg-background"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
+      <RegisterContent />
+    </Suspense>
   );
 }

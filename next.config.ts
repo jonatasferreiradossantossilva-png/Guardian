@@ -1,7 +1,15 @@
 import type {NextConfig} from 'next';
+import withPWAInit from "@ducanh2912/next-pwa";
+
+const withPWA = withPWAInit({
+  dest: "public",
+  disable: false, // Habilitado para teste local no celular (via Wi-Fi)
+  register: true,
+});
 
 const nextConfig: NextConfig = {
   /* config options here */
+  allowedDevOrigins: ['192.168.0.30', '192.168.0.*', 'localhost'],
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -44,4 +52,4 @@ const nextConfig: NextConfig = {
   },
 };
 
-export default nextConfig;
+export default withPWA(nextConfig);

@@ -39,10 +39,10 @@ export function DriverRouteInfoCard() {
   ] : []);
   
   // 4. Get all users to find monitors
-  const { data: users, isLoading: areUsersLoading } = useMockCollection('users');
+  const { data: users, isLoading: areUsersLoading } = useMockCollection('users', undefined);
 
-  const monitors = useMemo(() => (users || []).filter(u => u.profile === 'monitor'), [users]);
-  const monitorsMap = useMemo(() => new Map(monitors.map(a => [a.id, a.name])), [monitors]);
+  const monitors = useMemo(() => (users || []).filter((u: any) => u.profile === 'monitor'), [users]);
+  const monitorsMap = useMemo(() => new Map(monitors.map((a: any) => [a.id, a.name])), [monitors]);
   const currentMonitorName = useMemo(() => {
     if (!activeRoute?.monitorId) return "Nenhum";
     return monitorsMap.get(activeRoute.monitorId) || "Desconhecido";
@@ -61,7 +61,7 @@ export function DriverRouteInfoCard() {
     return null;
   }
   
-  const studentsOnBoard = students.filter(s => s.status === 'a_bordo').length;
+  const studentsOnBoard = students.filter((s: any) => s.status === 'a_bordo').length;
   const totalStudents = activeRoute.studentIds.length;
 
   const handleFormSubmit = () => {
@@ -90,11 +90,15 @@ export function DriverRouteInfoCard() {
                   <span className="font-medium">{studentsOnBoard} / {totalStudents} a bordo</span>
                 </div>
                  <div className="flex justify-between items-center">
-                    <span>Monitor:</span>
+                    <span>Equipe:</span>
                     <div className="flex items-center gap-1">
-                      <span className="font-medium truncate max-w-[100px]">{currentMonitorName}</span>
+                      {(!activeRoute.monitorId || activeRoute.monitorId === 'none') ? (
+                          <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 text-[10px] py-0">Motorista Solo</Badge>
+                      ) : (
+                          <span className="font-medium text-xs truncate max-w-[100px] text-muted-foreground mr-1">{String(currentMonitorName)}</span>
+                      )}
                        <DialogTrigger asChild>
-                          <Button variant="ghost" size="icon" className="h-5 w-5" title="Trocar monitor">
+                          <Button variant="ghost" size="icon" className="h-5 w-5 text-muted-foreground/60 hover:text-foreground" title="Alterar equipe">
                             <Edit className="h-3 w-3" />
                           </Button>
                        </DialogTrigger>

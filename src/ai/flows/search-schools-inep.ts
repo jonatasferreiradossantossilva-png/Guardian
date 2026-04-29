@@ -32,7 +32,7 @@ export async function searchSchoolsInep(input: SearchSchoolsInput): Promise<Sear
 
 const prompt = ai.definePrompt({
   name: 'searchSchoolsInepPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-2.0-flash',
   input: { schema: SearchSchoolsInputSchema },
   output: { schema: SearchSchoolsOutputSchema },
   prompt: `Você é um motor de busca inteligente para escolas brasileiras. 

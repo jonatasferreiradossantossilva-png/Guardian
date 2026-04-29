@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect, useRef } from 'react';
 import { Label } from '@/components/ui/label';
 import { Input } from '@/components/ui/input';
 import {
@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { 
     Users, 
     School, 
@@ -39,17 +39,15 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Checkbox } from '@/components/ui/checkbox';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { format } from 'date-fns';
+import { ptBR } from 'date-fns/locale';
 import { optimizeSchoolVanRoute } from '@/ai/flows/optimizeSchoolVanRoute';
 import { routingGeoapify } from '@/ai/flows/routing-geoapify';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-type Driver = { id: string; name: string; vehicleId?: string; latitude?: number; longitude?: number; };
-type Student = { id: string; name: string; shift: string; active?: boolean; schoolId: string; serie?: string; turma?: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; latitude?: number; longitude?: number; };
-type Monitor = { id: string; name: string };
-type Vehicle = { id: string; model: string; capacity: number; };
-type SchoolData = { id: string; name: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; latitude?: number; longitude?: number; };
-type Route = { id: string; studentIds?: string[]; name?: string; driverId?: string; monitorId?: string; shift?: 'Manhã' | 'Tarde'; lastOptimizedAt?: string; polyline?: string; };
+import { Driver, Student, User as Monitor, Vehicle, SchoolData, Route } from '@/types/mock-data';
+
 type Stop = { id: string; type: 'student' | 'school'; name: string, details?: string };
 
 interface RouteFormProps {
@@ -79,7 +77,7 @@ export function RouteForm({
   const [name, setName] = useState(route?.name || '');
   const [driverId, setDriverId] = useState(route?.driverId || '');
   const [monitorId, setMonitorId] = useState(route?.monitorId || '');
-  const [shift, setShift] = useState<'Manhã' | 'Tarde' | ''>(route?.shift || '');
+  const [shift, setShift] = useState<'' | 'Manhã' | 'Tarde' | 'Integral'>(route?.shift || '');
   const [optimizationMode, setOptimizationMode] = useState<'safe' | 'flexible'>('safe');
   const [polyline, setPolyline] = useState(route?.polyline || '');
   const [selectedSchoolIds, setSelectedSchoolIds] = useState<string[]>([]);
@@ -89,18 +87,29 @@ export function RouteForm({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isOptimized, setIsOptimized] = useState(false);
 
+  const { data: allTemplates } = (useMockCollection as any)('contract_templates');
+  const { data: allCompanies } = (useMockCollection as any)('company_profiles');
+  const defaultTemplate = allTemplates?.[0];
+  const company = allCompanies?.[0];
+
   const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
   const schoolsMap = useMemo(() => new Map(schools.map(s => [s.id, s])), [schools]);
 
   const formatStudentMetaAbbrev = (s: Student | undefined) => {
     if (!s) return '';
-    const serie = s.serie?.replace(/\s*ano/i, '').replace(/º/g, '').trim() || '?';
-    const sala = s.turma?.replace(/sala/i, 'SL.').trim() || '';
+    const nameStr = String(s.name || '');
+    const serie = (typeof s.serie === 'string' ? s.serie : '').replace(/\s*ano/i, '').replace(/º/g, '').trim() || '?';
+    const sala = (typeof s.turma === 'string' ? s.turma : '').replace(/sala/i, 'SL.').trim() || '';
     const shiftText = s.shift || '';
     return `${serie}° - ${sala} - ${shiftText}`;
   };
 
+  const [initialStudentIds] = useState<Set<string>>(() => new Set(route?.studentIds || []));
+  const initializedRef = useRef<string | null>(null);
+
   useEffect(() => {
+    if (initializedRef.current === (route?.id || 'new')) return;
+    
     const initialStops: Stop[] = [];
     const initialSchoolIds = new Set<string>();
 
@@ -118,6 +127,7 @@ export function RouteForm({
     setStops(initialStops);
     setSelectedSchoolIds(Array.from(initialSchoolIds));
     setIsOptimized(!!route?.lastOptimizedAt);
+    initializedRef.current = route?.id || 'new';
   }, [route, studentsMap, schoolsMap]);
 
   const { vehicleCapacity } = useMemo(() => {
@@ -130,7 +140,9 @@ export function RouteForm({
     const studentIdSet = new Set<string>();
     if (!shift || !allRoutes) return studentIdSet;
     for (const r of allRoutes) {
-        if (r.id === route?.id) continue;
+        // Ignora a rota que estamos editando (pelo ID)
+        if (route?.id && r.id === route.id) continue;
+        
         if (r.shift === shift) {
             r.studentIds?.forEach(id => { if (studentsMap.has(id)) studentIdSet.add(id); });
         }
@@ -142,13 +154,21 @@ export function RouteForm({
     const currentStudentIds = new Set(stops.filter(s => s.type === 'student').map(s => s.id));
     const studentsOnRoute = stops.filter(s => s.type === 'student').map(s => studentsMap.get(s.id)).filter(Boolean) as Student[];
     
-    let filtered = [];
-    if (selectedSchoolIds.length > 0 && shift) {
+    let filtered: Student[] = [];
+    if (shift) {
+        const searchNorm = (studentSearch || '').toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
         filtered = students.filter(s => {
-            if (!selectedSchoolIds.includes(s.schoolId)) return false;
-            if (assignedStudentsInOtherRoutes.has(s.id)) return false;
+            if (!s || !s.name) return false;
+            // Se houver escolas selecionadas, filtra por elas. Se não, mostra todos do turno.
+            if (selectedSchoolIds.length > 0 && !selectedSchoolIds.includes(s.schoolId)) return false;
+            
+            // Se o aluno já estava nesta rota inicialmente, ignoramos o fato de ele estar em outras rotas
+            // Isso resolve conflitos de dados (como no caso do Juliano) e garante que o aluno volte para a lista.
+            if (assignedStudentsInOtherRoutes.has(s.id) && !initialStudentIds.has(s.id)) return false;
             if (currentStudentIds.has(s.id)) return false;
-            return s.active !== false && s.name.toLowerCase().includes(studentSearch.toLowerCase()) && (s.shift === 'Integral' || s.shift === shift);
+            
+            const nameNorm = s.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+            return s.active !== false && nameNorm.includes(searchNorm) && (s.shift === 'Integral' || s.shift === shift);
         });
     }
     return { availableStudents: filtered, studentsOnRoute };
@@ -191,11 +211,26 @@ export function RouteForm({
     try {
         const schoolsOnRoute = selectedSchoolIds.map(id => schoolsMap.get(id)).filter(Boolean) as SchoolData[];
         const driver = drivers.find(d => d.id === driverId);
-        const formatAddress = (e: any) => e?.street ? `${e.street}, ${e.number}, ${e.neighborhood}, ${e.city} - ${e.state}` : 'Endereço indisponível';
+        const formatAddress = (e: Student | SchoolData | undefined) => e?.street ? `${e.street}, ${e.number}, ${e.neighborhood}, ${e.city} - ${e.state}` : 'Endereço indisponível';
 
         const result = await optimizeSchoolVanRoute({
-            students: studentsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s), schoolId: s.schoolId })),
-            schools: schoolsOnRoute.map(s => ({ id: s.id, name: s.name, address: formatAddress(s) })),
+            students: studentsOnRoute.map(s => ({ 
+                id: s.id, 
+                name: s.name, 
+                address: formatAddress(s), 
+                schoolId: s.schoolId,
+                latitude: s.latitude,
+                longitude: s.longitude
+            })),
+            schools: schoolsOnRoute.map(s => ({ 
+                id: s.id, 
+                name: s.name, 
+                address: formatAddress(s),
+                latitude: s.latitude,
+                longitude: s.longitude,
+                startTime: s.startTime,
+                endTime: s.endTime
+            })),
             startAddress: (driver?.latitude && driver?.longitude) ? `${driver.latitude},${driver.longitude}` : undefined,
             vehicleCapacity,
             direction: 'ida',
@@ -216,7 +251,7 @@ export function RouteForm({
         }).filter(Boolean) as any[];
 
         if (waypoints.length >= 2) {
-            const routing = await routingGeoapify({ waypoints });
+            const routing = await routingGeoapify({ waypoints, mode: 'drive' });
             setPolyline(routing.polyline);
         }
 
@@ -236,11 +271,97 @@ export function RouteForm({
 
   const handleSubmit = () => {
     if (!name.trim() || !driverId || !selectedSchoolIds.length || !shift) {
-        setErrors({ name: !name.trim() ? 'Obrigatório' : '', driverId: !driverId ? 'Obrigatório' : '', schoolIds: !selectedSchoolIds.length ? 'Selecione uma escola' : '', shift: !shift ? 'Obrigatório' : '' });
+        setErrors({ 
+            name: !name.trim() ? 'Obrigatório' : '', 
+            driverId: !driverId ? 'Obrigatório' : '', 
+            schoolIds: !selectedSchoolIds.length ? 'Selecione uma escola' : '', 
+            shift: !shift ? 'Obrigatório' : '' 
+        });
         return;
     }
-    const finalData = { name, driverId, monitorId: monitorId === 'none' ? '' : monitorId, studentIds: stops.map(s => s.id), shift, polyline, lastOptimizedAt: isOptimized ? new Date().toISOString() : '' };
-    if (route) updateDoc('routes', route.id, finalData); else addDoc('routes', finalData);
+
+    // 1. Preparar dados da rota
+    const currentStudentIds = stops.filter(s => s.type === 'student').map(s => s.id);
+    const finalData = { 
+        name, 
+        driverId, 
+        monitorId: monitorId === 'none' ? '' : monitorId, 
+        studentIds: currentStudentIds, 
+        shift: shift as 'Manhã' | 'Tarde', 
+        polyline, 
+        lastOptimizedAt: isOptimized ? new Date().toISOString() : '',
+        schoolIds: selectedSchoolIds,
+        updatedAt: new Date().toISOString()
+    };
+
+    // 2. Salvar Rota
+    if (route) {
+        (updateDoc as any)('routes', route.id, finalData);
+    } else {
+        (addDoc as any)('routes', { ...finalData, createdAt: new Date().toISOString() });
+    }
+
+    // 3. Sincronizar status dos alunos
+    const oldStudentIds = new Set(route?.studentIds || []);
+    const newStudentIds = new Set(currentStudentIds);
+
+    // Alunos REMOVIDOS da rota -> Voltam para pendente_alocacao
+    oldStudentIds.forEach(stId => {
+        if (!newStudentIds.has(stId)) {
+            (updateDoc as any)('students', stId, { 
+                status: 'pendente_alocacao',
+                routeId: undefined 
+            });
+        }
+    });
+
+    // Alunos ATIVOS na rota -> Garantir status e faturamento
+    newStudentIds.forEach(stId => {
+        const student = studentsMap.get(stId);
+        if (student) {
+            // Se o aluno não estava na rota (é novo), faz o onboarding operacional/financeiro
+            if (!oldStudentIds.has(stId)) {
+                // Atualiza status e vincula rota
+                (updateDoc as any)('students', stId, { 
+                    status: 'aguardando', 
+                    routeId: route?.id || 'new-route' 
+                });
+
+                // Gera contrato se houver template
+                if (defaultTemplate && company) {
+                    const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
+                    (addDoc as any)('contracts', {
+                        templateId: defaultTemplate.id,
+                        studentId: stId,
+                        parentUserId: student.parentId, 
+                        generatedContent: `Contrato ativado em ${generationDate} para a rota ${name}.`,
+                        status: 'pending_acceptance',
+                        createdAt: new Date().toISOString()
+                    });
+                }
+
+                // Gera primeira fatura
+                const today = new Date();
+                const dueDate = `${today.getFullYear()}-${(today.getMonth() + 1).toString().padStart(2, '0')}-${student.preferredPaymentDay || '10'}`;
+                
+                (addDoc as any)('invoices', {
+                    studentId: stId,
+                    parentUserId: student.parentId,
+                    description: `Primeira Mensalidade - Ativação de Rota (${name})`,
+                    amount: student.monthlyFee || 0,
+                    dueDate: dueDate,
+                    status: 'pending',
+                    createdAt: today.toISOString()
+                });
+
+                toast({ title: `Habilitação Concluída: ${student.name}`, description: `Status atualizado e faturamento gerado.` });
+            } else {
+                // Apenas garante que a rota está vinculada para alunos que já estavam
+                (updateDoc as any)('students', stId, { routeId: route?.id });
+            }
+        }
+    });
+
     toast({ title: route ? 'Rota atualizada!' : 'Rota adicionada!' });
     onFormSubmit();
   };
@@ -249,7 +370,7 @@ export function RouteForm({
     <DialogContent className="sm:max-w-7xl h-[90vh] flex flex-col p-0 overflow-hidden" onOpenAutoFocus={(e) => e.preventDefault()}>
       <DialogHeader className="p-6 pb-4 border-b shrink-0 bg-background z-20">
         <DialogTitle className="text-xl font-black uppercase italic text-primary">Configuração de Itinerário Inteligente</DialogTitle>
-        <DialogDescription>A IA calculará a melhor rota priorizando o bem-estar dos alunos e a economia da operação.</DialogDescription>
+        <DialogDescription>O sistema calculará a melhor rota priorizando o bem-estar dos alunos e a economia da operação.</DialogDescription>
       </DialogHeader>
       
       <div className="flex-1 overflow-y-auto bg-background">
@@ -262,7 +383,7 @@ export function RouteForm({
                             <Label className="text-[10px] font-black uppercase tracking-widest text-primary">Dados da Rota</Label>
                             <Input placeholder="Nome da Rota" value={name} onChange={e => setName(e.target.value)} className={cn("bg-background font-bold h-11", errors.name && "border-destructive")} />
                         </div>
-                        <div className="grid grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                             <div className="space-y-2">
                                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Turno</Label>
                                 <Select onValueChange={v => setShift(v as any)} value={shift}>
@@ -275,6 +396,16 @@ export function RouteForm({
                                 <Select onValueChange={setDriverId} value={driverId}>
                                     <SelectTrigger className={cn("bg-background h-11", errors.driverId && "border-destructive")}><SelectValue placeholder="Escolha" /></SelectTrigger>
                                     <SelectContent>{drivers.map(d => <SelectItem key={d.id} value={d.id}>{d.name}</SelectItem>)}</SelectContent>
+                                </Select>
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Monitor</Label>
+                                <Select onValueChange={setMonitorId} value={monitorId || 'none'}>
+                                    <SelectTrigger className="bg-background h-11"><SelectValue placeholder="Escolha" /></SelectTrigger>
+                                    <SelectContent>
+                                        <SelectItem value="none">Nenhum (Modo Solo)</SelectItem>
+                                        {monitors.map(m => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
+                                    </SelectContent>
                                 </Select>
                             </div>
                         </div>
@@ -302,30 +433,59 @@ export function RouteForm({
                                 </div>
                                 <div className={cn("relative flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all bg-background", optimizationMode === 'flexible' ? "border-amber-500 shadow-sm" : "border-border opacity-70")} onClick={() => setOptimizationMode('flexible')}>
                                     <div className="mt-1"><RadioGroupItem value="flexible" id="flexible" /></div>
-                                    <div className="space-y-1 flex-1"><Label htmlFor="flexible" className="font-black text-[10px] uppercase text-amber-600 cursor-pointer">Máxima Agilidade (Plano do Motorista)</Label><p className="text-[9px] text-muted-foreground leading-tight italic">Permite o desembarque em fases. A IA prioriza a entrega rápida assim que o grupo de uma escola estiver completo.</p></div>
+                                    <div className="space-y-1 flex-1"><Label htmlFor="flexible" className="font-black text-[10px] uppercase text-amber-600 cursor-pointer">Máxima Agilidade (Plano do Motorista)</Label><p className="text-[9px] text-muted-foreground leading-tight italic">Permite o desembarque em fases. O sistema prioriza a entrega rápida assim que o grupo de uma escola estiver completo.</p></div>
                                 </div>
                             </RadioGroup>
                         </div>
                     )}
 
-                    <div className="space-y-3">
-                        <div className="flex items-center justify-between">
-                            <Label className="text-[10px] font-black uppercase tracking-widest text-primary">2. Alunos Disponíveis</Label>
-                            {availableStudents.length > 0 && <Button variant="ghost" size="sm" className="h-6 text-[9px] font-black uppercase text-primary hover:bg-primary/10" onClick={handleAddAllAvailable}><UserPlus className="h-3 w-3 mr-1" /> Inclusão em Massa</Button>}
+                    <div className="space-y-4">
+                        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                            <div className="flex items-center gap-2 flex-wrap">
+                                <Label className="text-[10px] font-black uppercase tracking-widest text-primary shrink-0">2. Alunos Disponíveis</Label>
+                                <Badge variant="outline" className="text-[10px] font-black h-6 bg-primary/5 text-primary border-primary/20">{availableStudents.length} LIVRES</Badge>
+                            </div>
+                            {availableStudents.length > 0 && (
+                                <Button variant="ghost" size="sm" className="h-8 text-[10px] font-black uppercase text-primary hover:bg-primary/10 w-full sm:w-auto justify-start sm:justify-center" onClick={handleAddAllAvailable}>
+                                    <UserPlus className="h-4 w-4 mr-2" /> Inclusão em Massa
+                                </Button>
+                            )}
                         </div>
-                        <div className="border-2 rounded-xl overflow-hidden bg-background">
+                        <div className="border-2 rounded-xl overflow-hidden bg-background shadow-sm">
                             <div className="p-3 border-b bg-muted/30">
-                                <div className="relative"><Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" /><input placeholder="Buscar aluno..." value={studentSearch} onChange={e => setStudentSearch(e.target.value)} className="h-9 border-none focus-visible:ring-0 shadow-none bg-transparent text-sm outline-none w-full pl-9" /></div>
+                                <div className="relative">
+                                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <input 
+                                        placeholder="Buscar entre os disponíveis..." 
+                                        value={studentSearch} 
+                                        onChange={e => setStudentSearch(e.target.value)} 
+                                        className="h-9 border-none focus-visible:ring-0 shadow-none bg-transparent text-sm outline-none w-full pl-9" 
+                                    />
+                                </div>
                             </div>
                             <div className="max-h-[300px] overflow-y-auto">
-                                {availableStudents.length > 0 ? (
+                                {availableStudents.length === 0 ? (
+                                    <div className="p-8 text-center text-muted-foreground opacity-40">
+                                        <Users className="h-8 w-8 mx-auto mb-2" />
+                                        <p className="text-[9px] font-black uppercase tracking-widest leading-relaxed">
+                                            {selectedSchoolIds.length === 0 || !shift 
+                                              ? "Selecione escolas e turno" 
+                                              : "Nenhum aluno disponível para alocação"}
+                                        </p>
+                                    </div>
+                                ) : (
                                     availableStudents.map(s => (
                                         <div key={s.id} className="flex items-center justify-between p-3 border-b last:border-0 hover:bg-primary/5 transition-colors group">
-                                            <div className="min-w-0"><p className="text-xs font-black uppercase truncate group-hover:text-primary transition-colors">{s.name}</p><p className="text-[9px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name}</p></div>
-                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}><PlusCircle className="h-5 w-5" /></Button>
+                                            <div className="min-w-0">
+                                                <p className="text-xs font-black uppercase truncate group-hover:text-primary transition-colors">{s.name}</p>
+                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{schoolsMap.get(s.schoolId)?.name}</p>
+                                            </div>
+                                            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary hover:bg-primary hover:text-white rounded-full transition-all" onClick={() => handleAddStudent(s)}>
+                                                <PlusCircle className="h-5 w-5" />
+                                            </Button>
                                         </div>
                                     ))
-                                ) : <div className="p-8 text-center text-muted-foreground opacity-40"><Users className="h-8 w-8 mx-auto mb-2" /><p className="text-[9px] font-black uppercase tracking-widest">Aguardando seleção de escolas e turno</p></div>}
+                                )}
                             </div>
                         </div>
                     </div>
@@ -335,11 +495,16 @@ export function RouteForm({
                 <div className="space-y-4">
                     <div className="flex justify-between items-center bg-primary/10 p-4 rounded-xl border-2 border-primary/20 shadow-md">
                         <div className="flex items-center gap-3">
-                            <Badge variant="outline" className="bg-background text-primary border-primary/30 h-8 px-3 font-black text-base">{stops.length}</Badge>
-                            <Label className="text-sm font-black uppercase tracking-tighter">Itinerário Final Gerado</Label>
+                            <Badge variant="outline" className="bg-background text-primary border-primary/30 h-8 px-3 font-black text-base">
+                                {stops.filter(s => s.type === 'student').length}
+                            </Badge>
+                            <div className="flex flex-col">
+                                <Label className="text-[10px] font-black uppercase tracking-tighter">Alunos Selecionados</Label>
+                                <p className="text-[9px] text-muted-foreground font-bold uppercase italic">Total de paradas: {stops.length}</p>
+                            </div>
                         </div>
                         <Button size="sm" onClick={handleOptimizeOrder} disabled={isOptimizing || stops.filter(s => s.type === 'student').length < 2 || isOptimized} className="bg-primary text-white h-10 px-4 font-black text-xs shadow-xl active:scale-95 transition-all">
-                            {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />} OTIMIZAR IA
+                            {isOptimizing ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Sparkles className="h-4 w-4 mr-2" />} OTIMIZAR ROTA
                         </Button>
                     </div>
 
@@ -367,7 +532,7 @@ export function RouteForm({
                                     {/* CAMADA 3: METADADOS ABREVIADOS & BOTÕES DE AÇÃO */}
                                     <div className="pl-8 mt-1 flex items-center justify-between border-t border-dashed border-muted pt-2">
                                         <div className="text-[10px] font-black text-primary uppercase tracking-tight">
-                                            {stop.type === 'student' ? formatStudentMetaAbbrev(studentObj) : "Logística Escola"}
+                                            {stop.type === 'student' ? formatStudentMetaAbbrev(studentObj || undefined) : "Logística Escola"}
                                         </div>
                                         <div className="flex items-center gap-1 opacity-40 group-hover:opacity-100 transition-opacity">
                                             <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => { const newStops = [...stops]; if (idx > 0) { [newStops[idx], newStops[idx-1]] = [newStops[idx-1], newStops[idx]]; setStops(newStops); setIsOptimized(false); } }} disabled={idx === 0}><ArrowUp className="h-3.5 w-3.5" /></Button>

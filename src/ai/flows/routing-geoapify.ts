@@ -58,13 +58,7 @@ async function fetchRouteChunk(waypoints: {lat: number, lng: number}[], mode: st
     return data.features[0];
 }
 
-export const routingGeoapify = ai.defineFlow(
-  {
-    name: 'routingGeoapifyFlow',
-    inputSchema: RoutingGeoapifyInputSchema,
-    outputSchema: RoutingGeoapifyOutputSchema,
-  },
-  async ({ waypoints, mode }) => {
+export async function routingGeoapify({ waypoints, mode }: RoutingGeoapifyInput): Promise<RoutingGeoapifyOutput> {
     const apiKey = process.env.GEOAPIFY_API_KEY;
     if (!apiKey) throw new Error('GEOAPIFY_API_KEY não configurada.');
 
@@ -81,8 +75,14 @@ export const routingGeoapify = ai.defineFlow(
     
     if (cleanedWaypoints.length <= MAX_POINTS) {
         const route = await fetchRouteChunk(cleanedWaypoints, activeMode, apiKey);
+        
+        let coords = route.geometry.coordinates;
+        if (route.geometry.type === 'MultiLineString') {
+            coords = coords.flat(1);
+        }
+
         return {
-            polyline: JSON.stringify(route.geometry),
+            polyline: JSON.stringify({ type: 'LineString', coordinates: coords }),
             distanceKm: route.properties.distance / 1000,
             durationMinutes: Math.round(route.properties.time / 60),
         };
@@ -98,7 +98,10 @@ export const routingGeoapify = ai.defineFlow(
 
         try {
             const route = await fetchRouteChunk(chunk, activeMode, apiKey);
-            const coords = route.geometry.coordinates;
+            let coords = route.geometry.coordinates;
+            if (route.geometry.type === 'MultiLineString') {
+                coords = coords.flat(1);
+            }
             
             // Validar que os dados retornados são úteis antes de processar
             if (Array.isArray(coords) && coords.length > 0) {
@@ -111,8 +114,11 @@ export const routingGeoapify = ai.defineFlow(
                 totalTime += route.properties.time || 0;
             }
         } catch (e) {
-            console.error("Falha ao processar chunk de rota:", e);
-            if (combinedCoordinates.length > 0) break;
+            console.error(`[BUG FIX #4] Falha ao processar chunk ${Math.floor(i / (MAX_POINTS - 1)) + 1} da rota:`, e);
+            if (combinedCoordinates.length > 0) {
+                console.warn(`[routing-geoapify] Polyline parcial: parte da rota não pôde ser traçada. Chunks processados até o erro foram mantidos.`);
+                break;
+            }
             throw e;
         }
     }
@@ -122,5 +128,4 @@ export const routingGeoapify = ai.defineFlow(
       distanceKm: totalDistance / 1000,
       durationMinutes: Math.round(totalTime / 60),
     };
-  }
-);
+}

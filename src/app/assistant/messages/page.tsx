@@ -206,7 +206,7 @@ export default function AssistantMessagesPage() {
                         <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${isMyMessage(msg.senderId) ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                           <p className="text-sm">{msg.text}</p>
                            <p className="text-xs text-right mt-1 opacity-70">
-                              {isClient ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                              {isClient && msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                           </p>
                         </div>
                       </div>

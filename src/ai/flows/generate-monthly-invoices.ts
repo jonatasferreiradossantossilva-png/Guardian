@@ -52,15 +52,8 @@ const GenerateMonthlyInvoicesOutputSchema = z.object({
 });
 export type GenerateMonthlyInvoicesOutput = z.infer<typeof GenerateMonthlyInvoicesOutputSchema>;
 
-// This is not an AI flow, but we use the ai.defineFlow structure
-// to represent a callable server-side function.
-const generateMonthlyInvoicesFlow = ai.defineFlow(
-  {
-    name: 'generateMonthlyInvoicesFlow',
-    inputSchema: GenerateMonthlyInvoicesInputSchema,
-    outputSchema: GenerateMonthlyInvoicesOutputSchema,
-  },
-  async (input) => {
+// Purely deterministic business logic, bypassing Genkit's defineFlow to avoid serialization and initialization errors in NextJS Server Actions
+export async function generateMonthlyInvoices(input: GenerateMonthlyInvoicesInput): Promise<GenerateMonthlyInvoicesOutput> {
     const { students, parents, invoices } = input;
     const invoicesToCreate: NewInvoice[] = [];
 
@@ -88,7 +81,7 @@ const generateMonthlyInvoicesFlow = ai.defineFlow(
         });
 
         if (!hasInvoiceThisMonth) {
-            // FIXED: Now looking for preferredPaymentDay on the Student instead of the Parent
+            // Looking for preferredPaymentDay on the Student
             const paymentDay = student.preferredPaymentDay || 10;
             // Ensure paymentDay is valid for the current month
             const lastDayOfMonth = endOfMonth(currentMonthStart).getDate();
@@ -109,12 +102,4 @@ const generateMonthlyInvoicesFlow = ai.defineFlow(
     });
 
     return { invoicesToCreate };
-  }
-);
-
-
-// Export a wrapper function to be called from the client
-export async function generateMonthlyInvoices(input: GenerateMonthlyInvoicesInput): Promise<GenerateMonthlyInvoicesOutput> {
-  const result = await generateMonthlyInvoicesFlow(input);
-  return result;
 }

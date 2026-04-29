@@ -140,7 +140,7 @@ export function ParentForm({ parent, onFormSubmit }: ParentFormProps) {
         active: parent.active ?? true,
       });
     } else {
-      form.reset(form.defaultValues);
+      form.reset();
     }
   }, [parent, form]);
 

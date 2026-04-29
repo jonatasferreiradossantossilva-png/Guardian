@@ -1,0 +1,52 @@
+﻿src/app/dashboard/financial/page.tsx(233,35): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", number>'.
+src/app/dashboard/financial/page.tsx(233,67): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", number>'.
+src/app/dashboard/financial/page.tsx(469,61): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", "default" | "destructive" | "outline" | "secondary">'.
+src/app/dashboard/financial/page.tsx(470,50): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", string>'.
+src/app/dashboard/financial/page.tsx(544,61): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", "default" | "destructive" | "outline" | "secondary">'.
+src/app/dashboard/financial/page.tsx(545,50): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", string>'.
+src/app/dashboard/financial/page.tsx(707,17): error TS2322: Type 'Expense | undefined' is not assignable to type '({ id: string; } & Partial<{ date: Date; amount: number; description: string; category: "Outros" | "Impostos" | "Combust├¡vel" | "Manuten├º├úo" | "Sal├írios"; }>) | undefined'.
+  Type 'Expense' is not assignable to type '{ id: string; } & Partial<{ date: Date; amount: number; description: string; category: "Outros" | "Impostos" | "Combust├¡vel" | "Manuten├º├úo" | "Sal├írios"; }>'.
+    Type 'Expense' is not assignable to type 'Partial<{ date: Date; amount: number; description: string; category: "Outros" | "Impostos" | "Combust├¡vel" | "Manuten├º├úo" | "Sal├írios"; }>'.
+      Types of property 'date' are incompatible.
+        Type 'string' is not assignable to type 'Date'.
+src/app/dashboard/management/contracts/page.tsx(15,13): error TS2322: Type 'Parent[]' is not assignable to type 'User[]'.
+  Property 'profile' is missing in type 'Parent' but required in type 'User'.
+src/app/dashboard/management/pending-registrations/page.tsx(43,30): error TS2339: Property 'data' does not exist on type 'MockDataContextType'.
+src/app/dashboard/management/students/page.tsx(12,76): error TS2322: Type 'Parent[]' is not assignable to type 'User[]'.
+  Property 'profile' is missing in type 'Parent' but required in type 'User'.
+src/app/parent/financial/page.tsx(120,34): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", number>'.
+src/app/parent/financial/page.tsx(120,58): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", number>'.
+src/app/parent/financial/page.tsx(210,45): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", "default" | "destructive" | "outline" | "secondary">'.
+src/app/parent/financial/page.tsx(211,34): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", string>'.
+src/app/parent/financial/page.tsx(248,49): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", "default" | "destructive" | "outline" | "secondary">'.
+src/app/parent/financial/page.tsx(249,38): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"paid" | "pending" | "overdue" | "pagamento_em_analise", string>'.
+src/app/parent/tracking/page.tsx(517,99): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/app/parent/tracking/page.tsx(539,91): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"aguardando" | "a_bordo" | "desembarcado" | "ausente_ida" | "ausente_volta" | "ausente_dia_todo", string>'.
+src/components/dashboard/driver-status-list.tsx(71,33): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"em_rota" | "pausa" | "inativo", "default" | "outline" | "secondary">'.
+src/components/dashboard/driver-status-list.tsx(72,20): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"em_rota" | "pausa" | "inativo", string>'.
+src/components/dashboard/financial/expense-form.tsx(77,23): error TS2339: Property 'defaultValues' does not exist on type 'UseFormReturn<{ date: Date; amount: number; description: string; category: "Outros" | "Impostos" | "Combust├¡vel" | "Manuten├º├úo" | "Sal├írios"; }, any, undefined>'.
+src/components/dashboard/incident-map.tsx(89,27): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type '{ Baixa: string; M├®dia: string; Alta: string; Cr├¡tica: string; }'.
+src/components/dashboard/management/contract-templates/contract-template-form.tsx(64,23): error TS2339: Property 'defaultValues' does not exist on type 'UseFormReturn<{ name: string; content: string; }, any, undefined>'.
+src/components/dashboard/management/drivers/driver-form.tsx(169,23): error TS2339: Property 'defaultValues' does not exist on type 'UseFormReturn<{ number: string; name: string; status: "em_rota" | "pausa" | "inativo"; active: boolean; street: string; city: string; state: string; neighborhood: string; zipCode: string; userId: string; latitude?: number | undefined; ... 6 more ...; cnhCategory?: string | undefined; }, any, undefined>'.
+src/components/dashboard/management/drivers/drivers-list.tsx(190,73): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/dashboard/management/drivers/drivers-list.tsx(200,41): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"em_rota" | "pausa" | "inativo", "default" | "outline" | "secondary">'.
+src/components/dashboard/management/drivers/drivers-list.tsx(201,27): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"em_rota" | "pausa" | "inativo", string>'.
+src/components/dashboard/management/drivers/drivers-list.tsx(256,77): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/dashboard/management/drivers/drivers-list.tsx(271,45): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"em_rota" | "pausa" | "inativo", "default" | "outline" | "secondary">'.
+src/components/dashboard/management/drivers/drivers-list.tsx(271,96): error TS7053: Element implicitly has an 'any' type because expression of type 'any' can't be used to index type 'Record<"em_rota" | "pausa" | "inativo", string>'.
+src/components/dashboard/management/expenses/expense-form.tsx(77,23): error TS2339: Property 'defaultValues' does not exist on type 'UseFormReturn<{ date: Date; amount: number; description: string; category: "Outros" | "Impostos" | "Combust├¡vel" | "Manuten├º├úo" | "Sal├írios"; }, any, undefined>'.
+src/components/dashboard/management/parents/parent-form.tsx(143,23): error TS2339: Property 'defaultValues' does not exist on type 'UseFormReturn<{ name: string; active: boolean; userId: string; email: string; phone: string; number?: string | undefined; street?: string | undefined; city?: string | undefined; state?: string | undefined; ... 4 more ...; rg?: string | undefined; }, any, undefined>'.
+src/components/dashboard/management/parents/parents-list.tsx(236,73): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/dashboard/management/parents/parents-list.tsx(313,73): error TS7006: Parameter 'n' implicitly has an 'any' type.
+src/components/dashboard/management/predefined-messages/predefined-message-form.tsx(66,23): error TS2339: Property 'defaultValues' does not exist on type 'UseFormReturn<{ text: string; for: "gestor" | "monitor" | "all" | "driver" | "parent"; }, any, undefined>'.
+src/components/driver/driver-dashboard-content.tsx(170,11): error TS2322: Type '({ id: string; type: "school"; data: SchoolData; } | null)[]' is not assignable to type 'Stop[]'.
+  Type '{ id: string; type: "school"; data: SchoolData; } | null' is not assignable to type 'Stop'.
+    Type 'null' is not assignable to type 'Stop'.
+src/components/driver/driver-dashboard-content.tsx(175,27): error TS2677: A type predicate's type must be assignable to its parameter's type.
+  Type 'Stop' is not assignable to type '{ id: string; type: "school"; data: SchoolData; } | null'.
+    Type '{ id: string; type: "student"; data: Student; }' is not assignable to type '{ id: string; type: "school"; data: SchoolData; }'.
+      Types of property 'type' are incompatible.
+        Type '"student"' is not assignable to type '"school"'.
+src/components/driver/driver-dashboard-content.tsx(332,30): error TS7006: Parameter 'id' implicitly has an 'any' type.
+src/components/parent/authorized/authorized-form.tsx(75,23): error TS2339: Property 'defaultValues' does not exist on type 'UseFormReturn<{ name: string; cpf: string; relationship: string; photoUrl?: string | undefined; phone?: string | undefined; }, any, undefined>'.
+src/components/parent/requests/request-form.tsx(109,17): error TS2339: Property 'defaultValues' does not exist on type 'UseFormReturn<{ shift: "manha" | "tarde"; schoolId: string; startDate: Date; endDate: Date; type: "ida" | "volta" | "ida_e_volta"; reason?: string | undefined; }, any, undefined>'.

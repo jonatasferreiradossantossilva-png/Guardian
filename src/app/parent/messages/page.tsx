@@ -236,7 +236,7 @@ export default function ParentMessagesPage() {
                         <div className={`max-w-[80%] p-3 rounded-lg ${isMyMessage(msg.senderId) ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                           <p className="text-sm leading-relaxed">{msg.text}</p>
                            <p className={cn("text-[10px] text-right mt-1 opacity-70 font-bold uppercase", isMyMessage(msg.senderId) ? "text-primary-foreground" : "text-muted-foreground")}>
-                              {isClient ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                              {isClient && msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                           </p>
                         </div>
                       </div>

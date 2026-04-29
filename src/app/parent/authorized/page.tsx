@@ -42,6 +42,7 @@ type AuthorizedPickup = {
   name: string;
   cpf: string;
   phone: string;
+  relationship: string;
   studentId: string;
   parentUserId: string;
 };
@@ -74,7 +75,7 @@ export default function AuthorizedPage() {
   const student = useMemo(() => {
       if (!students || students.length === 0) return null;
       if (!selectedStudentId) return students[0];
-      return students.find(s => s.id === selectedStudentId) || students[0];
+      return students.find((s: any) => s.id === selectedStudentId) || students[0];
   }, [students, selectedStudentId]);
 
   const { data: authorizedPersons, isLoading } = useMockCollection('authorized_pickups', student ? [
@@ -93,7 +94,7 @@ export default function AuthorizedPage() {
 
   const confirmDelete = () => {
     if (!selectedPerson) return;
-    deleteDoc('authorized_pickups', selectedPerson.id);
+    (deleteDoc as any)('authorized_pickups', selectedPerson.id);
     toast({
       title: 'Pessoa autorizada removida!',
       description: `${selectedPerson.name} foi removido da lista.`,
@@ -109,7 +110,7 @@ export default function AuthorizedPage() {
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground p-4">
+    <div className="min-h-screen bg-background text-foreground p-4 pb-32 md:pb-6">
       <div className="max-w-4xl mx-auto">
         <div className="flex items-center gap-4 mb-6">
           <Button asChild variant="outline" size="icon">
@@ -152,6 +153,7 @@ export default function AuthorizedPage() {
                     <TableRow>
                     <TableHead>Nome</TableHead>
                     <TableHead>CPF</TableHead>
+                    <TableHead>Relação</TableHead>
                     <TableHead>Telefone</TableHead>
                     <TableHead className="text-right">Ações</TableHead>
                     </TableRow>
@@ -159,16 +161,17 @@ export default function AuthorizedPage() {
                 <TableBody>
                     {isLoading && (
                     <TableRow>
-                        <TableCell colSpan={4} className="text-center">
+                        <TableCell colSpan={5} className="text-center">
                         Carregando...
                         </TableCell>
                     </TableRow>
                     )}
                     {!isLoading && authorizedPersons && authorizedPersons.length > 0 ? (
-                    authorizedPersons.map((person) => (
+                    authorizedPersons.map((person: any) => (
                         <TableRow key={person.id}>
                         <TableCell>{person.name}</TableCell>
                         <TableCell>{person.cpf}</TableCell>
+                        <TableCell className="font-semibold text-primary">{person.relationship}</TableCell>
                         <TableCell>{person.phone}</TableCell>
                         <TableCell className="text-right">
                             <DropdownMenu>
@@ -191,7 +194,7 @@ export default function AuthorizedPage() {
                     ) : (
                     !isLoading && (
                         <TableRow>
-                        <TableCell colSpan={4} className="text-center h-24">
+                        <TableCell colSpan={5} className="text-center h-24">
                             Nenhuma pessoa autorizada para {student?.name}.
                         </TableCell>
                         </TableRow>
@@ -205,7 +208,7 @@ export default function AuthorizedPage() {
             <div className="md:hidden space-y-4">
                  {isLoading && <p className="text-center text-muted-foreground">Carregando...</p>}
                  {!isLoading && authorizedPersons && authorizedPersons.length > 0 ? (
-                    authorizedPersons.map((person) => (
+                    authorizedPersons.map((person: any) => (
                         <Card key={person.id} className="p-4">
                             <div className="flex justify-between items-start">
                                 <div>
@@ -229,6 +232,10 @@ export default function AuthorizedPage() {
                                <div className="flex items-center gap-2">
                                 <FileText className="h-4 w-4"/>
                                 <span>CPF: {person.cpf}</span>
+                               </div>
+                                <div className="flex items-center gap-2 text-primary font-bold">
+                                <Users className="h-4 w-4"/>
+                                <span>{person.relationship}</span>
                                </div>
                                 <div className="flex items-center gap-2">
                                 <Phone className="h-4 w-4"/>

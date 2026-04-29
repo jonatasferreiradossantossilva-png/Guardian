@@ -13,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle, Edit, Trash2, Wrench, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { SafeTableRow, SafeRow } from "@/components/shared/safe-table";
+import { safeString, safeArray } from "@/lib/safe-render";
 import {
   Dialog,
   DialogTrigger,
@@ -159,13 +161,13 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                     </TableCell>
                   </TableRow>
                 )}
-                {!isLoading && vehicles && vehicles.length > 0 ? (
-                  vehicles.map((vehicle) => (
-                    <TableRow key={vehicle.id}>
-                      <TableCell className="font-medium">{vehicle.model}</TableCell>
-                      <TableCell>{vehicle.licensePlate}</TableCell>
-                      <TableCell>{vehicle.capacity}</TableCell>
-                      <TableCell>{vehicle.currentOdometer?.toLocaleString()} km</TableCell>
+                {!isLoading && safeArray<Vehicle>(vehicles).length > 0 ? (
+                  safeArray<Vehicle>(vehicles).map((vehicle: Vehicle) => (
+                    <SafeTableRow key={vehicle.id} name={`VehicleRow-${vehicle.id}`}>
+                      <TableCell className="font-medium">{safeString(vehicle.model, 'Veículo')}</TableCell>
+                      <TableCell>{safeString(vehicle.licensePlate, '---')}</TableCell>
+                      <TableCell>{vehicle.capacity || 0}</TableCell>
+                      <TableCell>{(vehicle.currentOdometer || 0).toLocaleString()} km</TableCell>
                       <TableCell>
                         <Badge variant={vehicle.active ? 'default' : 'secondary'} className={vehicle.active ? 'bg-green-600' : ''}>
                           {vehicle.active ? 'Ativo' : 'Inativo'}
@@ -195,8 +197,9 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
                            </DropdownMenu>
                         </div>
                       </TableCell>
-                    </TableRow>
+                    </SafeTableRow>
                   ))
+
                 ) : (
                   !isLoading && (
                     <TableRow>
@@ -212,44 +215,47 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
           {/* Mobile View */}
           <div className="md:hidden">
             {isLoading && <p className="text-center py-10">Carregando...</p>}
-            {!isLoading && vehicles && vehicles.length > 0 ? (
+            {!isLoading && safeArray<Vehicle>(vehicles).length > 0 ? (
               <div className="space-y-4">
-                {vehicles.map((vehicle) => (
-                  <Card key={vehicle.id} className="overflow-hidden">
-                    <div className="p-4">
-                        <div className="flex items-start justify-between">
-                        <div>
-                            <p className="font-medium">{vehicle.model}</p>
-                            <p className="text-xs text-muted-foreground">Placa: {vehicle.licensePlate}</p>
-                        </div>
-                        </div>
-                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p className="text-muted-foreground text-xs">Odômetro</p>
-                            <p className="font-medium">{vehicle.currentOdometer?.toLocaleString()} km</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground text-xs">Status</p>
-                            <Badge variant={vehicle.active ? 'default' : 'secondary'} className={vehicle.active ? 'mt-1 bg-green-600' : 'mt-1'}>
-                            {vehicle.active ? 'Ativo' : 'Inativo'}
-                            </Badge>
-                        </div>
-                        </div>
-                    </div>
-                     <CardFooter className="p-2 bg-secondary/50 border-t flex flex-wrap gap-2">
-                        <Button variant="outline" size="sm" className="flex-1" onClick={() => handleMaintenance(vehicle)}>
-                            <Wrench className="mr-2 h-4 w-4" /> Manutenção
-                        </Button>
-                        <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(vehicle)}>
-                            <Edit className="mr-2 h-4 w-4" /> Editar
-                        </Button>
-                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(vehicle)}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Deletar
-                        </Button>
-                    </CardFooter>
-                  </Card>
+                {safeArray<Vehicle>(vehicles).map((vehicle: Vehicle) => (
+                  <SafeRow key={vehicle.id} name={`VehicleCard-${vehicle.id}`}>
+                    <Card key={vehicle.id} className="overflow-hidden">
+                      <div className="p-4">
+                          <div className="flex items-start justify-between">
+                          <div>
+                              <p className="font-medium">{safeString(vehicle.model, 'Veículo')}</p>
+                              <p className="text-xs text-muted-foreground">Placa: {safeString(vehicle.licensePlate, '---')}</p>
+                          </div>
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                              <p className="text-muted-foreground text-xs">Odômetro</p>
+                              <p className="font-medium">{(vehicle.currentOdometer || 0).toLocaleString()} km</p>
+                          </div>
+                          <div>
+                              <p className="text-muted-foreground text-xs">Status</p>
+                              <Badge variant={vehicle.active ? 'default' : 'secondary'} className={vehicle.active ? 'mt-1 bg-green-600' : 'mt-1'}>
+                              {vehicle.active ? 'Ativo' : 'Inativo'}
+                              </Badge>
+                          </div>
+                          </div>
+                      </div>
+                       <CardFooter className="p-2 bg-secondary/50 border-t flex flex-wrap gap-2">
+                          <Button variant="outline" size="sm" className="flex-1" onClick={() => handleMaintenance(vehicle)}>
+                              <Wrench className="mr-2 h-4 w-4" /> Manutenção
+                          </Button>
+                          <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(vehicle)}>
+                              <Edit className="mr-2 h-4 w-4" /> Editar
+                          </Button>
+                          <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(vehicle)}>
+                              <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                          </Button>
+                      </CardFooter>
+                    </Card>
+                  </SafeRow>
                 ))}
               </div>
+
             ) : (
               !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum veículo cadastrado.</p>
             )}

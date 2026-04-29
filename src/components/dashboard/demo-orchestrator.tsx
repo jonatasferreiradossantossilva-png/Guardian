@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useMockData } from "@/hooks/use-mock-data";
@@ -33,10 +33,56 @@ interface BusinessCheck {
 
 export function DemoOrchestrator() {
     const { toast } = useToast();
-    const { addDoc } = useMockData();
+    const { addDoc, resetData } = useMockData() as any;
     const [step, setStep] = useState<ValidatorStep>('IDLE');
     const [isOpen, setIsOpen] = useState(false);
     const [report, setReport] = useState<BusinessCheck[]>([]);
+    const [isMounted, setIsMounted] = useState(false);
+
+    useEffect(() => {
+        setIsMounted(true);
+    }, []);
+
+    if (!isMounted) return null;
+
+    const generateTestContract = () => {
+        const testContent = `CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO 2026
+
+Pelo presente instrumento particular, as partes abaixo qualificadas:
+
+CONTRATADA: Guardian Transporte Escolar Ltda, CNPJ: 12.345.678/0001-90, com dados de recebimento via: Banco Itaú, Agência 0300, Conta 45678-9 ou através da Chave Pix: 12.345.678/0001-90.
+
+CONTRATANTE: Ana Pereira, portador(a) do CPF 123.456.789-00, residente em Rua das Acácias, 10 - Centro, responsável legal pelo aluno(a) Enzo Pereira.
+
+CLÁUSULA PRIMEIRA - DO OBJETO: O presente contrato tem por objeto a prestação de serviços de transporte escolar diário do referido aluno no trajeto residência/escola/residência para a instituição Escola Primária do Saber.
+
+CLÁUSULA SEGUNDA - DO VALOR E PAGAMENTO: Pelos serviços prestados, o CONTRANTE pagará à CONTRATADA o valor mensal de R$ 450,00, com vencimento impreterivelmente todo dia 10 de cada mês.
+
+CLÁUSULA TERCEIRA - DOS HORÁRIOS: O transporte será realizado no turno da Manhã. O aluno deverá estar pronto no local de embarque no horário estipulado pela contratada, sob pena de seguir viagem para não atrasar os demais passageiros.
+
+CLÁUSULA QUARTA - DAS RESPONSABILIDADES: É dever do contratante informar ausências com antecedência via aplicativo Guardian. A contratada compromete-se a manter o veículo em perfeitas condições de segurança e higiene.
+
+CLÁUSULA QUINTA - VIGÊNCIA E RESCISÃO: Este contrato tem validade durante o ano letivo de 2026. Em caso de rescisão antecipada, a parte interessada deverá comunicar por escrito com 30 dias de antecedência.
+
+As partes aceitam os termos de forma digital através da plataforma Guardian em 06 de Abril de 2026.`;
+
+        addDoc('contracts', {
+            id: `test-contract-${Date.now()}`,
+            templateId: 'template-1',
+            studentId: 'student-1',
+            parentUserId: 'user-pai-1',
+            serviceModality: 'completo',
+            status: 'pending_acceptance',
+            createdAt: new Date().toISOString(),
+            generatedContent: testContent
+        });
+
+        toast({
+            title: "Contrato de Teste Gerado",
+            description: "O contrato para Enzo Pereira foi injetado com as tags corrigidas. Verifique na visão dos Pais.",
+        });
+        setIsOpen(false);
+    };
 
     const runValidation = async () => {
         setStep('SCANNING');
@@ -46,7 +92,7 @@ export function DemoOrchestrator() {
             const timestamp = Date.now();
             
             // Validação Financeira Real
-            addDoc('invoices', {
+            (addDoc as any)('invoices', {
                 studentId: 'student-1',
                 parentUserId: 'user-pai-1',
                 description: "Auditoria de Integridade Operacional",
@@ -69,9 +115,9 @@ export function DemoOrchestrator() {
                     icon: <Truck className="h-4 w-4" />
                 },
                 { 
-                    module: "Cadastro via IA", 
+                    module: "Auto-Cadastro", 
                     status: "success", 
-                    message: "Inteligência Ativa: O fluxo de OCR e Geocodificação está estável. 190k escolas prontas para busca rápida.",
+                    message: "Logística Ativa: O fluxo de leitura inteligente e geocodificação está estável. 190k escolas prontas para busca rápida.",
                     icon: <Sparkles className="h-4 w-4" />
                 },
                 { 
@@ -105,14 +151,14 @@ export function DemoOrchestrator() {
     if (!isOpen) return (
         <Button 
             onClick={() => setIsOpen(true)}
-            className="fixed bottom-4 right-4 z-[5000] rounded-full h-14 w-14 shadow-2xl bg-primary hover:scale-110 transition-all border-4 border-white"
+            className="fixed bottom-28 right-4 z-[5000] rounded-full h-14 w-14 shadow-2xl bg-primary hover:scale-110 transition-all border-4 border-white"
         >
             <Zap className="h-6 w-6 fill-current text-white animate-pulse" />
         </Button>
     );
 
     return (
-        <Card className="fixed bottom-4 right-4 w-full max-w-[380px] z-[5000] shadow-2xl border-2 border-primary animate-in slide-in-from-bottom-4">
+        <Card className="fixed bottom-28 right-4 w-full max-w-[380px] z-[5000] shadow-2xl border-2 border-primary animate-in slide-in-from-bottom-4">
             <CardHeader className="bg-primary/10 border-b p-4 flex flex-row items-center justify-between">
                 <CardTitle className="text-xs font-black uppercase italic text-primary flex items-center gap-2">
                     <ShieldCheck className="h-4 w-4" /> Guardian System Auditor
@@ -129,6 +175,12 @@ export function DemoOrchestrator() {
                         </p>
                         <Button className="w-full h-12 font-black text-xs uppercase" onClick={runValidation}>
                             <Activity className="mr-2 h-4 w-4" /> Executar Diagnóstico de Negócio
+                        </Button>
+                        <Button variant="outline" className="w-full h-12 font-black text-xs uppercase border-primary/20 text-primary" onClick={generateTestContract}>
+                            <FileText className="mr-2 h-4 w-4" /> Gerar Contrato de Teste (Tags Fix)
+                        </Button>
+                        <Button variant="ghost" className="w-full h-12 font-black text-xs uppercase text-muted-foreground hover:text-destructive" onClick={() => { resetData(); setIsOpen(false); toast({ title: "Banco Resetado", description: "Todos os dados foram restaurados para o padrão inicial." }); }}>
+                            <RotateCcw className="mr-2 h-4 w-4" /> Resetar Banco de Dados (Limpar Cache)
                         </Button>
                     </div>
                 ) : step === 'SCANNING' ? (

@@ -12,7 +12,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { MoreHorizontal, PlusCircle, Sparkles, Users, AlertTriangle, Car, Edit, Trash2, Loader2 } from "lucide-react";
+import { MoreHorizontal, PlusCircle, Sparkles, Users, User, AlertTriangle, Car, Edit, Trash2, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import {
   DropdownMenu,
@@ -40,23 +40,12 @@ import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { SafeTableRow, SafeRow } from "@/components/shared/safe-table";
+import { safeInitials, safeArray } from "@/lib/safe-render";
 
 
-type Route = {
-  id: string;
-  name: string;
-  driverId: string;
-  monitorId?: string;
-  studentIds: string[];
-  lastOptimizedAt?: string;
-  shift?: 'Manhã' | 'Tarde';
-};
-type Driver = { id: string; name: string };
-type Student = { id: string; name: string; schoolId: string; };
-type Monitor = { id: string; name: string; profile: string };
-type Vehicle = { id: string; model: string; licensePlate: string; capacity: number };
-type School = { id: string; name: string };
 
+import { Route, Driver, Student, User as Monitor, Vehicle, SchoolData as School } from '@/types/mock-data';
 
 interface RoutesListProps {
   initialRoutes: Route[];
@@ -88,23 +77,33 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
   const { data: liveSchools, isLoading: areSchoolsLoading } = useMockCollection('schools');
 
 
-  const routes = liveRoutes ?? initialRoutes;
-  const drivers = liveDrivers ?? initialDrivers;
-  const students = liveStudents ?? initialStudents;
-  const monitors = useMemo(() => (liveUsers ?? initialMonitors)?.filter(u => u.profile === 'monitor'), [liveUsers, initialMonitors]);
-  const vehicles = liveVehicles ?? initialVehicles;
-  const schools = liveSchools ?? initialSchools;
+  const routes = useMemo(() => {
+    const rawRoutes = liveRoutes ?? initialRoutes;
+    if (!rawRoutes) return [];
+    // Filtro defensivo para evitar duplicidade visual se houver erro no salvamento
+    const uniqueIds = new Set();
+    return rawRoutes.filter(r => {
+        if (uniqueIds.has(r.id)) return false;
+        uniqueIds.add(r.id);
+        return true;
+    });
+  }, [liveRoutes, initialRoutes]);
+
+  const rawDrivers = liveDrivers ?? initialDrivers ?? [];
+  const rawStudents = liveStudents ?? initialStudents ?? [];
+  const rawMonitors = useMemo(() => (liveUsers ?? initialMonitors ?? []).filter(u => u.profile === 'monitor'), [liveUsers, initialMonitors]);
+  const rawVehicles = liveVehicles ?? initialVehicles ?? [];
+  const rawSchools = liveSchools ?? initialSchools ?? [];
+  
   const isLoading = areRoutesLoading || areDriversLoading || areStudentsLoading || areUsersLoading || areVehiclesLoading || areSchoolsLoading;
 
   const driversMap = useMemo(() => {
-    if (!drivers) return new Map();
-    return new Map(drivers.map(d => [d.id, d.name]));
-  }, [drivers]);
+    return new Map(rawDrivers.map(d => [d.id, d.name]));
+  }, [rawDrivers]);
 
   const monitorsMap = useMemo(() => {
-      if (!monitors) return new Map();
-      return new Map(monitors.map(a => [a.id, a.name]));
-  }, [monitors]);
+      return new Map(rawMonitors.map(m => [m.id, m.name]));
+  }, [rawMonitors]);
 
   const handleEdit = useCallback((route: Route) => {
     setSelectedRoute(route);
@@ -133,8 +132,10 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     setSelectedRoute(null);
   }, []);
   
-  const getStudentCount = (studentIds: string[] = []) => {
-      return studentIds.filter(id => id.startsWith('student-')).length;
+  const getStudentCount = (studentIds: any[] = []) => {
+      if (!studentIds || !Array.isArray(studentIds)) return 0;
+      // Conta IDs que parecem ser de alunos (não escolas)
+      return studentIds.filter(id => id && String(id).includes('student')).length;
   }
 
   if (!mounted) {
@@ -153,23 +154,21 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
         </h1>
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
-            <Button onClick={() => {
-              setSelectedRoute(null);
-              setIsFormOpen(true);
-            }}>
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Adicionar Rota
+            <Button id="add-route-btn" onClick={() => { setSelectedRoute(null); setIsFormOpen(true); }} className="gap-2 bg-primary hover:bg-primary/90 text-white font-bold">
+              <PlusCircle className="h-4 w-4" />
+              <span className="hidden sm:inline">Adicionar Rota</span>
+              <span className="sm:hidden">Nova Rota</span>
             </Button>
           </DialogTrigger>
           <RouteForm
             key={selectedRoute?.id || 'new-route'}
             route={selectedRoute || undefined} 
             allRoutes={routes || []}
-            drivers={drivers || []}
-            students={students || []}
-            monitors={monitors || []}
-            vehicles={vehicles || []}
-            schools={schools || []}
+            drivers={rawDrivers}
+            students={rawStudents}
+            monitors={rawMonitors}
+            vehicles={rawVehicles}
+            schools={rawSchools}
             onFormSubmit={handleFormSubmit}
           />
         </Dialog>
@@ -200,21 +199,38 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                     </TableCell>
                   </TableRow>
                 )}
-                {!isLoading && routes && routes.length > 0 ? (
-                  routes.map((route) => (
-                    <TableRow key={route.id}>
-                      <TableCell className="font-medium">{route.name}</TableCell>
+                {!isLoading && safeArray<Route>(routes).length > 0 ? (
+                  safeArray<Route>(routes).map((route: Route) => (
+
+
+                    <SafeTableRow key={route.id} name={`RouteRow-${route.id}`}>
+                      <TableCell className="font-medium">{String(route.name || 'N/A')}</TableCell>
                       <TableCell>{driversMap.get(route.driverId) || 'N/A'}</TableCell>
-                      <TableCell>{monitorsMap.get(route.monitorId) || 'N/A'}</TableCell>
+                      <TableCell>
+                          {!route.monitorId || route.monitorId === 'none' ? (
+                              <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"><User className="mr-1.5 h-3 w-3 inline-block" /> Motorista Solo</Badge>
+                          ) : monitorsMap.get(route.monitorId) ? (
+                              <Badge variant="outline" className="font-bold">{monitorsMap.get(route.monitorId)}</Badge>
+                          ) : (
+                              <Badge variant="outline" className="text-muted-foreground opacity-50">N/A</Badge>
+                          )}
+                      </TableCell>
                       <TableCell>{getStudentCount(route.studentIds)}</TableCell>
                       <TableCell>
-                          {route.lastOptimizedAt ? (
+                        {(() => {
+                          if (!route.lastOptimizedAt) return <Badge variant="secondary">Não otimizada</Badge>;
+                          try {
+                            const date = new Date(route.lastOptimizedAt);
+                            if (isNaN(date.getTime())) return <Badge variant="secondary">Não otimizada</Badge>;
+                            return (
                               <span className="text-sm text-muted-foreground">
-                                  {formatDistanceToNow(new Date(route.lastOptimizedAt), { addSuffix: true, locale: ptBR })}
+                                {formatDistanceToNow(date, { addSuffix: true, locale: ptBR })}
                               </span>
-                          ) : (
-                              <Badge variant="secondary">Não otimizada</Badge>
-                          )}
+                            );
+                          } catch (e) {
+                            return <Badge variant="secondary">Não otimizada</Badge>;
+                          }
+                        })()}
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-2">
@@ -228,8 +244,9 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
                            </Button>
                         </div>
                       </TableCell>
-                    </TableRow>
+                    </SafeTableRow>
                   ))
+
                 ) : (
                   !isLoading && (
                     <TableRow>
@@ -245,57 +262,66 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
           {/* Mobile View */}
            <div className="md:hidden">
             {isLoading && <p className="text-center py-10">Carregando...</p>}
-            {!isLoading && routes && routes.length > 0 ? (
+            {!isLoading && safeArray<Route>(routes).length > 0 ? (
               <div className="space-y-4">
-                {routes.map((route) => {
+                {safeArray<Route>(routes).map((route: Route) => {
+
+
                   const driverName = driversMap.get(route.driverId) || 'N/A';
                   const monitorName = monitorsMap.get(route.monitorId);
 
                   return (
-                  <Card key={route.id} className="overflow-hidden">
-                    <div className="p-4">
-                        <div className="flex items-start justify-between mb-4">
-                            <h3 className="font-bold text-lg pr-2">{route.name}</h3>
-                        </div>
-                        <div className="space-y-4">
-                            <div className="flex items-center gap-3">
-                                <Avatar>
-                                    <AvatarImage src={`https://picsum.photos/seed/driver-${route.driverId}/100/100`} />
-                                    <AvatarFallback>{driverName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                                </Avatar>
-                                <div>
-                                    <p className="text-sm text-muted-foreground">Motorista</p>
-                                    <p className="font-medium">{driverName}</p>
-                                </div>
-                            </div>
-                            <div className="flex flex-wrap items-center gap-2">
-                                <Badge variant="outline"><Users className="mr-1.5 h-3 w-3" />{getStudentCount(route.studentIds)} alunos</Badge>
-                                <Badge variant="outline"><Car className="mr-1.5 h-3 w-3" />{monitorName ? `Monitor: ${monitorName}` : 'Sem monitor'}</Badge>
-                                {route.lastOptimizedAt ? (
-                                    <Badge variant="default" className="border-transparent bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700 hover:bg-green-100/80">
-                                        <Sparkles className="mr-1.5 h-3 w-3" /> Otimizada
-                                    </Badge>
-                                ) : (
-                                    <Badge variant="destructive" className="border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700 hover:bg-amber-100/80">
-                                        <AlertTriangle className="mr-1.5 h-3 w-3" /> Não Otimizada
-                                    </Badge>
-                                )}
-                            </div>
-                        </div>
-                    </div>
-                    <CardFooter className="p-2 border-t bg-secondary/50 flex flex-col sm:flex-row gap-2">
-                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(route)}>
-                            <Edit className="mr-2 h-4 w-4" />
-                            Editar Rota
-                        </Button>
-                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(route)}>
-                            <Trash2 className="mr-2 h-4 w-4" />
-                            Deletar
-                        </Button>
-                    </CardFooter>
-                  </Card>
+                  <SafeRow key={route.id} name={`RouteCard-${route.id}`}>
+                    <Card className="overflow-hidden">
+                      <div className="p-4">
+                          <div className="flex items-start justify-between mb-4">
+                              <h3 className="font-bold text-lg pr-2">{String(route.name || 'N/A')}</h3>
+                          </div>
+                          <div className="space-y-4">
+                              <div className="flex items-center gap-3">
+                                  <Avatar>
+                                      <AvatarImage src={`https://picsum.photos/seed/driver-${route.driverId}/100/100`} />
+                                      <AvatarFallback>{safeInitials(driverName)}</AvatarFallback>
+                                  </Avatar>
+                                  <div>
+                                      <p className="text-sm text-muted-foreground">Motorista</p>
+                                      <p className="font-medium">{driverName}</p>
+                                  </div>
+                              </div>
+                              <div className="flex flex-wrap items-center gap-2">
+                                  <Badge variant="outline"><Users className="mr-1.5 h-3 w-3" />{getStudentCount(route.studentIds)} alunos</Badge>
+                                  {!route.monitorId || route.monitorId === 'none' ? (
+                                      <Badge variant="secondary" className="bg-primary/10 text-primary border-primary/20 hover:bg-primary/20"><User className="mr-1.5 h-3 w-3" />Motorista Solo</Badge>
+                                  ) : (
+                                      <Badge variant="outline"><User className="mr-1.5 h-3 w-3" />{monitorName ? `Monitor: ${monitorName}` : 'Sem monitor'}</Badge>
+                                  )}
+                                  {route.lastOptimizedAt ? (
+                                      <Badge variant="default" className="border-transparent bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300 dark:border-green-700 hover:bg-green-100/80">
+                                          <Sparkles className="mr-1.5 h-3 w-3" /> Otimizada
+                                      </Badge>
+                                  ) : (
+                                      <Badge variant="destructive" className="border-transparent bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300 dark:border-amber-700 hover:bg-amber-100/80">
+                                          <AlertTriangle className="mr-1.5 h-3 w-3" /> Não Otimizada
+                                      </Badge>
+                                  )}
+                              </div>
+                          </div>
+                      </div>
+                      <CardFooter className="p-2 border-t bg-secondary/50 flex flex-col sm:flex-row gap-2">
+                          <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(route)}>
+                              <Edit className="mr-2 h-4 w-4" />
+                              Editar Rota
+                          </Button>
+                          <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(route)}>
+                              <Trash2 className="mr-2 h-4 w-4" />
+                              Deletar
+                          </Button>
+                      </CardFooter>
+                    </Card>
+                  </SafeRow>
                 )})}
               </div>
+
             ) : (
               !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma rota cadastrada.</p>
             )}
@@ -307,7 +333,7 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
             <AlertDialogHeader>
                 <AlertDialogTitle>Você tem certeza?</AlertDialogTitle>
                 <AlertDialogDescription>
-                    Esta ação não pode ser desfeita. Isso irá deletar permanentemente a rota <span className="font-bold">{selectedRoute?.name}</span>.
+                    Esta ação não pode ser desfeita. Isso irá deletar permanentemente a rota <span className="font-bold">{selectedRoute?.name || 'selecionada'}</span>.
                 </AlertDialogDescription>
             </AlertDialogHeader>
             <AlertDialogFooter>

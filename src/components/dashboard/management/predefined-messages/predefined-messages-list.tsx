@@ -142,7 +142,7 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
                     <TableRow key={message.id}>
                       <TableCell className="font-medium">{message.text}</TableCell>
                       <TableCell>
-                          <Badge variant="secondary">{profileMap[message.for] || message.for}</Badge>
+                          <Badge variant="secondary">{profileMap[message.for as keyof typeof profileMap] || message.for}</Badge>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
@@ -191,7 +191,7 @@ export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesLi
                             <p className="font-medium pr-4">{message.text}</p>
                         </div>
                         <div className="mt-2 text-sm">
-                            <Badge variant="secondary">{profileMap[message.for] || message.for}</Badge>
+                            <Badge variant="secondary">{profileMap[message.for as keyof typeof profileMap] || message.for}</Badge>
                         </div>
                     </div>
                     <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">

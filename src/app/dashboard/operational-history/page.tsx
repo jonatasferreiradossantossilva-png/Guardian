@@ -30,16 +30,16 @@ export default function OperationalHistoryPage() {
         const items: FeedItem[] = [];
 
         if (incidents) {
-            incidents.forEach(inc => {
-                const isAI = inc.reporter === 'Guardian Intelligence';
+            incidents.forEach((inc: any) => {
+                const isSmart = inc.reporter === 'Guardian System';
                 items.push({
                     id: inc.id,
-                    type: isAI ? 'intelligence' : 'incident',
+                    type: isSmart ? 'intelligence' : 'incident',
                     title: inc.category,
                     description: inc.description,
                     timestamp: inc.timestamp,
-                    icon: isAI ? <Sparkles className="h-4 w-4" /> : <Siren className="h-4 w-4" />,
-                    color: isAI ? 'text-primary bg-primary/10 border-primary/20' : 'text-destructive bg-destructive/10 border-destructive/20',
+                    icon: isSmart ? <Sparkles className="h-4 w-4" /> : <Siren className="h-4 w-4" />,
+                    color: isSmart ? 'text-primary bg-primary/10 border-primary/20' : 'text-destructive bg-destructive/10 border-destructive/20',
                     severity: inc.severity as any
                 });
             });
@@ -79,7 +79,7 @@ export default function OperationalHistoryPage() {
                 </Button>
                 <div>
                     <h1 className="text-3xl font-bold tracking-tight text-foreground uppercase italic">Histórico Operacional</h1>
-                    <p className="text-muted-foreground text-sm">Auditoria completa de eventos e inteligência da frota.</p>
+                    <p className="text-muted-foreground text-sm">Auditoria completa de eventos e logística da frota.</p>
                 </div>
             </div>
 
@@ -127,7 +127,7 @@ export default function OperationalHistoryPage() {
                                                     )}
                                                     {item.type === 'intelligence' && (
                                                         <Badge variant="outline" className="text-[9px] h-4 border-primary text-primary font-black uppercase italic">
-                                                            GUARDIAN AI
+                                                            GUARDIAN SYSTEM
                                                         </Badge>
                                                     )}
                                                 </div>

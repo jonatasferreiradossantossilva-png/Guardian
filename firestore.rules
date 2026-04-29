@@ -174,6 +174,15 @@ service cloud.firestore {
     }
 
     /**
+     * @description Stores historical location logs for the hybrid telemetry system.
+     * @principle Prevents cost bloat by logging only significant movements.
+     */
+    match /location_history/{logId} {
+      allow create: if isDriver() && request.resource.data.driverId == request.auth.uid;
+      allow read: if isSignedIn();
+    }
+
+    /**
      * @description Manages all messages.
      * @principle Users can create messages. They can only read messages where they are the sender or recipient.
      */
@@ -259,6 +268,14 @@ service cloud.firestore {
      */
     match /contract_templates/{templateId} {
       allow read, write: if isAdmin();
+    }
+
+    /**
+     * @description Stores official announcements for parents and drivers.
+     */
+    match /announcements/{announcementId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
     }
     
     /**

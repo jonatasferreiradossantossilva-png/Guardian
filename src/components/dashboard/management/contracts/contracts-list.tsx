@@ -22,17 +22,17 @@ import { ContractEditForm } from './contract-edit-form';
 import { ContractViewerModal } from './contract-viewer-modal';
 import { useToast } from '@/hooks/use-toast';
 
-type Contract = {
-  id: string;
-  templateId: string;
-  studentId: string;
-  parentUserId: string;
-  status: 'pending_acceptance' | 'accepted';
-  serviceModality?: string;
-  createdAt: string;
-  acceptedAt?: string;
-  generatedContent: string;
-};
+import { Student, Parent, MockDB } from '@/types/mock-data';
+
+type Template = MockDB['contract_templates'][number];
+type Contract = MockDB['contracts'][number];
+
+interface ContractsListProps {
+  initialContracts: Contract[];
+  initialStudents: Student[];
+  initialParents: Parent[];
+  initialTemplates: Template[];
+}
 
 const modalityLabels: Record<string, string> = {
     'completo': 'Ida e Volta',
@@ -40,12 +40,12 @@ const modalityLabels: Record<string, string> = {
     'so_volta': 'Só Volta'
 };
 
-const statusVariantMap: Record<Contract['status'], 'secondary' | 'default'> = {
+const statusVariantMap: Record<"pending_acceptance" | "accepted", "secondary" | "default"> = {
   pending_acceptance: 'secondary',
   accepted: 'default',
 };
 
-const statusTextMap: Record<Contract['status'], string> = {
+const statusTextMap: Record<"pending_acceptance" | "accepted", string> = {
   pending_acceptance: 'Aguardando Aceite',
   accepted: 'Aceito',
 };
@@ -69,8 +69,8 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
   
   const isLoading = areContractsLoading || areStudentsLoading || areParentsLoading || areTemplatesLoading;
   
-  const studentsMap = useMemo(() => new Map(students?.map(s => [s.id, s.name])), [students]);
-  const parentDataMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
+  const studentsMap = useMemo(() => new Map(students?.map((s: Student) => [s.id, s.name])), [students]);
+  const parentDataMap = useMemo(() => new Map(parents?.map((p: Parent) => [p.userId, p.name])), [parents]);
 
   const handleFormSubmit = useCallback(() => {
     setIsFormOpen(false);
@@ -166,9 +166,9 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                       </TableCell>
                       <TableCell className="text-xs text-muted-foreground">{formatDate(contract.createdAt)}</TableCell>
                       <TableCell>
-                        <Badge variant={statusVariantMap[contract.status]} className="font-bold uppercase text-[9px] tracking-tight">
+                        <Badge variant={statusVariantMap[contract.status as "pending_acceptance" | "accepted"]} className="font-bold uppercase text-[9px] tracking-tight">
                           {contract.status === 'accepted' ? <CheckCircle className="mr-1 h-3 w-3" /> : <Clock className="mr-1 h-3 w-3" />}
-                          {statusTextMap[contract.status]}
+                          {statusTextMap[contract.status as "pending_acceptance" | "accepted"]}
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right">
@@ -209,8 +209,8 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
                         <p className="font-bold text-base">{studentsMap.get(contract.studentId) || 'N/A'}</p>
                         <p className="text-xs text-muted-foreground uppercase font-medium">{parentDataMap.get(contract.parentUserId)}</p>
                       </div>
-                       <Badge variant={statusVariantMap[contract.status]} className="text-[9px] font-black h-5">
-                          {statusTextMap[contract.status].toUpperCase()}
+                       <Badge variant={statusVariantMap[contract.status as "pending_acceptance" | "accepted"]} className="text-[9px] font-black h-5">
+                          {statusTextMap[contract.status as "pending_acceptance" | "accepted"].toUpperCase()}
                         </Badge>
                     </div>
                     <div className="grid grid-cols-2 gap-4 bg-muted/20 p-3 rounded-lg border border-dashed">

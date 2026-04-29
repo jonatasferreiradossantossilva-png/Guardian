@@ -17,13 +17,16 @@ import { Label } from '@/components/ui/label';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 
+import { Announcement } from '@/types/mock-data';
+
 export default function AnnouncementsManagementPage() {
-  const { data: announcements, isLoading } = useMockCollection('announcements');
+  const { data: announcementsData, isLoading } = useMockCollection('announcements');
+  const announcements = announcementsData as Announcement[];
   const { addDoc, deleteDoc } = useMockData();
   const { toast } = useToast();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [newAnnouncement, setNewAnnouncement] = useState({
+  const [newAnnouncement, setNewAnnouncement] = useState<Partial<Announcement>>({
     title: '',
     content: '',
     priority: 'medium',
@@ -89,7 +92,7 @@ export default function AnnouncementsManagementPage() {
                             <Label>Prioridade</Label>
                             <Select 
                                 value={newAnnouncement.priority} 
-                                onValueChange={v => setNewAnnouncement({...newAnnouncement, priority: v})}
+                                onValueChange={v => setNewAnnouncement({...newAnnouncement, priority: v as Announcement['priority']})}
                             >
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
@@ -103,7 +106,7 @@ export default function AnnouncementsManagementPage() {
                             <Label>Destinatários</Label>
                             <Select 
                                 value={newAnnouncement.target} 
-                                onValueChange={v => setNewAnnouncement({...newAnnouncement, target: v})}
+                                onValueChange={v => setNewAnnouncement({...newAnnouncement, target: v as Announcement['target']})}
                             >
                                 <SelectTrigger><SelectValue /></SelectTrigger>
                                 <SelectContent>
@@ -143,7 +146,7 @@ export default function AnnouncementsManagementPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {announcements.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ann) => (
+                      {announcements.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ann: Announcement) => (
                         <TableRow key={ann.id}>
                           <TableCell className="max-w-[300px]">
                             <p className="font-medium truncate">{ann.title}</p>
@@ -172,9 +175,8 @@ export default function AnnouncementsManagementPage() {
                 </div>
               </div>
 
-              {/* Mobile Card View */}
               <div className="md:hidden divide-y">
-                {announcements.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ann) => (
+                {announcements.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ann: Announcement) => (
                   <div key={ann.id} className="p-4 space-y-3">
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">

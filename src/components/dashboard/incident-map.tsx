@@ -39,7 +39,7 @@ function MapController({ target }: { target: google.maps.LatLngLiteral | null })
 
 
 export function IncidentMap({ target }: { target: google.maps.LatLngLiteral | null }) {
-  const { data: incidents, isLoading } = useMockCollection('incidents');
+  const { data: incidents, isLoading } = useMockCollection<Incident>('incidents');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
   if (isLoading) {

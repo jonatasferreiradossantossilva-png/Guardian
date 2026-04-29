@@ -34,11 +34,12 @@ import { useMockData } from '@/hooks/use-mock-data';
 import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import { maskCPF, maskPhone, maskCEP, maskRG, unmask } from '@/lib/masks';
 
 
 const formSchema = z.object({
   name: z.string().min(1, { message: 'O nome é obrigatório.' }),
-  userId: z.string().min(1, { message: 'O ID do usuário é obrigatório.' }),
+  pin: z.string().min(4, { message: 'O PIN deve ter pelo menos 4 dígitos.' }).max(6, { message: 'O PIN deve ter no máximo 6 dígitos.' }),
   status: z.enum(['inativo', 'em_rota', 'pausa']),
   vehicleId: z.string().optional(),
   cpf: z.string().optional(),
@@ -62,7 +63,7 @@ type DriverFormValues = z.infer<typeof formSchema>;
 type Vehicle = { id: string; model: string; licensePlate: string };
 
 interface DriverFormProps {
-  driver?: { id: string } & Partial<DriverFormValues>;
+  driver?: { id: string; userId?: string } & Partial<DriverFormValues>;
   vehicles: Vehicle[];
   onFormSubmit: () => void;
 }
@@ -80,7 +81,7 @@ export function DriverForm({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      userId: '',
+      pin: '',
       status: 'inativo',
       vehicleId: '',
       cpf: '',
@@ -147,7 +148,7 @@ export function DriverForm({
     if (driver) {
       form.reset({
         name: driver.name || '',
-        userId: driver.userId || '',
+        pin: (driver as any).pin || '',
         status: driver.status || 'inativo',
         vehicleId: driver.vehicleId || '',
         cpf: driver.cpf || '',
@@ -166,12 +167,15 @@ export function DriverForm({
         active: driver.active ?? true,
       });
     } else {
-      form.reset(form.defaultValues);
+      form.reset();
     }
   }, [driver, form]);
 
   const onSubmit = (data: DriverFormValues) => {
-    const driverData = { ...data };
+    const driverData = { 
+      ...data,
+      userId: driver?.userId || `user-dri-${unmask(data.cpf || '') || Date.now()}`
+    };
     if (!driverData.vehicleId || driverData.vehicleId === 'none') {
         delete (driverData as Partial<typeof driverData>).vehicleId;
     }
@@ -220,12 +224,19 @@ export function DriverForm({
               />
               <FormField
                 control={form.control}
-                name="userId"
+                name="pin"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>ID do Usuário (Auth)</FormLabel>
+                    <FormLabel>PIN de Acesso (4-6 dígitos)</FormLabel>
                     <FormControl>
-                      <Input placeholder="Cole o UID do Firebase Auth" {...field} value={field.value ?? ''} />
+                      <Input 
+                        placeholder="Ex: 123456" 
+                        type="password"
+                        maxLength={6}
+                        {...field} 
+                        value={field.value ?? ''} 
+                        onChange={(e) => field.onChange(e.target.value.replace(/\D/g, ''))}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -239,7 +250,12 @@ export function DriverForm({
                     <FormItem>
                       <FormLabel>CPF (Opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="000.000.000-00" {...field} value={field.value ?? ''} />
+                        <Input 
+                          placeholder="000.000.000-00" 
+                          {...field} 
+                          value={field.value ?? ''} 
+                          onChange={(e) => field.onChange(maskCPF(e.target.value))}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -252,7 +268,12 @@ export function DriverForm({
                     <FormItem>
                       <FormLabel>RG (Opcional)</FormLabel>
                       <FormControl>
-                        <Input placeholder="00.000.000-0" {...field} value={field.value ?? ''} />
+                        <Input 
+                          placeholder="00.000.000-0" 
+                          {...field} 
+                          value={field.value ?? ''} 
+                          onChange={(e) => field.onChange(maskRG(e.target.value))}
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -298,7 +319,12 @@ export function DriverForm({
                             <FormLabel>CEP</FormLabel>
                             <FormControl>
                               <div className="relative">
-                                <Input placeholder="00000-000" {...field} value={field.value ?? ''} />
+                                <Input 
+                                  placeholder="00000-000" 
+                                  {...field} 
+                                  value={field.value ?? ''} 
+                                  onChange={(e) => field.onChange(maskCEP(e.target.value))}
+                                />
                                 {isFetchingCep && (
                                   <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-muted-foreground" />
                                 )}

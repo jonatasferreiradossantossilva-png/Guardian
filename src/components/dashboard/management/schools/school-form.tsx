@@ -25,7 +25,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo } from 'react';
 import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
-import { Loader2, Search, Sparkles, MapPin, Globe, School } from 'lucide-react';
+import { Loader2, Search, Sparkles, MapPin, Globe, School, Clock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -51,6 +51,8 @@ const formSchema = z.object({
   city: z.string().min(1, { message: 'A cidade é obrigatória.' }),
   state: z.string().min(1, { message: 'O estado é obrigatório.' }),
   active: z.boolean().default(true),
+  startTime: z.string().optional(),
+  endTime: z.string().optional(),
 });
 
 type SchoolFormValues = z.infer<typeof formSchema>;
@@ -87,6 +89,8 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
       city: '',
       state: '',
       active: true,
+      startTime: '',
+      endTime: '',
     },
   });
 
@@ -311,6 +315,29 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                             control={form.control} name="longitude"
                             render={({ field }) => (
                                 <FormItem><Label className="text-[10px]">LONGITUDE (GPS)</Label><FormControl><Input type="number" step="any" {...field} value={field.value ?? ''} className="h-8 text-xs font-mono"/></FormControl></FormItem>
+                            )}
+                        />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4 border-t pt-4">
+                        <FormField
+                            control={form.control} name="startTime"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Entrada (Início)</FormLabel>
+                                    <FormControl><Input type="time" {...field} value={field.value ?? ''} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control} name="endTime"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormLabel className="flex items-center gap-2"><Clock className="h-4 w-4 text-primary" /> Saída (Fim)</FormLabel>
+                                    <FormControl><Input type="time" {...field} value={field.value ?? ''} /></FormControl>
+                                    <FormMessage />
+                                </FormItem>
                             )}
                         />
                     </div>

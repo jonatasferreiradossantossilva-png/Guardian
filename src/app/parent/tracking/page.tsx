@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useMemo, useState, useEffect, useCallback, useRef } from "react";
+import { useMemo, useState, useEffect, useCallback, useRef, Suspense } from "react";
 import Link from "next/link";
 import {
   useMockCollection,
@@ -32,6 +32,7 @@ import {
     Loader2,
     Camera,
     AlertTriangle,
+    ShieldCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
@@ -54,6 +55,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useSearchParams } from "next/navigation";
 
 interface Student {
   id: string;
@@ -68,6 +70,12 @@ interface Student {
   neighborhood?: string;
   active?: boolean;
   photoUrl?: string;
+  lastHandover?: {
+    authorizedPersonId: string;
+    authorizedPersonName: string;
+    relationship: string;
+    timestamp: string;
+  };
 }
 interface Route {
   id: string;
@@ -88,6 +96,15 @@ interface SchoolData {
     latitude: number;
     longitude: number;
 }
+
+const statusText: Record<Student['status'], string> = {
+  aguardando: "Aguardando embarque",
+  a_bordo: "A bordo da van",
+  desembarcado: "Desembarcado com segurança",
+  ausente_ida: "Ausente na ida",
+  ausente_volta: "Ausente na volta",
+  ausente_dia_todo: "Ausente o dia todo",
+};
 
 /**
  * Fórmula de Haversine estabilizada e blindada.
@@ -117,51 +134,85 @@ function GoogleMapMarkers({
     allRoutes, 
     allLocations, 
     allSchools,
-    selectedStudentId
+    selectedStudentId,
+    isMounted,
+    selectedRoute
 }: { 
     allStudents: Student[], 
     allRoutes: Route[], 
     allLocations: LocationUpdate[], 
     allSchools: SchoolData[],
-    selectedStudentId: string | null
+    selectedStudentId: string | null,
+    isMounted: boolean,
+    selectedRoute?: Route | null
 }) {
-  const selectedRoute = useMemo(() => {
-      const student = allStudents.find(s => s.id === selectedStudentId);
-      return allRoutes.find(r => r.id === student?.routeId);
-  }, [allStudents, allRoutes, selectedStudentId]);
+  const { activeStudents, driverLocations, studentSchools } = useMemo(() => {
+    const activeStudents = allStudents; // Mostra todos os filhos no mapa
+    const relatedRouteIds = new Set(activeStudents.map(s => s.routeId).filter(Boolean));
+    const relatedSchoolIds = new Set(activeStudents.map(s => s.schoolId).filter(Boolean));
+    const relatedDriverIds = new Set(allRoutes.filter(r => relatedRouteIds.has(r.id)).map(r => r.driverId));
+
+    return {
+        activeStudents,
+        driverLocations: allLocations.filter(l => relatedDriverIds.has(l.id)),
+        studentSchools: allSchools.filter(sch => relatedSchoolIds.has(sch.id))
+    };
+  }, [allStudents, allRoutes, allLocations, allSchools]);
+
+  if (!isMounted) return null;
 
   return (
     <>
       {selectedRoute?.polyline && <RoutePolyline geoJsonPath={selectedRoute.polyline} />}
-      {allStudents.map(s => {
-          const route = allRoutes.find(r => r.id === s.routeId);
-          const busLoc = allLocations.find(l => l.id === route?.driverId);
-          const school = allSchools.find(sch => sch.id === s.schoolId);
+      
+      {/* 1. Renderizar Vans (uma por motorista relevante) */}
+      {driverLocations.map(busLoc => (
+        <AdvancedMarker 
+            key={`bus-${busLoc.id}`}
+            position={{ lat: busLoc.latitude, lng: busLoc.longitude }} 
+            title="Van" 
+            zIndex={10}
+        >
+            <div className={cn("relative group animate-pulse")}>
+                <div className="absolute -top-10 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap z-50">
+                    <Badge className="bg-red-600 text-[8px] font-black uppercase py-0 px-1 border-none animate-pulse">● VIVO</Badge>
+                    <span className="text-[10px] bg-background/80 px-2 py-0.5 rounded shadow text-muted-foreground">Van em movimento</span>
+                </div>
+                <Pin background={'#2ab0c1'} borderColor={'#fff'} glyphColor="#fff">
+                    <Bus className="h-4 w-4" />
+                </Pin>
+                <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[7px] font-bold px-1 rounded uppercase tracking-tighter whitespace-nowrap">
+                    {busLoc?.timestamp ? new Date(busLoc.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                </div>
+            </div>
+        </AdvancedMarker>
+      ))}
+
+      {/* 2. Renderizar Escolas (uma por escola relevante) */}
+      {studentSchools.map(school => (
+        <AdvancedMarker key={`school-${school.id}`} position={{ lat: school.latitude, lng: school.longitude }} title={school.name as any}>
+            <Pin background={'#dc2626'} borderColor={'#fff'} glyphColor="#fff"><School className="h-4 w-4" /></Pin>
+        </AdvancedMarker>
+      ))}
+
+      {/* 3. Renderizar Alunos */}
+      {activeStudents
+        .map(s => {
           const isSelected = s.id === selectedStudentId;
 
           return (
               <div key={s.id}>
-                  {busLoc && (
-                    <AdvancedMarker position={{ lat: busLoc.latitude, lng: busLoc.longitude }} title={`Van de ${s.name}`} zIndex={isSelected ? 10 : 5}>
-                        <Pin background={isSelected ? '#2ab0c1' : '#94a3b8'} borderColor={'#fff'} glyphColor="#fff"><Bus className="h-4 w-4" /></Pin>
-                    </AdvancedMarker>
-                  )}
-                  <AdvancedMarker position={{ lat: s.latitude, lng: s.longitude }} title={s.name}>
+                  <AdvancedMarker position={{ lat: s.latitude, lng: s.longitude }} title={s.name as any}>
                         <Pin background={isSelected ? '#3b82f6' : '#cbd5e1'} borderColor={'#fff'}>
-                            <Avatar className={cn("h-6 w-6", !isSelected && "grayscale opacity-70")}>
+                            <Avatar className={cn("h-6 w-12", !isSelected && "grayscale opacity-70")}>
                                 <AvatarImage src={s.photoUrl || undefined} />
-                                <AvatarFallback>{s.name[0]}</AvatarFallback>
+                                <AvatarFallback className="font-bold text-[8px] bg-primary text-white">{(String(s.name) || '?')[0]}</AvatarFallback>
                             </Avatar>
                         </Pin>
                   </AdvancedMarker>
-                  {school && (
-                    <AdvancedMarker position={{ lat: school.latitude, lng: school.longitude }} title={school.name}>
-                        <Pin background={isSelected ? '#dc2626' : '#f87171'} borderColor={'#fff'} glyphColor="#fff"><School className="h-4 w-4" /></Pin>
-                    </AdvancedMarker>
-                  )}
               </div>
           );
-      })}
+        })}
     </>
   );
 }
@@ -170,7 +221,11 @@ function JourneyTimeline({ status, direction }: { status: Student['status'], dir
     const isIda = direction === 'ida';
     const isOnBoard = status === 'a_bordo';
     const isArrived = status === 'desembarcado';
-    if (status.startsWith('ausente')) return null;
+    
+    // Ocultar timeline se o aluno estiver ausente NESTE turno
+    if (status === 'ausente_dia_todo') return null;
+    if (isIda && status === 'ausente_ida') return null;
+    if (!isIda && status === 'ausente_volta') return null;
 
     const steps = isIda 
         ? [{ label: "Casa", icon: Home, active: true }, { label: "Van", icon: Bus, active: isOnBoard || isArrived }, { label: "Escola", icon: School, active: isArrived }]
@@ -195,12 +250,13 @@ function JourneyTimeline({ status, direction }: { status: Student['status'], dir
     );
 }
 
-export default function ParentTrackingPage() {
+function ParentTrackingContent() {
   const { toast } = useToast();
-  const { updateDoc } = useMockData();
+  const { updateDoc } = useMockData() as any;
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
   const [recenterTrigger, setRecenterTrigger] = useState(0);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
   const [showProximityAlert, setShowProximityAlert] = useState(false);
@@ -209,12 +265,24 @@ export default function ParentTrackingPage() {
   const [applyAbsenceToAll, setApplyAbsenceToAll] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
+  const searchParams = useSearchParams();
+
   useEffect(() => {
+    setIsMounted(true);
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    
+    // Prioridade para o studentId da URL (Compartilhamento)
+    const urlStudentId = searchParams.get('studentId');
     const lastSelectedId = sessionStorage.getItem('selectedStudentId');
-    if (lastSelectedId) setSelectedStudentId(lastSelectedId);
-  }, []);
+    
+    if (urlStudentId) {
+        setSelectedStudentId(urlStudentId);
+        sessionStorage.setItem('selectedStudentId', urlStudentId);
+    } else if (lastSelectedId) {
+        setSelectedStudentId(lastSelectedId);
+    }
+  }, [searchParams]);
 
   const handleStudentSelect = (id: string) => {
       setSelectedStudentId(id);
@@ -227,28 +295,38 @@ export default function ParentTrackingPage() {
   const studentFilter = useMemo(() => parent ? [{ field: "parentId", op: "==", value: parent.id }] : [{ field: "id", op: "==", value: "none" }], [parent]);
   const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", studentFilter);
   
-  const { data: allRoutes } = useMockCollection("routes");
-  const { data: allLocations } = useMockCollection("locations");
-  const { data: allSchools } = useMockCollection("schools");
-  const { data: allMessages } = useMockCollection("messages");
+  const { data: allRoutes } = useMockCollection("routes", []);
+  const { data: allLocations } = useMockCollection("locations", []);
+  const { data: allSchools } = useMockCollection("schools", []);
+  const { data: allMessages } = useMockCollection("messages", []);
+  const { data: allAuthorized } = useMockCollection("authorized_pickups", []);
 
   const unreadCount = useMemo(() => {
       if (!allMessages || !mockUserId) return 0;
       const recentLimit = new Date(Date.now() - 1800000); 
-      return allMessages.filter(m => m.recipientId === mockUserId && new Date(m.timestamp) > recentLimit).length;
+      return allMessages.filter((m: any) => m.recipientId === mockUserId && new Date(m.timestamp) > recentLimit).length;
   }, [allMessages, mockUserId]);
 
-  useEffect(() => { if (students?.length && !selectedStudentId) handleStudentSelect(students[0].id); }, [students, selectedStudentId]);
+  // Sincronizar seleção inicial
+  useEffect(() => {
+    if (students && students.length > 0 && !selectedStudentId) {
+      const firstId = students[0].id;
+      setSelectedStudentId(firstId);
+      sessionStorage.setItem('selectedStudentId', firstId);
+    }
+  }, [students, selectedStudentId]);
 
   const student = useMemo(() => {
-      if (!students?.length) return null;
-      return students.find(s => s.id === selectedStudentId) || students[0];
+      if (!students || students.length === 0) return null;
+      // Busca o selecionado, se não houver ou não bater, pega o primeiro da lista
+      const found = students.find((s: any) => s.id === selectedStudentId);
+      return found || students[0];
   }, [students, selectedStudentId]);
   
-  const route = useMemo(() => allRoutes?.find(r => r.studentIds.includes(student?.id || '')), [allRoutes, student]);
-  const displayLocation = useMemo(() => allLocations?.find(l => l.id === route?.driverId), [allLocations, route]);
+  const route = useMemo(() => allRoutes?.find((r: any) => r.studentIds.includes(student?.id || '')), [allRoutes, student]);
+  const displayLocation = useMemo(() => allLocations?.find((l: any) => l.id === route?.driverId), [allLocations, route]);
   const { data: announcements } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
-  const latestAnnouncement = useMemo(() => announcements?.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0], [announcements]);
+  const latestAnnouncement = useMemo(() => announcements?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0], [announcements]);
 
   useEffect(() => {
     if (!student || !displayLocation || typeof student.latitude !== 'number' || typeof displayLocation.latitude !== 'number') return;
@@ -258,13 +336,20 @@ export default function ParentTrackingPage() {
     );
     const dir = (route?.direction as 'ida' | 'volta') || 'ida';
     if (dist < 0.8 && ((dir === 'ida' && student.status === 'aguardando') || (dir === 'volta' && student.status === 'a_bordo'))) {
-        if (!showProximityAlert) { setShowProximityAlert(true); toast({ title: `🚌 Van do ${student.name.split(' ')[0]} chegando!`, description: "A van entrou num raio de 800m." }); }
+        if (!showProximityAlert) { 
+            setShowProximityAlert(true); 
+            toast({ 
+                title: `🚌 Van do ${student.name.split(' ')[0]} chegando!`, 
+                description: "A van entrou num raio de 800m.",
+                variant: "default",
+            }); 
+        }
     } else { setShowProximityAlert(false); }
   }, [displayLocation, student, route?.direction, showProximityAlert, toast]);
 
   const handleCommunicateAbsence = useCallback(async () => {
     if (!student || !students) return;
-    (applyAbsenceToAll ? students : [student]).forEach(s => updateDoc('students', s.id, { status: selectedAbsenceType }));
+    (applyAbsenceToAll ? students : [student]).forEach((s: any) => updateDoc('students', s.id, { status: selectedAbsenceType }));
     setIsAbsenceDialogOpen(false);
     toast({ title: "Ausência comunicada", description: "O motorista foi notificado." });
   }, [student, students, selectedAbsenceType, applyAbsenceToAll, updateDoc, toast]);
@@ -274,6 +359,13 @@ export default function ParentTrackingPage() {
   const handlePhotoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !student) return;
+
+    // [VALIDATION] Limite de 2MB para evitar lentidão no MockDB (Base64)
+    if (file.size > 2 * 1024 * 1024) {
+        toast({ title: "Arquivo muito grande", description: "O limite é 2MB para o protótipo.", variant: "destructive" });
+        return;
+    }
+
     setIsUploading(true);
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -284,7 +376,7 @@ export default function ParentTrackingPage() {
     reader.readAsDataURL(file);
   };
 
-  const handleShareTrip = useCallback(() => {
+  const handleShareTrip = useCallback(async () => {
     if (!student || !displayLocation) {
         toast({
             title: "Localização indisponível",
@@ -293,8 +385,27 @@ export default function ParentTrackingPage() {
         });
         return;
     }
-    const mapLink = `https://www.google.com/maps/dir/?api=1&origin=${displayLocation.latitude},${displayLocation.longitude}&destination=${student.latitude},${student.longitude}`;
-    window.open(`https://api.whatsapp.com/send?text=${encodeURIComponent(`Acompanhe a van de ${student.name}: ${mapLink}`)}`, '_blank');
+
+    const shareUrl = `${window.location.origin}/parent/tracking?studentId=${student.id}`;
+    const shareText = `📍 Acompanhe em tempo real a van de ${student.name.split(' ')[0]} no Guardian:`;
+
+    // 1. Tenta usar a API nativa de compartilhamento do celular (PWA/Mobile)
+    if (navigator.share) {
+        try {
+            await navigator.share({
+                title: 'Guardian - Rastreamento',
+                text: shareText,
+                url: shareUrl,
+            });
+            return;
+        } catch (err) {
+            console.log('Compartilhamento nativo cancelado ou falhou', err);
+        }
+    }
+
+    // 2. Fallback para WhatsApp (Desktop ou navegadores sem navigator.share)
+    const waLink = `https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`;
+    window.open(waLink, '_blank');
   }, [student, displayLocation, toast]);
 
   const isLoading = areParentsLoading || areStudentsLoading;
@@ -302,17 +413,48 @@ export default function ParentTrackingPage() {
   const journeyDirection = (route?.direction as 'ida' | 'volta') || 'ida';
 
   const smartStops = useMemo(() => {
-      if (!students) return [];
-      return students.map(s => [
+      if (!students || !selectedStudentId) return [];
+      const filteredStudents = students.filter((s: any) => s.id === selectedStudentId);
+      return filteredStudents.map((s: any) => [
           { id: `s-${s.id}`, type: 'student' as const, data: s }, 
-          { id: `sch-${s.schoolId}`, type: 'school' as const, data: allSchools?.find(sch => sch.id === s.schoolId) }
+          { id: `sch-${s.schoolId}`, type: 'school' as const, data: allSchools?.find((sch: any) => sch.id === s.schoolId) }
       ]).flat().filter(Boolean);
-  }, [students, allSchools]);
+  }, [students, allSchools, selectedStudentId]);
 
-  if (isLoading) return <div className="flex items-center justify-center h-screen"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+  // Nome do estudante para exibição no cabeçalho (Direto para evitar sujeira de cache)
+  const currentStudentName = students?.find((s: any) => s.id === selectedStudentId)?.name || student?.name || 'Selecione um filho';
+
+  useEffect(() => {
+    if (isMounted && currentStudentName !== 'Selecione um filho') {
+        document.title = `Rastreamento: ${currentStudentName} | Guardian`;
+    }
+  }, [isMounted, currentStudentName]);
+
+  if (!isMounted || isLoading) return <div className="flex items-center justify-center h-screen bg-background"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>;
+
+  // Fallback: session not set (user accessed directly without going through registration)
+  if (!isLoading && !mockUserId) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center bg-background gap-6">
+        <div className="p-5 bg-primary/10 rounded-full">
+          <Bus className="h-10 w-10 text-primary" />
+        </div>
+        <div className="space-y-2">
+          <h1 className="text-2xl font-bold text-foreground">Acesso não identificado</h1>
+          <p className="text-muted-foreground text-sm max-w-xs">
+            Para acessar o painel de rastreamento, você precisa ter feito seu cadastro pelo link enviado pelo gestor da van.
+          </p>
+        </div>
+        <div className="bg-secondary/40 border rounded-xl p-4 text-xs text-muted-foreground max-w-xs space-y-1">
+          <p className="font-bold text-foreground uppercase text-[10px] tracking-widest">O que fazer?</p>
+          <p>Verifique o WhatsApp enviado pelo seu operador de transporte e acesse o link de cadastro.</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className={cn("min-h-screen p-4 space-y-6", journeyDirection === 'ida' ? "bg-background" : "bg-orange-50/10")}>
+    <div className={cn("min-h-screen p-4 space-y-6 pb-32 md:pb-6", journeyDirection === 'ida' ? "bg-background" : "bg-orange-50/10")}>
       <div className="max-w-4xl mx-auto space-y-6">
         <div className="flex justify-between items-center">
             <h1 className="text-2xl font-bold italic text-primary">Guardian</h1>
@@ -385,17 +527,52 @@ export default function ParentTrackingPage() {
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16 border-2 border-background shadow-md">
                                 <AvatarImage src={student?.photoUrl || undefined} />
-                                <AvatarFallback className="text-3xl font-black">{student?.name[0]}</AvatarFallback>
+                                <AvatarFallback className="text-3xl font-black">{(String(student?.name) || '?')[0]}</AvatarFallback>
                             </Avatar>
-                            <div><CardTitle className="text-xl">Olá, {parent?.name.split(' ')[0]}</CardTitle><CardDescription className="font-medium text-foreground/80">Jornada de {student?.name}</CardDescription></div>
+                            <div>
+                                <CardTitle className="text-xl">Olá, {String(parent?.name || 'Responsável').split(' ')[0]}</CardTitle>
+                                <CardDescription className="font-medium text-foreground/80">Jornada de {currentStudentName}</CardDescription>
+                            </div>
                         </div>
                     </CardHeader>
                     <CardContent className="pt-6">
                         <JourneyTimeline status={student?.status || 'aguardando'} direction={journeyDirection} />
+                        
+                        {student?.status === 'desembarcado' && student?.lastHandover && (
+                            <div className="mt-6 mb-2 p-4 rounded-xl border-2 border-green-500/30 bg-green-500/10 flex items-start gap-3 animate-in fade-in zoom-in-95 duration-500">
+                                <Avatar className="h-12 w-12 border-2 border-green-500/20 shadow-sm shrink-0">
+                                    <AvatarFallback className="font-black text-green-700 bg-green-500/20 uppercase">
+                                        {student.lastHandover.authorizedPersonName.split(' ').map((n: string) => n[0]).join('')}
+                                    </AvatarFallback>
+                                </Avatar>
+                                <div className="space-y-1">
+                                    <h4 className="font-black text-green-700 uppercase tracking-tight text-sm">Entrega Confirmada</h4>
+                                    <p className="text-[11px] text-green-800 leading-tight">
+                                        Entregue para <strong className="uppercase">{student.lastHandover.authorizedPersonName}</strong> ({student.lastHandover.relationship}).
+                                    </p>
+                                    <p className="text-[9px] text-green-700/80 font-black uppercase mt-1 tracking-widest flex items-center gap-2">
+                                        <ShieldCheck className="h-3 w-3" />
+                                        {new Date(student.lastHandover.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} • Segurado via App
+                                    </p>
+                                </div>
+                            </div>
+                        )}
+
                         {isAbsent ? (
-                            <Button variant="secondary" className="w-full mt-4" onClick={handleConfirmPresence}><CheckCircle className="mr-2 h-4 w-4" /> Confirmar Presença</Button>
+                            <div className="mt-4 p-4 rounded-xl border-2 border-destructive/30 bg-destructive/5 flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-3">
+                                    <XCircle className="h-5 w-5 text-destructive" />
+                                    <div className="space-y-0.5">
+                                        <p className="text-xs font-bold text-destructive uppercase tracking-widest">Ausência Comunicada</p>
+                                        <p className="text-[10px] text-muted-foreground">{statusText[(student?.status || 'aguardando') as Student['status']]}</p>
+                                    </div>
+                                </div>
+                                <Button variant="link" className="text-[10px] h-8 p-0 text-primary font-bold uppercase underline" onClick={() => updateDoc('students', student.id, { status: 'aguardando' })}>Desfazer / Presente</Button>
+                            </div>
                         ) : (
-                            <Button variant="outline" className="w-full mt-4 border-destructive/20 text-destructive" onClick={() => setIsAbsenceDialogOpen(true)}><XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje</Button>
+                            <Button variant="outline" className="w-full mt-4 border-destructive/20 text-destructive h-12 font-bold uppercase tracking-widest text-[10px]" onClick={() => setIsAbsenceDialogOpen(true)}>
+                                <XCircle className="mr-2 h-4 w-4" /> Comunicar Ausência Hoje
+                            </Button>
                         )}
                     </CardContent>
                     <CardFooter className="justify-center border-t py-4">
@@ -430,7 +607,7 @@ export default function ParentTrackingPage() {
             </TabsContent>
 
             <TabsContent value="mapa" className="animate-in fade-in duration-300">
-                <Card className="h-[500px] border-2 shadow-2xl overflow-hidden relative">
+                <Card className="h-[clamp(400px,65vh,700px)] border-2 shadow-2xl overflow-hidden relative">
                     <Button variant="outline" size="icon" onClick={() => setRecenterTrigger(c => c + 1)} className="absolute top-3 left-3 z-[1000] bg-background/80 shadow-sm border-primary/20"><LocateFixed className="h-5 w-5 text-primary" /></Button>
                     <SmartMap 
                         center={{ lat: student?.latitude || -23.55, lng: student?.longitude || -46.63 }} 
@@ -440,13 +617,7 @@ export default function ParentTrackingPage() {
                         routePolyline={route?.polyline} 
                         recenterTrigger={recenterTrigger}
                     >
-                        <GoogleMapMarkers 
-                            allStudents={students || []} 
-                            allRoutes={allRoutes || []} 
-                            allLocations={allLocations || []} 
-                            allSchools={allSchools || []} 
-                            selectedStudentId={selectedStudentId} 
-                        />
+                        <GoogleMapMarkers allStudents={students || []} allRoutes={allRoutes || []} allLocations={allLocations || []} allSchools={allSchools || []} selectedStudentId={student?.id || null} isMounted={isMounted} selectedRoute={route} />
                     </SmartMap>
                 </Card>
                 <div className="mt-4 p-4 rounded-lg bg-primary/5 border border-primary/10 flex items-start gap-3">
@@ -458,21 +629,51 @@ export default function ParentTrackingPage() {
       </div>
 
       <AlertDialog open={isAbsenceDialogOpen} onOpenChange={setIsAbsenceDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader><AlertDialogTitle>Informar Falta</AlertDialogTitle></AlertDialogHeader>
+        <AlertDialogContent className="max-w-[90vw] rounded-2xl">
+          <AlertDialogHeader>
+              <AlertDialogTitle className="text-center text-xl font-black italic text-primary">Guardian</AlertDialogTitle>
+          </AlertDialogHeader>
           <div className="py-4 space-y-4">
+            <p className="text-center text-sm font-medium text-muted-foreground">Em qual período seu filho(a) faltará?</p>
             <RadioGroup value={selectedAbsenceType} onValueChange={(v) => setSelectedAbsenceType(v as any)} className="space-y-3">
-              {["ausente_ida", "ausente_volta", "ausente_dia_todo"].map(t => (
-                <div key={t} className="flex items-center space-x-3 p-3 rounded-md border"><RadioGroupItem value={t} id={t} /><Label htmlFor={t} className="flex-1 cursor-pointer font-medium">{t === 'ausente_ida' ? 'Faltará apenas na IDA' : t === 'ausente_volta' ? 'Faltará apenas na VOLTA' : 'Faltará o DIA TODO'}</Label></div>
+              {[
+                { id: "ausente_ida", label: "Faltará na IDA", sub: "Apenas coleta da manhã/tarde", icon: Home },
+                { id: "ausente_volta", label: "Faltará na VOLTA", sub: "Apenas entrega da tarde/noite", icon: School },
+                { id: "ausente_dia_todo", label: "Faltará o DIA TODO", sub: "Não irá em nenhum turno", icon: XCircle }
+              ].map((t) => (
+                <div key={t.id} className={cn("flex items-center space-x-3 p-4 rounded-xl border-2 transition-all cursor-pointer", selectedAbsenceType === t.id ? "border-primary bg-primary/5" : "border-muted")} onClick={() => setSelectedAbsenceType(t.id as any)}>
+                    <RadioGroupItem value={t.id} id={t.id} className="sr-only" />
+                    <div className={cn("p-2 rounded-lg", selectedAbsenceType === t.id ? "bg-primary text-white" : "bg-muted text-muted-foreground")}>
+                        <t.icon className="h-5 w-5" />
+                    </div>
+                    <div className="flex-1">
+                        <Label htmlFor={t.id} className="block cursor-pointer font-black text-sm uppercase tracking-tight">{t.label}</Label>
+                        <p className="text-[10px] text-muted-foreground">{t.sub}</p>
+                    </div>
+                </div>
               ))}
             </RadioGroup>
             {students && students.length > 1 && (
-                <div className="flex items-center space-x-2 p-3 bg-muted rounded-md"><Checkbox id="all" checked={applyAbsenceToAll} onCheckedChange={(v) => setApplyAbsenceToAll(!!v)} /><Label htmlFor="all" className="text-xs font-bold uppercase">Aplicar a todos os filhos</Label></div>
+                <div className="flex items-center space-x-2 p-3 bg-muted/50 rounded-xl border border-dashed">
+                    <Checkbox id="all" checked={applyAbsenceToAll} onCheckedChange={(v) => setApplyAbsenceToAll(!!v)} />
+                    <Label htmlFor="all" className="text-[10px] font-black uppercase tracking-widest text-muted-foreground">Aplicar a todos os filhos</Label>
+                </div>
             )}
           </div>
-          <AlertDialogFooter><AlertDialogCancel onClick={() => setApplyAbsenceToAll(false)}>Voltar</AlertDialogCancel><AlertDialogAction onClick={handleCommunicateAbsence} className="bg-destructive">Confirmar Falta</AlertDialogAction></AlertDialogFooter>
+          <AlertDialogFooter className="flex-col gap-2 sm:flex-row">
+            <AlertDialogCancel onClick={() => setApplyAbsenceToAll(false)} className="w-full sm:w-auto rounded-xl">Cancelar</AlertDialogCancel>
+            <AlertDialogAction onClick={handleCommunicateAbsence} className="w-full sm:w-auto bg-destructive hover:bg-destructive/90 rounded-xl">Confirmar Falta</AlertDialogAction>
+          </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </div>
+  );
+}
+
+export default function ParentTrackingPage() {
+  return (
+    <Suspense fallback={<div className="flex items-center justify-center h-screen bg-background"><Loader2 className="h-12 w-12 animate-spin text-primary" /></div>}>
+      <ParentTrackingContent />
+    </Suspense>
   );
 }

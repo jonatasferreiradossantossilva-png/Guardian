@@ -42,23 +42,7 @@ import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-type TripRequest = {
-  id: string;
-  studentId: string;
-  schoolId: string;
-  parentUserId: string;
-  date: string;
-  type: 'ida' | 'volta' | 'ida_e_volta';
-  shift: 'manha' | 'tarde';
-  status: 'pendente' | 'aprovada' | 'rejeitada' | 'aguardando_aprovacao_pai';
-  reason?: string;
-  createdAt: string;
-  amount?: number;
-};
-
-type Student = { id: string; name: string };
-type Parent = { id: string; name: string; userId: string };
-type SchoolData = { id: string; name: string };
+import { TripRequest, Student, Parent, SchoolData, Route, TripRequestStatus } from "@/types/mock-data";
 
 interface TripRequestsListProps {
   initialRequests: TripRequest[];
@@ -89,15 +73,16 @@ const typeMap = {
 
 export function TripRequestsList({ initialRequests, initialStudents, initialParents, initialSchools }: TripRequestsListProps) {
   const { toast } = useToast();
-  const { updateDoc } = useMockData();
+  const { updateDoc, db } = useMockData();
+  const allRoutes = db?.routes || [];
 
   const [priceDialogRequest, setPriceDialogRequest] = useState<TripRequest | null>(null);
   const [price, setPrice] = useState<string>("");
 
-  const { data: liveRequests, isLoading: areRequestsLoading } = useMockCollection('trip_requests');
-  const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
-  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents');
-  const { data: liveSchools, isLoading: areSchoolsLoading } = useMockCollection('schools');
+  const { data: liveRequests, isLoading: areRequestsLoading } = useMockCollection('trip_requests', []);
+  const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students', []);
+  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents', []);
+  const { data: liveSchools, isLoading: areSchoolsLoading } = useMockCollection('schools', []);
 
   const requests = liveRequests ?? initialRequests;
   const students = liveStudents ?? initialStudents;
@@ -105,17 +90,37 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
   const schools = liveSchools ?? initialSchools;
   const isLoading = areRequestsLoading || areStudentsLoading || areParentsLoading || areSchoolsLoading;
   
-  const studentsMap = useMemo(() => new Map(students?.map(s => [s.id, s.name])), [students]);
+  const studentsMap = useMemo(() => new Map((students || []).map((s: Student) => [s.id, s.name])), [students]);
   const parentDataMap = useMemo(() => {
-    if (!parents) return new Map();
-    const map = new Map();
-    parents.forEach(p => map.set(p.userId, { id: p.id, name: p.name }));
+    if (!parents) return new Map<string, { id: string; name: string }>();
+    const map = new Map<string, { id: string; name: string }>();
+    parents.forEach((p: Parent) => map.set(p.userId, { id: p.id, name: p.name }));
     return map;
   }, [parents]);
-  const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
+  const schoolsMap = useMemo(() => new Map((schools || []).map((s: SchoolData) => [s.id, s.name])), [schools]);
 
   const handleStatusChange = (requestId: string, newStatus: TripRequest['status']) => {
     updateDoc('trip_requests', requestId, { status: newStatus });
+    
+    // VINCULAÇÃO AUTOMÁTICA À ROTA NA APROVAÇÃO
+    if (newStatus === 'aprovada') {
+        const req = requests.find(r => r.id === requestId);
+        if (req) {
+            const matchingRoute = allRoutes.find((r: Route) => 
+                r.shift === (req.shift === 'manha' ? 'Manhã' : 'Tarde') && 
+                r.studentIds.includes(req.schoolId)
+            );
+
+            if (matchingRoute && !matchingRoute.studentIds.includes(req.studentId)) {
+                updateDoc('routes', matchingRoute.id, { 
+                    studentIds: [...matchingRoute.studentIds, req.studentId],
+                    lastOptimizedAt: new Date().toISOString()
+                });
+                toast({ title: "Rota Atualizada", description: `Aluno vinculado à ${matchingRoute.name}.` });
+            }
+        }
+    }
+
     toast({
       title: `Solicitação ${newStatus === 'aprovada' ? 'Aprovada' : 'Rejeitada'}!`,
       description: `O status da solicitação foi atualizado.`,
@@ -224,10 +229,19 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                           </div>
                         </TableCell>
                         <TableCell>{schoolName}</TableCell>
-                        <TableCell>{request.date.split('-').reverse().join('/')}</TableCell>
-                        <TableCell>{typeMap[request.type]}</TableCell>
+                        <TableCell>
+                          {request.startDate ? (
+                            <span className="text-xs font-medium">
+                              {request.startDate.split('-').reverse().join('/')}
+                              {request.endDate && request.endDate !== request.startDate && ` - ${request.endDate.split('-').reverse().join('/')}`}
+                            </span>
+                          ) : (
+                            request.date?.split('-').reverse().join('/')
+                          )}
+                        </TableCell>
+                        <TableCell>{typeMap[request.type as keyof typeof typeMap]}</TableCell>
                         <TableCell>{request.amount ? `R$ ${request.amount.toFixed(2)}` : '-'}</TableCell>
-                        <TableCell><Badge variant={statusVariantMap[request.status]} className="capitalize">{statusTextMap[request.status]}</Badge></TableCell>
+                        <TableCell><Badge variant={statusVariantMap[request.status as TripRequestStatus]} className="capitalize">{(statusTextMap[request.status as TripRequestStatus] || 'Pendente')}</Badge></TableCell>
                         <TableCell className="text-right">
                           <DropdownMenu>
                             <DropdownMenuTrigger asChild>
@@ -285,8 +299,8 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                             <CardDescription className="text-xs">{parentName}</CardDescription>
                           </div>
                         </div>
-                        <Badge variant={statusVariantMap[request.status]} className="text-[10px]">
-                          {statusTextMap[request.status]}
+                        <Badge variant={statusVariantMap[request.status as TripRequestStatus]} className="text-[10px]">
+                          {(statusTextMap[request.status as TripRequestStatus] || 'Pendente')}
                         </Badge>
                       </div>
                     </CardHeader>
@@ -300,7 +314,18 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                           <p className="text-[10px] uppercase font-bold text-muted-foreground">Data</p>
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
-                            <span>{request.date.split('-').reverse().join('/')}</span>
+                            <span className="text-[11px]">
+                              {request.startDate ? (
+                                <>
+                                  {request.startDate.split('-').reverse().join('/')}
+                                  {request.endDate && request.endDate !== request.startDate && (
+                                    <span className="block text-[9px] text-muted-foreground">até {request.endDate.split('-').reverse().join('/')}</span>
+                                  )}
+                                </>
+                              ) : (
+                                request.date?.split('-').reverse().join('/')
+                              )}
+                            </span>
                           </div>
                         </div>
                         <div>

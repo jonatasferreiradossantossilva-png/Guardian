@@ -61,6 +61,19 @@ const modalityContractPhrase: Record<string, string> = {
     'so_volta': 'exclusivamente da escola para a residência'
 };
 
+import { Student, User as Parent, MockDB } from '@/types/mock-data';
+
+type Template = MockDB['contract_templates'][number];
+type Contract = MockDB['contracts'][number];
+
+interface ContractGenerateFormProps {
+  students: Student[];
+  parents: Parent[];
+  templates: Template[];
+  existingContracts: Contract[];
+  onFormSubmit: () => void;
+}
+
 export function ContractGenerateForm({ students, parents, templates, existingContracts, onFormSubmit }: ContractGenerateFormProps) {
   const { toast } = useToast();
   const { addDoc } = useMockData();
@@ -99,10 +112,10 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     return students.filter(s => !contractedStudentIds.has(s.id) && s.active !== false);
   }, [students, existingContracts]);
 
-  const studentsMap = useMemo(() => new Map(students.map(s => [s.id, s])), [students]);
-  const parentsMap = useMemo(() => new Map(parents.map(p => [p.id, p])), [parents]);
-  const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
-  const templatesMap = useMemo(() => new Map(templates.map(t => [t.id, t])), [templates]);
+  const studentsMap = useMemo(() => new Map(students.map((s: Student) => [s.id, s])), [students]);
+  const parentsMap = useMemo(() => new Map(parents.map((p: Parent) => [p.id, p])), [parents]);
+  const schoolsMap = useMemo(() => new Map(schools?.map((s: any) => [s.id, s.name])), [schools]);
+  const templatesMap = useMemo(() => new Map(templates.map((t: any) => [t.id, t])), [templates]);
 
   const selectedStudentData = useMemo(() => {
       if (!watchStudentId) return null;
@@ -144,13 +157,15 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
 
     let generatedContent = template.content;
     
-    // Inject Modality Info
-    generatedContent = generatedContent.replace(/{{modalidade_servico}}/g, modalityLabels[modality] || 'Ida e Volta');
-    generatedContent = generatedContent.replace(/residência\/escola\/residência/g, modalityContractPhrase[modality] || 'residência/escola/residência');
+    // Replace company info
+    generatedContent = generatedContent.replace(/{{empresa_nome}}/g, company?.companyName || 'Guardian Transporte Escolar');
+    generatedContent = generatedContent.replace(/{{empresa_cnpj}}/g, company?.cnpj || 'N/A');
 
-    // Replace payment info
+    // Replace payment info (Centralized phrase logic)
     const fullPaymentPattern = /via: {{banco}}, Agência {{agencia}}, Conta {{conta}} ou através da Chave Pix: {{chave_pix}}/g;
-    if (generatedContent.match(fullPaymentPattern)) {
+    if (generatedContent.includes('{{pagamento_info}}')) {
+        generatedContent = generatedContent.replace(/{{pagamento_info}}/g, paymentPhrase);
+    } else if (generatedContent.match(fullPaymentPattern)) {
         generatedContent = generatedContent.replace(fullPaymentPattern, paymentPhrase);
     } else {
         generatedContent = generatedContent.replace(/{{banco}}/g, data.banco || 'N/A');
@@ -254,7 +269,7 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
                     <Select onValueChange={field.onChange} value={field.value}>
                       <FormControl><SelectTrigger><SelectValue placeholder="Selecione o modelo..." /></SelectTrigger></FormControl>
                       <SelectContent>
-                        {templates.map(t => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
+                        {templates.map((t: any) => <SelectItem key={t.id} value={t.id}>{t.name}</SelectItem>)}
                       </SelectContent>
                     </Select>
                     <FormMessage />

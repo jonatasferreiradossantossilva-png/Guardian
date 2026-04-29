@@ -49,7 +49,7 @@ const formSchema = z.object({
 type ExpenseFormValues = z.infer<typeof formSchema>;
 
 interface ExpenseFormProps {
-  expense?: { id: string } & Partial<ExpenseFormValues>;
+  expense?: { id: string; date?: string | Date } & Partial<Omit<ExpenseFormValues, 'date'>>;
   onFormSubmit: () => void;
 }
 
@@ -74,7 +74,7 @@ export function ExpenseForm({ expense, onFormSubmit }: ExpenseFormProps) {
         date: expense.date ? new Date(expense.date) : new Date(),
       });
     } else {
-      form.reset(form.defaultValues);
+      form.reset();
     }
   }, [expense, form]);
 
@@ -178,7 +178,7 @@ export function ExpenseForm({ expense, onFormSubmit }: ExpenseFormProps) {
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
-                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} initialFocus />
+                    <Calendar mode="single" selected={field.value} onSelect={field.onChange} autoFocus />
                   </PopoverContent>
                 </Popover>
                 <FormMessage />

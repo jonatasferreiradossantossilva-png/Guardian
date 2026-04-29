@@ -63,7 +63,7 @@ export function PredefinedMessageForm({ message, onFormSubmit }: PredefinedMessa
         for: message.for || 'all',
       });
     } else {
-      form.reset(form.defaultValues);
+      form.reset();
     }
   }, [message, form]);
 

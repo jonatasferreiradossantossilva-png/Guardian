@@ -25,10 +25,21 @@ import {
     Play, 
     BookOpen,
     Sparkles,
-    ClipboardCheck,
     History,
-    Megaphone
+    ClipboardCheck,
+    Megaphone,
+    UserCircle,
+    Copy,
+    Share2 as ShareIcon
 } from 'lucide-react';
+import {
+    Dialog,
+    DialogContent,
+    DialogHeader,
+    DialogTitle,
+    DialogDescription,
+    DialogFooter,
+} from "@/components/ui/dialog";
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
@@ -41,6 +52,7 @@ import { useToast } from '@/hooks/use-toast';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 import { OperationalFeed } from '@/components/dashboard/operational-feed';
+import { InviteDialog } from '@/components/dashboard/invite-dialog';
 
 // --- Mobile Home Screen Component ---
 function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => void, onShareRegistration: () => void }) {
@@ -209,7 +221,7 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
                         <BookOpen className="h-5 w-5 text-primary" />
                         Status do Setup
                     </CardTitle>
-                    <CardDescription className="text-xs">Visualize o guia para ativar a IA.</CardDescription>
+                    <CardDescription className="text-xs">Visualize o guia para ativar o roteamento.</CardDescription>
                 </CardHeader>
                 <CardContent className="flex-1 flex flex-col justify-center items-center text-center p-6 space-y-4">
                     <div className="bg-primary/10 p-4 rounded-full border-2 border-primary/20">
@@ -241,41 +253,35 @@ export default function DashboardPage() {
     const isMobile = useIsMobile();
     const [isClient, setIsClient] = useState(false);
     const [showOnboarding, setShowOnboarding] = useState(false);
+    const [inviteDialogOpen, setInviteDialogOpen] = useState(false);
     const { toast } = useToast();
 
     useEffect(() => {
         setIsClient(true);
     }, []);
 
-    if (!isClient) return null; 
+    if (!isClient || isMobile === undefined) {
+        return (
+            <div className="flex min-h-screen w-full items-center justify-center bg-background">
+                <div className="flex flex-col items-center gap-4">
+                    <Loader2 className="h-10 w-10 animate-spin text-primary" />
+                    <p className="text-[10px] font-black uppercase tracking-[0.3em] text-muted-foreground">Otimizando para seu dispositivo...</p>
+                </div>
+            </div>
+        );
+    }
 
     const handleOpenGuide = () => setShowOnboarding(true);
-
-    const handleShareRegistration = async () => {
-        const registrationLink = `${window.location.origin}/register`;
-        const shareText = `Olá! Para agilizar seu cadastro no Guardian, clique no link abaixo e use nossa ferramenta de leitura automática de documentos:\n\n${registrationLink}`;
-        
-        try {
-            await navigator.clipboard.writeText(shareText);
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: 'Convite Guardian', text: shareText, url: registrationLink });
-                    return; 
-                } catch (e) {}
-            }
-            window.open(`https://wa.me/?text=${encodeURIComponent(shareText)}`, '_blank');
-            toast({ title: "Link Copiado!", description: "A mensagem está na sua área de transferência." });
-        } catch (err) {
-            toast({ title: "Erro ao compartilhar", variant: "destructive" });
-        }
-    };
 
     return (
         <>
             {isMobile ? 
-                <MobileHome onOpenGuide={handleOpenGuide} onShareRegistration={handleShareRegistration} /> : 
-                <DesktopDashboard onOpenGuide={handleOpenGuide} onShareRegistration={handleShareRegistration} />
+                <MobileHome onOpenGuide={handleOpenGuide} onShareRegistration={() => setInviteDialogOpen(true)} /> : 
+                <DesktopDashboard onOpenGuide={handleOpenGuide} onShareRegistration={() => setInviteDialogOpen(true)} />
             }
+            
+            <InviteDialog isOpen={inviteDialogOpen} onOpenChange={setInviteDialogOpen} />
+
             <OnboardingGuide isOpen={showOnboarding} onClose={() => setShowOnboarding(false)} />
         </>
     );

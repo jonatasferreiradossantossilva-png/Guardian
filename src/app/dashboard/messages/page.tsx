@@ -29,9 +29,11 @@ export default function MessagesPage() {
   const [currentMessage, setCurrentMessage] = useState('');
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
+  const [isClient, setIsClient] = useState(false);
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('mockUserId');
     setMockUserId(storedUserId);
+    setIsClient(true);
   }, []);
 
   const monitors = useMemo(() => (users || []).filter(u => u.profile === 'monitor'), [users]);
@@ -40,12 +42,12 @@ export default function MessagesPage() {
     if (!selectedConversation || !messages || !mockUserId) return [];
     
     return messages.filter(m => {
-      const isUserSender = m.senderId === mockUserId;
-      const isUserRecipient = m.recipientId === selectedConversation.userId;
-      const isParticipantSender = m.senderId === selectedConversation.userId;
-      const isParticipantRecipient = m.recipientId === mockUserId;
+      const sentByMe = m.senderId === mockUserId;
+      const receivedByMe = m.recipientId === mockUserId;
+      const sentByOther = m.senderId === selectedConversation.userId;
+      const receivedByOther = m.recipientId === selectedConversation.userId;
 
-      return (isUserSender && isParticipantRecipient) || (isParticipantSender && isUserRecipient);
+      return (sentByMe && receivedByOther) || (sentByOther && receivedByMe);
     }).sort((a, b) => new Date(a.timestamp).valueOf() - new Date(b.timestamp).valueOf());
   }, [messages, selectedConversation, mockUserId]);
   
@@ -163,7 +165,7 @@ export default function MessagesPage() {
                         <div className={`max-w-xs md:max-w-md p-3 rounded-lg ${isAdminMessage(msg.senderId) ? 'bg-primary text-primary-foreground' : 'bg-background border'}`}>
                           <p className="text-sm">{msg.text}</p>
                           <p className="text-xs text-right mt-1 opacity-70">
-                              {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                              {isClient && msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
                           </p>
                         </div>
                       </div>

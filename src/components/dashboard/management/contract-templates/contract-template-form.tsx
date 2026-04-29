@@ -61,7 +61,7 @@ export function ContractTemplateForm({ template, templates, onFormSubmit }: Cont
         content: template.content || '',
       });
     } else {
-      form.reset(form.defaultValues);
+      form.reset();
     }
   }, [template, form]);
 

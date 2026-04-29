@@ -151,7 +151,7 @@ export default function PresentationPage() {
                 </Badge>
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-8 w-full relative">
                     <div className="hidden md:block absolute top-1/2 left-0 w-full h-0.5 bg-primary/20 -translate-y-1/2 z-0" />
-                    <StepItem step="1" icon={<Play />} title="Start Inteligente" desc="Motorista inicia rota otimizada por IA para menor consumo." />
+                    <StepItem step="1" icon={<Play />} title="Smart Launch" desc="Driver starts route optimized by specialized engine for lower waste." />
                     <StepItem step="2" icon={<MapIcon />} title="Acompanhamento" desc="Pais visualizam a van em movimento no mapa vivo." />
                     <StepItem step="3" icon={<Bell />} title="Smart Notification" desc="App avisa a chegada automaticamente ao entrar no raio de 800m." />
                     <StepItem step="4" icon={<CheckCircle2 />} title="Log Digital" desc="Embarque validado gera comprovante digital e segurança jurídica." />
@@ -167,28 +167,28 @@ export default function PresentationPage() {
                         imageIds={['ob-15-triage', 'ob-10-finance', 'ob-14-notification']} 
                         features={["ROI de KM", "Triagem OCR", "Faturas Aut.", "Mural Avisos"]} 
                         steps={[
-                            "Setup (escolas/veículos/equipe)",
-                            "Convite aos pais via WhatsApp",
-                            "Triagem com OCR/IA",
-                            "Formalização com contrato digital e Pix",
-                            "[NOVO] Ativação de Rota",
-                            "Auditoria de ROI e performance [NOVO] (Alertas Proativos)",
-                            "[NOVO] Gestão de Inadimplência"
+                                "Setup (schools/vehicles/team)",
+                                "Invite parents via WhatsApp",
+                                "Smart Registration Intake",
+                                "Formalization with digital contract and Pix",
+                                "[NEW] Route Activation",
+                                "ROI and performance audit [NEW] (Proactive Alerts)",
+                                "[NEW] Delinquency Management"
                         ]} 
                     />
                     <ModulePreview 
                         title="Navegação Assistida" 
                         role="DRIVER" 
                         imageIds={['ob-16-gps', 'ob-7-address', 'ob-4-scan']} 
-                        features={["GPS Realtime", "Itinerário IA", "Relato Transito", "Status Rota"]} 
+                        features={["Realtime GPS", "Smart Routing", "Traffic Alerts", "Route Status"]} 
                         steps={[
-                            "Seleção de rota e turno",
-                            "Logística pela rota otimizada pela IA",
-                            "Telemetria GPS em tempo real",
-                            "[NOVO] Fluxo de \"aluno ausente\"",
-                            "Reporte de incidentes [NOVO] (Categorias Pré-definidas)",
-                            "Consulta de histórico de economia",
-                            "[NOVO] Encerramento formal de rota"
+                            "Route and shift selection",
+                            "Logistics by optimized routing engine",
+                            "Real-time GPS telemetry",
+                            "[NEW] \"Absent student\" flow",
+                            "Incident reporting [NEW] (Pre-defined Categories)",
+                            "Savings history consultation",
+                            "[NEW] Formal route closure"
                         ]} 
                     />
                     <ModulePreview 
@@ -213,13 +213,13 @@ export default function PresentationPage() {
                         imageIds={['ob-3-welcome', 'ob-17-sign', 'ob-6-contact', 'ob-13-done']} 
                         features={["Mapa Vivo", "Viagens Avulsas", "Pix Instantâneo", "Contratos"]} 
                         steps={[
-                            "Onboarding com OCR do RG em 30s",
-                            "Aceite do contrato digital",
-                            "Mapa ao vivo da van",
-                            "[NOVO] Fluxo de ausência programada",
-                            "Smart Alert a 800m",
-                            "Pagamento Pix e solicitação de viagens avulsas [NOVO] (Solicitação → Aprovação → Notificação)",
-                            "[NOVO] Visão de múltiplos filhos"
+                            "Onboarding with Smart Intake in 30s",
+                            "Digital contract acceptance",
+                            "Live van map",
+                            "[NEW] Scheduled absence flow",
+                            "Smart Alert at 800m",
+                            "Pix payment and extra trip requests [NEW] (Request → Approval → Notification)",
+                            "[NEW] Multiple children view"
                         ]} 
                     />
                 </div>
@@ -238,8 +238,8 @@ export default function PresentationPage() {
                                 desc="Enquanto concorrentes pagam fortunas ao Google Maps, usamos Mapas Híbridos e Haversine local para escalar com margem de lucro recorde."
                             />
                             <ComparisonPoint 
-                                title="Triagem via OCR Gemini" 
-                                desc="Eliminamos a digitação. Pais cadastram filhos em 30s. Líderes de mercado ainda dependem de formulários manuais extensos."
+                                title="Smart OCR Intake" 
+                                desc="We eliminate manual typing. Parents register children in 30s. Market leaders still rely on extensive manual forms." 
                             />
                             <ComparisonPoint 
                                 title="Telemetria por Delta" 
@@ -250,10 +250,10 @@ export default function PresentationPage() {
                     <div className="bg-background rounded-3xl border-2 border-primary/20 shadow-2xl p-8 space-y-6">
                         <p className="text-[10px] font-black uppercase tracking-[0.3em] text-primary">Comparativo Direto</p>
                         <div className="space-y-4">
-                            <ComparisonLine label="Cadastro" traditional="Manual" guardian="OCR Instantâneo" />
-                            <ComparisonLine label="Mapa" traditional="Google Only (Caro)" guardian="Híbrido (Inteligente)" />
-                            <ComparisonLine label="Roteirização" traditional="Estática" guardian="IA Otimizadora (ROI)" />
-                            <ComparisonLine label="Faturamento" traditional="Papel/WhatsApp" guardian="Pix Automático" />
+                            <ComparisonLine label="Onboarding" traditional="Manual" guardian="Smart Intake" />
+                            <ComparisonLine label="Map" traditional="Google Only (Expensive)" guardian="Hybrid (Smart)" />
+                            <ComparisonLine label="Routing" traditional="Static" guardian="Dynamic Optimizer (ROI)" />
+                            <ComparisonLine label="Billing" traditional="Paper/WhatsApp" guardian="Auto Pix" />
                         </div>
                         <div className="pt-4 border-t border-primary/10">
                             <div className="flex items-center gap-2 text-primary font-black italic">

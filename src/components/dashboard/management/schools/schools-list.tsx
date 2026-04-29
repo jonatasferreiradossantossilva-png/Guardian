@@ -13,6 +13,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle, Edit, Trash2, Loader2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { SafeTableRow, SafeRow } from "@/components/shared/safe-table";
+import { safeString, safeArray } from "@/lib/safe-render";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -101,8 +103,9 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
   
   const formatAddress = (school: School) => {
     if (!school.street) return 'N/A';
-    return `${school.street}, ${school.number} - ${school.city}, ${school.state}`;
+    return `${safeString(school.street)}, ${safeString(school.number, 's/n')} - ${safeString(school.city)}, ${safeString(school.state)}`;
   }
+
 
   if (!mounted) {
     return (
@@ -156,12 +159,12 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
                     </TableCell>
                   </TableRow>
                 )}
-                {!isLoading && schools && schools.length > 0 ? (
-                  schools.map((school) => (
-                    <TableRow key={school.id}>
-                      <TableCell className="font-medium">{school.name}</TableCell>
+                {!isLoading && safeArray<School>(schools).length > 0 ? (
+                  safeArray<School>(schools).map((school: School) => (
+                    <SafeTableRow key={school.id} name={`SchoolRow-${school.id}`}>
+                      <TableCell className="font-medium">{safeString(school.name, 'Escola')}</TableCell>
                       <TableCell>{formatAddress(school)}</TableCell>
-                      <TableCell>{school.cnpj || 'N/A'}</TableCell>
+                      <TableCell>{safeString(school.cnpj, 'N/A')}</TableCell>
                       <TableCell>
                         <Badge variant={school.active !== false ? 'default' : 'secondary'} className={school.active !== false ? 'bg-green-600' : ''}>
                           {school.active !== false ? 'Ativa' : 'Inativa'}
@@ -188,8 +191,9 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
                            </DropdownMenu>
                         </div>
                       </TableCell>
-                    </TableRow>
+                    </SafeTableRow>
                   ))
+
                 ) : (
                   !isLoading && (
                     <TableRow>
@@ -205,41 +209,44 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
            {/* Mobile View */}
           <div className="md:hidden">
             {isLoading && <p className="text-center py-10">Carregando...</p>}
-            {!isLoading && schools && schools.length > 0 ? (
+            {!isLoading && safeArray<School>(schools).length > 0 ? (
               <div className="space-y-4">
-                {schools.map((school) => (
-                  <Card key={school.id} className="overflow-hidden">
-                    <div className="p-4">
-                        <div className="flex items-start justify-between">
-                        <div>
-                            <p className="font-medium">{school.name}</p>
-                            <p className="text-xs text-muted-foreground">CNPJ: {school.cnpj || 'N/A'}</p>
-                        </div>
-                        </div>
-                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                            <div>
-                                <p className="text-muted-foreground text-xs">Endereço</p>
-                                <p className="font-medium">{formatAddress(school)}</p>
-                            </div>
-                            <div>
-                                <p className="text-muted-foreground text-xs">Status</p>
-                                <Badge variant={school.active !== false ? 'default' : 'secondary'} className={school.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
-                                    {school.active !== false ? 'Ativa' : 'Inativa'}
-                                </Badge>
-                            </div>
-                        </div>
-                    </div>
-                     <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
-                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(school)}>
-                            <Edit className="mr-2 h-4 w-4" /> Editar
-                        </Button>
-                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(school)}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Deletar
-                        </Button>
-                    </CardFooter>
-                  </Card>
+                {safeArray<School>(schools).map((school: School) => (
+                  <SafeRow key={school.id} name={`SchoolCard-${school.id}`}>
+                    <Card className="overflow-hidden">
+                      <div className="p-4">
+                          <div className="flex items-start justify-between">
+                          <div>
+                              <p className="font-medium">{safeString(school.name, 'Escola')}</p>
+                              <p className="text-xs text-muted-foreground">CNPJ: {safeString(school.cnpj, 'N/A')}</p>
+                          </div>
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                              <div>
+                                  <p className="text-muted-foreground text-xs">Endereço</p>
+                                  <p className="font-medium">{formatAddress(school)}</p>
+                              </div>
+                              <div>
+                                  <p className="text-muted-foreground text-xs">Status</p>
+                                  <Badge variant={school.active !== false ? 'default' : 'secondary'} className={school.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                                      {school.active !== false ? 'Ativa' : 'Inativa'}
+                                  </Badge>
+                              </div>
+                          </div>
+                      </div>
+                       <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
+                          <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(school)}>
+                              <Edit className="mr-2 h-4 w-4" /> Editar
+                          </Button>
+                          <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(school)}>
+                              <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                          </Button>
+                      </CardFooter>
+                    </Card>
+                  </SafeRow>
                 ))}
               </div>
+
             ) : (
               !isLoading && <p className="text-center text-muted-foreground py-10">Nenhuma escola cadastrada.</p>
             )}

@@ -9,6 +9,9 @@ import { useState, useEffect } from "react";
 import { AiSummaryModal } from "./ai-summary-modal";
 import { useMockCollection } from '@/hooks/use-mock-data';
 import { useToast } from "@/hooks/use-toast";
+import { safeString, safeArray } from '@/lib/safe-render';
+import { SafeRow } from '@/components/shared/safe-table';
+
 
 const severityVariantMap: { [key in Incident['severity']]: "destructive" | "default" | "secondary" | "outline" } = {
     'Crítica': 'destructive',
@@ -21,26 +24,39 @@ const IncidentListItem = ({ incident, onSummarizeClick, onLocateClick }: { incid
     const [clientTime, setClientTime] = useState("");
 
     useEffect(() => {
-        setClientTime(
-            new Date(incident.timestamp).toLocaleTimeString('pt-BR', {
-                hour: '2-digit',
-                minute: '2-digit'
-            })
-        );
+        try {
+            const date = new Date(safeString(incident.timestamp));
+            if (isNaN(date.getTime())) {
+                setClientTime("--:--");
+            } else {
+                setClientTime(
+                    date.toLocaleTimeString('pt-BR', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })
+                );
+            }
+        } catch (e) {
+            setClientTime("--:--");
+        }
     }, [incident.timestamp]);
+
 
     return (
         <div className="p-4 hover:bg-secondary/50 transition-colors">
             <div className="flex justify-between items-start">
                 <div>
-                    <Badge variant={severityVariantMap[incident.severity]}>{incident.severity}</Badge>
-                    <p className="font-semibold text-foreground mt-2">{incident.category}</p>
+                    <Badge variant={severityVariantMap[safeString(incident.severity) as Incident['severity']] || 'default'}>
+                        {safeString(incident.severity, 'Média')}
+                    </Badge>
+                    <p className="font-semibold text-foreground mt-2">{safeString(incident.category, 'Incidente')}</p>
                 </div>
+
                 <div className="flex items-center gap-1">
                     <button
                         onClick={() => onSummarizeClick(incident)}
                         className="p-2 rounded-md hover:bg-primary/20 text-primary transition-colors"
-                        title="Sumarizar com IA"
+                        title="Resumo Inteligente"
                     >
                         <Bot className="h-5 w-5" />
                     </button>
@@ -53,11 +69,12 @@ const IncidentListItem = ({ incident, onSummarizeClick, onLocateClick }: { incid
                     </button>
                 </div>
             </div>
-            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{incident.description}</p>
+            <p className="text-sm text-muted-foreground mt-1 line-clamp-2">{safeString(incident.description)}</p>
             <div className="flex items-center gap-2 text-xs text-muted-foreground/80 mt-2">
                 <Clock className="h-3 w-3" />
-                {clientTime && <span>{clientTime} por {incident.reporter}</span>}
+                {clientTime && <span>{clientTime} por {safeString(incident.reporter, 'Sistema')}</span>}
             </div>
+
         </div>
     );
 };
@@ -74,7 +91,7 @@ export function IncidentList({ onLocateIncident }: { onLocateIncident: (coords: 
     
     const handleLocateClick = (incident: Incident) => {
         if (incident.location) {
-            onLocateIncident(incident.location);
+            onLocateIncident(incident.location as google.maps.LatLngLiteral);
             toast({
                 title: "Localizando incidente",
                 description: "O mapa foi centralizado no local do incidente."
@@ -102,19 +119,22 @@ export function IncidentList({ onLocateIncident }: { onLocateIncident: (coords: 
             <Card className="border-secondary overflow-hidden">
                 <CardContent className="p-0">
                     <div className="divide-y divide-secondary">
-                        {incidents && incidents.length > 0 ? (
-                            incidents.map((incident) => (
-                                <IncidentListItem 
-                                    key={incident.id} 
-                                    incident={incident} 
-                                    onSummarizeClick={handleSummarizeClick} 
-                                    onLocateClick={handleLocateClick}
-                                />
+                        {safeArray<Incident>(incidents).length > 0 ? (
+                            safeArray<Incident>(incidents).map((incident: Incident) => (
+                                <SafeRow key={incident.id} name={`Incident-${incident.id}`}>
+                                    <IncidentListItem 
+                                        key={incident.id} 
+                                        incident={incident} 
+                                        onSummarizeClick={handleSummarizeClick} 
+                                        onLocateClick={handleLocateClick}
+                                    />
+                                </SafeRow>
                             ))
                         ) : (
                            <p className="text-center text-muted-foreground p-8 text-sm">Nenhum incidente recente.</p>
                         )}
                     </div>
+
                 </CardContent>
             </Card>
             {selectedIncident && (

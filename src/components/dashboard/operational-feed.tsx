@@ -11,6 +11,10 @@ import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
+import { SafeComponent } from '@/components/shared/safe-component';
+import { safeString, safeArray } from '@/lib/safe-render';
+import { SafeRow } from '@/components/shared/safe-table';
+
 
 type FeedItem = {
     id: string;
@@ -20,9 +24,18 @@ type FeedItem = {
     timestamp: string;
     icon: React.ReactNode;
     color: string;
+    severity?: string;
 };
 
 export function OperationalFeed() {
+    return (
+        <SafeComponent name="OperationalFeed">
+            <OperationalFeedContent />
+        </SafeComponent>
+    );
+}
+
+function OperationalFeedContent() {
     const { data: incidents } = useMockCollection('incidents');
     const { addDoc } = useMockData();
     const { toast } = useToast();
@@ -30,19 +43,18 @@ export function OperationalFeed() {
     const handleSimulateEvent = () => {
         const now = new Date().toISOString();
         
-        // 1. Simulação de Inteligência (Falta de Aluno)
-        addDoc('incidents', {
-            category: 'Inteligência: Aluno Ausente',
+        // 1. Simulação de Logística (Falta de Aluno)
+        (addDoc as any)('incidents', {
+            category: 'Smart: Aluno Ausente',
             description: 'Aluno Enzo Pereira (Falta) removido da Rota 01. Itinerário recalculado com economia de 1.2km.',
             severity: 'Baixa',
-            reporter: 'Guardian Intelligence',
+            reporter: 'Guardian System',
             timestamp: now,
-            location: { lat: -23.5580, lng: -46.6600 }
         });
 
         // 2. Simulação de Relato do Motorista (Incidente)
         setTimeout(() => {
-            addDoc('incidents', {
+            (addDoc as any)('incidents', {
                 category: 'Relato: Trânsito Intenso',
                 description: 'Motorista Juliano Castro reportou lentidão na Av. Paulista. Atraso estimado de 5 minutos.',
                 severity: 'Média',
@@ -54,32 +66,34 @@ export function OperationalFeed() {
 
         toast({
             title: "Simulação Ativada",
-            description: "Eventos de IA e Motorista injetados no feed."
+            description: "Eventos de Logística e Motorista injetados no feed."
         });
     };
 
     const feedItems = useMemo<FeedItem[]>(() => {
         const items: FeedItem[] = [];
 
-        if (incidents && incidents.length > 0) {
-            incidents.forEach(inc => {
-                const isAI = inc.reporter === 'Guardian Intelligence';
+        const list = safeArray(incidents);
+        if (list.length > 0) {
+            list.forEach((inc: any) => {
+                const isSmart = safeString(inc.reporter) === 'Guardian System';
                 items.push({
-                    id: inc.id,
-                    type: isAI ? 'intelligence' : 'incident',
-                    title: inc.category,
-                    description: inc.description,
-                    timestamp: inc.timestamp,
-                    icon: isAI ? <Sparkles className="h-4 w-4" /> : <Siren className="h-4 w-4" />,
-                    color: isAI ? 'text-primary bg-primary/10 border-primary/20' : 'text-destructive bg-destructive/10 border-destructive/20'
+                    id: safeString(inc.id, Math.random().toString()),
+                    type: isSmart ? 'intelligence' : 'incident',
+                    title: safeString(inc.category, 'Evento'),
+                    description: safeString(inc.description),
+                    timestamp: safeString(inc.timestamp, new Date().toISOString()),
+                    icon: isSmart ? <Sparkles className="h-4 w-4" /> : <Siren className="h-4 w-4" />,
+                    color: isSmart ? 'text-primary bg-primary/10 border-primary/20' : 'text-destructive bg-destructive/10 border-destructive/20',
+                    severity: inc.severity as any
                 });
             });
         }
 
+
         const now = new Date();
         const hourAgo = new Date(now.getTime() - 60 * 60000).toISOString();
 
-        // Adiciona um item estático de base se a lista estiver vazia para não ficar um buraco visual
         if (items.length === 0) {
             items.push({
                 id: 'route-static-1',
@@ -92,7 +106,8 @@ export function OperationalFeed() {
             });
         }
 
-        return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        return [...items].sort((a, b) => new Date(safeString(b.timestamp)).getTime() - new Date(safeString(a.timestamp)).getTime());
+
     }, [incidents]);
 
     return (
@@ -108,7 +123,7 @@ export function OperationalFeed() {
                             variant="ghost" 
                             size="icon" 
                             className="h-8 w-8 text-primary hover:bg-primary/10" 
-                            title="Simular Inteligência" 
+                            title="Simular Logística" 
                             onClick={(e) => {
                                 e.preventDefault();
                                 handleSimulateEvent();
@@ -122,29 +137,40 @@ export function OperationalFeed() {
                 <CardDescription className="text-xs uppercase font-bold tracking-tight opacity-70">Monitoramento da Frota</CardDescription>
             </CardHeader>
             <CardContent className="p-0 flex-1 overflow-y-auto">
-                {feedItems.length > 0 ? (
+                {safeArray(feedItems).length > 0 ? (
                     <div className="divide-y divide-border">
-                        {feedItems.slice(0, 10).map((item) => (
-                            <div key={item.id} className="p-4 hover:bg-muted/30 transition-colors group animate-in fade-in slide-in-from-top-2 duration-500">
-                                <div className="flex gap-3">
-                                    <div className={`mt-0.5 p-2 rounded-full border h-fit shrink-0 ${item.color}`}>
-                                        {item.icon}
-                                    </div>
-                                    <div className="space-y-1 min-w-0 flex-1">
-                                        <div className="flex items-center justify-between gap-2">
-                                            <p className="text-sm font-bold truncate uppercase tracking-tight">{item.title}</p>
-                                            <span className="text-[9px] text-muted-foreground whitespace-nowrap font-black uppercase">
-                                                {format(new Date(item.timestamp), 'HH:mm', { locale: ptBR })}
-                                            </span>
+                        {safeArray(feedItems).slice(0, 10).map((item: any) => (
+                            <SafeRow key={item.id} name={`FeedItem-${item.id}`}>
+                                <div className="p-4 hover:bg-muted/30 transition-colors group animate-in fade-in slide-in-from-top-2 duration-500">
+                                    <div className="flex gap-3">
+                                        <div className={`mt-0.5 p-2 rounded-full border h-fit shrink-0 ${item.color}`}>
+                                            {item.icon}
                                         </div>
-                                        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                                            {item.description}
-                                        </p>
+                                        <div className="space-y-1 min-w-0 flex-1">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className="text-sm font-bold truncate uppercase tracking-tight">{safeString(item.title)}</p>
+                                                <span className="text-[9px] text-muted-foreground whitespace-nowrap font-black uppercase">
+                                                    {(() => {
+                                                        try {
+                                                            const date = new Date(item.timestamp);
+                                                            if (isNaN(date.getTime())) return 'H/N';
+                                                            return format(date, 'HH:mm', { locale: ptBR });
+                                                        } catch (e) {
+                                                            return 'H/N';
+                                                        }
+                                                    })()}
+                                                </span>
+                                            </div>
+                                            <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                                                {safeString(item.description)}
+                                            </p>
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
+                            </SafeRow>
                         ))}
                     </div>
+
                 ) : (
                     <div className="flex flex-col items-center justify-center h-40 text-muted-foreground">
                         <Clock className="h-8 w-8 mb-2 opacity-20" />

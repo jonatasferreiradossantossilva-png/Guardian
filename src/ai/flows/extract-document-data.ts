@@ -26,7 +26,7 @@ export async function extractDocumentData(input: ExtractDocumentDataInput): Prom
 
 const prompt = ai.definePrompt({
   name: 'extractDocumentDataPrompt',
-  model: 'googleai/gemini-1.5-flash',
+  model: 'googleai/gemini-2.0-flash',
   input: { schema: ExtractDocumentDataInputSchema },
   output: { schema: ExtractDocumentDataOutputSchema },
   config: {

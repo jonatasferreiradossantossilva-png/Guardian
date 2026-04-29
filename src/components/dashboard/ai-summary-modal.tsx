@@ -44,10 +44,10 @@ export function AiSummaryModal({ incident, isOpen, onClose }: AiSummaryModalProp
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Bot className="h-6 w-6 text-primary" />
-            Resumo do Incidente (IA)
+            Resumo do Incidente (Smart)
           </DialogTitle>
           <DialogDescription>
-            Resumo gerado por IA para o incidente #{incident.id}.
+            Resumo automático para o incidente #{incident.id}.
           </DialogDescription>
         </DialogHeader>
         <div className="my-4 min-h-[150px] rounded-md border border-input bg-secondary/30 p-4">
@@ -61,10 +61,10 @@ export function AiSummaryModal({ incident, isOpen, onClose }: AiSummaryModalProp
           {summary && (
             <div className="text-sm text-foreground space-y-3">
                  <p>{summary}</p>
-                 <div className="flex items-center justify-end text-xs text-muted-foreground gap-1 pt-2 border-t border-secondary">
+                  <div className="flex items-center justify-end text-xs text-muted-foreground gap-1 pt-2 border-t border-secondary">
                     <Sparkles className="h-3 w-3 text-primary" />
-                    <span>Gerado com Inteligência Artificial</span>
-                 </div>
+                    <span>Gerado pelo Sistema Guardian</span>
+                  </div>
             </div>
           )}
         </div>

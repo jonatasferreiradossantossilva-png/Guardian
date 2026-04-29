@@ -37,14 +37,14 @@ const introSlides = [
     imageId: "ob-7-address" 
   },
   { 
-    title: "2. Escala via IA", 
-    description: "Envie o link público para os pais. Eles fazem o OCR dos documentos e validam o GPS do embarque sem que você precise digitar nada.", 
+    title: "2. Escala Inteligente", 
+    description: "Envie o link público para os pais. Eles fazem o cadastro digital e validam o GPS do embarque sem que você precise digitar nada.", 
     icon: <Smartphone />, 
     imageId: "ob-4-scan" 
   },
   { 
-    title: "3. Inteligência em Rota", 
-    description: "A IA calcula a melhor ordem de paradas. Você economiza combustível e o pai recebe alertas de proximidade automáticos.", 
+    title: "3. Logística em Rota", 
+    description: "O sistema calcula a melhor ordem de paradas. Você economiza combustível e o pai recebe alertas de proximidade automáticos.", 
     icon: <Sparkles />, 
     imageId: "ob-16-gps" 
   }
@@ -95,7 +95,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
     },
     {
       title: "Ativação: Convidar Pais",
-      description: "Copie seu link exclusivo e envie para os pais. Deixe que a IA do Guardian faça o cadastro para você.",
+      description: "Copie seu link exclusivo e envie para os pais. Deixe que o sistema do Guardian faça o cadastro para você.",
       icon: <Share2 className="w-8 h-8" />,
       link: "/dashboard",
       linkText: "Copiar Link de Convite",
@@ -103,10 +103,10 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
     },
     {
       title: "Inteligência: Triagem & Rotas",
-      description: "Aprove os alunos que chegaram via OCR e deixe a IA criar o itinerário perfeito para o motorista.",
+      description: "Aprove os alunos que chegaram via auto-cadastro e deixe o otimizador criar o itinerário perfeito para o motorista.",
       icon: <RouteIcon className="w-8 h-8" />,
       link: "/dashboard/management/routes",
-      linkText: "Criar Itinerário IA",
+      linkText: "Criar Itinerário Inteligente",
       isDone: (routes?.length || 0) > 0
     }
   ], [schools, drivers, vehicles, routes, monitors]);
@@ -129,6 +129,15 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
       } else {
         handleClose();
       }
+    }
+  };
+
+  const onUpdateProfile = async (u: any) => {
+    if (currentIndex > 0) {
+      setCurrentIndex(prev => prev - 1);
+    } else if (view === 'checklist') {
+      setView('presentation');
+      setCurrentIndex(introSlides.length - 1);
     }
   };
 
@@ -163,7 +172,7 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
   }, [view, currentIndex]);
 
   return (
-    <Dialog open={isOpen} onOpenChange={(open) => !open && handleClose()}>
+    <Dialog open={isOpen} onOpenChange={(open: boolean) => !open && handleClose()}>
       <DialogContent className="sm:max-w-xl p-0 overflow-hidden border-primary/20 shadow-2xl">
         <div className={cn(
             "p-0 flex flex-col items-center justify-center border-b transition-all duration-500 overflow-hidden",

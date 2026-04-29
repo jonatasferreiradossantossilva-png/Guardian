@@ -15,7 +15,7 @@ export default function ParentMuralPage() {
   const { data: announcements, isLoading } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
 
   return (
-    <div className="min-h-screen bg-secondary/30 p-4">
+    <div className="min-h-screen bg-secondary/30 p-4 pb-32 md:pb-6">
       <div className="max-w-2xl mx-auto space-y-6">
         <div className="flex items-center gap-4">
           <Button asChild variant="outline" size="icon">

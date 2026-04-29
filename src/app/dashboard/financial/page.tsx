@@ -1,11 +1,11 @@
 
 'use client';
 
-import { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { FilePlus, Loader2, Pencil, Filter, Users, Calendar, CheckCircle, Clock, AlertCircle, Wallet, Receipt, BellRing, AlertTriangle, Info } from 'lucide-react';
+import { FilePlus, Loader2, Pencil, Filter, Users, Calendar, CheckCircle, CheckCircle2, Clock, AlertCircle, Wallet, Receipt, BellRing, AlertTriangle, Info, TrendingUp, TrendingDown } from 'lucide-react';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
 import { useToast } from '@/hooks/use-toast';
 import {
@@ -41,6 +41,136 @@ import { ExpenseForm } from '@/components/dashboard/financial/expense-form';
 import { generateMonthlyInvoices } from '@/ai/flows/generate-monthly-invoices';
 import { PaginationControls } from '@/components/ui/pagination-controls';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { SafeRow, SafeTableRow } from '@/components/shared/safe-table';
+
+// --- COMPONENTES AUXILIARES MEMOIZADOS PARA QUALIDADE ---
+
+interface StatCardProps {
+  title: string;
+  value: number;
+  count: number;
+  icon: React.ElementType;
+  status: Invoice['status'] | 'total';
+  selectedStatus: Invoice['status'] | 'all';
+  onSelect: (status: Invoice['status'] | 'all') => void;
+}
+
+const StatCard = React.memo(({ title, value, count, icon: Icon, status, selectedStatus, onSelect }: StatCardProps) => (
+  <SafeRow name={`StatCard-${title}`}>
+    <Card 
+      className={cn(
+        "cursor-pointer transition-all hover:bg-secondary/50",
+        selectedStatus === status && 'ring-2 ring-primary shadow-lg',
+      )}
+      onClick={() => onSelect(status as any)}
+    >
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
+            <Icon className={cn("h-4 w-4 text-muted-foreground", 
+                status === 'paid' && 'text-green-500',
+                status === 'overdue' && 'text-red-500',
+                status === 'pending' && 'text-amber-500',
+                status === 'pagamento_em_analise' && 'text-blue-500'
+            )} />
+        </CardHeader>
+        <CardContent>
+            <div className="text-2xl font-bold">R$ {(value || 0).toFixed(2).replace('.',',')}</div>
+            <p className="text-xs text-muted-foreground mt-1">
+                {count} {count === 1 ? 'fatura' : 'faturas'}
+            </p>
+        </CardContent>
+    </Card>
+  </SafeRow>
+));
+StatCard.displayName = 'StatCard';
+
+interface InvoiceRowProps {
+    invoice: Invoice;
+    studentsMap: Map<string, string>;
+    parentUserToNameMap: Map<string, string>;
+    statusVariantMap: Record<Invoice['status'], "secondary" | "default" | "destructive" | "outline">;
+    statusTextMap: Record<Invoice['status'], string>;
+    handleStatusChange: (id: string, status: Invoice['status']) => void;
+}
+
+const InvoiceRow = React.memo(({ 
+    invoice, 
+    studentsMap, 
+    parentUserToNameMap, 
+    statusVariantMap, 
+    statusTextMap, 
+    handleStatusChange 
+}: InvoiceRowProps) => (
+    <SafeTableRow name={`Invoice-${invoice.id}`}>
+        <TableRow key={`invoice-${invoice.id}`}>
+            <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
+            <TableCell>{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</TableCell>
+            <TableCell title={invoice.description}>{invoice.description || 'Sem descrição'}</TableCell>
+            <TableCell>{invoice.dueDate ? invoice.dueDate.split('-').reverse().join('/') : '--/--/----'}</TableCell>
+            <TableCell>R$ {(invoice.amount || 0).toFixed(2).replace('.',',')}</TableCell>
+            <TableCell>
+                <Badge variant={statusVariantMap[invoice.status] || 'secondary'} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
+                    {statusTextMap[invoice.status] || invoice.status}
+                </Badge>
+            </TableCell>
+            <TableCell className="text-right">
+                {invoice.status === 'paid' ? (
+                    <Button asChild variant="outline" size="sm" title="Ver Recibo">
+                        <Link href={`/dashboard/receipt/${invoice.id}`}>Recibo</Link>
+                    </Button>
+                ) : (
+                    <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" className="h-8 w-8 p-0" title="Ações">
+                                <span className="sr-only">Abrir menu</span>
+                                <Pencil className="h-4 w-4" />
+                            </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent align="end">
+                            <DropdownMenuLabel>Alterar Status</DropdownMenuLabel>
+                            <DropdownMenuSeparator />
+                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>Marcar como Paga</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>Marcar como Pendente</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pagamento_em_analise')}>Marcar como Pagto. em Análise</DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">Marcar como Vencida</DropdownMenuItem>
+                        </DropdownMenuContent>
+                    </DropdownMenu>
+                )}
+            </TableCell>
+        </TableRow>
+    </SafeTableRow>
+));
+InvoiceRow.displayName = 'InvoiceRow';
+
+interface ExpenseRowProps {
+    expense: Expense;
+    handleEdit: (expense: Expense) => void;
+    handleDelete: (expense: Expense) => void;
+}
+
+const ExpenseRow = React.memo(({ expense, handleEdit, handleDelete }: ExpenseRowProps) => (
+    <SafeTableRow name={`Expense-${expense.id}`}>
+        <TableRow key={expense.id}>
+            <TableCell>{expense.date ? expense.date.split('-').reverse().join('/') : '--/--/----'}</TableCell>
+            <TableCell className="font-medium" title={expense.description}>{expense.description || 'Sem descrição'}</TableCell>
+            <TableCell><Badge variant="outline">{expense.category || 'Outros'}</Badge></TableCell>
+            <TableCell>R$ {(expense.amount || 0).toFixed(2).replace('.',',')}</TableCell>
+            <TableCell className="text-right">
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0" title="Ações"><span className="sr-only">Abrir menu</span><Pencil className="h-4 w-4" /></Button></DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
+                        <DropdownMenuItem onClick={() => handleEdit(expense)}>Editar</DropdownMenuItem>
+                        <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(expense)}>Deletar</DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </TableCell>
+        </TableRow>
+    </SafeTableRow>
+));
+ExpenseRow.displayName = 'ExpenseRow';
+
 
 type Invoice = {
   id: string;
@@ -83,30 +213,6 @@ const statusIconMap: Record<Invoice['status'], React.ElementType> = {
   pagamento_em_analise: Wallet,
 };
 
-const StatCard = ({ title, value, count, icon: Icon, status, selectedStatus, onSelect }: { title: string, value: number, count: number, icon: React.ElementType, status: Invoice['status'], selectedStatus: Invoice['status'] | 'all', onSelect: (status: Invoice['status']) => void }) => (
-    <Card 
-      className={cn(
-        "cursor-pointer transition-all hover:bg-secondary/50",
-        selectedStatus === status && 'ring-2 ring-primary shadow-lg',
-      )}
-      onClick={() => onSelect(status)}
-    >
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground">{title}</CardTitle>
-            <Icon className={cn("h-4 w-4 text-muted-foreground", 
-                status === 'paid' && 'text-green-500',
-                status === 'overdue' && 'text-red-500',
-                status === 'pending' && 'text-yellow-500',
-                status === 'pagamento_em_analise' && 'text-blue-500',
-            )} />
-        </CardHeader>
-        <CardContent>
-            <div className="text-2xl font-bold">R$ {value.toFixed(2).replace('.',',')}</div>
-            <p className="text-xs text-muted-foreground">{count} fatura(s)</p>
-        </CardContent>
-    </Card>
-);
-
 const formatMonth = (monthStr: string) => {
     const monthNames: Record<string, string> = {
       '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
@@ -119,41 +225,53 @@ const formatMonth = (monthStr: string) => {
 }
 
 export default function FinancialPage() {
+    const [activeTab, setActiveTab] = useState<'revenues' | 'expenses'>('revenues');
     return (
-        <div className="space-y-6">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-2">
-                <h1 className="text-3xl font-bold tracking-tight">Gestão Financeira</h1>
-            </div>
-            <Tabs defaultValue="revenues" className="w-full">
-                <TabsList className="grid w-full grid-cols-2">
-                    <TabsTrigger value="revenues">
-                        <Wallet className="mr-2 h-4 w-4"/>
-                        Receitas (Faturas)
-                    </TabsTrigger>
-                    <TabsTrigger value="expenses">
-                        <Receipt className="mr-2 h-4 w-4"/>
-                        Despesas
-                    </TabsTrigger>
-                </TabsList>
-                <TabsContent value="revenues" className="mt-6">
-                    <RevenuesTab />
-                </TabsContent>
-                <TabsContent value="expenses" className="mt-6">
-                    <ExpensesTab />
-                </TabsContent>
-            </Tabs>
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
+            <ErrorBoundary>
+                <div className="flex flex-col space-y-2 md:flex-row md:items-center md:justify-between md:space-y-0">
+                    <div>
+                        <h2 className="text-3xl font-bold tracking-tight">Financeiro</h2>
+                        <p className="text-muted-foreground">Gerencie faturas de alunos e despesas da frota.</p>
+                    </div>
+                </div>
+
+                <Tabs defaultValue="revenues" className="space-y-4" onValueChange={(v) => setActiveTab(v as any)}>
+                    <TabsList>
+                        <TabsTrigger value="revenues" className="flex items-center gap-2">
+                            <TrendingUp className="h-4 w-4 text-green-500" />
+                            Receitas
+                        </TabsTrigger>
+                        <TabsTrigger value="expenses" className="flex items-center gap-2">
+                            <TrendingDown className="h-4 w-4 text-red-500" />
+                            Despesas
+                        </TabsTrigger>
+                    </TabsList>
+                    
+                    <TabsContent value="revenues" className="space-y-4">
+                        <ErrorBoundary>
+                            <RevenuesTab />
+                        </ErrorBoundary>
+                    </TabsContent>
+                    
+                    <TabsContent value="expenses" className="space-y-4">
+                        <ErrorBoundary>
+                            <ExpensesTab />
+                        </ErrorBoundary>
+                    </TabsContent>
+                </Tabs>
+            </ErrorBoundary>
         </div>
-    )
+    );
 }
 
 function RevenuesTab() {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
+  const { addDoc, updateDoc, addDocsBatch } = useMockData();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReminderAlertOpen, setIsReminderAlertOpen] = useState(false);
   const [reminders, setReminders] = useState<{ parentName: string; studentName: string }[]>([]);
   
-  // Validation State for Invoice Generation
   const [isValidationAlertOpen, setIsValidationAlertOpen] = useState(false);
   const [studentsWithMissingFees, setStudentsWithMissingFees] = useState<{ name: string }[]>([]);
 
@@ -162,7 +280,7 @@ function RevenuesTab() {
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<Invoice['status'] | 'all'>('all');
 
-  const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection('invoices');
+  const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection<Invoice>('invoices');
   const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
   const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
 
@@ -180,8 +298,8 @@ function RevenuesTab() {
         months.add(inv.dueDate.substring(0, 7));
     });
     return Array.from(months).sort().reverse();
-  }, [inputInvoices => invoices]); // Fixed memo dependency
-  
+  }, [invoices]);
+
   const filteredInvoicesForSummary = useMemo(() => {
     if (!invoices) return [];
     let filtered = invoices;
@@ -195,7 +313,8 @@ function RevenuesTab() {
   }, [invoices, selectedStudentId, selectedMonth]);
 
   const summaryStats = useMemo(() => {
-      const initialStats = {
+      type SummaryStatsKeys = Invoice['status'] | 'total';
+      const initialStats: Record<SummaryStatsKeys, { total: number; count: number }> = {
           paid: { total: 0, count: 0 },
           pending: { total: 0, count: 0 },
           overdue: { total: 0, count: 0 },
@@ -206,14 +325,16 @@ function RevenuesTab() {
       if (!filteredInvoicesForSummary) return initialStats;
       
       return filteredInvoicesForSummary.reduce((acc, inv) => {
-          if (acc[inv.status]) {
-            acc[inv.status].total += inv.amount;
-            acc[inv.status].count += 1;
+          const status = inv.status;
+          if (acc[status]) {
+            acc[status].total += inv.amount;
+            acc[status].count += 1;
           }
           acc.total.total += inv.amount;
           acc.total.count += 1;
           return acc;
-      }, JSON.parse(JSON.stringify(initialStats)));
+      }, initialStats);
+
   }, [filteredInvoicesForSummary]);
 
   const finalFilteredList = useMemo(() => {
@@ -247,7 +368,6 @@ function RevenuesTab() {
   const handleStartInvoiceGeneration = () => {
     if (!students) return;
 
-    // Validate students with missing fees
     const missing = students.filter(s => s.active !== false && (!s.monthlyFee || s.monthlyFee <= 0));
     if (missing.length > 0) {
         setStudentsWithMissingFees(missing);
@@ -263,8 +383,12 @@ function RevenuesTab() {
       return;
     }
 
-    setIsGenerating(true);
     setIsValidationAlertOpen(false);
+    // Delay estratégico de 150ms para permitir que o Radix UI Portal (Dialog) 
+    // finalize sua animação de saída antes de alterarmos o estado pesado da página.
+    await new Promise(r => setTimeout(r, 150));
+    
+    setIsGenerating(true);
 
     try {
       const activeStudents = students.filter(s => s.active !== false);
@@ -272,21 +396,20 @@ function RevenuesTab() {
       const { invoicesToCreate } = result;
 
       if (invoicesToCreate.length > 0) {
-        invoicesToCreate.forEach(invoiceData => {
-          addDoc('invoices', invoiceData);
-        });
+        addDocsBatch('invoices', invoicesToCreate);
+        
         toast({
           title: 'Faturas Geradas!',
-          description: `${invoicesToCreate.length} nova(s) fatura(s) criadas com base nos valores individuais de cada aluno.`
+          description: `${invoicesToCreate.length} nova(s) fatura(s) criadas com sucesso.`
         });
       } else {
         toast({ title: 'Nenhuma fatura nova', description: 'Todos os alunos ativos já possuem faturas para este mês.' });
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error("Failed to generate invoices:", error);
-      toast({ title: 'Erro ao gerar faturas', variant: 'destructive' });
+      toast({ title: 'Erro ao gerar faturas', description: error.message || 'Erro desconhecido', variant: 'destructive' });
     } finally {
-      setIsGenerating(false);
+      setTimeout(() => setIsGenerating(false), 300);
     }
   };
   
@@ -335,37 +458,30 @@ function RevenuesTab() {
 
   const isLoading = areInvoicesLoading || areStudentsLoading || areParentsLoading;
   
-  const statusCardsData: {title: string, value: number, count: number, icon: React.ElementType, status: Invoice['status']}[] = [
-      { title: 'Pagas', value: summaryStats.paid.total, count: summaryStats.paid.count, icon: statusIconMap.paid, status: 'paid' },
-      { title: 'Pendentes', value: summaryStats.pending.total, count: summaryStats.pending.count, icon: statusIconMap.pending, status: 'pending' },
-      { title: 'Vencidas', value: summaryStats.overdue.total, count: summaryStats.overdue.count, icon: statusIconMap.overdue, status: 'overdue' },
-      { title: 'Em Análise', value: summaryStats.pagamento_em_analise.total, count: summaryStats.pagamento_em_analise.count, icon: statusIconMap.pagamento_em_analise, status: 'pagamento_em_analise' },
-  ];
-
   return (
     <div className="space-y-6">
-        <div className="flex flex-col sm:flex-row justify-end items-center gap-3">
-            <TooltipProvider>
-                <Tooltip>
-                    <TooltipTrigger asChild>
-                        <div className="flex items-center gap-1.5 text-[10px] font-bold text-muted-foreground uppercase bg-secondary/50 px-3 py-2 rounded-lg border border-dashed">
-                            <Info className="h-3.5 w-3.5" />
-                            Automação: Manual (Simulação)
-                        </div>
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-[250px]">
-                        <p>No protótipo, a geração é manual para seu controle. Em produção, isso ocorre automaticamente todo dia 1º via Cloud Functions.</p>
-                    </TooltipContent>
-                </Tooltip>
-            </TooltipProvider>
-
-            <Button onClick={handleSendReminders} variant="outline" className="w-full sm:w-auto h-11">
-                <BellRing className="mr-2 h-4 w-4" />
+        <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-end">
+            <Button onClick={handleSendReminders} variant="outline" className="w-full md:w-auto gap-2">
+                <BellRing className="h-4 w-4" />
                 Enviar Lembretes
             </Button>
-            <Button onClick={handleStartInvoiceGeneration} disabled={isGenerating} className="w-full sm:w-auto h-11 font-bold">
-                {isGenerating ? <Loader2 className="mr-2 animate-spin h-4 w-4" /> : <FilePlus className="mr-2 h-4 w-4" />}
-                Gerar Faturas do Mês
+            <Button 
+                variant="default" 
+                className="w-full md:w-auto gap-2"
+                onClick={handleStartInvoiceGeneration}
+                disabled={isGenerating}
+            >
+                {isGenerating ? (
+                    <>
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                        Processando...
+                    </>
+                ) : (
+                    <>
+                        <FilePlus className="h-4 w-4" />
+                        Gerar Faturas do Mês
+                    </>
+                )}
             </Button>
         </div>
 
@@ -406,32 +522,60 @@ function RevenuesTab() {
                         </Select>
                     </div>
                 </div>
-                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
-                    {statusCardsData.map(stat => (
-                        <StatCard 
-                            key={stat.status}
-                            {...stat}
-                            selectedStatus={selectedStatus}
-                            onSelect={handleSelectStatus}
-                        />
-                    ))}
-                    <Card 
-                        className={cn(
-                            "cursor-pointer transition-all hover:bg-secondary/50",
-                            selectedStatus === 'all' && 'ring-2 ring-primary shadow-lg',
-                        )}
-                        onClick={() => setSelectedStatus('all')}
-                        >
-                        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                            <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
-                            <Wallet className="h-4 w-4 text-muted-foreground" />
-                        </CardHeader>
-                        <CardContent>
-                            <div className="text-2xl font-bold">R$ {summaryStats.total.total.toFixed(2).replace('.',',')}</div>
-                            <p className="text-xs text-muted-foreground">{summaryStats.total.count} fatura(s)</p>
-                        </CardContent>
-                    </Card>
-                </div>
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-5">
+                <StatCard 
+                    title="Pagas" 
+                    value={summaryStats.paid.total} 
+                    count={summaryStats.paid.count} 
+                    icon={CheckCircle2} 
+                    status="paid"
+                    selectedStatus={selectedStatus}
+                    onSelect={setSelectedStatus}
+                />
+                <StatCard 
+                    title="Pendentes" 
+                    value={summaryStats.pending.total} 
+                    count={summaryStats.pending.count} 
+                    icon={Clock} 
+                    status="pending"
+                    selectedStatus={selectedStatus}
+                    onSelect={setSelectedStatus}
+                />
+                <StatCard 
+                    title="Em Análise" 
+                    value={summaryStats.pagamento_em_analise.total} 
+                    count={summaryStats.pagamento_em_analise.count} 
+                    icon={Wallet} 
+                    status="pagamento_em_analise"
+                    selectedStatus={selectedStatus}
+                    onSelect={setSelectedStatus}
+                />
+                <StatCard 
+                    title="Vencidas" 
+                    value={summaryStats.overdue.total} 
+                    count={summaryStats.overdue.count} 
+                    icon={AlertCircle} 
+                    status="overdue"
+                    selectedStatus={selectedStatus}
+                    onSelect={setSelectedStatus}
+                />
+                <Card 
+                  className={cn(
+                    "cursor-pointer transition-all hover:bg-secondary/50",
+                    selectedStatus === 'all' && 'ring-2 ring-primary shadow-lg',
+                  )}
+                  onClick={() => setSelectedStatus('all')}
+                >
+                  <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                    <CardTitle className="text-sm font-medium text-muted-foreground">Total</CardTitle>
+                    <TrendingUp className="h-4 w-4 text-muted-foreground" />
+                  </CardHeader>
+                  <CardContent>
+                    <div className="text-2xl font-bold">R$ {summaryStats.total.total.toFixed(2).replace('.',',')}</div>
+                    <p className="text-xs text-muted-foreground mt-1">{summaryStats.total.count} {summaryStats.total.count === 1 ? 'fatura' : 'faturas'}</p>
+                  </CardContent>
+                </Card>
+            </div>
             </CardContent>
         </Card>
 
@@ -458,50 +602,24 @@ function RevenuesTab() {
                                 </TableRow>
                                 </TableHeader>
                                 <TableBody>
-                                {paginatedInvoices.map((invoice) => (
-                                    <TableRow key={`invoice-${invoice.id}`}>
-                                        <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
-                                        <TableCell>{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</TableCell>
-                                        <TableCell>{invoice.description}</TableCell>
-                                        <TableCell>{invoice.dueDate.split('-').reverse().join('/')}</TableCell>
-                                        <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
-                                        <TableCell>
-                                            <Badge variant={statusVariantMap[invoice.status]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
-                                                {statusTextMap[invoice.status]}
-                                            </Badge>
-                                        </TableCell>
-                                        <TableCell className="text-right">
-                                            {invoice.status === 'paid' ? (
-                                                <Button asChild variant="outline" size="sm">
-                                                    <Link href={`/dashboard/receipt/${invoice.id}`}>Ver Recibo</Link>
-                                                </Button>
-                                            ) : (
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild>
-                                                        <Button variant="ghost" className="h-8 w-8 p-0">
-                                                            <span className="sr-only">Abrir menu</span>
-                                                            <Pencil className="h-4 w-4" />
-                                                        </Button>
-                                                    </DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Alterar Status</DropdownMenuLabel>
-                                                        <DropdownMenuSeparator />
-                                                        <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'paid')}>Marcar como Paga</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pending')}>Marcar como Pendente</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'pagamento_em_analise')}>Marcar como Pagto. em Análise</DropdownMenuItem>
-                                                        <DropdownMenuItem onClick={() => handleStatusChange(invoice.id, 'overdue')} className="text-red-600">Marcar como Vencida</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            )}
-                                        </TableCell>
-                                    </TableRow>
-                                ))}
+                                 {paginatedInvoices.map((invoice) => (
+                                     <InvoiceRow 
+                                        key={`invoice-${invoice.id}`}
+                                        invoice={invoice}
+                                        studentsMap={studentsMap}
+                                        parentUserToNameMap={parentUserToNameMap}
+                                        statusVariantMap={statusVariantMap}
+                                        statusTextMap={statusTextMap}
+                                        handleStatusChange={handleStatusChange}
+                                     />
+                                 ))}
                                 </TableBody>
                             </Table>
                         </div>
                         <div className="md:hidden space-y-4">
                             {paginatedInvoices.map((invoice) => (
-                                <Card key={`invoice-card-${invoice.id}`} className="p-4">
+                                <SafeRow key={`invoice-card-${invoice.id}`} name={`MobileInvoice-${invoice.id}`}>
+                                    <Card className="p-4">
                                     <div className="flex justify-between items-start">
                                         <div>
                                             <p className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</p>
@@ -529,20 +647,20 @@ function RevenuesTab() {
                                     <div className="mt-4 grid grid-cols-2 gap-y-4 gap-x-2 text-sm">
                                         <div className="col-span-2">
                                             <p className="text-xs text-muted-foreground">Descrição</p>
-                                            <p>{invoice.description}</p>
+                                            <p>{invoice.description || 'Sem descrição'}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground">Vencimento</p>
-                                            <p>{invoice.dueDate.split('-').reverse().join('/')}</p>
+                                            <p>{invoice.dueDate ? invoice.dueDate.split('-').reverse().join('/') : '--/--/----'}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground">Valor</p>
-                                            <p>R$ {invoice.amount.toFixed(2)}</p>
+                                            <p>R$ {(invoice.amount || 0).toFixed(2).replace('.',',')}</p>
                                         </div>
                                         <div className="col-span-2">
                                             <p className="text-xs text-muted-foreground">Status</p>
-                                            <Badge variant={statusVariantMap[invoice.status]} className={cn('mt-1', invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
-                                                {statusTextMap[invoice.status]}
+                                            <Badge variant={statusVariantMap[invoice.status] || 'secondary'} className={cn('mt-1', invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
+                                                {statusTextMap[invoice.status] || invoice.status}
                                             </Badge>
                                         </div>
                                     </div>
@@ -552,7 +670,8 @@ function RevenuesTab() {
                                         </Button>
                                     )}
                                 </Card>
-                            ))}
+                            </SafeRow>
+                        ))}
                         </div>
                         <PaginationControls
                             currentPage={currentPage}
@@ -636,7 +755,7 @@ function ExpensesTab() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
 
-  const { data: expenses, isLoading } = useMockCollection('expenses');
+  const { data: expenses, isLoading } = useMockCollection<Expense>('expenses');
 
   useEffect(() => {
     setCurrentPage(1);
@@ -704,9 +823,13 @@ function ExpensesTab() {
                 </div>
             </DialogTrigger>
             <ExpenseForm 
-                expense={selectedExpense || undefined} 
+                expense={selectedExpense ? {
+                    ...selectedExpense,
+                    date: selectedExpense.date
+                } : undefined}
                 onFormSubmit={handleFormSubmit}
             />
+
         </Dialog>
         
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -734,7 +857,7 @@ function ExpensesTab() {
                     <Receipt className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
                 <CardContent>
-                    <div className="text-2xl font-bold">R$ {totalSpent.toFixed(2).replace('.',',')}</div>
+                    <div className="text-2xl font-bold">R$ {(totalSpent || 0).toFixed(2).replace('.',',')}</div>
                     <p className="text-xs text-muted-foreground">{filteredExpensesList.length} lançamento(s)</p>
                 </CardContent>
             </Card>
@@ -761,30 +884,21 @@ function ExpensesTab() {
                                         </TableRow>
                                     </TableHeader>
                                     <TableBody>
-                                    {paginatedExpenses.map((expense) => (
-                                        <TableRow key={expense.id}>
-                                            <TableCell>{expense.date.split('-').reverse().join('/')}</TableCell>
-                                            <TableCell className="font-medium">{expense.description}</TableCell>
-                                            <TableCell><Badge variant="outline">{expense.category}</Badge></TableCell>
-                                            <TableCell>R$ {expense.amount.toFixed(2)}</TableCell>
-                                            <TableCell className="text-right">
-                                                <DropdownMenu>
-                                                    <DropdownMenuTrigger asChild><Button variant="ghost" className="h-8 w-8 p-0"><span className="sr-only">Abrir menu</span><Pencil className="h-4 w-4" /></Button></DropdownMenuTrigger>
-                                                    <DropdownMenuContent align="end">
-                                                        <DropdownMenuLabel>Ações</DropdownMenuLabel>
-                                                        <DropdownMenuItem onClick={() => handleEdit(expense)}>Editar</DropdownMenuItem>
-                                                        <DropdownMenuItem className="text-red-600" onClick={() => handleDelete(expense)}>Deletar</DropdownMenuItem>
-                                                    </DropdownMenuContent>
-                                                </DropdownMenu>
-                                            </TableCell>
-                                        </TableRow>
-                                    ))}
-                                    </TableBody>
+                                     {paginatedExpenses.map((expense) => (
+                                         <ExpenseRow 
+                                            key={`expense-${expense.id}`}
+                                            expense={expense}
+                                            handleEdit={handleEdit}
+                                            handleDelete={handleDelete}
+                                         />
+                                     ))}
+                                     </TableBody>
                                 </Table>
                             </div>
                             <div className="md:hidden space-y-4">
                                 {paginatedExpenses.map((expense) => (
-                                    <Card key={expense.id} className="p-4">
+                                    <SafeRow key={`expense-card-${expense.id}`} name={`MobileExpense-${expense.id}`}>
+                                        <Card className="p-4">
                                         <div className="flex justify-between items-start">
                                             <p className="font-medium pr-4">{expense.description}</p>
                                             <DropdownMenu>
@@ -802,7 +916,8 @@ function ExpensesTab() {
                                             <div><p className="text-xs text-muted-foreground">Categoria</p><Badge variant="outline" className="mt-1">{expense.category}</Badge></div>
                                         </div>
                                     </Card>
-                                ))}
+                                </SafeRow>
+                            ))}
                             </div>
                             <PaginationControls
                                 currentPage={currentPage}

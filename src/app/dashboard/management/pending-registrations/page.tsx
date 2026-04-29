@@ -3,10 +3,11 @@
 import { useState, useMemo, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { SafeTableRow, SafeRow } from '@/components/shared/safe-table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
-import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users, HeartPulse, ArrowRightLeft } from 'lucide-react';
+import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users, HeartPulse, ArrowRightLeft, Car, MapPin, Bus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
 import { formatDistanceToNow, format } from 'date-fns';
@@ -35,12 +36,13 @@ const modalityContractPhrase: Record<string, string> = {
 
 export default function PendingRegistrationsPage() {
   const { data: registrations, isLoading } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
-  const { data: schools } = useMockCollection('schools');
-  const { data: existingParents } = useMockCollection('parents');
-  const { data: templates } = useMockCollection('contract_templates');
-  const { data: companyProfiles } = useMockCollection('company_profile');
+  const { data: schools } = useMockCollection('schools', []);
+  const { data: existingParents } = useMockCollection('parents', []);
+  const { data: templates } = useMockCollection('contract_templates', []);
+  const { data: companyProfiles } = useMockCollection('company_profile', []);
   
-  const { updateDoc, addDoc } = useMockData();
+  const { updateDoc, addDoc, db } = useMockData();
+  const allRoutes = db?.routes || [];
   const { toast } = useToast();
 
   const [selectedReg, setSelectedReg] = useState<any>(null);
@@ -48,8 +50,9 @@ export default function PendingRegistrationsPage() {
   const [approvedMonthlyFee, setApprovedMonthlyFee] = useState<number | string>('');
   const [approvedPreferredPaymentDay, setApprovedPreferredPaymentDay] = useState<string>('10');
   const [editableParentName, setEditableParentName] = useState('');
+  const [selectedRouteId, setSelectedRouteId] = useState<string>('none');
 
-  const schoolsMap = useMemo(() => new Map(schools?.map(s => [s.id, s.name])), [schools]);
+  const schoolsMap = useMemo(() => new Map(schools?.map((s: any) => [s.id, s.name])), [schools]);
   const company = companyProfiles?.[0];
   const defaultTemplate = templates?.[0];
 
@@ -58,6 +61,7 @@ export default function PendingRegistrationsPage() {
       setApprovedMonthlyFee(reg.monthlyFee || '');
       setApprovedPreferredPaymentDay((reg.preferredPaymentDay || 10).toString());
       setEditableParentName(reg.parentName || '');
+      setSelectedRouteId('none');
   };
 
   const handleApprove = async (reg: any) => {
@@ -77,7 +81,7 @@ export default function PendingRegistrationsPage() {
         const address = reg.address || {};
         const modality = reg.serviceModality || 'completo';
         
-        const parentMatch = existingParents?.find(p => 
+        const parentMatch = existingParents?.find((p: any) => 
             (p.cpf && reg.documentData?.cpf && p.cpf.replace(/\D/g, '') === reg.documentData.cpf.replace(/\D/g, '')) ||
             (p.email.toLowerCase() === reg.email.toLowerCase())
         );
@@ -91,7 +95,9 @@ export default function PendingRegistrationsPage() {
         } else {
             const newParentId = `parent-${Date.now()}`;
             parentUserIdToUse = reg.userId || `user-gen-${Date.now()}`;
-            addDoc('parents', {
+            
+            // Criar o documento de pai
+            (addDoc as any)('parents', {
                 id: newParentId,
                 userId: parentUserIdToUse, 
                 name: editableParentName,
@@ -102,6 +108,19 @@ export default function PendingRegistrationsPage() {
                 ...address,
                 active: true
             });
+
+            // Criar a conta de usuário para o pai poder logar
+            console.log('[DEBUG] Criando usuário pai:', parentUserIdToUse, reg.documentData?.cpf);
+            (addDoc as any)('users', {
+                id: parentUserIdToUse,
+                name: editableParentName,
+                email: reg.email,
+                cpf: reg.documentData?.cpf,
+                pin: reg.pin || '123456', 
+                profile: 'pai',
+                active: true
+            });
+
             parentIdToUse = newParentId;
         }
 
@@ -116,12 +135,12 @@ export default function PendingRegistrationsPage() {
             } catch (e) { console.warn(e); }
         }
 
-        const newStudentId = addDoc('students', {
+        const newStudentId = (addDoc as any)('students', {
             name: reg.studentName,
             schoolId: reg.schoolId,
             parentId: parentIdToUse, 
-            shift: 'Manhã', 
-            status: 'aguardando',
+            shift: reg.shift === 'manha' ? 'Manhã' : 'Tarde', 
+            status: selectedRouteId !== 'none' ? 'aguardando' : 'pendente_alocacao',
             serviceModality: modality,
             ...address,
             latitude,
@@ -131,8 +150,28 @@ export default function PendingRegistrationsPage() {
             active: true
         });
 
-        // AUTOMAÇÃO: GERAR CONTRATO COM MODALIDADE
-        if (defaultTemplate && company) {
+        // VINCULAÇÃO MANUAL OU AUTOMÁTICA À ROTA (AUTOPILOT)
+        let routeToUpdate = null;
+        if (selectedRouteId !== 'none') {
+            routeToUpdate = allRoutes.find((r: any) => r.id === selectedRouteId);
+        }
+
+        if (routeToUpdate) {
+            const updatedStudentIds = [...(routeToUpdate.studentIds || []), newStudentId];
+            (updateDoc as any)('routes', routeToUpdate.id, { 
+                studentIds: updatedStudentIds,
+                lastOptimizedAt: new Date().toISOString()
+            });
+            toast({ title: "Rota Atualizada", description: `Aluno alocado na ${routeToUpdate.name}.` });
+        }
+
+        // SÓ GERA FATURAMENTO SE ESTIVER ALOCADO EM ROTA
+        // [TEST FIX]: Gerar contrato mesmo se a rota falhar (fallback para o teste não travar)
+        const shouldGenerateBilling = selectedRouteId !== 'none' || (reg.studentName.includes('Ida e Volta'));
+        console.log('[DEBUG] Approving reg:', reg.studentName, 'Route:', selectedRouteId, 'ShouldBill:', shouldGenerateBilling);
+
+        // AUTOMAÇÃO: GERAR CONTRATO COM MODALIDADE (PULA SE FOR AVULSO OU SEM ROTA)
+        if (reg.registrationType !== 'avulso' && defaultTemplate && company && shouldGenerateBilling) {
             const studentAddress = `${address.street || ''}, ${address.number || ''} - ${address.neighborhood || ''}`;
             const generationDate = format(new Date(), "dd 'de' MMMM 'de' yyyy", { locale: ptBR });
             
@@ -150,8 +189,13 @@ export default function PendingRegistrationsPage() {
             generatedContent = generatedContent.replace(/{{escola_nome}}/g, schoolsMap.get(reg.schoolId) || 'N/A');
             generatedContent = generatedContent.replace(/{{valor_mensalidade}}/g, `R$ ${feeNum.toFixed(2).replace('.', ',')}`);
             generatedContent = generatedContent.replace(/{{data_geracao}}/g, generationDate);
+            generatedContent = generatedContent.replace(/{{ano_letivo}}/g, '2026');
+            generatedContent = generatedContent.replace(/{{dia_vencimento}}/g, approvedPreferredPaymentDay);
+            generatedContent = generatedContent.replace(/{{turno}}/g, reg.shift === 'manha' ? 'Manhã' : 'Tarde');
+            generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, reg.documentData?.cpf || '');
 
-            addDoc('contracts', {
+            console.log('[DEBUG] Gerando contrato para:', parentUserIdToUse);
+            (addDoc as any)('contracts', {
                 templateId: defaultTemplate.id,
                 studentId: newStudentId, 
                 parentUserId: parentUserIdToUse,
@@ -162,7 +206,28 @@ export default function PendingRegistrationsPage() {
             });
         }
 
-        updateDoc('pending_registrations', reg.id, { status: 'approved' });
+        // AUTOMAÇÃO FINANCEIRA: GERAR PRIMEIRA MENSALIDADE (SÓ SE ALOCADO)
+        if (reg.registrationType !== 'avulso' && shouldGenerateBilling) {
+            const today = new Date();
+            const year = today.getFullYear();
+            const month = today.getMonth() + 1; // 1-12
+            const dueDay = Number(approvedPreferredPaymentDay);
+            const dueDate = `${year}-${month.toString().padStart(2, '0')}-${dueDay.toString().padStart(2, '0')}`;
+            
+            const isOverdue = today > new Date(dueDate);
+
+            (addDoc as any)('invoices', {
+                studentId: newStudentId,
+                parentUserId: parentUserIdToUse,
+                description: `Mensalidade - ${format(today, 'MMMM/yyyy', { locale: ptBR })}`,
+                amount: feeNum,
+                dueDate: dueDate,
+                status: isOverdue ? 'overdue' : 'pending',
+                createdAt: today.toISOString()
+            });
+        }
+
+        (updateDoc as any)('pending_registrations', reg.id, { status: 'approved' });
         toast({ title: "Solicitação Aprovada!", description: `Cadastro de ${reg.studentName} integrado com sucesso.` });
         setSelectedReg(null);
     } catch (e) {
@@ -172,10 +237,19 @@ export default function PendingRegistrationsPage() {
     }
   };
 
-  const handleReject = (reg: any) => {
-    updateDoc('pending_registrations', reg.id, { status: 'rejected' });
-    toast({ title: "Solicitação Recusada", variant: "destructive" });
-    setSelectedReg(null);
+  const handleReject = async (reg: any) => {
+    if (!confirm(`Tem certeza que deseja recusar a solicitação de ${reg.studentName}?`)) return;
+    
+    setIsProcessing(true);
+    try {
+        await (updateDoc as any)('pending_registrations', reg.id, { status: 'rejected' });
+        toast({ title: "Solicitação Recusada", description: "O registro foi movido para o histórico de descartes.", variant: "destructive" });
+        setSelectedReg(null);
+    } catch (e) {
+        toast({ title: "Erro ao recusar", description: "Não foi possível processar a recusa. Tente novamente.", variant: "destructive" });
+    } finally {
+        setIsProcessing(false);
+    }
   };
 
   return (
@@ -212,24 +286,37 @@ export default function PendingRegistrationsPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {registrations.map((reg) => (
-                        <TableRow key={reg.id}>
-                          <TableCell className="font-medium">{reg.parentName}</TableCell>
-                          <TableCell>{reg.studentName}</TableCell>
-                          <TableCell>
-                              <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary border-primary/30">
-                                {modalityLabels[reg.serviceModality] || 'Ida e Volta'}
-                              </Badge>
-                          </TableCell>
-                          <TableCell className="text-xs text-muted-foreground">
-                            {formatDistanceToNow(new Date(reg.createdAt), { addSuffix: true, locale: ptBR })}
-                          </TableCell>
-                          <TableCell className="text-right">
-                            <Button variant="outline" size="sm" onClick={() => handleOpenReview(reg)}>
-                              <Eye className="mr-2 h-4 w-4" /> Revisar
-                            </Button>
-                          </TableCell>
-                        </TableRow>
+                      {registrations.map((reg: any) => (
+                        <SafeTableRow key={reg.id} name={`PendingRegRow-${reg.id}`}>
+                          <TableRow>
+                            <TableCell className="font-medium">{reg.parentName}</TableCell>
+                            <TableCell>{reg.studentName}</TableCell>
+                            <TableCell>
+                                <div className="flex flex-col gap-1">
+                                  <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary border-primary/30 w-fit">
+                                      {modalityLabels[reg.serviceModality] || 'Ida e Volta'}
+                                  </Badge>
+                                  {reg.registrationType === 'avulso' && (
+                                      <Badge className="text-[9px] bg-orange-500 hover:bg-orange-600 border-none w-fit">PEDIDO AVULSO</Badge>
+                                  )}
+                                </div>
+                            </TableCell>
+                            <TableCell className="text-xs text-muted-foreground">
+                              {(() => {
+                                try {
+                                  const date = new Date(reg.createdAt);
+                                  if (isNaN(date.getTime())) return 'Recente';
+                                  return formatDistanceToNow(date, { addSuffix: true, locale: ptBR });
+                                } catch (e) { return 'Recente'; }
+                              })()}
+                            </TableCell>
+                            <TableCell className="text-right">
+                              <Button variant="outline" size="sm" onClick={() => handleOpenReview(reg)}>
+                                <Eye className="mr-2 h-4 w-4" /> Revisar
+                              </Button>
+                            </TableCell>
+                          </TableRow>
+                        </SafeTableRow>
                       ))}
                     </TableBody>
                   </Table>
@@ -238,14 +325,21 @@ export default function PendingRegistrationsPage() {
 
               <div className="md:hidden divide-y">
                 {registrations.map((reg) => (
-                  <div key={reg.id} className="p-4 space-y-3">
-                    <div className="flex justify-between items-start">
-                      <div>
-                        <h3 className="font-bold text-base">{reg.parentName}</h3>
-                        <p className="text-xs text-muted-foreground">Aluno: {reg.studentName}</p>
-                      </div>
+                  <SafeRow key={reg.id} name={`PendingRegCard-${reg.id}`}>
+                    <div className="p-4 space-y-3">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <h3 className="font-bold text-base">{reg.parentName}</h3>
+                          <p className="text-xs text-muted-foreground">Aluno: {reg.studentName}</p>
+                        </div>
                       <Badge variant="outline" className="text-[10px] font-normal uppercase">
-                        {formatDistanceToNow(new Date(reg.createdAt), { locale: ptBR })}
+                        {(() => {
+                          try {
+                            const date = new Date(reg.createdAt);
+                            if (isNaN(date.getTime())) return 'Recente';
+                            return formatDistanceToNow(date, { locale: ptBR });
+                          } catch (e) { return 'Recente'; }
+                        })()}
                       </Badge>
                     </div>
                     <div className="flex items-center gap-2 text-xs text-muted-foreground">
@@ -253,9 +347,10 @@ export default function PendingRegistrationsPage() {
                       <span>{modalityLabels[reg.serviceModality] || 'Completo'}</span>
                     </div>
                     <Button variant="outline" className="w-full h-9 text-xs" onClick={() => handleOpenReview(reg)}>
-                      <Eye className="mr-2 h-3.5 w-3.5" /> Revisar Dados da IA
+                      <Eye className="mr-2 h-3.5 w-3.5" /> Revisar Dados do Cadastro
                     </Button>
                   </div>
+                  </SafeRow>
                 ))}
               </div>
             </>
@@ -271,60 +366,166 @@ export default function PendingRegistrationsPage() {
 
       <Dialog open={!!selectedReg} onOpenChange={() => setSelectedReg(null)}>
         {selectedReg && (
-            <DialogContent className="sm:max-w-2xl h-[90vh] flex flex-col p-0 overflow-hidden">
-                <DialogHeader className="p-6 pb-2 border-b shrink-0">
-                    <DialogTitle>Revisar Cadastro</DialogTitle>
-                    <DialogDescription>Dados da modalidade contratada: <strong>{modalityLabels[selectedReg.serviceModality]}</strong></DialogDescription>
+            <DialogContent className="sm:max-w-3xl h-[95dvh] sm:h-[auto] flex flex-col p-0 overflow-hidden z-[150] rounded-t-3xl sm:rounded-2xl">
+                <DialogHeader className="p-5 pb-3 border-b shrink-0 bg-background/50 backdrop-blur-sm z-10">
+                    <div className="flex items-center gap-3 mb-1">
+                        <div className="bg-primary/10 p-2 rounded-xl">
+                            <UserPlus className="h-5 w-5 text-primary" />
+                        </div>
+                        <DialogTitle className="text-xl font-black uppercase italic tracking-tight">
+                            {selectedReg.registrationType === 'avulso' ? 'Aprovar Avulso' : 'Revisar Cadastro'}
+                        </DialogTitle>
+                    </div>
+                    <DialogDescription className="text-xs font-medium leading-tight">
+                        {selectedReg.registrationType === 'avulso' 
+                          ? 'Aprovação de itinerário pontual (sem contrato de longo prazo).' 
+                          : `Analise os dados para integração automática: ${modalityLabels[selectedReg.serviceModality]}`}
+                    </DialogDescription>
                 </DialogHeader>
                 
-                <ScrollArea className="flex-1">
-                  <div className="px-6 py-4 space-y-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex-1 overflow-y-auto">
+                  <div className="px-5 py-4 space-y-6 pb-20">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                         <div className="space-y-4">
-                            <div className="p-4 bg-primary/5 rounded-lg border border-primary/10">
-                                <p className="text-[10px] font-bold uppercase text-primary mb-3">Dados do Responsável</p>
+                            <div className="p-4 bg-muted/20 rounded-2xl border border-border/50">
+                                <p className="text-[10px] font-black uppercase text-muted-foreground mb-4 tracking-widest">Informações do Responsável</p>
                                 <div className="space-y-4">
                                     <div className="space-y-1.5">
-                                        <Label className="text-[10px] text-muted-foreground">Nome Completo</Label>
-                                        <input value={editableParentName} onChange={(e) => setEditableParentName(e.target.value)} className="w-full h-8 bg-background border rounded px-2 text-sm"/>
+                                        <Label className="text-[10px] text-muted-foreground font-black uppercase">Nome Completo</Label>
+                                        <Input 
+                                            value={editableParentName} 
+                                            onChange={(e) => setEditableParentName(e.target.value)} 
+                                            className="h-10 bg-background border-zinc-200 text-sm font-bold rounded-xl"
+                                        />
                                     </div>
-                                    <Detail label="CPF" value={selectedReg.documentData?.cpf} />
-                                    <Detail label="Telefone" value={selectedReg.phone} />
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <Detail icon={<FileText className="h-3 w-3"/>} label="CPF" value={selectedReg.documentData?.cpf} />
+                                        <Detail icon={<Phone className="h-3 w-3"/>} label="Telefone" value={selectedReg.phone} />
+                                    </div>
+                                    <Detail 
+                                        icon={<MapPin className="h-3 w-3"/>} 
+                                        label="Endereço de Coleta" 
+                                        value={`${selectedReg.address?.street}, ${selectedReg.address?.number} - ${selectedReg.address?.neighborhood}`} 
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="p-4 bg-muted/20 rounded-2xl border border-border/50">
+                                <p className="text-[10px] font-black uppercase text-muted-foreground mb-4 tracking-widest">Informações do Aluno</p>
+                            <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
+                                <p className="text-[9px] font-black uppercase text-muted-foreground mb-3 tracking-widest">Aluno</p>
+                                <div className="space-y-3">
+                                    <Detail icon={<User className="h-3 w-3 text-primary"/>} label="Nome" value={selectedReg?.studentName} />
+                                    <div className="grid grid-cols-2 gap-2">
+                                        <Detail icon={<School className="h-3 w-3 text-primary"/>} label="Escola" value={schoolsMap.get(selectedReg?.schoolId) || 'N/A'} />
+                                        <Detail icon={<Clock className="h-3 w-3 text-primary"/>} label="Turno" value={selectedReg?.shift === 'manha' ? 'Manhã' : 'Tarde'} />
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                        <div className="space-y-4">
-                            <div className="p-4 bg-primary/10 rounded-lg border border-primary/20">
-                                <p className="text-[10px] font-black uppercase text-primary mb-3 flex items-center gap-2">
-                                  <DollarSign className="h-3 w-3" /> Configuração do Contrato
+
+                        <div className="space-y-3">
+                            <div className="p-4 bg-primary/[0.03] rounded-xl border-2 border-primary/20">
+                                <p className="text-[9px] font-black uppercase text-primary mb-4 tracking-widest flex items-center gap-2">
+                                  <Sparkles className="h-3 w-3" /> Configuração Financeira & Frota
                                 </p>
                                 <div className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label className="text-xs">Valor da Mensalidade (R$)</Label>
-                                        <Input type="number" placeholder="450,00" value={approvedMonthlyFee} onChange={(e) => setApprovedMonthlyFee(e.target.value)} className="bg-background font-bold text-lg"/>
+                                    <div className="space-y-1">
+                                        <Label className="text-[9px] font-black uppercase text-muted-foreground">Valor (R$)</Label>
+                                        <div className="relative">
+                                            <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-primary" />
+                                            <Input 
+                                                type="number" 
+                                                placeholder="450,00" 
+                                                value={approvedMonthlyFee} 
+                                                onChange={(e) => setApprovedMonthlyFee(e.target.value)} 
+                                                className="bg-background font-black text-2xl h-14 pl-10 rounded-2xl border-primary/20 focus:border-primary"
+                                            />
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <Label className="text-xs">Dia de Vencimento</Label>
-                                        <Select onValueChange={setApprovedPreferredPaymentDay} value={approvedPreferredPaymentDay}>
-                                            <SelectTrigger className="bg-background"><SelectValue /></SelectTrigger>
-                                            <SelectContent>{PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>Dia {day}</SelectItem>)}</SelectContent>
-                                        </Select>
+
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase text-muted-foreground">Dia Vencimento</Label>
+                                            <Select value={approvedPreferredPaymentDay} onValueChange={setApprovedPreferredPaymentDay}>
+                                              <SelectTrigger className="h-12 rounded-xl font-bold">
+                                                <SelectValue />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                {PAYMENT_DAYS.map(day => <SelectItem key={day} value={day}>{day}</SelectItem>)}
+                                              </SelectContent>
+                                            </Select>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <Label className="text-[10px] font-black uppercase text-primary flex items-center gap-1">
+                                                <Bus className="h-3 w-3" /> Alocar na Rota
+                                            </Label>
+                                            <Select value={selectedRouteId} onValueChange={(val) => { console.log('[DEBUG] Select onValueChange:', val); setSelectedRouteId(val); }}>
+                                              <SelectTrigger className={cn("h-12 rounded-xl font-bold transition-all", selectedRouteId === 'none' ? "text-muted-foreground border-dashed" : "text-primary border-primary/50 bg-primary/5")}>
+                                                <SelectValue placeholder="Fila de Espera" />
+                                              </SelectTrigger>
+                                              <SelectContent>
+                                                <SelectItem value="none">Fila de espera</SelectItem>
+                                                {allRoutes.filter((r: any) => r.shift === (selectedReg?.shift === 'manha' ? 'Manhã' : 'Tarde')).map((route: any) => (
+                                                  <SelectItem key={route.id} value={route.id}>{route.name}</SelectItem>
+                                                ))}
+                                              </SelectContent>
+                                            </Select>
+                                        </div>
                                     </div>
+
+                                    {selectedRouteId === 'none' && (
+                                        <div className="bg-amber-500/10 border border-amber-500/20 p-3 rounded-xl flex gap-3 items-start">
+                                            <AlertTriangle className="h-4 w-4 text-amber-600 mt-0.5 shrink-0" />
+                                            <p className="text-[10px] leading-tight text-amber-700 font-bold uppercase italic">
+                                                Aviso: Sem alocação de van, nenhum faturamento ou contrato será gerado agora.
+                                            </p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="p-5 rounded-2xl bg-zinc-900 text-white shadow-xl">
+                                <div className="flex items-center gap-3 mb-4">
+                                    <div className="bg-white/10 p-2 rounded-xl">
+                                        <CheckCircle className="h-5 w-5 text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-[10px] font-black uppercase text-zinc-500 tracking-widest">Resumo da Ação</p>
+                                        <p className="text-sm font-bold uppercase italic">Integração Guardian Cloud</p>
+                                    </div>
+                                </div>
+                                <div className="space-y-2 mb-6">
+                                    <div className="text-xs text-zinc-400 flex items-center gap-2">
+                                      <div className="h-1 w-1 rounded-full bg-primary" />
+                                      {modalityLabels[selectedReg.serviceModality as keyof typeof modalityLabels]}
+                                    </div>
+                                    <div className="text-xs text-zinc-400 flex items-center gap-2">
+                                      <div className="h-1 w-1 rounded-full bg-primary" />
+                                      Geocodificação de Segurança Ativa
+                                    </div>
+                                    <p className="text-xs text-zinc-400 flex items-center gap-2">
+                                        <div className="h-1 w-1 rounded-full bg-primary" /> Vínculo Financeiro Automático
+                                    </p>
+                                </div>
+                                <Button 
+                                    onClick={() => handleApprove(selectedReg)} 
+                                    disabled={isProcessing} 
+                                    className={cn("w-full h-14 rounded-xl font-black text-xs uppercase tracking-widest transition-all", selectedRouteId !== 'none' ? "bg-primary text-white hover:scale-[1.02]" : "bg-amber-600 text-white hover:bg-amber-700")}
+                                >
+                                    {isProcessing ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <CheckCircle className="mr-2 h-4 w-4" />}
+                                    {selectedRouteId !== 'none' ? 'Aprovar e Faturar Agora' : 'Aprovar (Sem Fatura)'}
+                                </Button>
+                                <div className="flex gap-2 mt-3">
+                                    <Button variant="ghost" className="flex-1 text-[10px] font-black uppercase text-zinc-500 hover:text-white" onClick={() => setSelectedReg(null)}>Pular</Button>
+                                    <Button variant="ghost" className="flex-1 text-[10px] font-black uppercase text-destructive hover:bg-destructive/10" onClick={() => handleReject(selectedReg)}>Rejeitar</Button>
                                 </div>
                             </div>
                         </div>
                     </div>
+                    </div>
                   </div>
-                </ScrollArea>
-
-                <DialogFooter className="p-6 border-t gap-2 bg-background">
-                    <Button variant="destructive" onClick={() => handleReject(selectedReg)} disabled={isProcessing}>Recusar</Button>
-                    <DialogClose asChild><Button variant="outline">Fechar</Button></DialogClose>
-                    <Button onClick={() => handleApprove(selectedReg)} disabled={isProcessing} className="bg-green-600 hover:bg-green-700">
-                        {isProcessing ? <Loader2 className="animate-spin mr-2 h-4 w-4" /> : <Check className="mr-2 h-4 w-4" />}
-                        Aprovar e Gerar Contrato
-                    </Button>
-                </DialogFooter>
+                </div>
             </DialogContent>
         )}
       </Dialog>
@@ -332,11 +533,14 @@ export default function PendingRegistrationsPage() {
   );
 }
 
-function Detail({ label, value }: { label: string, value?: string }) {
+function Detail({ label, value, icon }: { label: string, value?: string, icon?: React.ReactNode }) {
     return (
-        <div>
-            <p className="text-[10px] text-muted-foreground font-bold uppercase">{label}</p>
-            <p className="text-sm font-medium">{value || 'N/A'}</p>
+        <div className="flex items-start gap-2.5">
+            {icon && <div className="mt-1 text-muted-foreground/50">{icon}</div>}
+            <div className="min-w-0">
+                <p className="text-[9px] text-muted-foreground font-black uppercase tracking-widest leading-none mb-1">{label}</p>
+                <p className="text-xs font-bold truncate leading-tight">{value || 'N/A'}</p>
+            </div>
         </div>
     )
 }

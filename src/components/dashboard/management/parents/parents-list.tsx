@@ -1,4 +1,3 @@
-
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
@@ -13,6 +12,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { MoreHorizontal, PlusCircle, Edit, Trash2, Share2, Search, ExternalLink, Loader2, GraduationCap } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
+import { SafeTableRow, SafeRow } from "@/components/shared/safe-table";
+import { safeString, safeArray, safeInitials } from "@/lib/safe-render";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -39,8 +40,8 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
+import { InviteDialog } from "@/components/dashboard/invite-dialog";
 import Link from 'next/link';
-
 
 type Parent = {
   id: string;
@@ -72,6 +73,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedParent, setSelectedParent] = useState<Parent | null>(null);
+  const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   
   // Search and Pagination
   const [searchQuery, setSearchQuery] = useState("");
@@ -81,13 +83,12 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     setMounted(true);
   }, []);
 
-  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents');
-  const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection('students');
+  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection<Parent>('parents');
+  const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection<any>('students');
 
   const parents = liveParents ?? initialParents;
   const isLoading = areParentsLoading || areStudentsLoading;
 
-  // Phase 4: CRM Intelligence - Map children to parents
   const parentChildrenMap = useMemo(() => {
       const map = new Map<string, string[]>();
       if (!allStudents) return map;
@@ -103,7 +104,6 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     setCurrentPage(1);
   }, [searchQuery]);
 
-  // 1. Filter
   const filteredParentsList = useMemo(() => {
     if (!parents) return [];
     return parents.filter(p => 
@@ -113,14 +113,12 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     );
   }, [parents, searchQuery]);
 
-  // 2. Paginate
   const paginatedParents = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredParentsList.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [filteredParentsList, currentPage]);
 
   const totalPages = Math.ceil(filteredParentsList.length / ITEMS_PER_PAGE);
-
 
   const handleEdit = (parent: Parent) => {
     setSelectedParent(parent);
@@ -148,47 +146,12 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     setIsFormOpen(false);
     setSelectedParent(null);
   };
-  
-  const handleShareInvite = async () => {
-    const registrationLink = `${window.location.origin}/register`;
-    const shareText = `Olá! Para agilizar seu cadastro no Guardian, clique no link abaixo e use nossa ferramenta de leitura automática de documentos:\n\n${registrationLink}`;
-    
-    try {
-        await navigator.clipboard.writeText(shareText);
-
-        if (navigator.share) {
-            try {
-                await navigator.share({
-                    title: 'Convite Guardian',
-                    text: shareText,
-                    url: registrationLink
-                });
-                return;
-            } catch (e) {
-                console.warn("Share nativo ignorado");
-            }
-        }
-
-        const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(shareText)}`;
-        window.open(whatsappUrl, '_blank');
-        
-        toast({
-            title: "Convite pronto!",
-            description: "Link copiado. Se o WhatsApp não abriu, você pode colar a mensagem manualmente."
-        });
-    } catch (err) {
-        toast({
-            title: "Erro ao compartilhar",
-            description: "Copie o link manualmente: " + registrationLink,
-            variant: "destructive"
-        });
-    }
-  };
 
   const formatAddress = (parent: Parent) => {
     if (!parent.street) return 'N/A';
-    return `${parent.street}, ${parent.number} - ${parent.city}, ${parent.state}`;
+    return `${safeString(parent.street)}, ${safeString(parent.number, 's/n')} - ${safeString(parent.city)}, ${safeString(parent.state)}`;
   }
+
 
   if (!mounted) {
     return (
@@ -210,7 +173,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                     <ExternalLink className="mr-2 h-4 w-4" /> Testar Cadastro
                 </Link>
             </Button>
-            <Button variant="outline" onClick={handleShareInvite} className="flex-1 sm:flex-none">
+            <Button variant="outline" onClick={() => setIsInviteDialogOpen(true)} className="flex-1 sm:flex-none">
                 <Share2 className="mr-2 h-4 w-4" /> Convidar Pais
             </Button>
             <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -264,29 +227,29 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                     </TableCell>
                   </TableRow>
                 )}
-                {!isLoading && paginatedParents && paginatedParents.length > 0 ? (
-                  paginatedParents.map((parent) => {
-                    const children = parentChildrenMap.get(parent.id) || [];
+                {!isLoading && safeArray<Parent>(paginatedParents).length > 0 ? (
+                  safeArray<Parent>(paginatedParents).map((parent: Parent) => {
+                    const children = safeArray<string>(parentChildrenMap.get(parent.id) || []);
                     return (
-                    <TableRow key={parent.id}>
+                    <SafeTableRow key={parent.id} name={`ParentRow-${parent.id}`}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar>
                             <AvatarImage src={`https://picsum.photos/seed/parent-${parent.id}/100/100`} alt={parent.name} />
-                            <AvatarFallback>{parent.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            <AvatarFallback>{safeInitials(parent.name)}</AvatarFallback>
                           </Avatar>
                           <div>
-                            <p className="font-medium">{parent.name}</p>
-                            <p className="text-xs text-muted-foreground">{parent.email}</p>
+                            <p className="font-medium">{safeString(parent.name, 'Responsável')}</p>
+                            <p className="text-xs text-muted-foreground">{safeString(parent.email, '---')}</p>
                           </div>
                         </div>
                       </TableCell>
                       <TableCell>
                           <div className="flex flex-wrap gap-1">
                               {children.length > 0 ? (
-                                  children.map((name, i) => (
+                                  children.map((name: string, i: number) => (
                                       <Badge key={i} variant="outline" className="text-[10px] font-normal">
-                                          <GraduationCap className="mr-1 h-2 w-2" /> {name}
+                                          <GraduationCap className="mr-1 h-2 w-2" /> {safeString(name)}
                                       </Badge>
                                   ))
                               ) : (
@@ -294,7 +257,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                               )}
                           </div>
                       </TableCell>
-                      <TableCell>{parent.phone}</TableCell>
+                      <TableCell>{safeString(parent.phone, '---')}</TableCell>
                       <TableCell>{formatAddress(parent)}</TableCell>
                       <TableCell>
                         <Badge variant={parent.active !== false ? 'default' : 'secondary'} className={parent.active !== false ? 'bg-green-600' : ''}>
@@ -322,8 +285,9 @@ export function ParentsList({ initialParents }: ParentsListProps) {
                             </DropdownMenu>
                         </div>
                       </TableCell>
-                    </TableRow>
+                    </SafeTableRow>
                   )})
+
                 ) : (
                   !isLoading && (
                     <TableRow>
@@ -339,59 +303,62 @@ export function ParentsList({ initialParents }: ParentsListProps) {
           {/* Mobile View */}
           <div className="md:hidden">
             {isLoading && <p className="text-center py-10">Carregando...</p>}
-            {!isLoading && paginatedParents && paginatedParents.length > 0 ? (
+            {!isLoading && safeArray<Parent>(paginatedParents).length > 0 ? (
               <div className="space-y-4">
-                {paginatedParents.map((parent) => {
-                  const children = parentChildrenMap.get(parent.id) || [];
+                {safeArray<Parent>(paginatedParents).map((parent: Parent) => {
+                  const children = safeArray<string>(parentChildrenMap.get(parent.id) || []);
                   return (
-                  <Card key={parent.id} className="overflow-hidden">
-                    <div className="p-4">
-                        <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <Avatar>
-                            <AvatarImage src={`https://picsum.photos/seed/parent-${parent.id}/100/100`} alt={parent.name} />
-                            <AvatarFallback>{parent.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                            </Avatar>
-                            <div>
-                            <p className="font-medium">{parent.name}</p>
-                            <p className="text-xs text-muted-foreground">{parent.email}</p>
-                            </div>
-                        </div>
-                        </div>
-                        <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                            <p className="text-muted-foreground text-xs">Telefone</p>
-                            <p className="font-medium">{parent.phone}</p>
-                        </div>
-                        <div>
-                            <p className="text-muted-foreground text-xs">Status</p>
-                            <Badge variant={parent.active !== false ? 'default' : 'secondary'} className={parent.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
-                            {parent.active !== false ? 'Ativo' : 'Inativo'}
-                            </Badge>
-                        </div>
-                        <div className="col-span-2">
-                            <p className="text-muted-foreground text-xs">Filhos</p>
-                            <div className="flex flex-wrap gap-1 mt-1">
-                                {children.length > 0 ? children.map((n, i) => <Badge key={i} variant="outline" className="text-[9px]">{n}</Badge>) : "-"}
-                            </div>
-                        </div>
-                        <div className="col-span-2">
-                            <p className="text-muted-foreground text-xs">Endereço</p>
-                            <p className="font-medium">{formatAddress(parent)}</p>
-                        </div>
-                        </div>
-                    </div>
-                     <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
-                        <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(parent)}>
-                            <Edit className="mr-2 h-4 w-4" /> Editar
-                        </Button>
-                        <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(parent)}>
-                            <Trash2 className="mr-2 h-4 w-4" /> Deletar
-                        </Button>
-                    </CardFooter>
-                  </Card>
+                  <SafeRow key={parent.id} name={`ParentCard-${parent.id}`}>
+                    <Card key={parent.id} className="overflow-hidden">
+                      <div className="p-4">
+                          <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                              <Avatar>
+                              <AvatarImage src={`https://picsum.photos/seed/parent-${parent.id}/100/100`} alt={parent.name} />
+                              <AvatarFallback>{safeInitials(parent.name)}</AvatarFallback>
+                              </Avatar>
+                              <div>
+                              <p className="font-medium">{safeString(parent.name, 'Responsável')}</p>
+                              <p className="text-xs text-muted-foreground">{safeString(parent.email, '---')}</p>
+                              </div>
+                          </div>
+                          </div>
+                          <div className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                              <p className="text-muted-foreground text-xs">Telefone</p>
+                              <p className="font-medium">{safeString(parent.phone, '---')}</p>
+                          </div>
+                          <div>
+                              <p className="text-muted-foreground text-xs">Status</p>
+                              <Badge variant={parent.active !== false ? 'default' : 'secondary'} className={parent.active !== false ? 'mt-1 bg-green-600' : 'mt-1'}>
+                              {parent.active !== false ? 'Ativo' : 'Inativo'}
+                              </ Badge>
+                          </div>
+                          <div className="col-span-2">
+                              <p className="text-muted-foreground text-xs">Filhos</p>
+                              <div className="flex flex-wrap gap-1 mt-1">
+                                  {children.length > 0 ? children.map((n: string, i: number) => <Badge key={i} variant="outline" className="text-[9px]">{safeString(n)}</Badge>) : "-"}
+                              </div>
+                          </div>
+                          <div className="col-span-2">
+                              <p className="text-muted-foreground text-xs">Endereço</p>
+                              <p className="font-medium">{formatAddress(parent)}</p>
+                          </div>
+                          </div>
+                      </div>
+                       <CardFooter className="p-2 bg-secondary/50 border-t flex gap-2">
+                          <Button variant="outline" size="sm" className="w-full" onClick={() => handleEdit(parent)}>
+                              <Edit className="mr-2 h-4 w-4" /> Editar
+                          </Button>
+                          <Button variant="destructive" size="sm" className="w-full" onClick={() => handleDelete(parent)}>
+                              <Trash2 className="mr-2 h-4 w-4" /> Deletar
+                          </Button>
+                      </CardFooter>
+                    </Card>
+                  </SafeRow>
                 )})}
               </div>
+
             ) : (
               !isLoading && <p className="text-center text-muted-foreground py-10">Nenhum responsável encontrado.</p>
             )}
@@ -406,6 +373,7 @@ export function ParentsList({ initialParents }: ParentsListProps) {
           />
         </CardContent>
       </Card>
+
       <AlertDialog open={isDeleteDialogOpen} onOpenChange={setIsDeleteDialogOpen}>
         <AlertDialogContent>
             <AlertDialogHeader>
@@ -420,6 +388,8 @@ export function ParentsList({ initialParents }: ParentsListProps) {
             </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <InviteDialog isOpen={isInviteDialogOpen} onOpenChange={setIsInviteDialogOpen} />
     </div>
   );
 }

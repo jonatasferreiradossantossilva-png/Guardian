@@ -53,6 +53,7 @@ type Driver = {
   city?: string;
   state?: string;
   active?: boolean;
+  pin?: string;
 };
 type Vehicle = { id: string; model: string; licensePlate: string };
 
@@ -85,8 +86,8 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
     setMounted(true);
   }, []);
 
-  const { data: liveDrivers, isLoading: areDriversLoading } = useMockCollection('drivers');
-  const { data: liveVehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
+  const { data: liveDrivers, isLoading: areDriversLoading } = useMockCollection<Driver>('drivers');
+  const { data: liveVehicles, isLoading: areVehiclesLoading } = useMockCollection<Vehicle>('vehicles');
 
   const drivers = liveDrivers ?? initialDrivers;
   const vehicles = liveVehicles ?? initialVehicles;
@@ -187,11 +188,14 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                         <div className="flex items-center gap-3">
                           <Avatar>
                             <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
-                            <AvatarFallback>{driver.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                            <AvatarFallback>{driver.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-medium">{driver.name}</p>
-                            <p className="text-xs text-muted-foreground font-mono">{driver.userId}</p>
+                            <div className="flex gap-2 text-[10px] text-muted-foreground font-mono">
+                                <span>CPF: {driver.cpf || "---"}</span>
+                                <span>PIN: {(driver as any).pin || "••••"}</span>
+                            </div>
                           </div>
                         </div>
                       </TableCell>
@@ -253,11 +257,14 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                             <div className="flex items-center gap-3">
                                 <Avatar>
                                 <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
-                                <AvatarFallback>{driver.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                                <AvatarFallback>{driver.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
                                 </Avatar>
                                 <div>
                                 <p className="font-medium">{driver.name}</p>
-                                <p className="text-xs text-muted-foreground font-mono">{driver.userId}</p>
+                                <div className="flex gap-2 text-[10px] text-muted-foreground font-mono">
+                                    <span>CPF: {driver.cpf || "---"}</span>
+                                    <span>PIN: {(driver as any).pin || "••••"}</span>
+                                </div>
                                 </div>
                             </div>
                         </div>

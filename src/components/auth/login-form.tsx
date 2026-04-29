@@ -8,6 +8,7 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
@@ -21,10 +22,13 @@ import { useToast } from "@/hooks/use-toast";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
+import { maskCPF, unmask } from "@/lib/masks";
+import { useMockData } from "@/hooks/use-mock-data";
 
 const formSchema = z.object({
-  email: z.string().optional(),
-  password: z.string().optional(),
+  identifier: z.string().min(1, { message: "Digite seu CPF ou E-mail." }),
+  password: z.string().min(4, { message: "A senha/PIN deve ter pelo menos 4 caracteres." }),
   profile: z.enum(["gestor", "motorista", "pai", "monitor"], {
       required_error: "Você precisa selecionar um perfil para entrar."
   }),
@@ -43,6 +47,7 @@ export function LoginForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const auth = useAuth();
+  const { db, forceScenario, clearAllAndReset } = useMockData();
 
   useEffect(() => {
     setIsMounted(true);
@@ -52,24 +57,43 @@ export function LoginForm() {
     resolver: zodResolver(formSchema),
     defaultValues: {
       profile: "gestor",
+      identifier: "",
+      password: "",
     },
   });
 
   function onSubmit(values: z.infer<typeof formSchema>) {
     setIsLoading(true);
 
-    const mockUserId = profileToMockIdMap[values.profile];
-    sessionStorage.setItem('mockUserId', mockUserId);
+    const input = values.identifier.trim();
+    const isEmail = input.includes('@');
+    const cleanId = isEmail ? input.toLowerCase() : unmask(input);
+
+    const user = db.users.find(u => {
+      const matchId = isEmail ? u.email?.toLowerCase() === cleanId : unmask(u.cpf || '') === cleanId;
+      const matchPass = u.pin === values.password || u.password === values.password;
+      const matchProfile = u.profile === values.profile;
+      return matchId && matchPass && matchProfile;
+    });
+
+    if (!user) {
+      setIsLoading(false);
+      toast({
+        title: "Erro de acesso",
+        description: "Credenciais inválidas ou perfil incorreto.",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    sessionStorage.setItem('mockUserId', user.id);
 
     if (auth) {
       initiateAnonymousSignIn(auth);
-    } else {
-        setIsLoading(false);
-        return;
-    }
+    } 
 
     toast({
-        title: `Bem-vindo(a)!`,
+        title: `Bem-vindo(a), ${user.name}!`,
         description: `Redirecionando para o painel de ${values.profile}.`
     });
 
@@ -84,12 +108,33 @@ export function LoginForm() {
         router.push("/parent/tracking");
         break;
       case "monitor":
-        router.push("/assistant/route-plan");
+        router.push("/monitor");
         break;
       default:
         router.push("/dashboard");
     }
   }
+
+  const handleQuickLogin = (role: string, userId: string, targetPath: string) => {
+    // 1. Aplicar cenário direto no banco
+    forceScenario(role === 'monitor' ? 'monitor_em_rota' : 'motorista_inicio');
+    
+    // 2. Setar o usuário e LIMPAR MEMÓRIA TEMPORÁRIA
+    sessionStorage.setItem('mockUserId', userId);
+    sessionStorage.removeItem('activeRouteId');
+    sessionStorage.removeItem('activeShift');
+    sessionStorage.removeItem('activeDirection');
+    
+    toast({
+        title: "Acesso Rápido Ativado",
+        description: `Entrando como ${role} (Cenário Simulado).`
+    });
+
+    // 3. FORÇAR RECARREGAMENTO TOTAL
+    window.location.href = targetPath;
+  };
+
+
 
   if (!isMounted) {
     return (
@@ -119,7 +164,7 @@ export function LoginForm() {
                     onValueChange={field.onChange}
                     value={field.value}
                     className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-                  >
+                   >
                     <div 
                       className={cn(
                         "flex items-center space-x-2 rounded-md border p-2 transition-colors",
@@ -176,6 +221,54 @@ export function LoginForm() {
                 </FormItem>
               )}
             />
+
+            <div className="space-y-4 pt-2">
+              <FormField
+                control={form.control}
+                name="identifier"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>CPF ou E-mail</FormLabel>
+                    <FormControl>
+                      <Input 
+                        placeholder="000.000.000-00 ou email@exemplo.com" 
+                        {...field} 
+                        onChange={(e) => {
+                          const val = e.target.value;
+                          if (!val.includes('@')) {
+                            field.onChange(maskCPF(val));
+                          } else {
+                            field.onChange(val);
+                          }
+                        }}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="password"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>
+                      {form.watch("identifier").includes('@') ? "Senha" : "PIN (4-6 dígitos)"}
+                    </FormLabel>
+                    <FormControl>
+                      <Input 
+                        type="password" 
+                        placeholder="••••••" 
+                        {...field} 
+                        maxLength={form.watch("identifier").includes('@') ? 32 : 6}
+                      />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </div>
             <Button type="submit" className="w-full" disabled={isLoading}>
               {isLoading ? (
                 <Loader2 className="animate-spin" />
@@ -185,6 +278,8 @@ export function LoginForm() {
             </Button>
           </form>
         </Form>
+
+
       </CardContent>
       <CardFooter className="flex justify-center">
         <p className="text-xs text-center text-muted-foreground px-2">
