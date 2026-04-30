@@ -458,7 +458,7 @@ As partes aceitam os termos de forma digital através da plataforma Guardian em 
             studentId: "student-2",
             parentUserId: "val-pai",
             serviceModality: "completo",
-            status: "active",
+            status: "accepted",
             createdAt: new Date().toISOString(),
             generatedContent: `CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO 2026
 
