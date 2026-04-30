@@ -147,6 +147,7 @@ export const initialMockData: MockDB = {
         { id: "val-motorista", name: "Validador Motorista", email: "val.motorista@guardian.com", cpf: "000.000.000-02", pin: "1234", profile: 'motorista' as const, active: true },
         { id: "val-pai", name: "Validador Responsável", email: "val.pai@guardian.com", cpf: "000.000.000-03", pin: "1234", profile: 'pai' as const, active: true },
         { id: "val-monitor", name: "Validador Monitor", email: "val.monitor@guardian.com", cpf: "000.000.000-04", pin: "1234", profile: 'monitor' as const, active: true },
+        { id: "val-autonomo", name: "Guardian Autônomo", email: "autonomo@guardian.com", cpf: "000.000.000-05", pin: "1234", profile: 'gestor' as const, active: true },
     ],
     schools: [
         {
@@ -202,11 +203,30 @@ export const initialMockData: MockDB = {
         { id: "student-10", name: "Laura Martins", schoolId: "school-1", parentId: "parent-3", shift: "Manhã" as const, status: "aguardando" as const, active: true, latitude: -23.5650, longitude: -46.6650, street: "Rua Frei Caneca", number: "800", city: "São Paulo", state: "SP", monthlyFee: 450, serviceModality: 'avulso' as const, serie: "2º Ano" },
         { id: "student-11", name: "Helena Oliveira", schoolId: "school-1", parentId: "parent-1", shift: "Tarde" as const, status: "aguardando" as const, active: true, latitude: -23.5590, longitude: -46.6610, street: "Rua Oscar Freire", number: "200", city: "São Paulo", state: "SP", monthlyFee: 400, serviceModality: 'completo' as const, serie: "6º Ano" },
         { id: "student-12", name: "Theo Barbosa", schoolId: "school-1", parentId: "parent-2", shift: "Tarde" as const, status: "aguardando" as const, active: true, latitude: -23.5520, longitude: -46.6530, street: "Rua da Consolação", number: "350", city: "São Paulo", state: "SP", monthlyFee: 420, serviceModality: 'completo' as const, serie: "4º Ano" },
-        { id: "student-13", name: "Marina Santos", schoolId: "school-1", parentId: "parent-3", shift: "Tarde" as const, status: "aguardando" as const, active: true, latitude: -23.5610, longitude: -46.6580, street: "Alameda Santos", number: "700", city: "São Paulo", state: "SP", monthlyFee: 380, serviceModality: 'completo' as const, serie: "3º Ano" }
+        { id: "student-13", name: "Marina Santos", schoolId: "school-1", parentId: "parent-3", shift: "Tarde" as const, status: "aguardando" as const, active: true, latitude: -23.5610, longitude: -46.6580, street: "Alameda Santos", number: "700", city: "São Paulo", state: "SP", monthlyFee: 380, serviceModality: 'completo' as const, serie: "3º Ano" },
+        { 
+            id: "student-pending-demo", 
+            name: "Calebe Silva (Novo)", 
+            schoolId: "school-1", 
+            parentId: "parent-temp-demo", 
+            shift: "Manhã" as const, 
+            status: "aguardando_aprovacao" as const, 
+            active: false, 
+            latitude: -23.5500, 
+            longitude: -46.6333, 
+            addressDescription: "Rua das Flores, 450 - Centro", 
+            pendingRouteId: "route-val-1", 
+            parentName: "Marcos Silva", 
+            parentPhone: "11988887777", 
+            serviceModality: 'completo' as const, 
+            createdAt: new Date().toISOString(),
+            requestedSchool: "Escola Primária do Saber"
+        }
     ],
     drivers: [
         { id: "driver-1", userId: "user-motorista-4", name: "Juliano Castro", status: "inativo" as const, vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 },
-        { id: "val-driver", userId: "val-motorista", name: "Validador Motorista", status: "inativo" as const, vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 }
+        { id: "val-driver", userId: "val-motorista", name: "Validador Motorista", status: "inativo" as const, vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 },
+        { id: "driver-autonomo", userId: "val-autonomo", name: "Guardian Autônomo", status: "inativo" as const, vehicleId: "vehicle-1", active: true, latitude: -23.5500, longitude: -46.6300 }
     ],
     monitors: [
         { id: "monitor-1", userId: "user-monitor-1", name: "Fernanda Lima", email: "fernanda.lima@rotasegura.com", phone: "11988887777", cpf: "123.456.789-00", rg: "12.345.678-9", active: true },
@@ -272,7 +292,7 @@ export const initialMockData: MockDB = {
         },
         {
             id: "route-val-1",
-            name: "Rota de Validação (Teste)",
+            name: "Rota de Validação (Múltiplas Escolas)",
             driverId: "val-driver",
             monitorId: "val-monitor-profile",
             shift: "Manhã" as const,
