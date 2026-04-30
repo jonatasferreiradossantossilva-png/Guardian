@@ -27,8 +27,8 @@ const getRecentTime = (hoursAgo: number) => {
 const generateInvoices = () => {
     const invoices: any[] = [];
     const studentList = [
-        { id: "student-1", name: "Enzo Pereira", parentUserId: "user-pai-1" },
-        { id: "student-2", name: "Valentina Pereira", parentUserId: "user-pai-1" },
+        { id: "student-1", name: "Enzo Pereira", parentUserId: "val-pai" },
+        { id: "student-2", name: "Valentina Pereira", parentUserId: "val-pai" },
         { id: "student-3", name: "Bernardo Silva", parentUserId: "user-pai-2" },
         { id: "student-4", name: "Alice Souza", parentUserId: "user-pai-3" }
     ];
@@ -428,7 +428,7 @@ As partes aceitam os termos de forma digital através da plataforma Guardian em 
             id: "contract-test-1",
             templateId: "template-1",
             studentId: "student-1",
-            parentUserId: "user-pai-1",
+            parentUserId: "val-pai",
             serviceModality: "completo",
             status: "pending_acceptance",
             createdAt: new Date().toISOString(),
@@ -451,6 +451,28 @@ CLÁUSULA QUARTA - DAS RESPONSABILIDADES: É dever do contratante informar ausê
 CLÁUSULA QUINTA - VIGÊNCIA E RESCISÃO: Este contrato tem validade durante o ano letivo de 2026. Em caso de rescisão antecipada, a parte interessada deverá comunicar por escrito com 30 dias de antecedência.
 
 As partes aceitam os termos de forma digital através da plataforma Guardian em 06 de Abril de 2026.`
+        },
+        {
+            id: "contract-test-2",
+            templateId: "template-1",
+            studentId: "student-2",
+            parentUserId: "val-pai",
+            serviceModality: "completo",
+            status: "active",
+            createdAt: new Date().toISOString(),
+            generatedContent: `CONTRATO DE PRESTAÇÃO DE SERVIÇOS DE TRANSPORTE ESCOLAR - ANO LETIVO 2026
+
+Pelo presente instrumento particular, as partes abaixo qualificadas:
+
+CONTRATADA: Guardian Transporte Escolar Ltda, CNPJ: 12.345.678/0001-90, com dados de recebimento via: Banco Itaú, Agência 0300, Conta 45678-9 ou através da Chave Pix: 12.345.678/0001-90.
+
+CONTRATANTE: Validador Responsável, portador(a) do CPF 000.000.000-03, residente em Rua das Acácias, 10 - Centro, responsável legal pelo aluno(a) Valentina Pereira.
+
+CLÁUSULA PRIMEIRA - DO OBJETO: O presente contrato tem por objeto a prestação de serviços de transporte escolar diário do referido aluno no trajeto residência/escola/residência para a instituição Escola Primária do Saber.
+
+CLÁUSULA SEGUNDA - DO VALOR E PAGAMENTO: Pelos serviços prestados, o CONTRANTE pagará à CONTRATADA o valor mensal de R$ 450,00, com vencimento impreterivelmente todo dia 10 de cada mês.
+
+As partes aceitam os termos de forma digital através da plataforma Guardian em 10 de Fevereiro de 2026.`
         }
     ],
     authorized_pickups: [
