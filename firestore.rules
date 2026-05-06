@@ -289,5 +289,82 @@ service cloud.firestore {
                       && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'acceptedAt']);
       allow delete: if isAdmin();
     }
+
+    // ============================================================
+    // COLLECTIONS ADDED BY PRODUCTION AUDIT (06/05/2026)
+    // ============================================================
+
+    /**
+     * @description Stores in-app notification alerts for each user.
+     * @principle Users can only read/update their own notifications. Admins and system
+     * (via any signed-in user context) can create notifications for any user.
+     */
+    match /notifications/{notifId} {
+      allow read: if isSignedIn() && resource.data.userId == request.auth.uid;
+      allow create: if isSignedIn();
+      allow update: if isSignedIn() && resource.data.userId == request.auth.uid
+                      && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read']);
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Stores user profile data (name, email, cpf, profile type).
+     * @principle A user can read their own document. Admins can read and write all user documents.
+     * The initial user document is created during signup (via Firebase Auth context matching doc ID).
+     */
+    match /users/{userId} {
+      allow get: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow list: if isAdmin() || isSignedIn();
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      allow update: if isSignedIn() && (request.auth.uid == userId || isAdmin());
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Stores self-registration requests submitted by parents via the public link.
+     * @principle Any signed-in user can create a registration request (parents registering children).
+     * Only admins can list, approve, or reject requests.
+     */
+    match /pending_registrations/{regId} {
+      allow create: if isSignedIn();
+      allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
+      allow list: if isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    /**
+     * @description Stores the company/transporter profile (name, CNPJ, Pix key).
+     * @principle Only admins can manage the company profile. All signed-in users can read it
+     * (needed for contract generation and display).
+     */
+    match /company_profile/{companyId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    /**
+     * @description Manages documents for monitors in the system.
+     * @principle Allows reads for signed-in users, centralizes write control to administrators.
+     */
+    match /monitors/{monitorId} {
+      allow get: if isSignedIn();
+      allow list: if isSignedIn();
+      allow create: if isAdmin();
+      allow update: if isAdmin() && resource != null;
+      allow delete: if isAdmin() && resource != null;
+    }
+
+    /**
+     * @description Stores safety and operational incident reports.
+     * @principle Any signed-in user (drivers, monitors, admins) can create and read incidents.
+     * Only admins can update or delete them.
+     */
+    match /incidents/{incidentId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn();
+      allow update: if isAdmin();
+      allow delete: if isAdmin();
+    }
   }
 }

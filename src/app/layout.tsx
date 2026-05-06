@@ -2,7 +2,7 @@ import type {Metadata} from 'next';
 import './globals.css';
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
-import { MockDataProvider } from '@/hooks/use-mock-data';
+import { DataProvider } from '@/hooks/use-data';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { IosInstallPrompt } from '@/components/pwa/ios-install-prompt';
 import { FloatingWhatsApp } from '@/components/pwa/floating-whatsapp';
@@ -52,12 +52,12 @@ export default function RootLayout({
       </head>
       <body className="font-body antialiased" suppressHydrationWarning>
         <ErrorBoundary>
-          <MockDataProvider>
+          <DataProvider>
             <FirebaseClientProvider>
               {children}
             </FirebaseClientProvider>
-            <DemoOrchestrator />
-          </MockDataProvider>
+            {process.env.NEXT_PUBLIC_DATA_MODE !== 'firestore' && <DemoOrchestrator />}
+          </DataProvider>
         </ErrorBoundary>
         <IosInstallPrompt />
         {/* <FloatingWhatsApp /> */}

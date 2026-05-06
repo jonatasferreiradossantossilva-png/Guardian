@@ -32,7 +32,8 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useMockData } from "@/hooks/use-mock-data";
+import { useMockData, isFirestoreMode } from "@/hooks/use-mock-data";
+import { useAuthProvider } from "@/hooks/use-auth-provider";
 import { maskCPF, maskPhone, unmask } from "@/lib/masks";
 import { cn } from "@/lib/utils";
 
@@ -55,6 +56,7 @@ export default function SignupPage() {
   const [vanCapacity, setVanCapacity] = useState("15");
   const [mainSchool, setMainSchool] = useState("");
   const { addDoc } = useMockData();
+  const { signUp } = useAuthProvider();
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -72,18 +74,21 @@ export default function SignupPage() {
     setIsLoading(true);
     
     try {
-      const userId = `user-gestor-${Date.now()}`;
-      
-      // 1. Criar o Usuário Gestor
-      (addDoc as any)('users', {
-        id: userId,
+      const res = await signUp({
         name: values.name,
         email: values.email,
+        phone: values.phone,
         cpf: values.cpf,
         pin: values.pin,
-        profile: 'gestor',
-        active: true
+        profile: 'gestor'
       });
+
+      if (!res || !res.success) {
+        setIsLoading(false);
+        return;
+      }
+
+      const userId = res.userId;
       
       const firstName = values.name.split(' ')[0];
       setCompanyName(`Transportes ${firstName}`);
@@ -93,7 +98,6 @@ export default function SignupPage() {
         setStep("activation");
       } else {
         setStep("success");
-        sessionStorage.setItem('mockUserId', userId);
       }
     } catch (error) {
       toast({
@@ -332,9 +336,9 @@ export default function SignupPage() {
              </CardContent>
              <CardFooter>
                <Button className="w-full h-14 text-lg font-bold bg-green-600 hover:bg-green-700" onClick={() => {
-                  const values = form.getValues();
-                  const userIdArr = (JSON.parse(localStorage.getItem('mockDB_users') || '[]'));
-                  const userId = userIdArr[userIdArr.length - 1]?.id;
+               const values = form.getValues();
+                  // sessionStorage is set by useAuthProvider.signUp in both mock and Firestore modes
+                  const userId = sessionStorage.getItem('mockUserId') || `user-fallback-${Date.now()}`;
 
                   // 1. Criar Empresa
                   const compId = `comp-${Date.now()}`;
