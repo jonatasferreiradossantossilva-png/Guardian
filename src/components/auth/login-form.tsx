@@ -265,10 +265,21 @@ export function LoginForm() {
 
 
       </CardContent>
-      <CardFooter className="flex justify-center">
-        <p className="text-xs text-center text-muted-foreground px-2">
+      <CardFooter className="flex flex-col items-center justify-center space-y-2">
+        {!isFirestoreMode() ? (
+          <p className="text-xs text-center text-muted-foreground px-2">
             Selecione o perfil desejado para acessar a demonstração interativa.
-        </p>
+          </p>
+        ) : (
+          <>
+            <p className="text-sm text-center text-muted-foreground px-2">
+              Ainda não tem conta no Guardian?
+            </p>
+            <Button variant="link" className="h-auto p-0 text-primary font-semibold" onClick={() => router.push('/signup')}>
+              Cadastre-se agora
+            </Button>
+          </>
+        )}
       </CardFooter>
     </Card>
   );
