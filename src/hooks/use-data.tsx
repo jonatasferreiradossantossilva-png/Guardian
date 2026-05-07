@@ -12,7 +12,7 @@ import type { MockDB } from '@/types/mock-data';
  * Default: 'mock' (homologation).
  */
 export function isFirestoreMode(): boolean {
-  return process.env.NEXT_PUBLIC_DATA_MODE === 'firestore';
+  return process.env.NEXT_PUBLIC_DATA_MODE?.trim() === 'firestore';
 }
 
 /**
