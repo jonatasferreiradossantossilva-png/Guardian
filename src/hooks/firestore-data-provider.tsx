@@ -38,7 +38,7 @@ const WATCHED_COLLECTIONS: (keyof MockDB)[] = [
   'vehicles', 'routes', 'invoices', 'expenses', 'trip_requests',
   'pending_registrations', 'messages', 'announcements', 'incidents',
   'contract_templates', 'contracts', 'authorized_pickups', 'predefined_messages',
-  'notifications',
+  'notifications', 'company_profile',
 ];
 
 // Collections that map to different Firestore collection names (if needed)

@@ -104,8 +104,20 @@ export default function SignupPage() {
         setRouteName(`Rota Colégio - ${firstName}`);
         setStep("activation");
       } else {
-        setCompanyName(`Transportes ${firstName}`);
+        const defaultCompanyName = `Transportes ${firstName}`;
+        setCompanyName(defaultCompanyName);
         setRouteName(`Rota Colégio - ${firstName}`);
+        
+        // 1. Criar Empresa automaticamente para o fluxo de Empresa/Gestor
+        const compId = `comp-${Date.now()}`;
+        (addDoc as any)('company_profile', {
+            id: compId,
+            companyName: defaultCompanyName,
+            email: values.email,
+            phone: values.phone,
+            active: true
+        });
+
         setStep("success");
       }
     } catch (error) {
