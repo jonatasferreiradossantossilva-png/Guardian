@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="pt-br" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guardian | Engenharia Logística Escolar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;900&family=Plus+Jakarta+Sans:wght@400;500;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        :root {
+            --bg-dark: #08080a;
+            --accent-blue: #2563eb;
+            --zinc-900: #121214;
+            --zinc-800: #1c1c1f;
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background-color: var(--bg-dark); 
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4, .font-heading { font-family: 'Outfit', sans-serif; }
+
+        .mesh-gradient {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: radial-gradient(at 0% 0%, rgba(37, 99, 235, 0.08) 0px, transparent 50%),
+                        radial-gradient(at 100% 100%, rgba(37, 99, 235, 0.04) 0px, transparent 50%);
+            z-index: -1;
+            pointer-events: none;
+        }
+
+        .premium-glass {
+            background: rgba(255, 255, 255, 0.02);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .premium-glass:hover {
+            background: rgba(255, 255, 255, 0.04);
+            border-color: rgba(37, 99, 235, 0.2);
+            transform: translateY(-4px);
+        }
+
+        .tab-btn {
+            transition: all 0.3s ease;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            color: white;
+            border-color: var(--accent-blue);
+            box-shadow: 0 10px 30px -10px rgba(37, 99, 235, 0.5);
+        }
+
+        .reveal {
+            opacity: 0;
+            transform: translateY(20px);
+            transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .reveal.active {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .hide-scrollbar::-webkit-scrollbar { display: none; }
+        .hide-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .image-container {
+            background: linear-gradient(135deg, #121214 0%, #08080a 100%);
+            border-radius: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+        }
+    </style>
+</head>
+<body>
+    <div class="mesh-gradient"></div>
+
+    <!-- HEADER -->
+    <nav class="fixed top-0 w-full z-50 py-4 px-6 sm:px-12 transition-all duration-500 bg-black/50 backdrop-blur-md border-b border-white/5" id="navbar">
+        <div class="max-w-7xl mx-auto flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center">
+                    <i data-lucide="shield-check" class="w-5 h-5 text-white"></i>
+                </div>
+                <span class="font-black text-xl tracking-tighter italic">GUARDIAN</span>
+            </div>
+            <div class="hidden md:flex gap-8 text-[10px] font-black uppercase tracking-widest text-zinc-500">
+                <a href="#modulos" class="hover:text-blue-500 transition-colors">App</a>
+                <a href="#detalhes" class="hover:text-blue-500 transition-colors">Recursos</a>
+                <a href="#financas" class="hover:text-blue-500 transition-colors">Finanças</a>
+                <a href="#fundador" class="hover:text-blue-500 transition-colors">Fundador</a>
+            </div>
+            <a href="https://wa.me/5511983680393" class="bg-blue-600 text-white px-5 py-2 rounded-xl font-black text-[10px] uppercase tracking-widest hover:bg-blue-700 transition-all">
+                Contato
+            </a>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section class="min-h-screen flex items-center justify-center pt-20">
+        <div class="max-w-5xl mx-auto px-6 text-center reveal">
+            <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-600/10 text-blue-500 border border-blue-600/20 text-[9px] font-black uppercase tracking-[0.2em] mb-6">
+                Next-Gen School Logistics
+            </div>
+            <h1 class="text-5xl md:text-8xl font-black tracking-tighter italic mb-6 leading-[0.9] uppercase">
+                Logística <br> <span class="text-blue-600">de Elite.</span>
+            </h1>
+            <p class="text-lg md:text-xl text-zinc-500 max-w-2xl mx-auto font-medium leading-relaxed mb-10">
+                O único sistema que aplica o rigor da logística global à jornada escolar. Segurança total e lucro auditado.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center items-center">
+                <a href="https://wa.me/5511983680393" class="bg-white text-black px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest hover:bg-blue-600 hover:text-white transition-all flex items-center gap-2">
+                    Agendar Demo <i data-lucide="external-link" class="w-4 h-4"></i>
+                </a>
+                <a href="#modulos" class="px-8 py-4 rounded-2xl font-black text-xs uppercase tracking-widest text-zinc-400 hover:text-white transition-colors">
+                    Ver Ecossistema
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ECOSSISTEMA (Compact) -->
+    <section id="modulos" class="py-24 bg-zinc-950/50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <!-- GESTOR -->
+                <div class="premium-glass p-6 rounded-[2rem] space-y-6 reveal">
+                    <div class="image-container aspect-[3/4] flex items-center justify-center p-4">
+                        <img src="mockups/guardian_manager_dashboard.png" alt="Dashboard" class="max-h-full object-contain drop-shadow-2xl">
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-black italic uppercase mb-1">O Cérebro</h4>
+                        <p class="text-zinc-500 text-xs font-medium">Gestão completa da frota e financeiro.</p>
+                    </div>
+                </div>
+                <!-- MOTORISTA -->
+                <div class="premium-glass p-6 rounded-[2rem] space-y-6 reveal lg:mt-8">
+                    <div class="image-container aspect-[3/4] flex items-center justify-center p-4">
+                        <img src="mockups/guardian_driver_gps.png" alt="Driver App" class="max-h-full object-contain drop-shadow-2xl">
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-black italic uppercase mb-1">A Operação</h4>
+                        <p class="text-zinc-500 text-xs font-medium">Rotas inteligentes e telemetria.</p>
+                    </div>
+                </div>
+                <!-- MONITOR -->
+                <div class="premium-glass p-6 rounded-[2rem] space-y-6 reveal">
+                    <div class="image-container aspect-[3/4] flex items-center justify-center p-4">
+                        <img src="mockups/guardian_qr_scanner.png" alt="Scanner" class="max-h-full object-contain drop-shadow-2xl">
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-black italic uppercase mb-1">A Segurança</h4>
+                        <p class="text-zinc-500 text-xs font-medium">Check-in digital e embarque seguro.</p>
+                    </div>
+                </div>
+                <!-- FAMILIA -->
+                <div class="premium-glass p-6 rounded-[2rem] space-y-6 reveal lg:mt-8">
+                    <div class="image-container aspect-[3/4] flex items-center justify-center p-4">
+                        <img src="mockups/guardian_parent_app.png" alt="Parent App" class="max-h-full object-contain drop-shadow-2xl">
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-black italic uppercase mb-1">A Família</h4>
+                        <p class="text-zinc-500 text-xs font-medium">Mapa ao vivo e notificações.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- MODULAR PLATFORM (Fixed Tabs) -->
+    <section id="detalhes" class="py-24 bg-black">
+        <div class="max-w-5xl mx-auto px-6">
+            <div class="text-center mb-16 reveal">
+                <h2 class="text-4xl md:text-6xl font-black italic tracking-tighter uppercase mb-4">Plataforma Modular.</h2>
+                <p class="text-zinc-500 font-medium italic">Funcionalidades desenhadas para cada ponta da operação.</p>
+            </div>
+
+            <!-- Tab Buttons -->
+            <div class="flex flex-wrap justify-center gap-3 mb-12 reveal">
+                <button onclick="switchTab('gestor')" id="btn-gestor" class="tab-btn active px-6 py-3 rounded-xl font-black text-[9px] uppercase tracking-widest text-white">
+                    Gestor
+                </button>
+                <button onclick="switchTab('motorista')" id="btn-motorista" class="tab-btn px-6 py-3 rounded-xl font-black text-[9px] uppercase tracking-widest text-zinc-500 bg-zinc-900/50">
+                    Operacional
+                </button>
+                <button onclick="switchTab('pais')" id="btn-pais" class="tab-btn px-6 py-3 rounded-xl font-black text-[9px] uppercase tracking-widest text-zinc-500 bg-zinc-900/50">
+                    Família
+                </button>
+            </div>
+
+            <!-- Tab Contents -->
+            <div id="content-gestor" class="tab-content reveal">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="zap" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Faturamento Pix</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">Conciliação automática e cobrança via WhatsApp integrada.</p>
+                    </div>
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="share-2" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Assinatura Online</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">Contratos e fichas de saúde preenchidos digitalmente.</p>
+                    </div>
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="bar-chart-3" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Dashboards DRE</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">Visão real do lucro por veículo e manutenção preditiva.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-motorista" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="map" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Roteiro Smart</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">Otimização automática baseada na presença dos alunos.</p>
+                    </div>
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="battery-charging" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Telemetria</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">GPS otimizado que não drena o hardware do motorista.</p>
+                    </div>
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="check-square" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Check-in Visual</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">Controle de embarque seguro e intuitivo no painel.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="content-pais" class="tab-content hidden">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="map-pin" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Acompanhamento</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">Rastreio em tempo real e notificações de chegada.</p>
+                    </div>
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="user-x" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Botão Ausência</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">Avisar faltas com um clique, liberando a rota da van.</p>
+                    </div>
+                    <div class="premium-glass p-8 rounded-3xl space-y-4">
+                        <div class="w-10 h-10 rounded-xl bg-blue-600/10 flex items-center justify-center text-blue-500"><i data-lucide="wallet" class="w-5 h-5"></i></div>
+                        <h5 class="font-black italic uppercase text-sm">Viagens Extras</h5>
+                        <p class="text-zinc-500 text-xs leading-relaxed">Solicitação de viagens avulsas via Pix direto no app.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FINANÇAS (Compact Bento) -->
+    <section id="financas" class="py-24 bg-zinc-950/50">
+        <div class="max-w-5xl mx-auto px-6 reveal">
+            <div class="premium-glass p-10 rounded-[3rem] grid grid-cols-1 lg:grid-cols-2 gap-10 items-center">
+                <div class="space-y-6">
+                    <h2 class="text-4xl font-black italic uppercase leading-tight">DRE <br> <span class="text-blue-600">Instante.</span></h2>
+                    <p class="text-zinc-500 text-sm font-medium">Km Previsto vs Km Realizado. O único que prova seu lucro.</p>
+                    <div class="flex items-center gap-4 py-4 border-t border-white/5">
+                        <div class="text-center">
+                            <p class="text-[9px] font-black uppercase text-zinc-500 mb-1">Previsto</p>
+                            <p class="text-xl font-black italic">59.8km</p>
+                        </div>
+                        <div class="w-px h-8 bg-white/10"></div>
+                        <div class="text-center">
+                            <p class="text-[9px] font-black uppercase text-green-500 mb-1">Realizado</p>
+                            <p class="text-xl font-black italic text-green-500">48.3km</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="bg-blue-600 p-8 rounded-3xl text-center shadow-2xl shadow-blue-600/20">
+                    <p class="text-[9px] font-black uppercase tracking-widest text-blue-100 mb-2">Lucro da Rota</p>
+                    <p class="text-5xl font-black italic text-white">R$ 184,50</p>
+                    <p class="text-[9px] font-black uppercase text-blue-900 mt-4">Economia de 19% em combustível</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FUNDADOR -->
+    <section id="fundador" class="py-24 bg-black">
+        <div class="max-w-5xl mx-auto px-6 grid grid-cols-1 lg:grid-cols-2 gap-12 items-center reveal">
+            <div class="aspect-square bg-zinc-900 rounded-[3rem] overflow-hidden border border-white/5 flex flex-col justify-end p-8">
+                <h3 class="text-4xl font-black italic uppercase leading-none">Jonatas <br> Ferreira</h3>
+                <p class="text-blue-500 font-black text-[9px] uppercase tracking-widest mt-2">Senior Sistemas Specialist</p>
+            </div>
+            <div class="space-y-6">
+                <h2 class="text-4xl font-black italic uppercase leading-tight">Engenharia <br> Logística.</h2>
+                <p class="text-zinc-500 text-sm leading-relaxed">
+                    Com **19 anos na Senior Sistemas**, Jonatas traduziu a complexidade das grandes operações logísticas para o transporte escolar. Blindagem operacional e inteligência de dados.
+                </p>
+                <div class="flex gap-8 pt-4">
+                    <div>
+                        <p class="text-blue-500 font-black text-[8px] uppercase mb-1">Acadêmico</p>
+                        <p class="font-bold text-xs">MBA USP/ESALQ</p>
+                    </div>
+                    <div>
+                        <p class="text-blue-500 font-black text-[8px] uppercase mb-1">Expertise</p>
+                        <p class="font-bold text-xs">TMS & Supply Chain</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER / CTA -->
+    <footer class="py-20 bg-zinc-950 border-t border-white/5 text-center">
+        <div class="max-w-xl mx-auto px-6 space-y-8">
+            <h2 class="text-4xl font-black italic uppercase tracking-tighter">PRONTO?</h2>
+            <a href="https://wa.me/5511983680393" class="block bg-blue-600 text-white py-5 rounded-2xl font-black uppercase tracking-widest text-xs hover:scale-105 transition-transform">
+                Baixar Business Deck
+            </a>
+            <p class="text-zinc-700 text-[8px] font-black uppercase tracking-[0.4em]">© 2026 Guardian Tech Group. Jonatas Ferreira.</p>
+        </div>
+    </footer>
+
+    <script>
+        lucide.createIcons();
+
+        // Reveal logic
+        const reveals = document.querySelectorAll('.reveal');
+        const revealObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) entry.target.classList.add('active');
+            });
+        }, { threshold: 0.1 });
+        reveals.forEach(reveal => revealObserver.observe(reveal));
+
+        // Fixed Tab Switcher
+        function switchTab(id) {
+            console.log('Switching to tab:', id);
+            
+            // Hide all contents
+            document.querySelectorAll('.tab-content').forEach(c => {
+                c.classList.add('hidden');
+                c.classList.remove('reveal', 'active'); // Reset reveal for tabs to prevent opacity issues
+            });
+            
+            // Reset all buttons
+            document.querySelectorAll('.tab-btn').forEach(b => {
+                b.classList.remove('active', 'bg-blue-600', 'text-white');
+                b.classList.add('bg-zinc-900/50', 'text-zinc-500');
+            });
+
+            // Show current
+            const content = document.getElementById('content-' + id);
+            if (content) {
+                content.classList.remove('hidden');
+                content.style.opacity = '1';
+                content.style.transform = 'translateY(0)';
+            }
+            
+            // Activate button
+            const btn = document.getElementById('btn-' + id);
+            if (btn) {
+                btn.classList.add('active', 'bg-blue-600', 'text-white');
+                btn.classList.remove('bg-zinc-900/50', 'text-zinc-500');
+            }
+        }
+    </script>
+</body>
+</html>

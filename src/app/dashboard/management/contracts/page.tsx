@@ -3,11 +3,12 @@ import { ContractsList } from '@/components/dashboard/management/contracts/contr
 
 // This is a Server Component
 export default async function ContractsPage() {
+  const isFirestore = process.env.NEXT_PUBLIC_DATA_MODE === 'firestore';
   // Data is fetched on the server
-  const contracts = initialMockData.contracts || [];
-  const students = initialMockData.students || [];
-  const parents = initialMockData.parents || [];
-  const templates = initialMockData.contract_templates || [];
+  const contracts = isFirestore ? [] : (initialMockData.contracts || []);
+  const students = isFirestore ? [] : (initialMockData.students || []);
+  const parents = isFirestore ? [] : (initialMockData.parents || []);
+  const templates = isFirestore ? [] : (initialMockData.contract_templates || []);
 
   return <ContractsList 
             initialContracts={contracts} 

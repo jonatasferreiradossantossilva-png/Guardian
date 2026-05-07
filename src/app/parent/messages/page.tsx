@@ -2,7 +2,7 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useMockCollection, useMockData, useMockDoc } from '@/hooks/use-mock-data';
+import { useDataCollection, useData, useDataDoc } from '@/hooks/use-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -36,7 +36,7 @@ function ConversationListItem({ participant, isSelected, onSelect }: { participa
 
 
 export default function ParentMessagesPage() {
-  const { addDoc } = useMockData();
+  const { addDoc } = useData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
@@ -49,31 +49,31 @@ export default function ParentMessagesPage() {
     setIsClient(true);
   }, []);
 
-  const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
+  const { data: parents } = useDataCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
   const parent = useMemo(() => parents?.[0], [parents]);
   const parentUserId = parent?.userId;
   
-  const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
+  const { data: students } = useDataCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
   const firstStudent = useMemo(() => students?.[0], [students]);
   
   // FIXED: Logic to find the route based on studentIds array inside the route object
-  const { data: allRoutes } = useMockCollection('routes');
+  const { data: allRoutes } = useDataCollection('routes');
   const route = useMemo(() => {
     if (!firstStudent || !allRoutes) return null;
     return allRoutes.find(r => r.studentIds.includes(firstStudent.id));
   }, [firstStudent, allRoutes]);
 
-  const { data: driverDoc } = useMockDoc('drivers', route?.driverId);
+  const { data: driverDoc } = useDataDoc('drivers', route?.driverId);
   
   // Find monitor user
-  const { data: allUsers } = useMockCollection('users');
+  const { data: allUsers } = useDataCollection('users');
   const monitorDoc = useMemo(() => {
       if (!route?.monitorId || !allUsers) return null;
       return allUsers.find(u => u.id === route.monitorId);
   }, [route?.monitorId, allUsers]);
   
-  const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
-  const { data: predefinedMessages } = useMockCollection('predefined_messages');
+  const { data: messages, isLoading: areMessagesLoading } = useDataCollection('messages');
+  const { data: predefinedMessages } = useDataCollection('predefined_messages');
 
   const gestores = useMemo(() => {
     return (allUsers || [])

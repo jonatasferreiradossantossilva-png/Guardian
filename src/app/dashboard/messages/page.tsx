@@ -1,6 +1,6 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -18,12 +18,12 @@ type ConversationParticipant = {
 };
 
 export default function MessagesPage() {
-  const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
-  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers');
-  const { data: users, isLoading: areUsersLoading } = useMockCollection('users');
-  const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
-  const { data: predefinedMessages } = useMockCollection('predefined_messages');
-  const { addDoc } = useMockData();
+  const { data: parents, isLoading: areParentsLoading } = useDataCollection('parents');
+  const { data: drivers, isLoading: areDriversLoading } = useDataCollection('drivers');
+  const { data: users, isLoading: areUsersLoading } = useDataCollection('users');
+  const { data: messages, isLoading: areMessagesLoading } = useDataCollection('messages');
+  const { data: predefinedMessages } = useDataCollection('predefined_messages');
+  const { addDoc } = useData();
 
   const [selectedConversation, setSelectedConversation] = useState<ConversationParticipant | null>(null);
   const [currentMessage, setCurrentMessage] = useState('');

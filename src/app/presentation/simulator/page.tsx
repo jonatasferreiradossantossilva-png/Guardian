@@ -25,13 +25,13 @@ import {
     Coffee,
     Moon
 } from 'lucide-react';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 import { generateCarapicuibaSeed, CARAPICUIBA_STUDENTS_DATA } from '@/lib/seeds/carapicuiba-seed';
 import { cn } from '@/lib/utils';
 import { TRACK_MORNING_IDA, TRACK_AFTERNOON_VOLTA, getPointFromTrack } from '@/lib/simulation-engine';
 
 export default function PresentationSimulator() {
-    const { addDoc, updateDoc, resetData, db } = useMockData() as any;
+    const { addDoc, updateDoc, resetData, db } = useData() as any;
     const [currentStep, setCurrentStep] = useState(0);
     const [isAutoPilot, setIsAutoPilot] = useState(false);
     const [isStarted, setIsStarted] = useState(false);

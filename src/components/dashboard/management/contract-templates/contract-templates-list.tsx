@@ -25,7 +25,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { useToast } from "@/hooks/use-toast";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { ContractTemplateForm } from "./contract-template-form";
 
 type Template = {
@@ -41,13 +41,13 @@ interface ContractTemplatesListProps {
 
 export function ContractTemplatesList({ initialTemplates }: ContractTemplatesListProps) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<Partial<Template> | null>(null);
 
-  const { data: liveTemplates, isLoading } = useMockCollection('contract_templates');
+  const { data: liveTemplates, isLoading } = useDataCollection('contract_templates');
   const templates = liveTemplates ?? initialTemplates;
 
   const handleEdit = (template: Template) => {

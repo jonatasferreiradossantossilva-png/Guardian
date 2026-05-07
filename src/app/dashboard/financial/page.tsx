@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { FilePlus, Loader2, Pencil, Filter, Users, Calendar, CheckCircle, CheckCircle2, Clock, AlertCircle, Wallet, Receipt, BellRing, AlertTriangle, Info, TrendingUp, TrendingDown } from 'lucide-react';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -267,7 +267,7 @@ export default function FinancialPage() {
 
 function RevenuesTab() {
   const { toast } = useToast();
-  const { addDoc, updateDoc, addDocsBatch } = useMockData();
+  const { addDoc, updateDoc, addDocsBatch } = useData();
   const [isGenerating, setIsGenerating] = useState(false);
   const [isReminderAlertOpen, setIsReminderAlertOpen] = useState(false);
   const [reminders, setReminders] = useState<{ parentName: string; studentName: string }[]>([]);
@@ -280,9 +280,9 @@ function RevenuesTab() {
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
   const [selectedStatus, setSelectedStatus] = useState<Invoice['status'] | 'all'>('all');
 
-  const { data: invoices, isLoading: areInvoicesLoading } = useMockCollection<Invoice>('invoices');
-  const { data: students, isLoading: areStudentsLoading } = useMockCollection('students');
-  const { data: parents, isLoading: areParentsLoading } = useMockCollection('parents');
+  const { data: invoices, isLoading: areInvoicesLoading } = useDataCollection<Invoice>('invoices');
+  const { data: students, isLoading: areStudentsLoading } = useDataCollection('students');
+  const { data: parents, isLoading: areParentsLoading } = useDataCollection('parents');
 
   const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
   const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
@@ -746,7 +746,7 @@ function RevenuesTab() {
 
 function ExpensesTab() {
   const { toast } = useToast();
-  const { addDoc, updateDoc, deleteDoc } = useMockData();
+  const { addDoc, updateDoc, deleteDoc } = useData();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
@@ -755,7 +755,7 @@ function ExpensesTab() {
   const [currentPage, setCurrentPage] = useState(1);
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
 
-  const { data: expenses, isLoading } = useMockCollection<Expense>('expenses');
+  const { data: expenses, isLoading } = useDataCollection<Expense>('expenses');
 
   useEffect(() => {
     setCurrentPage(1);

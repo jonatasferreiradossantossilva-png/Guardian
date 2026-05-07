@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, TrendingDown, FileText } from "lucide-react";
-import { useMockCollection } from "@/hooks/use-mock-data";
+import { useDataCollection } from '@/hooks/use-data';
 import { safeString, safeArray } from '@/lib/safe-render';
 
 
@@ -16,8 +16,8 @@ interface OverviewCardsProps {
 }
 
 export function OverviewCards({ filters }: OverviewCardsProps) {
-  const { data: allInvoices, isLoading: areInvoicesLoading } = useMockCollection('invoices', undefined);
-  const { data: allExpenses, isLoading: areExpensesLoading } = useMockCollection('expenses', undefined);
+  const { data: allInvoices, isLoading: areInvoicesLoading } = useDataCollection('invoices', undefined);
+  const { data: allExpenses, isLoading: areExpensesLoading } = useDataCollection('expenses', undefined);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {

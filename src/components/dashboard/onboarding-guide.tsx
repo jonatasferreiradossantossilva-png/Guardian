@@ -27,7 +27,7 @@ import {
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 
 const introSlides = [
   { 
@@ -59,12 +59,12 @@ export function OnboardingGuide({ isOpen, onClose }: OnboardingGuideProps) {
   const [view, setView] = useState<'presentation' | 'checklist'>('presentation');
   const [currentIndex, setCurrentIndex] = useState(0);
 
-  const { data: schools } = useMockCollection('schools');
-  const { data: drivers } = useMockCollection('drivers');
-  const { data: vehicles } = useMockCollection('vehicles');
-  const { data: routes } = useMockCollection('routes');
-  const { data: pending } = useMockCollection('pending_registrations');
-  const { data: users } = useMockCollection('users');
+  const { data: schools } = useDataCollection('schools');
+  const { data: drivers } = useDataCollection('drivers');
+  const { data: vehicles } = useDataCollection('vehicles');
+  const { data: routes } = useDataCollection('routes');
+  const { data: pending } = useDataCollection('pending_registrations');
+  const { data: users } = useDataCollection('users');
 
   const monitors = useMemo(() => users?.filter(u => u.profile === 'monitor') || [], [users]);
 

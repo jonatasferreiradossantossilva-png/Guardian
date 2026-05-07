@@ -3,7 +3,7 @@
 import dynamic from 'next/dynamic';
 import { useEffect, useMemo } from 'react';
 import { APIProvider, Map as GoogleMap, useMap } from "@vis.gl/react-google-maps";
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Loader2, AlertCircle } from 'lucide-react';
 import { ErrorBoundary } from './error-boundary';
 import { useRef } from 'react';
@@ -61,9 +61,9 @@ function GoogleMapController({ stops, driverLocation, trigger }: { stops: any[],
 }
 
 export function SmartMap({ center, zoom, stops, driverLocation, routePolyline, recenterTrigger, forcedMode, editableMarker, onPositionChange, children }: SmartMapProps) {
-    const { updateDoc } = useMockData() as any;
-    const { data: config } = useMockCollection('config', []);
-    const { data: telemetryData } = useMockCollection('telemetry');
+    const { updateDoc } = useData() as any;
+    const { data: config } = useDataCollection('config', []);
+    const { data: telemetryData } = useDataCollection('telemetry');
     
     const telemetry = telemetryData?.[0];
     const isManualScaling = config?.[0]?.scaling_mode ?? false;

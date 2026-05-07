@@ -11,7 +11,7 @@ import {
 import type { Incident } from "@/lib/placeholder-data";
 import { useState, useEffect } from "react";
 import { Badge } from "../ui/badge";
-import { useMockCollection } from "@/hooks/use-mock-data";
+import { useDataCollection } from '@/hooks/use-data';
 import { Loader2 } from 'lucide-react';
 
 const API_KEY = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
@@ -39,7 +39,7 @@ function MapController({ target }: { target: google.maps.LatLngLiteral | null })
 
 
 export function IncidentMap({ target }: { target: google.maps.LatLngLiteral | null }) {
-  const { data: incidents, isLoading } = useMockCollection<Incident>('incidents');
+  const { data: incidents, isLoading } = useDataCollection<Incident>('incidents');
   const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
 
   if (isLoading) {

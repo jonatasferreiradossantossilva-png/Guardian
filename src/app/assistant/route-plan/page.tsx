@@ -35,7 +35,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Link from 'next/link';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { cn } from '@/lib/utils';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -186,7 +186,7 @@ StudentCard.displayName = 'StudentCard';
 
 
 export default function AssistantRoutePlanPage() {
-  const { updateDoc } = useMockData();
+  const { updateDoc } = useData();
   const { toast } = useToast();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
@@ -218,7 +218,7 @@ export default function AssistantRoutePlanPage() {
     sessionStorage.setItem('monitor_activeShift', shift);
   };
 
-  const { data: routes, isLoading: isRouteLoading } = useMockCollection(
+  const { data: routes, isLoading: isRouteLoading } = useDataCollection(
     'routes',
     mockUserId
       ? [
@@ -228,12 +228,12 @@ export default function AssistantRoutePlanPage() {
   ) as { data: any[] | null, isLoading: boolean };
   const route = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
-  const { data: students, isLoading: areStudentsLoading } = useMockCollection(
+  const { data: students, isLoading: areStudentsLoading } = useDataCollection(
     'students',
     route ? [{ field: 'id', op: 'in', value: route.studentIds }] : []
   ) as { data: Student[] | null, isLoading: boolean };
 
-  const { data: schools, isLoading: areSchoolsLoading } = useMockCollection('schools') as { data: any[] | null, isLoading: boolean };
+  const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: any[] | null, isLoading: boolean };
 
   // REAL-TIME SYNC WITH DRIVER
   useEffect(() => {

@@ -36,7 +36,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { SchoolForm } from "@/components/dashboard/management/schools/school-form";
 import { useToast } from "@/hooks/use-toast";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Badge } from "@/components/ui/badge";
 
 
@@ -60,7 +60,7 @@ interface SchoolsListProps {
 
 export function SchoolsList({ initialSchools }: SchoolsListProps) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
   
   const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -71,7 +71,7 @@ export function SchoolsList({ initialSchools }: SchoolsListProps) {
     setMounted(true);
   }, []);
 
-  const { data: liveSchools, isLoading } = useMockCollection('schools');
+  const { data: liveSchools, isLoading } = useDataCollection('schools');
   const schools = liveSchools ?? initialSchools;
 
   const handleEdit = (school: School) => {

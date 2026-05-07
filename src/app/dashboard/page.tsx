@@ -43,7 +43,7 @@ import {
 import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { OnboardingGuide } from '@/components/dashboard/onboarding-guide';
@@ -140,9 +140,9 @@ const monthNames = [
 ];
 
 function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => void, onShareRegistration: () => void }) {
-  const { data: allInvoices } = useMockCollection('invoices', undefined);
-  const { data: allExpenses } = useMockCollection('expenses', undefined);
-  const { data: vehicles } = useMockCollection('vehicles');
+  const { data: allInvoices } = useDataCollection('invoices', undefined);
+  const { data: allExpenses } = useDataCollection('expenses', undefined);
+  const { data: vehicles } = useDataCollection('vehicles');
   const { toast } = useToast();
 
   const [selectedYear, setSelectedYear] = useState<string>('latest');

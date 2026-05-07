@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 import { safeString, safeArray } from '@/lib/safe-render';
 
 
@@ -53,7 +53,7 @@ export function MonitorQuickEditForm({
   onFormSubmit,
 }: MonitorQuickEditFormProps) {
   const { toast } = useToast();
-  const { updateDoc } = useMockData();
+  const { updateDoc } = useData();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

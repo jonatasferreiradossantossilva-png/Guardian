@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { MonitorForm } from "@/components/dashboard/management/monitors/monitor-form";
 import { useToast } from "@/hooks/use-toast";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SafeTableRow, SafeRow } from "@/components/shared/safe-table";
 import { safeInitials, safeArray, safeString } from "@/lib/safe-render";
@@ -64,7 +64,7 @@ type Vehicle = { id: string; model: string; licensePlate: string };
 
 export function MonitorsList({ initialMonitors, initialVehicles }: { initialMonitors: Monitor[]; initialVehicles?: Vehicle[] }) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
   
   const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -75,8 +75,8 @@ export function MonitorsList({ initialMonitors, initialVehicles }: { initialMoni
     setMounted(true);
   }, []);
 
-  const { data: liveMonitors, isLoading: areMonitorsLoading } = useMockCollection<Monitor>('monitors');
-  const { data: liveVehicles } = useMockCollection<Vehicle>('vehicles');
+  const { data: liveMonitors, isLoading: areMonitorsLoading } = useDataCollection<Monitor>('monitors');
+  const { data: liveVehicles } = useDataCollection<Vehicle>('vehicles');
 
   const monitors = liveMonitors ?? initialMonitors;
   const vehicles = liveVehicles ?? initialVehicles ?? [];

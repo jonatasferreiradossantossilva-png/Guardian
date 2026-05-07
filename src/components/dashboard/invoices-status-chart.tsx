@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
 import { Loader2 } from 'lucide-react';
@@ -29,7 +29,7 @@ const statusColors: Record<string, string> = {
 };
 
 export function InvoicesStatusChart({ filters }: InvoicesStatusChartProps) {
-  const { data: allInvoices, isLoading } = useMockCollection('invoices', undefined);
+  const { data: allInvoices, isLoading } = useDataCollection('invoices', undefined);
 
   const chartData = useMemo(() => {
     if (!allInvoices) return [];

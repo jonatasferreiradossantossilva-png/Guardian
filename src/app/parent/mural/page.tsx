@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft, Megaphone, Clock, Info, AlertTriangle } from 'lucide-react';
@@ -12,7 +12,7 @@ import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
 
 export default function ParentMuralPage() {
-  const { data: announcements, isLoading } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
+  const { data: announcements, isLoading } = useDataCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
 
   return (
     <div className="min-h-screen bg-secondary/30 p-4 pb-32 md:pb-6">

@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
@@ -21,8 +21,8 @@ import {
 import { useState } from 'react';
 
 export default function IncidentsLogsPage() {
-  const { data: incidents, isLoading } = useMockCollection('incidents');
-  const { clearCollection } = useMockData();
+  const { data: incidents, isLoading } = useDataCollection('incidents');
+  const { clearCollection } = useData();
   const [selectedIncident, setSelectedIncident] = useState<any>(null);
   const [isResetting, setIsResetting] = useState(false);
   const router = useRouter();

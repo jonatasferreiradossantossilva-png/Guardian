@@ -1,7 +1,7 @@
 "use client";
 import { useState, useMemo, useEffect } from 'react';
 import Link from 'next/link';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
@@ -19,7 +19,7 @@ type ConversationParticipant = {
 };
 
 export default function AssistantMessagesPage() {
-  const { addDoc } = useMockData();
+  const { addDoc } = useData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
 
@@ -29,13 +29,13 @@ export default function AssistantMessagesPage() {
     setIsClient(true);
   }, []);
 
-  const { data: allParents, isLoading: areParentsLoading } = useMockCollection('parents');
-  const { data: allDrivers, isLoading: areDriversLoading } = useMockCollection('drivers');
-  const { data: allUsers, isLoading: areUsersLoading } = useMockCollection('users');
-  const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes');
-  const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection('students');
-  const { data: messages, isLoading: areMessagesLoading } = useMockCollection('messages');
-  const { data: predefinedMessages } = useMockCollection('predefined_messages');
+  const { data: allParents, isLoading: areParentsLoading } = useDataCollection('parents');
+  const { data: allDrivers, isLoading: areDriversLoading } = useDataCollection('drivers');
+  const { data: allUsers, isLoading: areUsersLoading } = useDataCollection('users');
+  const { data: routes, isLoading: areRoutesLoading } = useDataCollection('routes');
+  const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students');
+  const { data: messages, isLoading: areMessagesLoading } = useDataCollection('messages');
+  const { data: predefinedMessages } = useDataCollection('predefined_messages');
 
   const [selectedConversation, setSelectedConversation] = useState<ConversationParticipant | null>(null);
   const [currentMessage, setCurrentMessage] = useState('');

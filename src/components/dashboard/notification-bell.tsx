@@ -13,7 +13,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -26,10 +26,10 @@ export function NotificationBell() {
   const [isOpen, setIsOpen] = useState(false);
   const { toast } = useToast();
   const lastProcessedId = useRef<string | null>(null);
-  const { updateDoc, deleteDoc, addDoc } = useMockData() as any;
+  const { updateDoc, deleteDoc, addDoc } = useData() as any;
   const mockUserId = typeof window !== 'undefined' ? sessionStorage.getItem('mockUserId') : null;
 
-  const { data: notifications } = useMockCollection('notifications', 
+  const { data: notifications } = useDataCollection('notifications', 
     mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined
   );
 

@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { DriverForm } from "@/components/dashboard/management/drivers/driver-form";
 import { useToast } from "@/hooks/use-toast";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 
@@ -75,7 +75,7 @@ interface DriversListProps {
 
 export function DriversList({ initialDrivers, initialVehicles }: DriversListProps) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
   
   const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -86,8 +86,8 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
     setMounted(true);
   }, []);
 
-  const { data: liveDrivers, isLoading: areDriversLoading } = useMockCollection<Driver>('drivers');
-  const { data: liveVehicles, isLoading: areVehiclesLoading } = useMockCollection<Vehicle>('vehicles');
+  const { data: liveDrivers, isLoading: areDriversLoading } = useDataCollection<Driver>('drivers');
+  const { data: liveVehicles, isLoading: areVehiclesLoading } = useDataCollection<Vehicle>('vehicles');
 
   const drivers = liveDrivers ?? initialDrivers;
   const vehicles = liveVehicles ?? initialVehicles;

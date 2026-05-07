@@ -18,7 +18,7 @@ import {
 } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Student, Route } from '@/types/mock-data';
 import { useToast } from '@/hooks/use-toast';
 import { SafeRow } from '@/components/shared/safe-table';
@@ -28,9 +28,9 @@ interface PendingApprovalsProps {
 }
 
 export function PendingApprovals({ route }: PendingApprovalsProps) {
-  const { updateDoc, deleteDoc } = useMockData() as any;
+  const { updateDoc, deleteDoc } = useData() as any;
   const { toast } = useToast();
-  const { data: allStudents, isLoading } = useMockCollection('students') as { data: Student[] | undefined, isLoading: boolean };
+  const { data: allStudents, isLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
 
   // Filtramos os alunos que se cadastraram especificamente para esta rota mas ainda não foram aprovados
   const pendingStudents = useMemo(() => {

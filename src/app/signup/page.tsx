@@ -32,7 +32,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useMockData, isFirestoreMode } from "@/hooks/use-mock-data";
+import { useData, isFirestoreMode } from '@/hooks/use-data';
 import { useAuthProvider } from "@/hooks/use-auth-provider";
 import { maskCPF, maskPhone, unmask } from "@/lib/masks";
 import { cn } from "@/lib/utils";
@@ -55,7 +55,7 @@ export default function SignupPage() {
   const [companyName, setCompanyName] = useState("");
   const [vanCapacity, setVanCapacity] = useState("15");
   const [mainSchool, setMainSchool] = useState("");
-  const { addDoc } = useMockData();
+  const { addDoc } = useData();
   const { signUp } = useAuthProvider();
 
   const form = useForm<z.infer<typeof formSchema>>({

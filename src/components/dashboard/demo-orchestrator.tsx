@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useMockData } from "@/hooks/use-mock-data";
+import { useData } from '@/hooks/use-data';
 import { 
     Loader2, 
     ShieldCheck, 
@@ -33,7 +33,7 @@ interface BusinessCheck {
 
 export function DemoOrchestrator() {
     const { toast } = useToast();
-    const { addDoc, resetData } = useMockData() as any;
+    const { addDoc, resetData } = useData() as any;
     const [step, setStep] = useState<ValidatorStep>('IDLE');
     const [isOpen, setIsOpen] = useState(false);
     const [report, setReport] = useState<BusinessCheck[]>([]);

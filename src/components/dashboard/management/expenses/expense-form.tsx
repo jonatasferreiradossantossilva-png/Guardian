@@ -37,7 +37,7 @@ import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 
 const formSchema = z.object({
   description: z.string().min(3, { message: 'A descrição deve ter pelo menos 3 caracteres.' }),
@@ -55,7 +55,7 @@ interface ExpenseFormProps {
 
 export function ExpenseForm({ expense, onFormSubmit }: ExpenseFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
+  const { addDoc, updateDoc } = useData();
 
   const form = useForm<ExpenseFormValues>({
     resolver: zodResolver(formSchema),

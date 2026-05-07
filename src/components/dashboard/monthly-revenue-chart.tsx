@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { Bar, BarChart, CartesianGrid, XAxis, YAxis } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig } from '@/components/ui/chart';
 import { format, subMonths, parse } from 'date-fns';
@@ -17,7 +17,7 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export function MonthlyRevenueChart() {
-  const { data: invoices, isLoading } = useMockCollection('invoices');
+  const { data: invoices, isLoading } = useDataCollection('invoices');
   const [chartData, setChartData] = useState<{ month: string; receita: number }[]>([]);
 
   useEffect(() => {

@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useRef, useState } from 'react';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 import { Camera, Loader2, User } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
@@ -48,7 +48,7 @@ interface AuthorizedPersonFormProps {
 
 export function AuthorizedPersonForm({ person, studentId, parentUserId, onFormSubmit }: AuthorizedPersonFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
+  const { addDoc, updateDoc } = useData();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isUploading, setIsUploading] = useState(false);
 

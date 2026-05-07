@@ -35,7 +35,7 @@ import {
 import { StudentForm } from "@/components/dashboard/management/students/student-form";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { PaginationControls } from "@/components/ui/pagination-controls";
@@ -64,7 +64,7 @@ const ITEMS_PER_PAGE = 10;
 
 export function StudentsList({ initialStudents, initialSchools, initialParents }: StudentsListProps) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
 
   const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -80,9 +80,9 @@ export function StudentsList({ initialStudents, initialSchools, initialParents }
   }, []);
 
   // Use live data from hooks for reactivity, falling back to initial data.
-  const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
-  const { data: liveSchools, isLoading: areSchoolsLoading } = useMockCollection('schools');
-  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents');
+  const { data: liveStudents, isLoading: areStudentsLoading } = useDataCollection('students');
+  const { data: liveSchools, isLoading: areSchoolsLoading } = useDataCollection('schools');
+  const { data: liveParents, isLoading: areParentsLoading } = useDataCollection('parents');
 
   const students = liveStudents ?? initialStudents;
   const schools = liveSchools ?? initialSchools;

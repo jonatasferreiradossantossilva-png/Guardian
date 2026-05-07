@@ -31,7 +31,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo, useRef } from 'react';
-import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
+import { useData, useDataCollection } from '@/hooks/use-data';
 import { Copy, Loader2, HeartPulse, CalendarDays, Search, Sparkles, MapPin, Camera, User, Users, Apple, Activity, Wind, Accessibility, Brain, AlertTriangle, ArrowRightLeft } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
@@ -138,8 +138,8 @@ export function StudentForm({
   onFormSubmit,
 }: StudentFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
-  const { data: allStudents } = useMockCollection('students');
+  const { addDoc, updateDoc } = useData();
+  const { data: allStudents } = useDataCollection('students');
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const [isSearching, setIsSearching] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

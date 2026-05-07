@@ -55,3 +55,15 @@ Quando a dependência do aplicativo estiver consolidada, usaremos o histórico r
 
 ### 3. Integração com Catracas de Escola (API Externa)
 *   Sincronizar o aviso de "A criança entrou na escola" do Guardian com uma possível API de controle de acesso da própria escola (reduzindo passivo e dividindo responsabilidade escolar).
+
+---
+
+## 🏛️ Marco: Expansão B2G (Venda para Prefeituras e PNATE)
+
+**Problema que resolve:** Prefeituras terceirizam o transporte rural/urbano e perdem milhões pagando quilometragens fraudadas, além de não terem controle real de quem embarcou no ônibus.
+
+**Como vai funcionar (Auditoria e Controle Público):**
+1. **Módulo "Gestor Público":** Um dashboard macro para o Secretário de Educação ver o mapa em tempo real de todas as vans licitadas da cidade.
+2. **Auditoria de KM (Anti-Fraude):** Cruzamento automático do KM da Rota Planejada (Licitação) vs. KM Real executado (Telemetria do Guardian). A prefeitura paga apenas pelo que foi rodado, gerando economia suficiente para pagar o próprio software no primeiro mês.
+3. **Censo Escolar em Tempo Real:** A lista de presença digital (feita pelo motorista no embarque) alimenta diretamente a secretaria de educação para garantir o repasse de verbas federais do PNATE, comprovando o uso do aluno.
+4. **Desativação Financeira:** Como o transporte é gratuito, o módulo de cobrança via Pix e mensalidades é desativado neste modelo, tornando a interface focada 100% em rotas, manutenção de veículos e presença.

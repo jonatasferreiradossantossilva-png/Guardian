@@ -13,7 +13,7 @@ import { Button } from '@/components/ui/button';
 import { CheckCircle, Clock, FileText, Loader2, MessageCircle, Edit, PlusCircle, ArrowRightLeft } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -57,10 +57,10 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
   const [editingContract, setEditingContract] = useState<Contract | null>(null);
   const { toast } = useToast();
   
-  const { data: liveContracts, isLoading: areContractsLoading } = useMockCollection('contracts');
-  const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
-  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents');
-  const { data: liveTemplates, isLoading: areTemplatesLoading } = useMockCollection('contract_templates');
+  const { data: liveContracts, isLoading: areContractsLoading } = useDataCollection('contracts');
+  const { data: liveStudents, isLoading: areStudentsLoading } = useDataCollection('students');
+  const { data: liveParents, isLoading: areParentsLoading } = useDataCollection('parents');
+  const { data: liveTemplates, isLoading: areTemplatesLoading } = useDataCollection('contract_templates');
 
   const contracts = liveContracts ?? initialContracts;
   const students = liveStudents ?? initialStudents;

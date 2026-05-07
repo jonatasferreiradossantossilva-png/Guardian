@@ -44,7 +44,7 @@ import { Button } from "../ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
 import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { DriverRouteInfoCard } from "./driver-route-info-card";
-import { useMockCollection } from "@/hooks/use-mock-data";
+import { useDataCollection } from '@/hooks/use-data';
 import { useMemo } from "react";
 
 const operationalLinks = [
@@ -87,7 +87,7 @@ export function MainSidebar() {
   
   const isParent = pathname.includes('/parent');
 
-  const { data: pendingRegs } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
+  const { data: pendingRegs } = useDataCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
   const pendingCount = useMemo(() => pendingRegs?.length || 0, [pendingRegs]);
 
   // Filtro de links para Pais

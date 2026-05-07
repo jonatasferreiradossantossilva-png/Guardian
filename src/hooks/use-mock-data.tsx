@@ -252,7 +252,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const memoResetData = useCallback(resetData, []);
 
   const lastProcessedEvent = useRef<string | null>(null);
-  const MOCK_VERSION = 'v7-quality'; // Incremento de versão para limpar caches antigos
+  const MOCK_VERSION = 'v8-autonomous'; // Incremento de versão para limpar caches antigos
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -503,8 +503,18 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 }
 
 // --- HOOKS ---
+import { useFirestoreData } from '@/hooks/firestore-data-provider';
+
+export function isFirestoreMode(): boolean {
+  return typeof process !== 'undefined' && process.env.NEXT_PUBLIC_DATA_MODE === 'firestore';
+}
 
 export const useMockData = () => {
+  if (isFirestoreMode()) {
+    // eslint-disable-next-line react-hooks/rules-of-hooks
+    return useFirestoreData();
+  }
+  // eslint-disable-next-line react-hooks/rules-of-hooks
   const context = useContext(MockDataContext);
   if (!context) {
     throw new Error('useMockData must be used within a MockDataProvider');

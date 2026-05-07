@@ -3,7 +3,7 @@
 import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, enableIndexedDbPersistence } from 'firebase/firestore';
+import { getFirestore, initializeFirestore, persistentLocalCache } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
 
 function createFirebaseApp() {
@@ -23,20 +23,19 @@ function createFirebaseApp() {
 // Initialize Singleton Instances at Module Level
 export const firebaseApp = createFirebaseApp();
 export const auth = getAuth(firebaseApp);
-export const firestore = getFirestore(firebaseApp);
-export const database = getDatabase(firebaseApp);
 
-// Enable persistence only on client Side
-if (typeof window !== 'undefined') {
-  enableIndexedDbPersistence(firestore)
-    .catch((err) => {
-      if (err.code == 'failed-precondition') {
-        console.warn("Firestore offline persistence failed: " + err.message);
-      } else if (err.code == 'unimplemented') {
-        console.warn("Firestore offline persistence not supported in this browser.");
-      }
-    });
-}
+export const firestore = (() => {
+  try {
+    return typeof window !== 'undefined' 
+      ? initializeFirestore(firebaseApp, { localCache: persistentLocalCache() })
+      : getFirestore(firebaseApp);
+  } catch (e: any) {
+    // Fallback for Next.js Fast Refresh if already initialized
+    return getFirestore(firebaseApp);
+  }
+})();
+
+export const database = getDatabase(firebaseApp);
 
 /**
  * Main initialization wrapper for compatibility with existing components

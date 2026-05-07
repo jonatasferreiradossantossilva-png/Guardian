@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { 
     Users, 
     School, 
@@ -72,7 +72,7 @@ export function RouteForm({
   onFormSubmit,
 }: RouteFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
+  const { addDoc, updateDoc } = useData();
   
   const [name, setName] = useState(route?.name || '');
   const [driverId, setDriverId] = useState(route?.driverId || '');
@@ -87,8 +87,8 @@ export function RouteForm({
   const [isOptimizing, setIsOptimizing] = useState(false);
   const [isOptimized, setIsOptimized] = useState(false);
 
-  const { data: allTemplates } = (useMockCollection as any)('contract_templates');
-  const { data: allCompanies } = (useMockCollection as any)('company_profiles');
+  const { data: allTemplates } = (useDataCollection as any)('contract_templates');
+  const { data: allCompanies } = (useDataCollection as any)('company_profiles');
   const defaultTemplate = allTemplates?.[0];
   const company = allCompanies?.[0];
 

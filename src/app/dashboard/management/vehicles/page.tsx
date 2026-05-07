@@ -3,8 +3,9 @@ import { VehiclesList } from '@/components/dashboard/management/vehicles/vehicle
 
 // This is a Server Component
 export default async function VehiclesPage() {
-  // Data is fetched on the server
-  const vehicles = initialMockData.vehicles;
+  const isFirestore = process.env.NEXT_PUBLIC_DATA_MODE === 'firestore';
+  // Data is empty in production, mock in dev
+  const vehicles = isFirestore ? [] : initialMockData.vehicles;
 
   // The client component receives the initial data as props
   return <VehiclesList initialVehicles={vehicles} />;

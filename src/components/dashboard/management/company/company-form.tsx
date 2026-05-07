@@ -17,7 +17,7 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Building2, Save, MapPin, Phone, Mail, Loader2, User, QrCode, CreditCard } from 'lucide-react';
 import { useState, useEffect } from 'react';
 
@@ -38,10 +38,10 @@ type FormValues = z.infer<typeof formSchema>;
 
 export function CompanyForm() {
   const { toast } = useToast();
-  const { updateDoc, addDoc } = useMockData();
+  const { updateDoc, addDoc } = useData();
   const [isSaving, setIsSaving] = useState(false);
 
-  const { data: companyData, isLoading } = useMockCollection('company_profile');
+  const { data: companyData, isLoading } = useDataCollection('company_profile');
   const company = companyData?.[0];
 
   const form = useForm<FormValues>({

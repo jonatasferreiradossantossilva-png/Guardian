@@ -30,7 +30,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 import { useEffect, useState } from 'react';
 
 const formSchema = z.object({
@@ -47,7 +47,7 @@ interface ReportIncidentFormProps {
 
 export function ReportIncidentForm({ onFormSubmit }: ReportIncidentFormProps) {
   const { toast } = useToast();
-  const { addDoc } = useMockData();
+  const { addDoc } = useData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
 
   useEffect(() => {

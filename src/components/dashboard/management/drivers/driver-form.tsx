@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState } from 'react';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 import { Loader2 } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -74,7 +74,7 @@ export function DriverForm({
   onFormSubmit,
 }: DriverFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
+  const { addDoc, updateDoc } = useData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
 
   const form = useForm<DriverFormValues>({

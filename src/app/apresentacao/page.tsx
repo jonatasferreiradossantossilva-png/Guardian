@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Rocket, ShieldCheck, MapPin, Zap, ChevronRight, Play } from "lucide-react";
 import Link from "next/link";
 import Image from "next/image";
-import { useMockData } from "@/hooks/use-mock-data";
+import { useData } from '@/hooks/use-data';
 
 // --- Componente Local do Tour Interativo que inseriremos na página:
 function ProductTour() {
@@ -684,7 +684,7 @@ function CoreFeaturesGrid() {
 }
 
 export default function LandingPage() {
-  const { setIsSimulating } = useMockData();
+  const { setIsSimulating } = useData();
 
   const whatsappUrl = "https://wa.me/5511983680393?text=Olá! Estava navegando no site VanGuardian e gostaria de saber mais sobre a solução.";
   return (

@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Notification as MockNotification } from '@/types/mock-data';
 
 import { cn } from '@/lib/utils';
@@ -25,8 +25,8 @@ import { SafeRow } from './safe-table';
 
 
 export function NotificationCenter({ userId }: { userId: string }) {
-  const { updateDoc, deleteDoc } = useMockData();
-  const { data: allNotifications } = useMockCollection('notifications');
+  const { updateDoc, deleteDoc } = useData();
+  const { data: allNotifications } = useDataCollection('notifications');
   
   const notifications = useMemo(() => {
     const list = safeArray<MockNotification>(allNotifications);

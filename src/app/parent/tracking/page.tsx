@@ -3,10 +3,7 @@
 
 import { useMemo, useState, useEffect, useCallback, useRef, Suspense } from "react";
 import Link from "next/link";
-import {
-  useMockCollection,
-  useMockData,
-} from "@/hooks/use-mock-data";
+import { useDataCollection, useData,  } from '@/hooks/use-data';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
 import { AdvancedMarker, Pin } from "@vis.gl/react-google-maps";
 import { 
@@ -252,7 +249,7 @@ function JourneyTimeline({ status, direction }: { status: Student['status'], dir
 
 function ParentTrackingContent() {
   const { toast } = useToast();
-  const { updateDoc } = useMockData() as any;
+  const { updateDoc } = useData() as any;
   const fileInputRef = useRef<HTMLInputElement>(null);
   
   const [mockUserId, setMockUserId] = useState<string | null>(null);
@@ -289,17 +286,17 @@ function ParentTrackingContent() {
       sessionStorage.setItem('selectedStudentId', id);
   };
 
-  const { data: parents, isLoading: areParentsLoading } = useMockCollection("parents", mockUserId ? [{ field: "userId", op: "==", value: mockUserId }] : undefined);
+  const { data: parents, isLoading: areParentsLoading } = useDataCollection("parents", mockUserId ? [{ field: "userId", op: "==", value: mockUserId }] : undefined);
   const parent = useMemo(() => (parents && parents.length > 0 ? parents[0] : null), [parents]);
   
   const studentFilter = useMemo(() => parent ? [{ field: "parentId", op: "==", value: parent.id }] : [{ field: "id", op: "==", value: "none" }], [parent]);
-  const { data: students, isLoading: areStudentsLoading } = useMockCollection("students", studentFilter);
+  const { data: students, isLoading: areStudentsLoading } = useDataCollection("students", studentFilter);
   
-  const { data: allRoutes } = useMockCollection("routes", []);
-  const { data: allLocations } = useMockCollection("locations", []);
-  const { data: allSchools } = useMockCollection("schools", []);
-  const { data: allMessages } = useMockCollection("messages", []);
-  const { data: allAuthorized } = useMockCollection("authorized_pickups", []);
+  const { data: allRoutes } = useDataCollection("routes", []);
+  const { data: allLocations } = useDataCollection("locations", []);
+  const { data: allSchools } = useDataCollection("schools", []);
+  const { data: allMessages } = useDataCollection("messages", []);
+  const { data: allAuthorized } = useDataCollection("authorized_pickups", []);
 
   const unreadCount = useMemo(() => {
       if (!allMessages || !mockUserId) return 0;
@@ -325,7 +322,7 @@ function ParentTrackingContent() {
   
   const route = useMemo(() => allRoutes?.find((r: any) => r.studentIds.includes(student?.id || '')), [allRoutes, student]);
   const displayLocation = useMemo(() => allLocations?.find((l: any) => l.id === route?.driverId), [allLocations, route]);
-  const { data: announcements } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
+  const { data: announcements } = useDataCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
   const latestAnnouncement = useMemo(() => announcements?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0], [announcements]);
 
   useEffect(() => {

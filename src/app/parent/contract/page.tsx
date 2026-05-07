@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, FileText, CheckCircle, Printer, MessageCircle } from 'lucide-react';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
@@ -36,7 +36,7 @@ export default function ParentContractPage() {
         setSelectedStudentId(lastSelectedId);
     }, []);
 
-    const { data: contracts, isLoading: areContractsLoading } = useMockCollection('contracts', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
+    const { data: contracts, isLoading: areContractsLoading } = useDataCollection('contracts', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
     
     const contract = useMemo(() => {
         if (!contracts || contracts.length === 0) return null;
@@ -44,10 +44,10 @@ export default function ParentContractPage() {
         return contracts.find(c => c.studentId === selectedStudentId) || contracts[0];
     }, [contracts, selectedStudentId]);
 
-    const { data: students, isLoading: areStudentsLoading } = useMockCollection('students', contract ? [{ field: 'id', op: '==', value: contract.studentId }] : undefined);
+    const { data: students, isLoading: areStudentsLoading } = useDataCollection('students', contract ? [{ field: 'id', op: '==', value: contract.studentId }] : undefined);
     const student = useMemo(() => students?.[0], [students]);
 
-    const { updateDoc } = useMockData();
+    const { updateDoc } = useData();
     const [hasAgreed, setHasAgreed] = useState(false);
 
     const handleAcceptContract = () => {

@@ -33,7 +33,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { PredefinedMessageForm } from "./predefined-message-form";
 import { useToast } from "@/hooks/use-toast";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Badge } from "@/components/ui/badge";
 
 type PredefinedMessage = {
@@ -56,13 +56,13 @@ const profileMap = {
 
 export function PredefinedMessagesList({ initialMessages }: PredefinedMessagesListProps) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
   
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [selectedMessage, setSelectedMessage] = useState<PredefinedMessage | null>(null);
 
-  const { data: liveMessages, isLoading } = useMockCollection('predefined_messages');
+  const { data: liveMessages, isLoading } = useDataCollection('predefined_messages');
   const messages = liveMessages ?? initialMessages;
 
   const handleEdit = (message: PredefinedMessage) => {

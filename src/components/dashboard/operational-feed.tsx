@@ -5,7 +5,7 @@ import { useMemo, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Bus, Sparkles, Siren, Clock, Activity, ArrowRight, Zap } from 'lucide-react';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -36,8 +36,8 @@ export function OperationalFeed() {
 }
 
 function OperationalFeedContent() {
-    const { data: incidents } = useMockCollection('incidents');
-    const { addDoc } = useMockData();
+    const { data: incidents } = useDataCollection('incidents');
+    const { addDoc } = useData();
     const { toast } = useToast();
 
     const handleSimulateEvent = () => {

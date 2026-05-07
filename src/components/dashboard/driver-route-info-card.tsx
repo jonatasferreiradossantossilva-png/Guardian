@@ -4,7 +4,7 @@ import { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { Car, Users, ArrowRight, Loader2, Edit } from 'lucide-react';
 import { Dialog, DialogTrigger } from "@/components/ui/dialog";
 import { MonitorQuickEditForm } from './assistant-quick-edit-form';
@@ -22,24 +22,24 @@ export function DriverRouteInfoCard() {
 
 
   // 1. Check if the currently logged-in user is also a driver
-  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', currentUserId ? [
+  const { data: drivers, isLoading: areDriversLoading } = useDataCollection('drivers', currentUserId ? [
     { field: 'userId', op: '==', value: currentUserId },
   ] : undefined);
   const driverProfile = useMemo(() => (drivers && drivers.length > 0 ? drivers[0] : null), [drivers]);
 
   // 2. If they are a driver, find their active route
-  const { data: routes, isLoading: areRoutesLoading } = useMockCollection('routes', driverProfile ? [
+  const { data: routes, isLoading: areRoutesLoading } = useDataCollection('routes', driverProfile ? [
     { field: 'driverId', op: '==', value: driverProfile.id },
   ] : []);
   const activeRoute = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
   // 3. Get students for the route to show stats
-   const { data: students, isLoading: areStudentsLoading } = useMockCollection('students', activeRoute ? [
+   const { data: students, isLoading: areStudentsLoading } = useDataCollection('students', activeRoute ? [
     { field: 'id', op: 'in', value: activeRoute.studentIds }
   ] : []);
   
   // 4. Get all users to find monitors
-  const { data: users, isLoading: areUsersLoading } = useMockCollection('users', undefined);
+  const { data: users, isLoading: areUsersLoading } = useDataCollection('users', undefined);
 
   const monitors = useMemo(() => (users || []).filter((u: any) => u.profile === 'monitor'), [users]);
   const monitorsMap = useMemo(() => new Map(monitors.map((a: any) => [a.id, a.name])), [monitors]);

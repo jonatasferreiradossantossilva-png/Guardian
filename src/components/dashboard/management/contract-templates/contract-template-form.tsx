@@ -25,7 +25,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
 const formSchema = z.object({
@@ -44,7 +44,7 @@ interface ContractTemplateFormProps {
 
 export function ContractTemplateForm({ template, templates, onFormSubmit }: ContractTemplateFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
+  const { addDoc, updateDoc } = useData();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

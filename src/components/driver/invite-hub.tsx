@@ -36,7 +36,17 @@ export function InviteHub({ driverName, routeId, routeName }: InviteHubProps) {
   const [hasCopied, setHasCopied] = useState(false);
   const { toast } = useToast();
 
-  const inviteUrl = `${window.location.origin}/invite/${routeId}`;
+  const getBaseOrigin = () => {
+    if (typeof window === 'undefined') return '';
+    let origin = window.location.origin;
+    if (window.location.hostname === 'localhost') {
+      // Fallback para IP de rede local para testes em dispositivos físicos
+      return origin.replace('localhost', '192.168.0.30');
+    }
+    return origin;
+  };
+
+  const inviteUrl = `${getBaseOrigin()}/register?routeId=${routeId}&isTesting=true`;
   
   const handleWhatsAppShare = () => {
     const message = encodeURIComponent(

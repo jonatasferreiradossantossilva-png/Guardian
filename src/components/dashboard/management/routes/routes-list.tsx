@@ -36,7 +36,7 @@ import {
 import { RouteForm } from "@/components/dashboard/management/routes/route-form";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -58,7 +58,7 @@ interface RoutesListProps {
 
 export function RoutesList({ initialRoutes, initialDrivers, initialStudents, initialMonitors, initialVehicles, initialSchools }: RoutesListProps) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
 
   const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -69,12 +69,12 @@ export function RoutesList({ initialRoutes, initialDrivers, initialStudents, ini
     setMounted(true);
   }, []);
   
-  const { data: liveRoutes, isLoading: areRoutesLoading } = useMockCollection('routes');
-  const { data: liveDrivers, isLoading: areDriversLoading } = useMockCollection('drivers');
-  const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students');
-  const { data: liveUsers, isLoading: areUsersLoading } = useMockCollection('users');
-  const { data: liveVehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
-  const { data: liveSchools, isLoading: areSchoolsLoading } = useMockCollection('schools');
+  const { data: liveRoutes, isLoading: areRoutesLoading } = useDataCollection('routes');
+  const { data: liveDrivers, isLoading: areDriversLoading } = useDataCollection('drivers');
+  const { data: liveStudents, isLoading: areStudentsLoading } = useDataCollection('students');
+  const { data: liveUsers, isLoading: areUsersLoading } = useDataCollection('users');
+  const { data: liveVehicles, isLoading: areVehiclesLoading } = useDataCollection('vehicles');
+  const { data: liveSchools, isLoading: areSchoolsLoading } = useDataCollection('schools');
 
 
   const routes = useMemo(() => {

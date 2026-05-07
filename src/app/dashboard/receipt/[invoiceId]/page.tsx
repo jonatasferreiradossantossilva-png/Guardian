@@ -3,7 +3,7 @@
 import { useParams } from 'next/navigation';
 import { useMemo } from 'react';
 import Link from 'next/link';
-import { useMockDoc, useMockCollection } from '@/hooks/use-mock-data';
+import { useDataDoc, useDataCollection } from '@/hooks/use-data';
 import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Loader2, ArrowLeft, Printer, MessageCircle, Rocket } from 'lucide-react';
@@ -16,11 +16,11 @@ export default function ReceiptPage() {
     const { toast } = useToast();
     const invoiceId = params.invoiceId as string;
 
-    const { data: invoice, isLoading: isInvoiceLoading } = useMockDoc('invoices', invoiceId);
+    const { data: invoice, isLoading: isInvoiceLoading } = useDataDoc('invoices', invoiceId);
     
     // We need to fetch all students and parents to find the correct ones based on invoice data
-    const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection('students');
-    const { data: allParents, isLoading: areParentsLoading } = useMockCollection('parents');
+    const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students');
+    const { data: allParents, isLoading: areParentsLoading } = useDataCollection('parents');
 
     const student = useMemo(() => {
         if (!invoice || !allStudents) return null;

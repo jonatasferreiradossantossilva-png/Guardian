@@ -35,7 +35,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import { ParentForm } from "@/components/dashboard/management/parents/parent-form";
 import { useToast } from "@/hooks/use-toast";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
@@ -67,7 +67,7 @@ const ITEMS_PER_PAGE = 10;
 
 export function ParentsList({ initialParents }: ParentsListProps) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
 
   const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -83,8 +83,8 @@ export function ParentsList({ initialParents }: ParentsListProps) {
     setMounted(true);
   }, []);
 
-  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection<Parent>('parents');
-  const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection<any>('students');
+  const { data: liveParents, isLoading: areParentsLoading } = useDataCollection<Parent>('parents');
+  const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection<any>('students');
 
   const parents = liveParents ?? initialParents;
   const isLoading = areParentsLoading || areStudentsLoading;

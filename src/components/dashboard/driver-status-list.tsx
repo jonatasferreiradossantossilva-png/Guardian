@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { MessageSquareWarning, Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { safeString, safeArray, safeInitials } from '@/lib/safe-render';
 import { SafeRow } from '@/components/shared/safe-table';
 
@@ -36,8 +36,8 @@ const statusLabelMap: Record<Driver['status'], string> = {
 };
 
 export function DriverStatusList() {
-  const { data: drivers, isLoading: areDriversLoading } = useMockCollection<Driver>('drivers');
-  const { data: vehicles, isLoading: areVehiclesLoading } = useMockCollection<Vehicle>('vehicles');
+  const { data: drivers, isLoading: areDriversLoading } = useDataCollection<Driver>('drivers');
+  const { data: vehicles, isLoading: areVehiclesLoading } = useDataCollection<Vehicle>('vehicles');
 
   const isLoading = areDriversLoading || areVehiclesLoading;
 

@@ -41,7 +41,7 @@ import { VehicleForm } from "@/components/dashboard/management/vehicles/vehicle-
 import { MaintenanceForm } from "@/components/dashboard/management/vehicles/maintenance-form";
 import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 
 
 type Vehicle = {
@@ -60,7 +60,7 @@ interface VehiclesListProps {
 
 export function VehiclesList({ initialVehicles }: VehiclesListProps) {
   const { toast } = useToast();
-  const { deleteDoc } = useMockData();
+  const { deleteDoc } = useData();
 
   const [mounted, setMounted] = useState(false);
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -72,7 +72,7 @@ export function VehiclesList({ initialVehicles }: VehiclesListProps) {
     setMounted(true);
   }, []);
 
-  const { data: liveVehicles, isLoading } = useMockCollection('vehicles');
+  const { data: liveVehicles, isLoading } = useDataCollection('vehicles');
   const vehicles = liveVehicles ?? initialVehicles;
 
   const handleEdit = (vehicle: Vehicle) => {

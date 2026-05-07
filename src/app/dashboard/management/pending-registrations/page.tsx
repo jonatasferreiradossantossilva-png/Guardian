@@ -6,7 +6,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { SafeTableRow, SafeRow } from '@/components/shared/safe-table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Check, X, Eye, Loader2, UserPlus, Clock, Sparkles, AlertTriangle, CheckCircle, School, Phone, Mail, FileText, DollarSign, User, CalendarDays, Users, HeartPulse, ArrowRightLeft, Car, MapPin, Bus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -35,13 +35,13 @@ const modalityContractPhrase: Record<string, string> = {
 };
 
 export default function PendingRegistrationsPage() {
-  const { data: registrations, isLoading } = useMockCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
-  const { data: schools } = useMockCollection('schools', []);
-  const { data: existingParents } = useMockCollection('parents', []);
-  const { data: templates } = useMockCollection('contract_templates', []);
-  const { data: companyProfiles } = useMockCollection('company_profile', []);
+  const { data: registrations, isLoading } = useDataCollection('pending_registrations', [{ field: 'status', op: '==', value: 'pending_approval' }]);
+  const { data: schools } = useDataCollection('schools', []);
+  const { data: existingParents } = useDataCollection('parents', []);
+  const { data: templates } = useDataCollection('contract_templates', []);
+  const { data: companyProfiles } = useDataCollection('company_profile', []);
   
-  const { updateDoc, addDoc, db } = useMockData();
+  const { updateDoc, addDoc, db } = useData();
   const allRoutes = db?.routes || [];
   const { toast } = useToast();
 
@@ -136,7 +136,7 @@ export default function PendingRegistrationsPage() {
         }
 
         const newStudentId = (addDoc as any)('students', {
-            name: reg.studentName,
+            name: reg.name || reg.studentName,
             schoolId: reg.schoolId,
             parentId: parentIdToUse, 
             shift: reg.shift === 'manha' ? 'Manhã' : 'Tarde', 
@@ -183,7 +183,7 @@ export default function PendingRegistrationsPage() {
             generatedContent = generatedContent.replace(/{{pagamento_info}}/g, paymentPhrase);
             generatedContent = generatedContent.replace(/{{empresa_nome}}/g, company.companyName);
             generatedContent = generatedContent.replace(/{{empresa_cnpj}}/g, company.cnpj);
-            generatedContent = generatedContent.replace(/{{aluno_nome}}/g, reg.studentName);
+            generatedContent = generatedContent.replace(/{{aluno_nome}}/g, reg.name || reg.studentName);
             generatedContent = generatedContent.replace(/{{responsavel_nome}}/g, editableParentName);
             generatedContent = generatedContent.replace(/{{aluno_endereco}}/g, studentAddress);
             generatedContent = generatedContent.replace(/{{escola_nome}}/g, schoolsMap.get(reg.schoolId) || 'N/A');
@@ -228,7 +228,7 @@ export default function PendingRegistrationsPage() {
         }
 
         (updateDoc as any)('pending_registrations', reg.id, { status: 'approved' });
-        toast({ title: "Solicitação Aprovada!", description: `Cadastro de ${reg.studentName} integrado com sucesso.` });
+        toast({ title: "Solicitação Aprovada!", description: `Cadastro de ${reg.name || reg.studentName} integrado com sucesso.` });
         setSelectedReg(null);
     } catch (e) {
         toast({ title: "Erro ao processar", variant: "destructive" });
@@ -238,7 +238,7 @@ export default function PendingRegistrationsPage() {
   };
 
   const handleReject = async (reg: any) => {
-    if (!confirm(`Tem certeza que deseja recusar a solicitação de ${reg.studentName}?`)) return;
+    if (!confirm(`Tem certeza que deseja recusar a solicitação de ${reg.name || reg.studentName}?`)) return;
     
     setIsProcessing(true);
     try {
@@ -330,7 +330,7 @@ export default function PendingRegistrationsPage() {
                       <div className="flex justify-between items-start">
                         <div>
                           <h3 className="font-bold text-base">{reg.parentName}</h3>
-                          <p className="text-xs text-muted-foreground">Aluno: {reg.studentName}</p>
+                          <p className="text-xs text-muted-foreground">Aluno: {reg.name || reg.studentName}</p>
                         </div>
                       <Badge variant="outline" className="text-[10px] font-normal uppercase">
                         {(() => {
@@ -415,7 +415,7 @@ export default function PendingRegistrationsPage() {
                             <div className="p-3 bg-muted/30 rounded-xl border border-border/50">
                                 <p className="text-[9px] font-black uppercase text-muted-foreground mb-3 tracking-widest">Aluno</p>
                                 <div className="space-y-3">
-                                    <Detail icon={<User className="h-3 w-3 text-primary"/>} label="Nome" value={selectedReg?.studentName} />
+                                    <Detail icon={<User className="h-3 w-3 text-primary"/>} label="Nome" value={selectedReg?.name || selectedReg?.studentName} />
                                     <div className="grid grid-cols-2 gap-2">
                                         <Detail icon={<School className="h-3 w-3 text-primary"/>} label="Escola" value={schoolsMap.get(selectedReg?.schoolId) || 'N/A'} />
                                         <Detail icon={<Clock className="h-3 w-3 text-primary"/>} label="Turno" value={selectedReg?.shift === 'manha' ? 'Manhã' : 'Tarde'} />
@@ -504,9 +504,9 @@ export default function PendingRegistrationsPage() {
                                       <div className="h-1 w-1 rounded-full bg-primary" />
                                       Geocodificação de Segurança Ativa
                                     </div>
-                                    <p className="text-xs text-zinc-400 flex items-center gap-2">
+                                    <div className="text-xs text-zinc-400 flex items-center gap-2">
                                         <div className="h-1 w-1 rounded-full bg-primary" /> Vínculo Financeiro Automático
-                                    </p>
+                                    </div>
                                 </div>
                                 <Button 
                                     onClick={() => handleApprove(selectedReg)} 

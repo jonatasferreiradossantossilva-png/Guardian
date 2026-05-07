@@ -59,4 +59,22 @@ Para escalar além de 100 vans e 2.000 alunos, o plano de expansão foca em mant
 *   **Assinatura de Contrato:** Aceite jurídico digital integrado.
 
 ---
+
+## 🏢 Roadmap Estratégico: Expansão B2G (Governo e Prefeituras)
+
+Com base no Programa Nacional de Apoio ao Transporte do Escolar (PNATE), o Guardian possui um módulo governamental planejado para atender prefeituras e secretarias de educação, mudando o foco da "cobrança B2C" para a "auditoria de frotas terceirizadas".
+
+### 1. Painel de Auditoria Governamental
+*   **Foco:** Visão master para o Secretário de Educação acompanhar dezenas/centenas de rotas rurais e urbanas simultaneamente.
+*   **Anti-Fraude de Quilometragem:** Cruzamento do KM Planejado (Licitação) vs. KM Real Executado via telemetria imutável, garantindo que a prefeitura pague apenas pelo que foi rodado.
+
+### 2. Lista de Presença Conectada ao Censo Escolar
+*   **Foco:** Comprovar a utilização do transporte pelo aluno da rede pública para garantir o repasse de verbas federais.
+*   **Integração:** Em vez do pai receber notificação de "embarque", o diretor da escola e o gestor público recebem o manifesto de passageiros (Roll Call) em tempo real.
+
+### 3. Adaptação do Modelo de Negócios
+*   **Ajuste:** Desativação do módulo financeiro (Pix/Mensalidade/Contratos B2C) para rotas públicas, já que o transporte é subsidiado.
+*   **Venda Direta:** Modelo de negócio focado em economia de escala, provando que o sistema se paga sozinho no primeiro mês apenas com a redução de fraudes no pagamento de motoristas terceirizados.
+
+---
 *Guardian - A jornada do seu filho, protegida em tempo real.*

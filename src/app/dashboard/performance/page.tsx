@@ -8,7 +8,7 @@ import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartConfig, ChartLe
 import { Sparkles, TrendingDown, Clock, Leaf, Zap, ShieldCheck, ArrowDownRight, Gauge, Loader2, Wrench } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { MaintenanceForm } from '@/components/dashboard/management/vehicles/maintenance-form';
@@ -19,8 +19,8 @@ const chartConfig = {
 } satisfies ChartConfig;
 
 export default function PerformancePage() {
-  const { data: vehicles, isLoading: areVehiclesLoading } = useMockCollection('vehicles');
-  const { data: history, isLoading: isHistoryLoading } = useMockCollection('trip_history');
+  const { data: vehicles, isLoading: areVehiclesLoading } = useDataCollection('vehicles');
+  const { data: history, isLoading: isHistoryLoading } = useDataCollection('trip_history');
   const [selectedVehicleForMaintenance, setSelectedVehicleForMaintenance] = useState<any>(null);
   
   // Agrega dados do histórico para o gráfico de barras (últimos 5 dias)

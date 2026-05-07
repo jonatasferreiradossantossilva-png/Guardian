@@ -38,6 +38,24 @@ test.describe('Guardian Operational Trip - High Fidelity (3 Contexts)', () => {
         const driverPage = await context.newPage();
         const monitorPage = await context.newPage();
 
+        // TELEMETRIA DE ERROS NO CONSOLE (Driver)
+        const driverErrors: string[] = [];
+        driverPage.on('console', msg => {
+            const text = msg.text();
+            if (msg.type() === 'error') {
+                if (text.includes('BillingNotEnabledMapError')) return;
+                if (text.includes('net::ERR_ABORTED')) return;
+                if (text.includes('net::ERR_FAILED')) return;
+                if (text.includes('Failed to load resource')) return;
+                driverErrors.push(text);
+                console.error(`[Driver Telemetry Error]: ${text}`);
+            }
+        });
+        driverPage.on('pageerror', err => {
+            driverErrors.push(err.message);
+            console.error(`[Driver Telemetry PageError]: ${err.message}`);
+        });
+
         // Helper: Re-injetar sessão do motorista antes de qualquer reload
         const reinjectDriverSession = async () => {
             await driverPage.evaluate(({ id }) => {
@@ -162,5 +180,8 @@ test.describe('Guardian Operational Trip - High Fidelity (3 Contexts)', () => {
 
         // Cleanup
         await context.close();
+        // VALIDAR TELEMETRIA NO FINAL
+        console.log('--- 6. VALIDANDO TELEMETRIA (ERROS DE CONSOLE) ---');
+        expect(driverErrors, `Erros encontrados no painel do motorista:\n${driverErrors.join('\n')}`).toHaveLength(0);
     });
 });

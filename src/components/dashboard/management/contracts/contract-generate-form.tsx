@@ -28,7 +28,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
-import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
+import { useData, useDataCollection } from '@/hooks/use-data';
 import { useMemo, useEffect } from 'react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
@@ -76,9 +76,9 @@ interface ContractGenerateFormProps {
 
 export function ContractGenerateForm({ students, parents, templates, existingContracts, onFormSubmit }: ContractGenerateFormProps) {
   const { toast } = useToast();
-  const { addDoc } = useMockData();
-  const { data: schools } = useMockCollection('schools');
-  const { data: companyData } = useMockCollection('company_profile');
+  const { addDoc } = useData();
+  const { data: schools } = useDataCollection('schools');
+  const { data: companyData } = useDataCollection('company_profile');
   const company = companyData?.[0];
 
   const form = useForm<FormValues>({

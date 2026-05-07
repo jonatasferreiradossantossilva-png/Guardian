@@ -24,7 +24,7 @@ import {
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
 import { Switch } from '@/components/ui/switch';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 
 const formSchema = z.object({
   model: z.string().min(1, { message: 'O modelo é obrigatório.' }),
@@ -45,7 +45,7 @@ interface VehicleFormProps {
 
 export function VehicleForm({ vehicle, onFormSubmit }: VehicleFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
+  const { addDoc, updateDoc } = useData();
 
   const form = useForm<VehicleFormValues>({
     resolver: zodResolver(formSchema),

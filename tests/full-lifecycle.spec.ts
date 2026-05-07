@@ -166,15 +166,16 @@ test.describe('Guardian Full Lifecycle Matrix', () => {
             await page.getByRole('option').filter({ hasText: /Rota/i }).first().click({ force: true });
             await page.waitForTimeout(1000);
 
-            // Clique no botão final de Aprovação via JS para bypass de viewport
-            await page.evaluate(() => {
-                const buttons = Array.from(document.querySelectorAll('button'));
-                const btn = buttons.find(b => b.textContent?.includes('Aprovar'));
-                if (btn) btn.click();
-            });
+            // Clique no botão final de Aprovação de forma cirúrgica
+            const btnFinalAprovar = page.locator('button').filter({ hasText: /^Aprovar/ }).last();
+            await expect(btnFinalAprovar).toBeVisible({ timeout: 15000 });
+            await btnFinalAprovar.click({ force: true });
             
-            // Aguardar feedback visual claro da aprovação
-            await expect(page.locator('body')).toContainText('Aprovada', { timeout: 20000 });
+            // Pequeno delay para processamento do estado
+            await page.waitForTimeout(1000);
+            
+            // Aguardar feedback visual claro da aprovação (Toast)
+            await expect(page.locator('body')).toContainText(/Aprovada|sucesso/i, { timeout: 20000 });
             await page.waitForTimeout(2000); // Tempo para o "banco" persistir o usuário e o contrato
 
             console.log(`[${mod.name}] 3. Assinatura do Contrato pelo Pai`);

@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { PlusCircle, Trash2, Megaphone, Clock, AlertTriangle, Users, Car } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter, DialogClose } from '@/components/ui/dialog';
@@ -20,9 +20,9 @@ import { ptBR } from 'date-fns/locale';
 import { Announcement } from '@/types/mock-data';
 
 export default function AnnouncementsManagementPage() {
-  const { data: announcementsData, isLoading } = useMockCollection('announcements');
+  const { data: announcementsData, isLoading } = useDataCollection('announcements');
   const announcements = announcementsData as Announcement[];
-  const { addDoc, deleteDoc } = useMockData();
+  const { addDoc, deleteDoc } = useData();
   const { toast } = useToast();
 
   const [isFormOpen, setIsFormOpen] = useState(false);

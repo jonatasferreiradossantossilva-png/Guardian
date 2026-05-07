@@ -177,6 +177,20 @@ export const initialMockData: MockDB = {
             city: "Carapicuíba",
             state: "SP",
             zipCode: "06333-000"
+        },
+        {
+            id: "school-3",
+            name: "Colégio Amos",
+            cnpj: "11.222.333/0001-44",
+            active: true,
+            latitude: -23.5234,
+            longitude: -46.8345,
+            street: "Av. Inocêncio Seráfico",
+            number: "2000",
+            neighborhood: "Centro",
+            city: "Carapicuíba",
+            state: "SP",
+            zipCode: "06320-290"
         }
     ],
     school_knowledge_base: [

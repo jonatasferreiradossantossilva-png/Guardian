@@ -12,7 +12,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Loader2, UserX, ShieldCheck, Phone, CheckCircle, UserCheck, Heart } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
@@ -37,8 +37,8 @@ export function AuthorizedContactsModal({
   targetStatus = 'desembarcado',
 }: AuthorizedContactsModalProps) {
   const { data: allAuthorized, isLoading } =
-    useMockCollection('authorized_pickups');
-  const { updateDoc } = useMockData() as any;
+    useDataCollection('authorized_pickups');
+  const { updateDoc } = useData() as any;
   const { toast } = useToast();
   const [selectedPersonId, setSelectedPersonId] = useState<string | null>(null);
   const [isConfirming, setIsConfirming] = useState(false);

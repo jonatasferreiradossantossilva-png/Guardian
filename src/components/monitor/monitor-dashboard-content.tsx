@@ -29,7 +29,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
 import { useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
@@ -44,7 +44,7 @@ import { safeString, safeArray, safeInitials } from '@/lib/safe-render';
 
 export default function MonitorDashboardContent() {
   const router = useRouter();
-  const { updateDoc } = useMockData() as any;
+  const { updateDoc } = useData() as any;
   const { toast } = useToast();
   const [isMounted, setIsMounted] = useState(false);
   const [mockUserId, setMockUserId] = useState<string | null>(null);
@@ -55,7 +55,7 @@ export default function MonitorDashboardContent() {
   }, []);
 
   // Notificações em tempo real (Toast)
-  const { data: notifications } = useMockCollection('notifications', 
+  const { data: notifications } = useDataCollection('notifications', 
     mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined
   );
 
@@ -81,16 +81,16 @@ export default function MonitorDashboardContent() {
 
   // Perfil do Monitor
   const monitorFilter = useMemo(() => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined), [mockUserId]);
-  const { data: monitorProfiles, isLoading: isMonitorLoading } = useMockCollection('monitors', monitorFilter);
+  const { data: monitorProfiles, isLoading: isMonitorLoading } = useDataCollection('monitors', monitorFilter);
   const monitorProfile = useMemo(() => (monitorProfiles ? monitorProfiles[0] : null), [monitorProfiles]);
   
   // Rota ativa vinculada ao PERFIL do monitor
   const routeFilter = useMemo(() => (monitorProfile?.id ? [{ field: 'monitorId', op: '==', value: monitorProfile.id }] : []), [monitorProfile]);
-  const { data: routes, isLoading: isRouteLoading } = useMockCollection('routes', routeFilter);
+  const { data: routes, isLoading: isRouteLoading } = useDataCollection('routes', routeFilter);
   const activeRoute = useMemo(() => routes?.[0] || null, [routes]);
 
   // Alunos desta rota divididos por estágios lógicos
-  const { data: allStudents, isLoading: isStudentsLoading } = useMockCollection('students');
+  const { data: allStudents, isLoading: isStudentsLoading } = useDataCollection('students');
   const { routeStudents, waitingStudents, inTransitStudents, finishedStudents } = useMemo(() => {
     if (!activeRoute || !allStudents) return { routeStudents: [], waitingStudents: [], inTransitStudents: [], finishedStudents: [] };
     

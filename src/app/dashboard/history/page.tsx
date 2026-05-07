@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { format, parseISO } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { 
@@ -29,11 +29,11 @@ const safeFormat = (dateStr: string | undefined | null, fmt: string) => {
 };
 
 export default function DashboardHistoryPage() {
-    const { data: rawTrips, isLoading: loadingTrips } = useMockCollection('trip_history', []);
-    const { data: drivers } = useMockCollection('drivers', []);
-    const { data: users } = useMockCollection('users', []);
-    const { data: students } = useMockCollection('students', []);
-    const { data: schools } = useMockCollection('schools', []);
+    const { data: rawTrips, isLoading: loadingTrips } = useDataCollection('trip_history', []);
+    const { data: drivers } = useDataCollection('drivers', []);
+    const { data: users } = useDataCollection('users', []);
+    const { data: students } = useDataCollection('students', []);
+    const { data: schools } = useDataCollection('schools', []);
 
     const [selectedDriverId, setSelectedDriverId] = useState<string>('all');
     const [selectedTrip, setSelectedTrip] = useState<any | null>(null);

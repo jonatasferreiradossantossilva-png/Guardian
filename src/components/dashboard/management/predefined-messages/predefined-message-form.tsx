@@ -30,7 +30,7 @@ import {
 } from '@/components/ui/select';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect } from 'react';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 
 const formSchema = z.object({
   text: z.string().min(3, { message: 'A mensagem deve ter pelo menos 3 caracteres.' }),
@@ -46,7 +46,7 @@ interface PredefinedMessageFormProps {
 
 export function PredefinedMessageForm({ message, onFormSubmit }: PredefinedMessageFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
+  const { addDoc, updateDoc } = useData();
 
   const form = useForm<PredefinedMessageFormValues>({
     resolver: zodResolver(formSchema),

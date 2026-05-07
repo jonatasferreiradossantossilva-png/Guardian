@@ -6,7 +6,7 @@ import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Loader2, ArrowLeft, User, QrCode } from 'lucide-react';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import QRCode from 'qrcode';
 import Image from 'next/image';
 
@@ -24,10 +24,10 @@ export default function ParentQRCodePage() {
     setSelectedStudentId(lastSelectedId);
   }, []);
 
-  const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
+  const { data: parents } = useDataCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
   const parent = useMemo(() => parents?.[0], [parents]);
 
-  const { data: students, isLoading: areStudentsLoading } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
+  const { data: students, isLoading: areStudentsLoading } = useDataCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
   
   // Phase 2: Pick the selected student, or fallback to the first one
   const student = useMemo(() => {

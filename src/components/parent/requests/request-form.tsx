@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo } from 'react';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import {
   Select,
   SelectContent,
@@ -73,8 +73,8 @@ interface TripRequestFormProps {
 
 export function TripRequestForm({ request, studentId, schoolId: defaultSchoolId, parentUserId, onFormSubmit }: TripRequestFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
-  const { data: schools } = useMockCollection('schools');
+  const { addDoc, updateDoc } = useData();
+  const { data: schools } = useDataCollection('schools');
 
   const [isStartPickerOpen, setIsStartPickerOpen] = useState(false);
   const [isEndPickerOpen, setIsEndPickerOpen] = useState(false);

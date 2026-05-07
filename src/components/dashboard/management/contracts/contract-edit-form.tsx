@@ -23,7 +23,7 @@ import {
 } from '@/components/ui/dialog';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Edit, Sparkles } from 'lucide-react';
 
@@ -41,7 +41,7 @@ interface ContractEditFormProps {
 
 export function ContractEditForm({ contract, studentName, onFormSubmit }: ContractEditFormProps) {
   const { toast } = useToast();
-  const { updateDoc } = useMockData();
+  const { updateDoc } = useData();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

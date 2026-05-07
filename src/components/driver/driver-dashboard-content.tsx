@@ -43,7 +43,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
-import { useMockCollection, useMockData, useMockNestedDoc } from '@/hooks/use-mock-data';
+import { useDataCollection, useData, useDataNestedDoc } from '@/hooks/use-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -102,8 +102,8 @@ const formatStudentClassInfo = (student: Student) => {
 };
 
 export default function DriverDashboardContent() {
-  const { updateDoc, setIsSimulating, forceScenario, createNotification } = useMockData() as any;
-  const { data: allParents } = useMockCollection('parents');
+  const { updateDoc, setIsSimulating, forceScenario, createNotification } = useData() as any;
+  const { data: allParents } = useDataCollection('parents');
   const { updateLocation: syncTelemetry } = useTelemetry();
   const { toast } = useToast();
   
@@ -143,19 +143,19 @@ export default function DriverDashboardContent() {
   }, []);
 
   const driverFilter = useMemo(() => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined), [mockUserId]);
-  const { data: drivers, isLoading: areDriversLoading } = useMockCollection('drivers', driverFilter);
+  const { data: drivers, isLoading: areDriversLoading } = useDataCollection('drivers', driverFilter);
   const driverProfile = useMemo(() => (drivers && drivers.length > 0 ? drivers[0] : null), [drivers]);
   const driverId = driverProfile?.id;
-  const { data: driverLocation } = useMockNestedDoc(driverId ? `locations/${driverId}` : null);
+  const { data: driverLocation } = useDataNestedDoc(driverId ? `locations/${driverId}` : null);
 
-  const { data: routes, isLoading: isRouteLoading } = useMockCollection('routes', driverId ? [{ field: 'driverId', op: '==', value: driverId }] : []);
+  const { data: routes, isLoading: isRouteLoading } = useDataCollection('routes', driverId ? [{ field: 'driverId', op: '==', value: driverId }] : []);
   const route = useMemo(() => (driverProfile?.status !== 'inativo' && activeRouteId) ? (routes?.find(r => r.id === activeRouteId) || null) : (routes?.find(r => r.id === selectedRouteIdForStart) || null), [routes, driverProfile, activeRouteId, selectedRouteIdForStart]);
-  const { data: allStudents, isLoading: areStudentsLoading } = useMockCollection('students') as { data: Student[] | undefined, isLoading: boolean };
-  const { data: schools, isLoading: areSchoolsLoading } = useMockCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
+  const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
+  const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
   
-  const { data: allDrivers } = useMockCollection('drivers');
-  const { data: monitors } = useMockCollection('users', [{ field: 'profile', op: '==', value: 'monitor' }]);
-  const { data: announcements } = useMockCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'drivers'] }]);
+  const { data: allDrivers } = useDataCollection('drivers');
+  const { data: monitors } = useDataCollection('users', [{ field: 'profile', op: '==', value: 'monitor' }]);
+  const { data: announcements } = useDataCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'drivers'] }]);
   const latestAnnouncement = useMemo(() => {
     const list = safeArray(announcements);
     if (list.length === 0) return null;

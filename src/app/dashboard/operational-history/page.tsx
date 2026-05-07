@@ -5,7 +5,7 @@ import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Sparkles, Siren, Clock, ArrowLeft, Wrench, ShieldCheck, Loader2 } from 'lucide-react';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
@@ -24,7 +24,7 @@ type FeedItem = {
 };
 
 export default function OperationalHistoryPage() {
-    const { data: incidents, isLoading } = useMockCollection('incidents');
+    const { data: incidents, isLoading } = useDataCollection('incidents');
 
     const feedItems = useMemo<FeedItem[]>(() => {
         const items: FeedItem[] = [];

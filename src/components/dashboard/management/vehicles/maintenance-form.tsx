@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import { useToast } from '@/hooks/use-toast';
-import { useMockData } from '@/hooks/use-mock-data';
+import { useData } from '@/hooks/use-data';
 import { Wrench, DollarSign } from 'lucide-react';
 
 const formSchema = z.object({
@@ -43,7 +43,7 @@ interface MaintenanceFormProps {
 
 export function MaintenanceForm({ vehicle, onFormSubmit }: MaintenanceFormProps) {
   const { toast } = useToast();
-  const { updateDoc, addDoc } = useMockData();
+  const { updateDoc, addDoc } = useData();
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),

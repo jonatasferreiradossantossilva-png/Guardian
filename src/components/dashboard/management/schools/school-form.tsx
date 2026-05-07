@@ -24,7 +24,7 @@ import {
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
 import { useEffect, useState, useMemo } from 'react';
-import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
+import { useData, useDataCollection } from '@/hooks/use-data';
 import { Loader2, Search, Sparkles, MapPin, Globe, School, Clock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
 import { geocodeAddress } from '@/ai/flows/geocode-address';
@@ -67,8 +67,8 @@ const normalize = (str: string) =>
 
 export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useMockData();
-  const { data: knowledgeBase } = useMockCollection('school_knowledge_base');
+  const { addDoc, updateDoc } = useData();
+  const { data: knowledgeBase } = useDataCollection('school_knowledge_base');
   
   const [isSearchingGoogle, setIsSearchingGoogle] = useState(false);
   const [isSaving, setIsSaving] = useState(false);

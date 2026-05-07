@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState, useEffect, useRef, useCallback, Suspense } from 'react';
+import { useState, useEffect, useRef, useCallback, Suspense, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { 
@@ -33,7 +33,7 @@ import { useToast } from '@/hooks/use-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useMockData, useMockCollection } from '@/hooks/use-mock-data';
+import { useData, useDataCollection } from '@/hooks/use-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Badge } from '@/components/ui/badge';
@@ -89,14 +89,19 @@ function RegisterContent() {
   }, []);
 
   const registrationType = searchParams.get('type') || 'mensalista';
+  const routeId = searchParams.get('routeId');
+
+  // Corrigido: Só busca se houver routeId, evitando preenchimento acidental no teste de ciclo de vida
+  const { data: routes } = useDataCollection('routes', routeId ? [{ field: 'id', op: '==', value: routeId }] : [{ field: 'id', op: '==', value: 'force-none' }]);
+  const routeData = useMemo(() => (routes && routes.length > 0 ? routes[0] : null), [routes]);
 
   const [step, setStep] = useState<Step>('welcome');
   // ... resto do estado ...
   const [isProcessing, setIsProcessing] = useState(false);
   const [isFetchingCep, setIsFetchingCep] = useState(false);
   const { toast } = useToast();
-  const { addDoc } = useMockData();
-  const { data: schools } = useMockCollection('schools');
+  const { addDoc } = useData();
+  const { data: schools } = useDataCollection('schools');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Parent Data
@@ -142,6 +147,21 @@ function RegisterContent() {
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
   }, [step, isMounted]);
+
+  // Efeito para pré-preencher dados da rota se houver routeId
+  useEffect(() => {
+    if (routeData) {
+        setShift(routeData.shift || 'Manhã');
+        setStudentSerie(routeData.serie || '');
+        // Tenta encontrar o ID da escola pelo nome se não tiver o schoolId na rota
+        if (routeData.schoolId) {
+            setSelectedSchoolId(routeData.schoolId);
+        } else if (routeData.schoolName && schools) {
+            const school = schools.find((s: any) => s.name === routeData.schoolName);
+            if (school) setSelectedSchoolId(school.id);
+        }
+    }
+  }, [routeData, schools]);
 
   const isFormValid = () => {
       return (
@@ -256,12 +276,13 @@ function RegisterContent() {
         return;
     }
 
-    (addDoc as any)('pending_registrations', {
+    const registrationData = {
         parentName,
         email,
         phone,
-        studentName,
+        name: studentName,
         schoolId: selectedSchoolId,
+        requestedSchool: routes?.find(r => r.id === routeId)?.name || "Escola Solicitada",
         studentSerie,
         studentTurma,
         shift,
@@ -270,13 +291,25 @@ function RegisterContent() {
         preferredPaymentDay: Number(preferredPaymentDay),
         medicalConditions,
         medicalNote,
-        status: 'pending_approval',
+        status: routeId ? 'aguardando_aprovacao' : 'pending_approval',
         createdAt: new Date().toISOString(),
         address: { zipCode, street, number, complement, neighborhood, city, state, latitude, longitude },
         documentData: { cpf: parentCpf, rg: parentRg, birthDate: parentBirthDate },
-        pin, // Novo campo de acesso
-        registrationType: registrationType // Identificador mestre para o gestor
-    });
+        pin, 
+        registrationType: routeId ? 'autonomous' : registrationType,
+        pendingRouteId: routeId
+    };
+
+    // Se for convite de motorista (autônomo), salvamos direto na fila do motorista
+    if (routeId) {
+        (addDoc as any)('students', {
+            ...registrationData,
+            id: `student-pending-${Date.now()}`,
+            active: false
+        });
+    } else {
+        (addDoc as any)('pending_registrations', registrationData);
+    }
 
     setStep('success');
   };
@@ -312,7 +345,7 @@ function RegisterContent() {
                 <UserPlus className="text-primary h-8 w-8" />
               </div>
               <CardTitle className="text-2xl font-bold">
-                {!isMounted ? 'Carregando...' : (registrationType === 'avulso' ? 'Cadastro de Viagem Avulsa' : 'Cadastro Guardian')}
+                {!isMounted ? 'Carregando...' : (routeId ? 'Cadastro de Aluno' : (registrationType === 'avulso' ? 'Cadastro de Viagem Avulsa' : 'Cadastro Guardian'))}
               </CardTitle>
               <CardDescription>
                 {!isMounted ? 'Preparando formulário seguro...' : (registrationType === 'avulso' 
@@ -605,7 +638,7 @@ function RegisterContent() {
                             <div className="space-y-2">
                                 <Label>Escola de Destino *</Label>
                                 <Select onValueChange={setSelectedSchoolId} value={selectedSchoolId}>
-                                    <SelectTrigger><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
+                                    <SelectTrigger data-testid="select-school"><SelectValue placeholder="Selecione a escola..." /></SelectTrigger>
                                     <SelectContent>
                                         {schools?.map((s: any) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
                                     </SelectContent>
@@ -624,7 +657,7 @@ function RegisterContent() {
                                 <div className="space-y-2">
                                     <Label>Turno Operacional *</Label>
                                     <Select onValueChange={setShift} value={shift}>
-                                        <SelectTrigger><SelectValue placeholder="Selecione..." /></SelectTrigger>
+                                        <SelectTrigger data-testid="select-shift"><SelectValue placeholder="Selecione..." /></SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="Manhã">Manhã</SelectItem>
                                             <SelectItem value="Tarde">Tarde</SelectItem>
@@ -643,7 +676,7 @@ function RegisterContent() {
                         <div className="space-y-4">
                             <Label>O que você deseja contratar? *</Label>
                             <Select onValueChange={setServiceModality} value={serviceModality}>
-                                <SelectTrigger className="h-12 border-primary/20">
+                                <SelectTrigger data-testid="select-modality" className="h-12 border-primary/20">
                                     <SelectValue />
                                 </SelectTrigger>
                                 <SelectContent>

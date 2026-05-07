@@ -38,7 +38,7 @@ import {
   TooltipContent,
 } from "@/components/ui/tooltip";
 import { useToast } from "@/hooks/use-toast";
-import { useMockCollection, useMockData } from "@/hooks/use-mock-data";
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SafeTableRow, SafeRow } from "@/components/shared/safe-table";
@@ -76,16 +76,16 @@ const typeMap = {
 
 export function TripRequestsList({ initialRequests, initialStudents, initialParents, initialSchools }: TripRequestsListProps) {
   const { toast } = useToast();
-  const { updateDoc, addDoc, db } = useMockData();
+  const { updateDoc, addDoc, db } = useData();
   const allRoutes = db?.routes || [];
 
   const [priceDialogRequest, setPriceDialogRequest] = useState<TripRequest | null>(null);
   const [price, setPrice] = useState<string>("");
 
-  const { data: liveRequests, isLoading: areRequestsLoading } = useMockCollection('trip_requests', []);
-  const { data: liveStudents, isLoading: areStudentsLoading } = useMockCollection('students', []);
-  const { data: liveParents, isLoading: areParentsLoading } = useMockCollection('parents', []);
-  const { data: liveSchools, isLoading: areSchoolsLoading } = useMockCollection('schools', []);
+  const { data: liveRequests, isLoading: areRequestsLoading } = useDataCollection('trip_requests', []);
+  const { data: liveStudents, isLoading: areStudentsLoading } = useDataCollection('students', []);
+  const { data: liveParents, isLoading: areParentsLoading } = useDataCollection('parents', []);
+  const { data: liveSchools, isLoading: areSchoolsLoading } = useDataCollection('schools', []);
 
   const requests = liveRequests ?? initialRequests;
   const students = liveStudents ?? initialStudents;

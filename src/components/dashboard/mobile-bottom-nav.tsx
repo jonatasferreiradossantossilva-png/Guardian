@@ -3,10 +3,12 @@
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutGrid, DollarSign, MapPin, Menu, Megaphone, Milestone, Bus } from 'lucide-react';
+import { LayoutGrid, DollarSign, MapPin, Menu, Megaphone, Milestone, Bus, CircleDashed, CarFront, Sparkles } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useSidebar } from '@/components/ui/sidebar';
+import { useDataCollection } from '@/hooks/use-data';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useMemo } from 'react';
 
 /**
  * MobileBottomNav - Inteligente e Adaptativa.
@@ -40,6 +42,19 @@ export const MobileBottomNav = React.memo(() => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [pathname]);
 
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrentUserId(sessionStorage.getItem('mockUserId'));
+  }, []);
+
+  // Detectar se é motorista para habilitar o atalho autônomo
+  const { data: drivers } = useDataCollection('drivers', []);
+  const isDriver = useMemo(() => {
+    if (!currentUserId || !drivers) return false;
+    return drivers.some((d: any) => d.userId === currentUserId);
+  }, [drivers, currentUserId]);
+
   // Itens dinâmicos baseados na rota atual
   const navItems = isParent 
     ? [
@@ -49,7 +64,10 @@ export const MobileBottomNav = React.memo(() => {
       ]
     : [
         { href: '/dashboard', label: 'Painel', icon: LayoutGrid },
-        { href: '/dashboard/management/routes', label: 'Frotas', icon: Bus },
+        // Se for autônomo, trocamos "Frotas" por "Minha Van"
+        isDriver 
+            ? { href: '/driver/route-plan', label: 'Minha Van', icon: CarFront, isSpecial: true }
+            : { href: '/dashboard/management/routes', label: 'Frotas', icon: Bus },
         { href: '/dashboard/financial', label: 'Financeiro', icon: DollarSign },
       ];
 
@@ -71,18 +89,26 @@ export const MobileBottomNav = React.memo(() => {
                 href={item.href}
                 className={cn(
                   "flex flex-col items-center gap-1.5 p-2 rounded-2xl transition-all duration-300 flex-1 relative",
-                  isActive ? "text-primary" : "text-zinc-500 hover:text-zinc-300"
+                  isActive ? "text-primary" : "text-zinc-500 hover:text-zinc-300",
+                  (item as any).isSpecial && "text-amber-400"
                 )}
               >
                 <div className={cn(
                   "p-2 rounded-xl transition-all duration-300",
-                  isActive ? "bg-primary/10" : "bg-transparent"
+                  isActive ? "bg-primary/10" : "bg-transparent",
+                  (item as any).isSpecial && !isActive && "bg-amber-400/5"
                 )}>
-                    <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px] scale-110")} />
+                    <item.icon className={cn("h-5 w-5", isActive && "stroke-[2.5px] scale-110", (item as any).isSpecial && "text-amber-400")} />
+                    {(item as any).isSpecial && (
+                        <div className="absolute top-1 right-1">
+                            <Sparkles className="h-2 w-2 text-amber-300 animate-pulse" />
+                        </div>
+                    )}
                 </div>
                 <span className={cn(
                     "text-[9px] font-black uppercase tracking-widest leading-none", 
-                    isActive ? "text-primary" : "text-zinc-500"
+                    isActive ? "text-primary" : "text-zinc-500",
+                    (item as any).isSpecial && "text-amber-400"
                 )}>
                     {item.label}
                 </span>

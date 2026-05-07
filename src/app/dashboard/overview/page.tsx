@@ -6,12 +6,13 @@ import { OverviewCards } from "@/components/dashboard/overview-cards";
 import { InvoicesStatusChart } from "@/components/dashboard/invoices-status-chart";
 import { ExpensesCategoryChart } from "@/components/dashboard/expenses-category-chart";
 import { MonthlyRevenueChart } from "@/components/dashboard/monthly-revenue-chart";
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Button } from '@/components/ui/button';
 import { ShieldCheck, ShieldAlert, Loader2, RefreshCw } from 'lucide-react';
 import { validateGeoapifyApi, type ValidateApiOutput } from '@/ai/flows/validate-api-keys';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { AutonomousShortcut } from '@/components/dashboard/autonomous-shortcut';
 
 const monthNames = [
   "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
@@ -19,8 +20,8 @@ const monthNames = [
 ];
 
 export default function DashboardOverviewPage() {
-  const { data: allInvoices } = useMockCollection('invoices', undefined);
-  const { data: allExpenses } = useMockCollection('expenses', undefined);
+  const { data: allInvoices } = useDataCollection('invoices', undefined);
+  const { data: allExpenses } = useDataCollection('expenses', undefined);
 
   const [selectedYear, setSelectedYear] = useState<string>('latest');
   const [selectedMonth, setSelectedMonth] = useState<string>('all');
@@ -96,6 +97,8 @@ export default function DashboardOverviewPage() {
             </Select>
         </div>
       </div>
+
+      <AutonomousShortcut />
 
       <OverviewCards filters={filters} />
 

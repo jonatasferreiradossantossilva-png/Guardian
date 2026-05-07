@@ -24,7 +24,8 @@ import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { maskCPF, unmask } from "@/lib/masks";
-import { useMockData } from "@/hooks/use-mock-data";
+import { useAuthProvider } from "@/hooks/use-auth-provider";
+import { useData, isFirestoreMode } from '@/hooks/use-data';
 
 const formSchema = z.object({
   identifier: z.string().min(1, { message: "Digite seu CPF ou E-mail." }),
@@ -44,10 +45,10 @@ const profileToMockIdMap = {
 export function LoginForm() {
   const router = useRouter();
   const { toast } = useToast();
-  const [isLoading, setIsLoading] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
   const auth = useAuth();
-  const { db, forceScenario, clearAllAndReset } = useMockData();
+  const { forceScenario } = useData();
+  const { login, isLoading } = useAuthProvider();
 
   useEffect(() => {
     setIsMounted(true);
@@ -62,56 +63,35 @@ export function LoginForm() {
     },
   });
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
-    setIsLoading(true);
+  async function onSubmit(values: z.infer<typeof formSchema>) {
+    const res = await login(values.identifier, values.password, values.profile);
 
-    const input = values.identifier.trim();
-    const isEmail = input.includes('@');
-    const cleanId = isEmail ? input.toLowerCase() : unmask(input);
-
-    const user = db.users.find(u => {
-      const matchId = isEmail ? u.email?.toLowerCase() === cleanId : unmask(u.cpf || '') === cleanId;
-      const matchPass = u.pin === values.password || u.password === values.password;
-      const matchProfile = u.profile === values.profile;
-      return matchId && matchPass && matchProfile;
-    });
-
-    if (!user) {
-      setIsLoading(false);
+    if (res && res.success) {
+      const displayName = isFirestoreMode() 
+        ? "Usuário" 
+        : (res.user?.name || "Usuário");
+      
       toast({
-        title: "Erro de acesso",
-        description: "Credenciais inválidas ou perfil incorreto.",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    sessionStorage.setItem('mockUserId', user.id);
-
-    if (auth) {
-      initiateAnonymousSignIn(auth);
-    } 
-
-    toast({
-        title: `Bem-vindo(a), ${user.name}!`,
+        title: `Bem-vindo(a), ${displayName}!`,
         description: `Redirecionando para o painel de ${values.profile}.`
-    });
+      });
 
-    switch (values.profile) {
-      case "gestor":
-        router.push("/dashboard");
-        break;
-      case "motorista":
-        router.push("/driver/route-plan");
-        break;
-      case "pai":
-        router.push("/parent/tracking");
-        break;
-      case "monitor":
-        router.push("/monitor");
-        break;
-      default:
-        router.push("/dashboard");
+      switch (values.profile) {
+        case "gestor":
+          router.push("/dashboard");
+          break;
+        case "motorista":
+          router.push("/driver/route-plan");
+          break;
+        case "pai":
+          router.push("/parent/tracking");
+          break;
+        case "monitor":
+          router.push("/monitor");
+          break;
+        default:
+          router.push("/dashboard");
+      }
     }
   }
 

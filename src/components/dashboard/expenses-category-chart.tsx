@@ -2,7 +2,7 @@
 
 import { useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent, ChartConfig } from '@/components/ui/chart';
 import { Loader2 } from 'lucide-react';
@@ -23,7 +23,7 @@ const categoryColors: Record<string, string> = {
 };
 
 export function ExpensesCategoryChart({ filters }: ExpensesCategoryChartProps) {
-  const { data: allExpenses, isLoading } = useMockCollection('expenses', undefined);
+  const { data: allExpenses, isLoading } = useDataCollection('expenses', undefined);
 
   const chartData = useMemo(() => {
     if (!allExpenses) return [];

@@ -22,7 +22,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogTrigger, DialogContent } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { TripRequestForm } from '@/components/parent/requests/request-form';
 import { Badge } from '@/components/ui/badge';
 
@@ -66,7 +66,7 @@ export default function TripRequestsPage() {
   const { toast } = useToast();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null);
-  const { updateDoc, addDoc } = useMockData();
+  const { updateDoc, addDoc } = useData();
 
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [selectedRequest, setSelectedRequest] = useState<TripRequest | null>(null);
@@ -85,10 +85,10 @@ export default function TripRequestsPage() {
     setSelectedStudentId(lastSelectedId);
   }, []);
   
-  const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
+  const { data: parents } = useDataCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
   const parent = useMemo(() => parents?.[0], [parents]);
   
-  const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined) as { data: any[] | undefined };
+  const { data: students } = useDataCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined) as { data: any[] | undefined };
   
   const student = useMemo(() => {
       if (!students || students.length === 0) return null;
@@ -96,7 +96,7 @@ export default function TripRequestsPage() {
       return students.find((s: any) => s.id === selectedStudentId) || students[0];
   }, [students, selectedStudentId]);
 
-  const { data: tripRequests, isLoading } = useMockCollection('trip_requests', student ? [
+  const { data: tripRequests, isLoading } = useDataCollection('trip_requests', student ? [
     { field: 'studentId', op: '==', value: student.id }
   ] : undefined) as { data: TripRequest[] | undefined, isLoading: boolean };
   

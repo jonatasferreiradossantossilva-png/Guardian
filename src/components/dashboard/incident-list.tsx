@@ -7,7 +7,7 @@ import { cn } from "@/lib/utils";
 import { Bot, Clock, Loader2, MapPin } from "lucide-react";
 import { useState, useEffect } from "react";
 import { AiSummaryModal } from "./ai-summary-modal";
-import { useMockCollection } from '@/hooks/use-mock-data';
+import { useDataCollection } from '@/hooks/use-data';
 import { useToast } from "@/hooks/use-toast";
 import { safeString, safeArray } from '@/lib/safe-render';
 import { SafeRow } from '@/components/shared/safe-table';
@@ -81,7 +81,7 @@ const IncidentListItem = ({ incident, onSummarizeClick, onLocateClick }: { incid
 
 
 export function IncidentList({ onLocateIncident }: { onLocateIncident: (coords: google.maps.LatLngLiteral) => void }) {
-    const { data: incidents, isLoading } = useMockCollection('incidents');
+    const { data: incidents, isLoading } = useDataCollection('incidents');
     const [selectedIncident, setSelectedIncident] = useState<Incident | null>(null);
     const { toast } = useToast();
 

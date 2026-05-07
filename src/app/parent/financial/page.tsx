@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { DollarSign, ArrowLeft, QrCode, CreditCard, Filter, User, Wallet, Sparkles, TrendingUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { useMockCollection, useMockData } from '@/hooks/use-mock-data';
+import { useDataCollection, useData } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
 import {
   Table,
@@ -50,7 +50,7 @@ const statusTextMap: Record<Invoice['status'], string> = {
 
 export default function ParentFinancialPage() {
   const { toast } = useToast();
-  const { updateDoc } = useMockData();
+  const { updateDoc } = useData();
   const [mockUserId, setMockUserId] = useState<string | null>(null);
   const [selectedStudentId, setSelectedStudentId] = useState<string | 'all'>('all');
   
@@ -66,10 +66,10 @@ export default function ParentFinancialPage() {
     if (lastSelectedId) setSelectedStudentId(lastSelectedId);
   }, []);
 
-  const { data: parents } = useMockCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
+  const { data: parents } = useDataCollection('parents', mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined);
   const parent = useMemo(() => parents?.[0], [parents]);
 
-  const { data: students } = useMockCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
+  const { data: students } = useDataCollection('students', parent ? [{ field: 'parentId', op: '==', value: parent.id }] : undefined);
   const studentsMap = useMemo(() => {
     try {
         return new Map(students?.map(s => [s.id, s.name]) || []);
@@ -78,7 +78,7 @@ export default function ParentFinancialPage() {
     }
   }, [students]);
 
-  const { data: invoices, isLoading } = useMockCollection<Invoice>('invoices', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
+  const { data: invoices, isLoading } = useDataCollection<Invoice>('invoices', mockUserId ? [{ field: 'parentUserId', op: '==', value: mockUserId }] : undefined);
 
   const filteredInvoices = useMemo(() => {
       if (!invoices) return [];
