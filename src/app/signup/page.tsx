@@ -42,7 +42,7 @@ const formSchema = z.object({
   email: z.string().email("E-mail inválido"),
   phone: z.string().min(10, "Telefone inválido"),
   cpf: z.string().min(11, "CPF inválido"),
-  pin: z.string().min(4, "O PIN deve ter entre 4 e 6 dígitos").max(6),
+  pin: z.string().length(6, "O PIN deve ter exatamente 6 dígitos"),
   type: z.enum(["empresa", "autonomo"]),
 });
 
