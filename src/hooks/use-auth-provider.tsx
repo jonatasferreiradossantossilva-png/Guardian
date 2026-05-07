@@ -38,10 +38,21 @@ export function useAuthProvider() {
           }
 
           let email = '';
+          let fetchedProfile = '';
+          
           if (isEmail) {
             email = cleanId;
+            const usersRef = collection(firestore, 'users');
+            const qUser = query(usersRef, where('email', '==', email));
+            const userSnapshot = await getDocs(qUser);
+            
+            if (userSnapshot.empty) {
+              throw new Error('E-mail não cadastrado.');
+            }
+            fetchedProfile = userSnapshot.docs[0].data().profile;
+            
           } else {
-            // It's a CPF, look up the email in the Firestore users collection
+            // It's a CPF, look up the email and profile in the Firestore users collection
             const usersRef = collection(firestore, 'users');
             // Check both masked and unmasked CPF
             const qUnmasked = query(usersRef, where('cpf', '==', cleanId));
@@ -59,10 +70,8 @@ export function useAuthProvider() {
             }
 
             const userDoc = querySnapshot.docs[0].data();
-            if (userDoc.profile !== profile) {
-              throw new Error('Perfil incorreto para este usuário.');
-            }
             email = userDoc.email;
+            fetchedProfile = userDoc.profile;
           }
 
           // Sign in using Firebase Auth
@@ -82,7 +91,7 @@ export function useAuthProvider() {
           }
 
           setIsLoading(false);
-          return { success: true, email };
+          return { success: true, email, profile: fetchedProfile };
         } catch (error: any) {
           setIsLoading(false);
           let friendlyMessage = 'Erro ao realizar login. Verifique suas credenciais.';

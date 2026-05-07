@@ -71,12 +71,14 @@ export function LoginForm() {
         ? "Usuário" 
         : (res.user?.name || "Usuário");
       
+      const activeProfile = res.profile || res.user?.profile || values.profile;
+      
       toast({
         title: `Bem-vindo(a), ${displayName}!`,
-        description: `Redirecionando para o painel de ${values.profile}.`
+        description: `Redirecionando para o painel de ${activeProfile}.`
       });
 
-      switch (values.profile) {
+      switch (activeProfile) {
         case "gestor":
           router.push("/dashboard");
           break;
@@ -134,73 +136,75 @@ export function LoginForm() {
       <CardContent>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-             <FormField
-              control={form.control}
-              name="profile"
-              render={({ field }) => (
-                <FormItem className="space-y-3">
-                  <FormLabel className="text-base font-semibold">Selecione seu perfil:</FormLabel>
-                  <RadioGroup
-                    onValueChange={field.onChange}
-                    value={field.value}
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-2"
-                   >
-                    <div 
-                      className={cn(
-                        "flex items-center space-x-2 rounded-md border p-2 transition-colors",
-                        field.value === "gestor" ? "border-primary bg-primary/5 shadow-sm" : "border-border"
-                      )}
-                    >
-                      <RadioGroupItem value="gestor" id="gestor" />
-                      <Label htmlFor="gestor" className="font-medium flex items-center gap-2 cursor-pointer flex-1 text-sm py-1">
-                        <Shield className="h-4 w-4 shrink-0 text-primary"/> 
-                        <span>Gestor</span>
-                      </Label>
-                    </div>
+             {!isFirestoreMode() && (
+               <FormField
+                control={form.control}
+                name="profile"
+                render={({ field }) => (
+                  <FormItem className="space-y-3 mb-4">
+                    <FormLabel className="text-base font-semibold">Selecione seu perfil (Modo Simulação):</FormLabel>
+                    <RadioGroup
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      className="grid grid-cols-1 sm:grid-cols-2 gap-2"
+                     >
+                      <div 
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md border p-2 transition-colors",
+                          field.value === "gestor" ? "border-primary bg-primary/5 shadow-sm" : "border-border"
+                        )}
+                      >
+                        <RadioGroupItem value="gestor" id="gestor" />
+                        <Label htmlFor="gestor" className="font-medium flex items-center gap-2 cursor-pointer flex-1 text-sm py-1">
+                          <Shield className="h-4 w-4 shrink-0 text-primary"/> 
+                          <span>Gestor</span>
+                        </Label>
+                      </div>
 
-                    <div 
-                      className={cn(
-                        "flex items-center space-x-2 rounded-md border p-2 transition-colors",
-                        field.value === "motorista" ? "border-primary bg-primary/5 shadow-sm" : "border-border"
-                      )}
-                    >
-                      <RadioGroupItem value="motorista" id="motorista" />
-                      <Label htmlFor="motorista" className="font-medium flex items-center gap-2 cursor-pointer flex-1 text-sm py-1">
-                        <Car className="h-4 w-4 shrink-0 text-primary"/> 
-                        <span className="truncate">Motorista</span>
-                      </Label>
-                    </div>
+                      <div 
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md border p-2 transition-colors",
+                          field.value === "motorista" ? "border-primary bg-primary/5 shadow-sm" : "border-border"
+                        )}
+                      >
+                        <RadioGroupItem value="motorista" id="motorista" />
+                        <Label htmlFor="motorista" className="font-medium flex items-center gap-2 cursor-pointer flex-1 text-sm py-1">
+                          <Car className="h-4 w-4 shrink-0 text-primary"/> 
+                          <span className="truncate">Motorista</span>
+                        </Label>
+                      </div>
 
-                    <div 
-                      className={cn(
-                        "flex items-center space-x-2 rounded-md border p-2 transition-colors",
-                        field.value === "pai" ? "border-primary bg-primary/5 shadow-sm" : "border-border"
-                      )}
-                    >
-                      <RadioGroupItem value="pai" id="pai" />
-                      <Label htmlFor="pai" className="font-medium flex items-center gap-2 cursor-pointer flex-1 text-sm py-1">
-                        <Users className="h-4 w-4 shrink-0 text-primary"/> 
-                        <span>Pais</span>
-                      </Label>
-                    </div>
+                      <div 
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md border p-2 transition-colors",
+                          field.value === "pai" ? "border-primary bg-primary/5 shadow-sm" : "border-border"
+                        )}
+                      >
+                        <RadioGroupItem value="pai" id="pai" />
+                        <Label htmlFor="pai" className="font-medium flex items-center gap-2 cursor-pointer flex-1 text-sm py-1">
+                          <Users className="h-4 w-4 shrink-0 text-primary"/> 
+                          <span>Pais</span>
+                        </Label>
+                      </div>
 
-                    <div 
-                      className={cn(
-                        "flex items-center space-x-2 rounded-md border p-2 transition-colors",
-                        field.value === "monitor" ? "border-primary bg-primary/5 shadow-sm" : "border-border"
-                      )}
-                    >
-                      <RadioGroupItem value="monitor" id="monitor" />
-                      <Label htmlFor="monitor" className="font-medium flex items-center gap-2 cursor-pointer flex-1 text-sm py-1">
-                         <ClipboardCheck className="h-4 w-4 shrink-0 text-primary"/> 
-                         <span className="truncate">Monitor</span>
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+                      <div 
+                        className={cn(
+                          "flex items-center space-x-2 rounded-md border p-2 transition-colors",
+                          field.value === "monitor" ? "border-primary bg-primary/5 shadow-sm" : "border-border"
+                        )}
+                      >
+                        <RadioGroupItem value="monitor" id="monitor" />
+                        <Label htmlFor="monitor" className="font-medium flex items-center gap-2 cursor-pointer flex-1 text-sm py-1">
+                           <ClipboardCheck className="h-4 w-4 shrink-0 text-primary"/> 
+                           <span className="truncate">Monitor</span>
+                        </Label>
+                      </div>
+                    </RadioGroup>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+             )}
 
             <div className="space-y-4 pt-2">
               <FormField
