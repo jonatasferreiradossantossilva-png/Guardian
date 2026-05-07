@@ -208,9 +208,9 @@ service cloud.firestore {
      * @principle Secures role management by restricting modifications to existing admins and preventing discovery.
      */
     match /roles_admin/{userId} {
-      allow get: if isAdmin();
+      allow get: if isAdmin() || isOwner(userId);
       allow list: if false;
-      allow create: if isAdmin();
+      allow create: if isAdmin() || isOwner(userId);
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
     }
@@ -222,7 +222,7 @@ service cloud.firestore {
     match /roles_driver/{userId} {
       allow get: if isAdmin() || isOwner(userId);
       allow list: if false;
-      allow create: if isAdmin();
+      allow create: if isAdmin() || isOwner(userId);
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
     }
@@ -234,7 +234,7 @@ service cloud.firestore {
     match /roles_monitor/{userId} {
       allow get: if isAdmin() || isOwner(userId);
       allow list: if false;
-      allow create: if isAdmin();
+      allow create: if isAdmin() || isOwner(userId);
       allow update: if isAdmin() && resource != null;
       allow delete: if isAdmin() && resource != null;
     }

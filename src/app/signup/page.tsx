@@ -32,10 +32,17 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter }
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { useData, isFirestoreMode } from '@/hooks/use-data';
+import { useData, useDataCollection, isFirestoreMode } from '@/hooks/use-data';
 import { useAuthProvider } from "@/hooks/use-auth-provider";
 import { maskCPF, maskPhone, unmask } from "@/lib/masks";
 import { cn } from "@/lib/utils";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 const formSchema = z.object({
   name: z.string().min(3, "Nome muito curto"),
@@ -56,6 +63,7 @@ export default function SignupPage() {
   const [vanCapacity, setVanCapacity] = useState("15");
   const [mainSchool, setMainSchool] = useState("");
   const { addDoc } = useData();
+  const { data: schools } = useDataCollection('schools');
   const { signUp } = useAuthProvider();
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -91,12 +99,13 @@ export default function SignupPage() {
       const userId = res.userId;
       
       const firstName = values.name.split(' ')[0];
-      setCompanyName(`Transportes ${firstName}`);
-      setRouteName(`Rota Colégio - ${firstName}`);
-
       if (values.type === 'autonomo') {
+        setCompanyName(`Van do ${firstName}`);
+        setRouteName(`Rota Colégio - ${firstName}`);
         setStep("activation");
       } else {
+        setCompanyName(`Transportes ${firstName}`);
+        setRouteName(`Rota Colégio - ${firstName}`);
         setStep("success");
       }
     } catch (error) {
@@ -286,15 +295,17 @@ export default function SignupPage() {
              </CardHeader>
              <CardContent className="space-y-6">
                 <div className="space-y-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="companyName">Nome da sua Transportadora</Label>
-                    <Input 
-                      id="companyName" 
-                      value={companyName} 
-                      onChange={(e) => setCompanyName(e.target.value)}
-                      placeholder="Ex: Van do Tio Carlão"
-                    />
-                  </div>
+                  {form.watch("type") !== "autonomo" && (
+                    <div className="space-y-2">
+                      <Label htmlFor="companyName">Nome da sua Transportadora</Label>
+                      <Input 
+                        id="companyName" 
+                        value={companyName} 
+                        onChange={(e) => setCompanyName(e.target.value)}
+                        placeholder="Ex: Van do Tio Carlão"
+                      />
+                    </div>
+                  )}
                   <div className="space-y-2">
                     <Label htmlFor="routeName">Nome da sua Rota Principal</Label>
                     <Input 
@@ -318,20 +329,36 @@ export default function SignupPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="mainSchool">Escola Principal</Label>
-                      <Input 
-                        id="mainSchool" 
-                        value={mainSchool} 
-                        onChange={(e) => setMainSchool(e.target.value)}
-                        placeholder="Ex: Colégio Amos"
-                      />
+                      <Label htmlFor="mainSchool">Escola Principal (Base INEP)</Label>
+                      <Select value={mainSchool} onValueChange={setMainSchool}>
+                        <SelectTrigger id="mainSchool" className="h-10 bg-background">
+                          <SelectValue placeholder="Selecione a escola..." />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {schools && schools.length > 0 ? (
+                            schools.map((school: any) => (
+                              <SelectItem key={school.id || school.name} value={school.name}>
+                                {school.name}
+                              </SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="Carregando..." disabled>
+                              Carregando escolas...
+                            </SelectItem>
+                          )}
+                        </SelectContent>
+                      </Select>
                     </div>
                   </div>
                 </div>
 
                 <div className="p-4 bg-primary/5 rounded-xl border border-dashed text-[11px] leading-snug flex items-center gap-2">
                    <Shield className="h-4 w-4 text-primary shrink-0" />
-                   <p>Seus contratos serão gerados automaticamente como <strong>{companyName}</strong>.</p>
+                   {form.watch("type") === "autonomo" ? (
+                      <p>Seus contratos serão gerados automaticamente no seu nome: <strong>{companyName}</strong>.</p>
+                    ) : (
+                      <p>Seus contratos serão gerados automaticamente como <strong>{companyName}</strong>.</p>
+                    )}
                 </div>
              </CardContent>
              <CardFooter>
