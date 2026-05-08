@@ -174,6 +174,9 @@ export function DriverForm({
   const onSubmit = (data: DriverFormValues) => {
     const driverData = { 
       ...data,
+      status: data.status || 'inativo',
+      latitude: data.latitude ?? 0,
+      longitude: data.longitude ?? 0,
       userId: driver?.userId || `user-dri-${unmask(data.cpf || '') || Date.now()}`
     };
     if (!driverData.vehicleId || driverData.vehicleId === 'none') {
@@ -401,58 +404,7 @@ export function DriverForm({
                 </div>
               </div>
               
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                <FormField
-                  control={form.control}
-                  name="latitude"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Latitude (Opcional)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="any" placeholder="-23.55052" {...field} value={field.value ?? ''} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="longitude"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Longitude (Opcional)</FormLabel>
-                      <FormControl>
-                        <Input type="number" step="any" placeholder="-46.633308" {...field} value={field.value ?? ''}/>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 pb-10">
-                <FormField
-                  control={form.control}
-                  name="status"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Status (Rota)</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Selecione um status" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="inativo">Inativo</SelectItem>
-                          <SelectItem value="em_rota">Em Rota</SelectItem>
-                          <SelectItem value="pausa">Em Pausa</SelectItem>
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+              <div className="pt-4 pb-6">
                 <FormField
                   control={form.control}
                   name="vehicleId"
