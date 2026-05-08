@@ -74,6 +74,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const [searchQuery, setSearchQuery] = useState('');
   const [suggestions, setSuggestions] = useState<any[]>([]);
   const [isSearchingBase, setIsSearchingBase] = useState(false);
+  const [showSuggestionsList, setShowSuggestionsList] = useState(false);
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -125,6 +126,9 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
           const snapshot = await getDocs(q);
           const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
           setSuggestions(list);
+          if (list.length > 0) {
+            setShowSuggestionsList(true);
+          }
         } else {
           // Em modo mock, podemos usar dados estáticos se existirem
           setSuggestions([
@@ -173,6 +177,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
     setValue('longitude', item.longitude);
     
     setSearchQuery('');
+    setShowSuggestionsList(false); // Fechar a lista após a seleção
     toast({ 
         title: "Escola Selecionada!", 
         description: `Dados de ${item.name} preenchidos via Base Guardian.` 
@@ -244,7 +249,21 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                     <Input 
                         placeholder={(!selectedCity || !selectedUF) ? "Selecione UF e Cidade acima" : "Digite o nome da escola..."}
                         value={searchQuery}
-                        onChange={(e) => setSearchQuery(e.target.value)}
+                        onChange={(e) => {
+                            setSearchQuery(e.target.value);
+                            setShowSuggestionsList(true);
+                        }}
+                        onFocus={() => {
+                            if (suggestions.length > 0) {
+                                setShowSuggestionsList(true);
+                            }
+                        }}
+                        onBlur={() => {
+                            // Pequeno delay para permitir o clique nos itens antes de fechar
+                            setTimeout(() => {
+                                setShowSuggestionsList(false);
+                            }, 200);
+                        }}
                         disabled={!selectedCity || !selectedUF || isSearchingBase}
                         className="bg-primary/5 border-primary/20 pl-9 focus:ring-primary h-11"
                     />
@@ -254,7 +273,7 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                 </div>
             </div>
 
-            {filteredSuggestions.length > 0 && (
+            {showSuggestionsList && filteredSuggestions.length > 0 && (
                 <div className="absolute top-full left-0 right-0 z-[100] mt-1 bg-background border-2 rounded-md shadow-2xl overflow-hidden border-primary">
                     <div className="px-3 py-1.5 bg-primary/10 text-[10px] font-bold text-primary uppercase flex items-center gap-2">
                         <Sparkles className="h-3 w-3" /> Sugestões da Base
