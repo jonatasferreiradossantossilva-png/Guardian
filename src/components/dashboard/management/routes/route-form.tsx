@@ -287,7 +287,7 @@ export function RouteForm({
         driverId, 
         monitorId: monitorId === 'none' ? '' : monitorId, 
         studentIds: currentStudentIds, 
-        shift: shift as 'Manhã' | 'Tarde', 
+        shift: shift as 'Manhã' | 'Tarde' | 'Integral', 
         polyline, 
         lastOptimizedAt: isOptimized ? new Date().toISOString() : '',
         schoolIds: selectedSchoolIds,
@@ -388,7 +388,11 @@ export function RouteForm({
                                 <Label className="text-[10px] uppercase font-bold text-muted-foreground">Turno</Label>
                                 <Select onValueChange={v => setShift(v as any)} value={shift}>
                                     <SelectTrigger className={cn("bg-background h-11", errors.shift && "border-destructive")}><SelectValue placeholder="Selecione" /></SelectTrigger>
-                                    <SelectContent><SelectItem value="Manhã">Manhã</SelectItem><SelectItem value="Tarde">Tarde</SelectItem></SelectContent>
+                                    <SelectContent>
+                                        <SelectItem value="Manhã">Manhã</SelectItem>
+                                        <SelectItem value="Tarde">Tarde</SelectItem>
+                                        <SelectItem value="Integral">Integral</SelectItem>
+                                    </SelectContent>
                                 </Select>
                             </div>
                             <div className="space-y-2">
