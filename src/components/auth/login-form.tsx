@@ -219,10 +219,11 @@ export function LoginForm() {
                         {...field} 
                         onChange={(e) => {
                           const val = e.target.value;
-                          if (!val.includes('@')) {
-                            field.onChange(maskCPF(val));
-                          } else {
+                          const hasLettersOrAt = /[a-zA-Z]/.test(val) || val.includes('@');
+                          if (hasLettersOrAt) {
                             field.onChange(val);
+                          } else {
+                            field.onChange(maskCPF(val));
                           }
                         }}
                       />
