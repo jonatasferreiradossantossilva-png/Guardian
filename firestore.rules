@@ -366,5 +366,14 @@ service cloud.firestore {
       allow update: if isAdmin();
       allow delete: if isAdmin();
     }
+
+    /**
+     * @description Access rules for the INEP official schools database.
+     * @principle Any signed-in user can query/read schools, only admin can seed/write.
+     */
+    match /school_knowledge_base/{kbId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
   }
 }

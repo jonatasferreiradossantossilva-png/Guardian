@@ -23,11 +23,12 @@ import {
   DialogClose,
 } from '@/components/ui/dialog';
 import { useToast } from '@/hooks/use-toast';
-import { useEffect, useState, useMemo } from 'react';
-import { useData, useDataCollection } from '@/hooks/use-data';
+import { useState, useEffect, useMemo } from 'react';
+import { useData, isFirestoreMode } from '@/hooks/use-data';
+import { firestore } from '@/firebase';
+import { collection, query, where, getDocs } from 'firebase/firestore';
 import { Loader2, Search, Sparkles, MapPin, Globe, School, Clock } from 'lucide-react';
 import { Switch } from '@/components/ui/switch';
-import { geocodeAddress } from '@/ai/flows/geocode-address';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
@@ -68,11 +69,11 @@ const normalize = (str: string) =>
 export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const { toast } = useToast();
   const { addDoc, updateDoc } = useData();
-  const { data: knowledgeBase } = useDataCollection('school_knowledge_base');
   
-  const [isSearchingGoogle, setIsSearchingGoogle] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const [suggestions, setSuggestions] = useState<any[]>([]);
+  const [isSearchingBase, setIsSearchingBase] = useState(false);
 
   const form = useForm<SchoolFormValues>({
     resolver: zodResolver(formSchema),
@@ -98,19 +99,67 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
   const selectedCity = watch('city');
   const selectedUF = watch('state');
 
+  useEffect(() => {
+    if (!selectedCity || !selectedCity.trim() || !selectedUF) {
+      setSuggestions([]);
+      return;
+    }
+
+    const loadSuggestions = async () => {
+      setIsSearchingBase(true);
+      try {
+        if (isFirestoreMode()) {
+          // Converte dinamicamente para Title Case para compatibilidade com buscas case-sensitive (ex: "porto velho" -> "Porto Velho")
+          const formattedCity = selectedCity
+            .trim()
+            .toLowerCase()
+            .split(' ')
+            .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(' ');
+
+          const q = query(
+            collection(firestore, 'school_knowledge_base'),
+            where('state', '==', selectedUF),
+            where('city', '==', formattedCity)
+          );
+          const snapshot = await getDocs(q);
+          const list = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          setSuggestions(list);
+        } else {
+          // Em modo mock, podemos usar dados estáticos se existirem
+          setSuggestions([
+            { id: "kb-1", name: "Colégio Amos", city: "Carapicuíba", state: "SP", street: "Av. Inocêncio Seráfico", number: "2000", neighborhood: "Centro", zipCode: "06320-290", latitude: -23.5234, longitude: -46.8345 },
+            { id: "kb-2", name: "Colégio Albert Einstein", city: "Carapicuíba", state: "SP", street: "Rua Rui Barbosa", number: "150", neighborhood: "Vila Dirce", zipCode: "06333-000", latitude: -23.5345, longitude: -46.8456 },
+            { id: "kb-3", name: "E.E. Maria de Lourdes Teixeira", city: "Carapicuíba", state: "SP", street: "Av. Brasil", number: "500", neighborhood: "Cohab", zipCode: "06325-000", latitude: -23.5456, longitude: -46.8567 }
+          ]);
+        }
+      } catch (err) {
+        console.error('Erro ao buscar escolas da base:', err);
+      } finally {
+        setIsSearchingBase(false);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      loadSuggestions();
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [selectedCity, selectedUF]);
+
   const filteredSuggestions = useMemo(() => {
-    if (!knowledgeBase || searchQuery.length < 1 || !selectedCity || !selectedUF) return [];
+    // Se o usuário selecionou Cidade/UF, mas ainda não digitou nada no campo de busca da escola,
+    // mostramos as primeiras 5 escolas encontradas naquela cidade imediatamente! Isso facilita a seleção.
+    if (searchQuery.length < 1) {
+      return suggestions.slice(0, 5);
+    }
     
-    const normCity = normalize(selectedCity);
-    const normUF = normalize(selectedUF);
     const normQuery = normalize(searchQuery);
 
-    return knowledgeBase.filter((s: any) => 
-        normalize(s.city) === normCity &&
-        normalize(s.state) === normUF &&
+    return suggestions.filter((s: any) => 
         normalize(s.name).includes(normQuery)
     ).slice(0, 5);
-  }, [knowledgeBase, searchQuery, selectedCity, selectedUF]);
+  }, [suggestions, searchQuery]);
 
   const selectSchool = (item: any) => {
     setValue('name', item.name);
@@ -128,28 +177,6 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
         title: "Escola Selecionada!", 
         description: `Dados de ${item.name} preenchidos via Base Guardian.` 
     });
-  };
-
-  const handleGoogleSearch = async () => {
-    if (!searchQuery.trim() || !selectedCity || !selectedUF) return;
-    setIsSearchingGoogle(true);
-    try {
-        const result = await geocodeAddress({ address: `${searchQuery}, ${selectedCity}, ${selectedUF}` });
-        setValue('name', searchQuery);
-        setValue('street', result.street || '');
-        setValue('zipCode', result.zipCode || '');
-        setValue('neighborhood', result.neighborhood || '');
-        setValue('city', result.city || selectedCity);
-        setValue('state', result.state || selectedUF);
-        setValue('latitude', result.latitude);
-        setValue('longitude', result.longitude);
-        setSearchQuery('');
-        toast({ title: "Localizado no Google!" });
-    } catch (e) {
-        toast({ title: "Não encontrado no Google Maps", variant: "destructive" });
-    } finally {
-        setIsSearchingGoogle(false);
-    }
   };
 
   useEffect(() => {
@@ -191,14 +218,14 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
           
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1">
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Estado (UF)</Label>
+                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Estado (UF) <span className="text-destructive">*</span></Label>
                 <Select onValueChange={(v) => setValue('state', v)} value={selectedUF}>
                     <SelectTrigger><SelectValue placeholder="UF" /></SelectTrigger>
                     <SelectContent>{UF_LIST.map(uf => <SelectItem key={uf} value={uf}>{uf}</SelectItem>)}</SelectContent>
                 </Select>
             </div>
             <div className="col-span-2 space-y-1">
-                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Cidade</Label>
+                <Label className="text-[10px] uppercase font-bold text-muted-foreground">Cidade <span className="text-destructive">*</span></Label>
                 <Input placeholder="Ex: Carapicuíba" value={selectedCity} onChange={(e) => setValue('city', e.target.value)} />
             </div>
           </div>
@@ -218,20 +245,13 @@ export function SchoolForm({ school, onFormSubmit }: SchoolFormProps) {
                         placeholder={(!selectedCity || !selectedUF) ? "Selecione UF e Cidade acima" : "Digite o nome da escola..."}
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        disabled={!selectedCity || !selectedUF}
+                        disabled={!selectedCity || !selectedUF || isSearchingBase}
                         className="bg-primary/5 border-primary/20 pl-9 focus:ring-primary h-11"
                     />
+                    {isSearchingBase && (
+                        <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-primary" />
+                    )}
                 </div>
-                <Button 
-                    type="button"
-                    variant="outline" 
-                    size="icon"
-                    onClick={handleGoogleSearch} 
-                    disabled={isSearchingGoogle || !searchQuery.trim() || !selectedCity || !selectedUF}
-                    className="border-primary/20 text-primary h-11 w-11"
-                >
-                    {isSearchingGoogle ? <Loader2 className="h-5 w-5 animate-spin" /> : <Search className="h-5 w-5" />}
-                </Button>
             </div>
 
             {filteredSuggestions.length > 0 && (
