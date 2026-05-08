@@ -168,7 +168,7 @@ export function RouteForm({
             if (currentStudentIds.has(s.id)) return false;
             
             const nameNorm = s.name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-            return s.active !== false && nameNorm.includes(searchNorm) && (s.shift === 'Integral' || s.shift === shift);
+            return s.active !== false && nameNorm.includes(searchNorm) && (shift === 'Integral' || s.shift === 'Integral' || s.shift === shift);
         });
     }
     return { availableStudents: filtered, studentsOnRoute };
