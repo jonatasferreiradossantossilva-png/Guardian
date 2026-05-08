@@ -117,7 +117,7 @@ function MobileHome({ onOpenGuide, onShareRegistration }: { onOpenGuide: () => v
             <OperationalFeed />
 
             <div className="space-y-2 pb-10">
-                <Button variant="outline" className="w-full h-12 border-primary/30 text-primary font-bold shadow-sm" onClick={onShareRegistration}>
+                <Button id="btn-share-link" variant="outline" className="w-full h-12 border-primary/30 text-primary font-bold shadow-sm" onClick={onShareRegistration}>
                     <UserPlus className="mr-2 h-5 w-5" />
                     CONVIDAR NOVOS PAIS
                 </Button>
@@ -180,7 +180,7 @@ function DesktopDashboard({ onOpenGuide, onShareRegistration }: { onOpenGuide: (
         </div>
         <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
             <div className="flex flex-col gap-1">
-                <Button variant="outline" onClick={onShareRegistration} className="border-primary/30 text-primary font-bold">
+                <Button id="btn-share-link" variant="outline" onClick={onShareRegistration} className="border-primary/30 text-primary font-bold">
                     <UserPlus className="mr-2 h-4 w-4" />
                     Convidar Pais
                 </Button>

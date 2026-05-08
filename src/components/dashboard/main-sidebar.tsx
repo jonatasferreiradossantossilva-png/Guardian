@@ -46,6 +46,15 @@ import { Tooltip, TooltipTrigger, TooltipContent } from "../ui/tooltip";
 import { DriverRouteInfoCard } from "./driver-route-info-card";
 import { useDataCollection } from '@/hooks/use-data';
 import { useMemo } from "react";
+import { RestartTourButton } from "./interactive-tour";
+
+const hrefToIdMap: Record<string, string> = {
+  "/dashboard/management/company": "menu-empresa",
+  "/dashboard/management/vehicles": "menu-veiculos",
+  "/dashboard/management/drivers": "menu-equipe",
+  "/dashboard/management/routes": "menu-rotas",
+  "/dashboard/management/schools": "menu-escolas",
+};
 
 const operationalLinks = [
   { href: "/dashboard/overview", label: "Painel Financeiro", icon: LayoutGrid },
@@ -168,21 +177,25 @@ export function MainSidebar() {
           {isParent ? 'Sua Conta' : 'Gestão Crítica'}
         </p>
         <SidebarMenu>
-          {finalRegistrationLinks.map((link) => (
-            <SidebarMenuItem key={link.href}>
-              <SidebarMenuButton
-                asChild
-                variant="default"
-                isActive={isActive(link.href)}
-                tooltip={link.label}
-              >
-                <Link href={link.href}>
-                  <link.icon />
-                  <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
-                </Link>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {finalRegistrationLinks.map((link) => {
+            const elementId = hrefToIdMap[link.href];
+            return (
+              <SidebarMenuItem key={link.href}>
+                <SidebarMenuButton
+                  asChild
+                  variant="default"
+                  isActive={isActive(link.href)}
+                  tooltip={link.label}
+                  id={elementId}
+                >
+                  <Link href={link.href}>
+                    <link.icon />
+                    <span className="group-data-[collapsible=icon]:hidden">{link.label}</span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            );
+          })}
         </SidebarMenu>
         
 
@@ -191,11 +204,11 @@ export function MainSidebar() {
         
         {!isParent && <DriverRouteInfoCard />}
 
-        <div className="mt-auto p-4 group-data-[collapsible=icon]:hidden">
+        <div className="mt-auto p-4 group-data-[collapsible=icon]:hidden flex flex-col gap-2">
             <Button 
                 variant="outline" 
                 size="sm" 
-                className="w-full text-[10px] font-black uppercase text-muted-foreground hover:text-destructive hover:border-destructive transition-all gap-2"
+                className="w-full text-[10px] font-black uppercase text-muted-foreground hover:text-destructive hover:border-destructive transition-all gap-2 h-8"
                 onClick={() => {
                   if (confirm("Deseja resetar todos os dados do protótipo? Isso limpará o cache local.")) {
                     localStorage.clear();
@@ -207,6 +220,8 @@ export function MainSidebar() {
                 <RotateCcw className="h-3 w-3" />
                 Resetar Protótipo (Cache)
             </Button>
+            
+            <RestartTourButton />
         </div>
         
       </SidebarContent>
