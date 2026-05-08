@@ -92,7 +92,7 @@ service cloud.firestore {
     match /students/{studentId} {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
-      allow create: if isAdmin();
+      allow create: if isAdmin() || (request.resource.data.active == false && request.resource.data.status == 'aguardando_aprovacao');
       allow update: if (isAdmin() && resource != null) || 
                      ((isDriver() || isMonitor()) && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
       allow delete: if isAdmin() && resource != null;
@@ -326,7 +326,7 @@ service cloud.firestore {
      * Only admins can list, approve, or reject requests.
      */
     match /pending_registrations/{regId} {
-      allow create: if isSignedIn();
+      allow create: if true;
       allow read: if isAdmin() || (isSignedIn() && resource.data.userId == request.auth.uid);
       allow list: if isAdmin();
       allow update: if isAdmin();
