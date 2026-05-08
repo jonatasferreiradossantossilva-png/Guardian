@@ -13,6 +13,10 @@ import { Sparkles, Play } from 'lucide-react';
 const JoyrideComponent = Joyride as any;
 
 export function InteractiveTour() {
+  // CONFIGURAÇÃO TEMPORÁRIA: Desabilitado temporariamente para evitar travamento do navegador.
+  // Para reativar, basta alterar para 'false'.
+  const DISABLE_TOUR_TEMPORARILY = true;
+  
   const router = useRouter();
   const pathname = usePathname();
   const { toast } = useToast();
@@ -21,6 +25,10 @@ export function InteractiveTour() {
   const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [isClient, setIsClient] = useState(false);
   const [run, setRun] = useState(false);
+
+  if (DISABLE_TOUR_TEMPORARILY) {
+    return null;
+  }
   const [stepIndex, setStepIndex] = useState(0);
 
   // Load user session
@@ -266,11 +274,19 @@ export function InteractiveTour() {
 
 // Helper hook component to allow rendering a "Restart Tour" button anywhere in the app
 export function RestartTourButton() {
+  // CONFIGURAÇÃO TEMPORÁRIA: Desabilitado temporariamente para evitar travamento do navegador.
+  // Para reativar, basta alterar para 'false'.
+  const DISABLE_TOUR_TEMPORARILY = true;
+
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
+
+  if (DISABLE_TOUR_TEMPORARILY) {
+    return null;
+  }
 
   if (!isClient) return null;
 
