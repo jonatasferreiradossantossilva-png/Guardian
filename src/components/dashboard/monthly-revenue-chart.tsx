@@ -28,8 +28,11 @@ export function MonthlyRevenueChart() {
     
     // Find the latest month from the invoice data
     const latestMonthStr = invoices.reduce((latest, inv) => {
-        const invMonth = inv.dueDate.substring(0, 7);
-        return invMonth > latest ? invMonth : latest;
+        if (inv?.dueDate && typeof inv.dueDate === 'string' && inv.dueDate.length >= 7) {
+          const invMonth = inv.dueDate.substring(0, 7);
+          return invMonth > latest ? invMonth : latest;
+        }
+        return latest;
     }, '0000-00');
 
     if (latestMonthStr === '0000-00') {
@@ -49,7 +52,7 @@ export function MonthlyRevenueChart() {
     }
     
     invoices.forEach(invoice => {
-      if (invoice.status === 'paid') {
+      if (invoice.status === 'paid' && invoice?.dueDate && typeof invoice.dueDate === 'string' && invoice.dueDate.length >= 7) {
         const monthKey = invoice.dueDate.substring(0, 7);
         if (monthlyRevenue.has(monthKey)) {
           monthlyRevenue.set(monthKey, (monthlyRevenue.get(monthKey) || 0) + invoice.amount);

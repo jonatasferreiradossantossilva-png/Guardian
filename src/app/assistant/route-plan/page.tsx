@@ -38,6 +38,7 @@ import Link from 'next/link';
 import { useDataCollection, useData } from '@/hooks/use-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { cn } from '@/lib/utils';
+import { safeInitials } from '@/lib/safe-render';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import { useOnlineStatus } from '@/hooks/use-online-status';
@@ -116,7 +117,7 @@ const StudentCard = memo(({ student, onStatusChange, onOpenAuthorizedModal }: St
             <div title={statusText[student.status]}>{statusIconMap[student.status]}</div>
             <Avatar className="h-10 w-10 border-2 border-muted/20">
                 <AvatarImage src={student.photoUrl} />
-                <AvatarFallback className="font-black text-xs bg-primary/5 text-primary">{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
+                <AvatarFallback className="font-black text-xs bg-primary/5 text-primary">{safeInitials(student.name)}</AvatarFallback>
             </Avatar>
             <div className="min-w-0 flex-1">
                 <div className="flex items-center gap-2">

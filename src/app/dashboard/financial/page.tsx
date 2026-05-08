@@ -214,13 +214,17 @@ const statusIconMap: Record<Invoice['status'], React.ElementType> = {
 };
 
 const formatMonth = (monthStr: string) => {
+    if (!monthStr || typeof monthStr !== 'string') return 'Mês Inválido';
     const monthNames: Record<string, string> = {
       '01': 'Janeiro', '02': 'Fevereiro', '03': 'Março', '04': 'Abril',
       '05': 'Maio', '06': 'Junho', '07': 'Julho', '08': 'Agosto',
       '09': 'Setembro', '10': 'Outubro', '11': 'Novembro', '12': 'Dezembro'
     };
-    const [year, monthNum] = monthStr.split('-');
+    const parts = monthStr.split('-');
+    if (parts.length < 2) return monthStr;
+    const [year, monthNum] = parts;
     const monthName = monthNames[monthNum] || '';
+    if (!monthName) return monthStr;
     return `${monthName.charAt(0).toUpperCase()}${monthName.slice(1)} de ${year}`;
 }
 
@@ -295,7 +299,9 @@ function RevenuesTab() {
     if (!invoices) return [];
     const months = new Set<string>();
     invoices.forEach(inv => {
-        months.add(inv.dueDate.substring(0, 7));
+        if (inv && inv.dueDate && typeof inv.dueDate === 'string' && inv.dueDate.length >= 7) {
+            months.add(inv.dueDate.substring(0, 7));
+        }
     });
     return Array.from(months).sort().reverse();
   }, [invoices]);
@@ -307,7 +313,7 @@ function RevenuesTab() {
         filtered = filtered.filter(inv => inv.studentId === selectedStudentId);
     }
     if (selectedMonth !== 'all') {
-        filtered = filtered.filter(inv => inv.dueDate.substring(0, 7) === selectedMonth);
+        filtered = filtered.filter(inv => inv && inv.dueDate && typeof inv.dueDate === 'string' && inv.dueDate.substring(0, 7) === selectedMonth);
     }
     return filtered;
   }, [invoices, selectedStudentId, selectedMonth]);
@@ -765,7 +771,9 @@ function ExpensesTab() {
     if (!expenses) return [];
     const months = new Set<string>();
     expenses.forEach(exp => {
-        months.add(exp.date.substring(0, 7));
+        if (exp && exp.date && typeof exp.date === 'string' && exp.date.length >= 7) {
+            months.add(exp.date.substring(0, 7));
+        }
     });
     return Array.from(months).sort().reverse();
   }, [expenses]);
@@ -774,9 +782,9 @@ function ExpensesTab() {
     if (!expenses) return [];
     let filtered = expenses;
     if (selectedMonth !== 'all') {
-        filtered = filtered.filter(exp => exp.date.substring(0, 7) === selectedMonth);
+        filtered = filtered.filter(exp => exp && exp.date && typeof exp.date === 'string' && exp.date.substring(0, 7) === selectedMonth);
     }
-    return filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
+    return filtered.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
   }, [expenses, selectedMonth]);
 
   const totalSpent = useMemo(() => filteredExpensesList.reduce((acc, exp) => acc + exp.amount, 0), [filteredExpensesList]);
@@ -911,7 +919,7 @@ function ExpensesTab() {
                                             </DropdownMenu>
                                         </div>
                                         <div className="mt-2 grid grid-cols-3 gap-y-2 gap-x-2 text-sm">
-                                            <div><p className="text-xs text-muted-foreground">Data</p><p>{expense.date.split('-').reverse().join('/')}</p></div>
+                                            <div><p className="text-xs text-muted-foreground">Data</p><p>{expense.date ? expense.date.split('-').reverse().join('/') : '--/--/----'}</p></div>
                                             <div><p className="text-xs text-muted-foreground">Valor</p><p>R$ {expense.amount.toFixed(2)}</p></div>
                                             <div><p className="text-xs text-muted-foreground">Categoria</p><Badge variant="outline" className="mt-1">{expense.category}</Badge></div>
                                         </div>

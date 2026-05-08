@@ -434,7 +434,7 @@ export function StudentForm({
                                 className="h-7 text-[10px] bg-background"
                                 onClick={() => handleCopyFromSibling(sibling)}
                               >
-                                  Copiar dados de {sibling.name.split(' ')[0]}
+                                  Copiar dados de {(sibling.name || 'Irmão').split(' ')[0]}
                               </Button>
                           ))}
                       </div>

@@ -132,7 +132,7 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
                   templates.map((template) => (
                     <TableRow key={template.id}>
                       <TableCell className="font-medium">{template.name}</TableCell>
-                      <TableCell className="text-muted-foreground italic text-xs">"{template.content.substring(0, 80)}..."</TableCell>
+                      <TableCell className="text-muted-foreground italic text-xs">"{(template.content || '').substring(0, 80)}..."</TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
                            <Button variant="outline" size="sm" onClick={() => handleEdit(template)}>
@@ -163,7 +163,7 @@ export function ContractTemplatesList({ initialTemplates }: ContractTemplatesLis
                   <Card key={template.id} className="overflow-hidden">
                     <div className="p-4">
                       <p className="font-medium pr-4">{template.name}</p>
-                      <p className="text-xs text-muted-foreground italic mt-2">"{template.content.substring(0, 100)}..."</p>
+                      <p className="text-xs text-muted-foreground italic mt-2">"{(template.content || '').substring(0, 100)}..."</p>
                     </div>
                     <CardFooter className="p-2 border-t bg-secondary/50 flex flex-wrap gap-2">
                        <Button variant="outline" size="sm" className="flex-1" onClick={() => handleEdit(template)}>

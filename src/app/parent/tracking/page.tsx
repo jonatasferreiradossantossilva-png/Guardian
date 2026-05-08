@@ -36,6 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { safeInitials } from "@/lib/safe-render";
 import { RoutePolyline } from "@/components/shared/route-polyline";
 import { SmartMap } from "@/components/shared/smart-map";
 import {
@@ -203,7 +204,7 @@ function GoogleMapMarkers({
                         <Pin background={isSelected ? '#3b82f6' : '#cbd5e1'} borderColor={'#fff'}>
                             <Avatar className={cn("h-6 w-12", !isSelected && "grayscale opacity-70")}>
                                 <AvatarImage src={s.photoUrl || undefined} />
-                                <AvatarFallback className="font-bold text-[8px] bg-primary text-white">{(String(s.name) || '?')[0]}</AvatarFallback>
+                                <AvatarFallback className="font-bold text-[8px] bg-primary text-white">{safeInitials(s.name)}</AvatarFallback>
                             </Avatar>
                         </Pin>
                   </AdvancedMarker>
@@ -480,7 +481,7 @@ function ParentTrackingContent() {
                     <button key={s.id} onClick={() => handleStudentSelect(s.id)} className={cn("flex items-center gap-2 px-4 py-2 rounded-full border-2 transition-all shrink-0", selectedStudentId === s.id ? "bg-primary border-primary text-primary-foreground shadow-md" : "bg-card border-muted text-muted-foreground")}>
                         <Avatar className="h-6 w-6">
                             <AvatarImage src={s.photoUrl || undefined} />
-                            <AvatarFallback>{s.name[0]}</AvatarFallback>
+                            <AvatarFallback>{safeInitials(s.name)}</AvatarFallback>
                         </Avatar>
                         <span className="text-xs font-bold">{s.name.split(' ')[0]}</span>
                     </button>
@@ -524,7 +525,7 @@ function ParentTrackingContent() {
                         <div className="flex items-center gap-4">
                             <Avatar className="h-16 w-16 border-2 border-background shadow-md">
                                 <AvatarImage src={student?.photoUrl || undefined} />
-                                <AvatarFallback className="text-3xl font-black">{(String(student?.name) || '?')[0]}</AvatarFallback>
+                                <AvatarFallback className="text-3xl font-black">{safeInitials(student?.name)}</AvatarFallback>
                             </Avatar>
                             <div>
                                 <CardTitle className="text-xl">Olá, {String(parent?.name || 'Responsável').split(' ')[0]}</CardTitle>
@@ -539,7 +540,7 @@ function ParentTrackingContent() {
                             <div className="mt-6 mb-2 p-4 rounded-xl border-2 border-green-500/30 bg-green-500/10 flex items-start gap-3 animate-in fade-in zoom-in-95 duration-500">
                                 <Avatar className="h-12 w-12 border-2 border-green-500/20 shadow-sm shrink-0">
                                     <AvatarFallback className="font-black text-green-700 bg-green-500/20 uppercase">
-                                        {student.lastHandover.authorizedPersonName.split(' ').map((n: string) => n[0]).join('')}
+                                        {safeInitials(student.lastHandover.authorizedPersonName)}
                                     </AvatarFallback>
                                 </Avatar>
                                 <div className="space-y-1">

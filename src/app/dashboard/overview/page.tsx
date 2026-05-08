@@ -51,8 +51,16 @@ export default function DashboardOverviewPage() {
 
   const availableYears = useMemo(() => {
     const years = new Set<string>();
-    (allInvoices || []).forEach(inv => years.add(inv.dueDate.substring(0, 4)));
-    (allExpenses || []).forEach(exp => years.add(exp.date.substring(0, 4)));
+    (allInvoices || []).forEach(inv => {
+      if (inv?.dueDate && typeof inv.dueDate === 'string' && inv.dueDate.length >= 4) {
+        years.add(inv.dueDate.substring(0, 4));
+      }
+    });
+    (allExpenses || []).forEach(exp => {
+      if (exp?.date && typeof exp.date === 'string' && exp.date.length >= 4) {
+        years.add(exp.date.substring(0, 4));
+      }
+    });
     if (years.size === 0) {
       years.add(new Date().getFullYear().toString());
     }

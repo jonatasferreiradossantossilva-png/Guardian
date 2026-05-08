@@ -153,7 +153,7 @@ export default function LeafletMapInner({ center, zoom, stops, driverLocation, r
                                 </div>
                                 <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translateX(-50%)', marginTop: '4px' }}>
                                     <span style={{ backgroundColor: 'white', color: 'black', fontSize: '8px', fontWeight: 'bold', padding: '2px 6px', borderRadius: '4px', whiteSpace: 'nowrap', boxShadow: '0 2px 4px rgba(0,0,0,0.2)' }}>
-                                        {item.name.split(' ')[0]}
+                                        {(item.name || 'Aluno').split(' ')[0]}
                                     </span>
                                 </div>
                             </div>
