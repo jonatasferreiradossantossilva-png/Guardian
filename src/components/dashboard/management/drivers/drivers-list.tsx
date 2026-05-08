@@ -188,7 +188,7 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                         <div className="flex items-center gap-3">
                           <Avatar>
                             <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
-                            <AvatarFallback>{driver.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+                            <AvatarFallback>{driver.name ? driver.name.split(' ').filter(Boolean).map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'M'}</AvatarFallback>
                           </Avatar>
                           <div>
                             <p className="font-medium">{driver.name}</p>
@@ -257,7 +257,7 @@ export function DriversList({ initialDrivers, initialVehicles }: DriversListProp
                             <div className="flex items-center gap-3">
                                 <Avatar>
                                 <AvatarImage src={`https://picsum.photos/seed/driver-${driver.id}/100/100`} alt={driver.name} />
-                                <AvatarFallback>{driver.name.split(' ').map((n: string) => n[0]).join('')}</AvatarFallback>
+                                <AvatarFallback>{driver.name ? driver.name.split(' ').filter(Boolean).map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'M'}</AvatarFallback>
                                 </Avatar>
                                 <div>
                                 <p className="font-medium">{driver.name}</p>
