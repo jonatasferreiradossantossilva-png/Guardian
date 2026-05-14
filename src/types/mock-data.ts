@@ -28,6 +28,7 @@ export interface Student {
   medicalNote?: string;
   serviceModality?: 'completo' | 'so_ida' | 'so_volta' | 'avulso';
   photoUrl?: string;
+  temporaryMovesCount?: number;
 }
 
 export interface SchoolData {
@@ -89,6 +90,7 @@ export interface Route {
   polyline?: string;
   actualDriverId?: string;
   actualMonitorId?: string;
+  baseStudentIds?: string[];
 }
 
 export interface User {
@@ -167,6 +169,16 @@ export interface Notification {
   metadata?: any;
 }
 
+export interface RouteManifest {
+  id: string;
+  routeId: string;
+  date: string;
+  shift: Shift;
+  direction: 'ida' | 'volta';
+  studentIds: string[];
+  updatedAt: string;
+}
+
 export interface MockDB {
   config: any[];
   telemetry: any[];
@@ -180,6 +192,7 @@ export interface MockDB {
   monitors: Monitor[];
   vehicles: Vehicle[];
   routes: Route[];
+  route_manifests: RouteManifest[];
   locations: Record<string, LocationUpdate>;
   invoices: any[];
   expenses: any[];

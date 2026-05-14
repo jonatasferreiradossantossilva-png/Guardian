@@ -136,26 +136,10 @@ layout.tsx
 
 Foi implementado um script de sementeira (**seeder**) inteligente em `src/scripts/import-schools.ts` para carregar a base oficial do INEP contendo **181.065 escolas brasileiras** diretamente no Firestore de produção.
 
-### Status de Seeding (08/05/2026)
+### Status de Seeding (14/05/2026)
 - **Rondônia (RO):** **100% Importado** (1.243 escolas ativas em produção).
+- **São Paulo (SP):** **100% Importado** (30.746 escolas ativas em produção).
 - **Outros Estados:** **18.500 escolas** importadas com sucesso.
-- **Total em Produção:** **19.743 escolas**.
-- **Nota:** Atingido o limite diário gratuito de **20.000 gravações** do Firebase Spark Plan (Google retorne `RESOURCE_EXHAUSTED`). O script parou de forma limpa e segura, e as regras de gravação foram restabelecidas com segurança (`allow write: if isAdmin()`).
-
-### Como Executar o Seeding de São Paulo (SP) Amanhã
-Assim que o limite diário resetar no Firebase, execute o seguinte comando no terminal para priorizar o estado de São Paulo:
-
-```bash
-# 1. Temporariamente habilitar gravação pública em firestore.rules:
-# Altere 'allow write: if isAdmin();' para 'allow write: if true;' no bloco school_knowledge_base.
-# E faça o deploy das regras:
-npx firebase deploy --only firestore:rules --project studio-6623181818-11eb0
-
-# 2. Executar o script automático de importação focando em São Paulo (SP):
-npx tsx src/scripts/import-schools.ts --uf SP --yes
-
-# 3. Retornar as regras de segurança ao original:
-# Altere de volta para 'allow write: if isAdmin();' e publique:
-npx firebase deploy --only firestore:rules --project studio-6623181818-11eb0
-```
+- **Total em Produção:** **50.489 escolas**.
+- **Nota:** As regras de segurança estão restabelecidas de forma segura (`allow write: if isAdmin()`). Todas as operações de sementeira pendentes para SP foram concluídas.
 
