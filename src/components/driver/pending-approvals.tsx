@@ -42,7 +42,7 @@ export function PendingApprovals({ route }: PendingApprovalsProps) {
   }, [allStudents, route.id]);
 
   const capacity = (route as any).capacity || 15;
-  const activeCount = route.studentIds.length;
+  const activeCount = (route?.studentIds || []).length;
   const availableSlots = Math.max(0, capacity - activeCount);
 
   // Separar entre quem tem vaga e quem cai na lista de espera
@@ -63,7 +63,8 @@ export function PendingApprovals({ route }: PendingApprovalsProps) {
     }
 
     // 1. Vincular o aluno à rota real
-    const newStudentIds = [...route.studentIds, student.id];
+    const currentStudentIds = route?.studentIds || [];
+    const newStudentIds = [...currentStudentIds, student.id];
     updateDoc('routes', route.id, { studentIds: newStudentIds });
 
     // 2. Atualizar o status do aluno para ativo e limpar o pendente

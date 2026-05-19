@@ -61,8 +61,8 @@ export function DriverRouteInfoCard() {
     return null;
   }
   
-  const studentsOnBoard = students.filter((s: any) => s.status === 'a_bordo').length;
-  const totalStudents = activeRoute.studentIds.length;
+  const studentsOnBoard = (students || []).filter((s: any) => s && s.status === 'a_bordo').length;
+  const totalStudents = (activeRoute?.studentIds || []).length;
 
   const handleFormSubmit = () => {
       setIsFormOpen(false);

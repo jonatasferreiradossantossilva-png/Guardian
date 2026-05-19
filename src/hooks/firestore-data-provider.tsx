@@ -35,7 +35,7 @@ import type { MockDataContextType } from '@/hooks/use-mock-data';
 
 const WATCHED_COLLECTIONS: (keyof MockDB)[] = [
   'users', 'schools', 'parents', 'students', 'drivers', 'monitors',
-  'vehicles', 'routes', 'invoices', 'expenses', 'trip_requests',
+  'vehicles', 'routes', 'route_manifests', 'invoices', 'expenses', 'trip_requests',
   'pending_registrations', 'messages', 'announcements', 'incidents',
   'contract_templates', 'contracts', 'authorized_pickups', 'predefined_messages',
   'notifications', 'company_profile',
@@ -72,6 +72,7 @@ const createEmptyDb = (): MockDB => ({
   monitors: [],
   vehicles: [],
   routes: [],
+  route_manifests: [],
   locations: {},
   invoices: [],
   expenses: [],

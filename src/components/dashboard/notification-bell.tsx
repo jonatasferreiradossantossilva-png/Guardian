@@ -100,7 +100,7 @@ export function NotificationBell() {
         <SheetHeader className="p-6 border-b bg-muted/30">
           <div className="flex items-center justify-between">
             <SheetTitle className="text-xl font-black uppercase italic italic text-primary">Notificações</SheetTitle>
-            {notifications && notifications.length > 0 && (
+            {safeArray<MockNotification>(notifications).length > 0 && (
               <Button 
                 variant="ghost" 
                 size="sm" 

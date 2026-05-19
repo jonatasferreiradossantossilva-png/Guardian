@@ -254,6 +254,7 @@ export const initialMockData: MockDB = {
     vehicles: [
         { id: "vehicle-1", model: "Mercedes Sprinter", licensePlate: "BRA2E19", capacity: 20, active: true, currentOdometer: 45200, lastMaintenanceOdometer: 40000, maintenanceInterval: 10000 }
     ],
+    route_manifests: [],
     routes: [
         {
             id: "route-1",

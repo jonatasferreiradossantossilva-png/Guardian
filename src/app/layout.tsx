@@ -6,6 +6,7 @@ import { DataProvider } from '@/hooks/use-data';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { IosInstallPrompt } from '@/components/pwa/ios-install-prompt';
 import { FloatingWhatsApp } from '@/components/pwa/floating-whatsapp';
+import { ClientOnly } from "@/components/shared/client-only";
 
 export const metadata: Metadata = {
   title: 'VanGuardian',
@@ -56,12 +57,15 @@ export default function RootLayout({
             <FirebaseClientProvider>
               {children}
             </FirebaseClientProvider>
-            {process.env.NEXT_PUBLIC_DATA_MODE !== 'firestore' && <DemoOrchestrator />}
+            <ClientOnly>
+              {process.env.NEXT_PUBLIC_DATA_MODE !== 'firestore' && <DemoOrchestrator />}
+            </ClientOnly>
           </DataProvider>
         </ErrorBoundary>
-        <IosInstallPrompt />
-        {/* <FloatingWhatsApp /> */}
-        <Toaster />
+        <ClientOnly>
+          <IosInstallPrompt />
+          <Toaster />
+        </ClientOnly>
       </body>
     </html>
   );

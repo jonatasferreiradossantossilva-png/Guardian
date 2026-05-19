@@ -58,6 +58,7 @@ const hrefToIdMap: Record<string, string> = {
 
 const operationalLinks = [
   { href: "/dashboard/overview", label: "Painel Financeiro", icon: LayoutGrid },
+  { href: "/dashboard/management/route-planning", label: "Planejamento Diário", icon: Route },
   { href: "/dashboard/performance", label: "Performance & Eco", icon: BarChart3 },
   { href: "/dashboard/history", label: "Histórico (30d)", icon: MapIcon },
   { href: "/dashboard/management/incidents", label: "Telemetria & Incidentes", icon: Activity },

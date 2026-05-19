@@ -6,6 +6,7 @@
  */
 
 import { useState, useMemo, useEffect, useCallback, useRef } from 'react';
+import { format } from 'date-fns';
 import {
   Card,
   CardContent,
@@ -66,7 +67,7 @@ import { Progress } from '@/components/ui/progress';
 import { GoogleMapMarkers } from '@/components/driver/google-map-markers';
 import { useTelemetry } from '@/hooks/use-telemetry';
 import { NotificationBell } from '@/components/dashboard/notification-bell';
-import { Student, SchoolData, Route, Driver, User, Shift, JourneyStatus, StudentStatus } from '@/types/mock-data';
+import { Student, SchoolData, Route, Driver, User, Shift, JourneyStatus, StudentStatus, RouteManifest } from '@/types/mock-data';
 import { SafeRow } from '@/components/shared/safe-table';
 import { safeString, safeArray, safeInitials } from '@/lib/safe-render';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
@@ -152,6 +153,28 @@ export default function DriverDashboardContent() {
   const route = useMemo(() => (driverProfile?.status !== 'inativo' && activeRouteId) ? (routes?.find(r => r.id === activeRouteId) || null) : (routes?.find(r => r.id === selectedRouteIdForStart) || null), [routes, driverProfile, activeRouteId, selectedRouteIdForStart]);
   const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
   const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
+  const { data: routeManifests } = useDataCollection<RouteManifest>('route_manifests');
+
+  const todayStr = useMemo(() => {
+    return typeof window !== 'undefined' ? format(new Date(), 'yyyy-MM-dd') : '';
+  }, []);
+
+  const activeManifest = useMemo(() => {
+    if (!route || !routeManifests || !todayStr) return null;
+    return routeManifests.find(m =>
+      m && m.routeId === route.id &&
+      m.date === todayStr &&
+      m.direction === selectedDirection
+    );
+  }, [route, routeManifests, todayStr, selectedDirection]);
+
+  const activeStudentIds = useMemo(() => {
+    if (!route) return [];
+    if (activeManifest) {
+      return activeManifest.studentIds || [];
+    }
+    return route.baseStudentIds || route.studentIds || [];
+  }, [route, activeManifest]);
   
   const { data: allDrivers } = useDataCollection('drivers');
   const { data: monitors } = useDataCollection('users', [{ field: 'profile', op: '==', value: 'monitor' }]);
@@ -187,12 +210,12 @@ export default function DriverDashboardContent() {
   }, [allStudents]);
 
   const orderedStops = useMemo<Stop[]>(() => {
-    if (!route?.studentIds || !Array.isArray(route.studentIds) || !allStudents || !schools) return [];
+    if (!activeStudentIds || !Array.isArray(activeStudentIds) || !allStudents || !schools) return [];
 
     const neededSchoolIds = new Set<string>();
 
     const studentStops: Stop[] = [];
-    for (const id of route.studentIds) {
+    for (const id of activeStudentIds) {
         const student = studentsMap.get(id);
         if (!student || student.active === false) continue;
 
@@ -222,7 +245,7 @@ export default function DriverDashboardContent() {
         } else {
             return [...schoolStops, ...studentStops];
         }
-  }, [route?.studentIds, allStudents, schools, selectedShift, selectedDirection, studentsMap, schoolsMap]);
+  }, [activeStudentIds, allStudents, schools, selectedShift, selectedDirection, studentsMap, schoolsMap]);
 
   const { activeStop, upcomingStops, progressData } = useMemo(() => {
     if (!orderedStops || driverProfile?.status === 'inativo') return { activeStop: null, upcomingStops: [], progressData: { current: 0, total: 0, percentage: 0 } };
@@ -262,7 +285,7 @@ export default function DriverDashboardContent() {
           // 1. Deve pertencer a esta escola
           if (s.schoolId !== activeStop.id) return false;
           // 2. Deve pertencer a esta rota específica
-          if (!route.studentIds.includes(s.id)) return false;
+          if (!activeStudentIds.includes(s.id)) return false;
           // 3. Deve ter o status correto para a ação (a bordo para desembarcar na ida, aguardando para embarcar na volta)
           if (s.status !== currentStatus) return false;
           // 4. Deve respeitar o turno
@@ -276,7 +299,7 @@ export default function DriverDashboardContent() {
           
           return true;
       });
-   }, [activeStop, allStudents, selectedDirection, selectedShift, route]);
+   }, [activeStop, allStudents, selectedDirection, selectedShift, activeStudentIds]);
 
   const handleEndRoute = useCallback(() => {
       // 1. Resetar cenário para o padrão
@@ -359,11 +382,22 @@ export default function DriverDashboardContent() {
                     console.warn('Polyline geração falhou:', routingErr);
                 }
             }
-            updateDoc('routes', currentRoute.id, { 
-                studentIds: newIds, 
-                polyline: polylineData, 
-                lastOptimizedAt: new Date().toISOString() 
-            });
+            if (activeManifest) {
+                updateDoc('route_manifests', activeManifest.id, {
+                    studentIds: newIds,
+                    updatedAt: new Date().toISOString()
+                });
+                updateDoc('routes', currentRoute.id, {
+                    polyline: polylineData,
+                    lastOptimizedAt: new Date().toISOString()
+                });
+            } else {
+                updateDoc('routes', currentRoute.id, { 
+                    studentIds: newIds, 
+                    polyline: polylineData, 
+                    lastOptimizedAt: new Date().toISOString() 
+                });
+            }
             if (!isManualStart) {
                 toast({ title: "Rota Atualizada", description: "O itinerário foi recalculado devido à ausência encontrada." });
             }
@@ -374,14 +408,14 @@ export default function DriverDashboardContent() {
         setOptimizationStep('idle');
         setIsOptimizing(false);
     }
-  }, [allStudents, schools, selectedDirection, driverLocation, studentsMap, schoolsMap, updateDoc, toast]);
+  }, [allStudents, schools, selectedDirection, driverLocation, studentsMap, schoolsMap, updateDoc, toast, activeManifest]);
 
   const handleStartRoute = async () => {
     if (!route || !driverProfile || !allStudents) return;
     
     // 1. Resetar status de todos os alunos da rota para o estado inicial (aguardando)
     // Isso evita que a rota comece "finalizada" se houver lixo de sessões anteriores no localStorage
-    const studentIdsToReset = safeArray(route.studentIds) as string[];
+    const studentIdsToReset = safeArray(activeStudentIds) as string[];
     studentIdsToReset.forEach((id: string) => {
         const student = studentsMap.get(id);
         if (student) {
@@ -398,7 +432,7 @@ export default function DriverDashboardContent() {
 
     // 2. Identificar faltas para o alerta
     const missing = allStudents.filter(s => 
-        (safeArray(route.studentIds) as string[]).includes(s.id) && 
+        (safeArray(activeStudentIds) as string[]).includes(s.id) && 
         s.status.startsWith('ausente') && 
         (s.shift === 'Integral' || s.shift === selectedShift)
     );
@@ -441,7 +475,7 @@ export default function DriverDashboardContent() {
     }
 
     // Notificar todos os pais
-    (safeArray(route.studentIds) as string[]).forEach((sId: string) => {
+    (safeArray(activeStudentIds) as string[]).forEach((sId: string) => {
         const student = studentsMap.get(sId);
         if (student && student.parentId) {
             const parent = (allParents as any)?.find((p: any) => p.id === student.parentId);
