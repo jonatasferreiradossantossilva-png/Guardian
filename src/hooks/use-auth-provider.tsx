@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signOut as firebaseSignOut,
+  signInAnonymously,
 } from 'firebase/auth';
 import {
   collection,
@@ -14,6 +15,7 @@ import {
   getDocs,
   doc,
   setDoc,
+  getDoc,
 } from 'firebase/firestore';
 import { isFirestoreMode, useData } from '@/hooks/use-data';
 import { useToast } from '@/hooks/use-toast';
@@ -42,17 +44,28 @@ export function useAuthProvider() {
           
           if (isEmail) {
             email = cleanId;
-            const usersRef = collection(firestore, 'users');
-            const qUser = query(usersRef, where('email', '==', email));
-            const userSnapshot = await getDocs(qUser);
-            
-            if (userSnapshot.empty) {
-              throw new Error('E-mail não cadastrado.');
+            // Sign in directly using Firebase Auth first to bypass unauthenticated access limits
+            const userCredential = await signInWithEmailAndPassword(auth, email, pinOrPass);
+            const firebaseUser = userCredential.user;
+
+            // Fetch user profile from Firestore using getDoc (allowed for signed-in users)
+            const userDocRef = doc(firestore, 'users', firebaseUser.uid);
+            const userDocSnap = await getDoc(userDocRef);
+
+            if (!userDocSnap.exists()) {
+              throw new Error('Cadastro do usuário não encontrado no banco de dados.');
             }
-            fetchedProfile = userSnapshot.docs[0].data().profile;
+
+            const userData = userDocSnap.data();
+            fetchedProfile = userData.profile;
+            sessionStorage.setItem('mockUserId', firebaseUser.uid);
             
           } else {
-            // It's a CPF, look up the email and profile in the Firestore users collection
+            // Sign in anonymously first to get query permissions for CPF lookup
+            if (!auth.currentUser) {
+              await signInAnonymously(auth);
+            }
+
             const usersRef = collection(firestore, 'users');
             // Check both masked and unmasked CPF
             const qUnmasked = query(usersRef, where('cpf', '==', cleanId));
@@ -72,22 +85,13 @@ export function useAuthProvider() {
             const userDoc = querySnapshot.docs[0].data();
             email = userDoc.email;
             fetchedProfile = userDoc.profile;
-          }
+            const systemUserId = querySnapshot.docs[0].id;
 
-          // Sign in using Firebase Auth
-          const userCredential = await signInWithEmailAndPassword(auth, email, pinOrPass);
-          const firebaseUser = userCredential.user;
+            // Sign in with actual credentials (overwriting anonymous session)
+            const userCredential = await signInWithEmailAndPassword(auth, email, pinOrPass);
+            const firebaseUser = userCredential.user;
 
-          // Find corresponding user in 'users' collection to set mockUserId compatibility
-          const usersRef = collection(firestore, 'users');
-          const qUser = query(usersRef, where('email', '==', email));
-          const userSnapshot = await getDocs(qUser);
-
-          if (!userSnapshot.empty) {
-            const systemUserId = userSnapshot.docs[0].id;
             sessionStorage.setItem('mockUserId', systemUserId);
-          } else {
-            sessionStorage.setItem('mockUserId', firebaseUser.uid);
           }
 
           setIsLoading(false);

@@ -148,14 +148,14 @@ test.describe('Guardian Full Lifecycle Matrix', () => {
             // Aguardar o registro específico aparecer na lista. 
             // Se não aparecer em 5s, dar um refresh (força leitura do localStorage pelo hook)
             try {
-                await expect(page.getByText(`Pai ${mod.name}`).first()).toBeVisible({ timeout: 5000 });
+                await expect(page.getByText(`Pai ${mod.name}`).filter({ visible: true }).first()).toBeVisible({ timeout: 5000 });
             } catch (e) {
                 console.log(`[DEBUG] Registro não encontrado de primeira. Dando reload na listagem...`);
                 await page.reload();
-                await expect(page.getByText(`Pai ${mod.name}`).first()).toBeVisible({ timeout: 20000 });
+                await expect(page.getByText(`Pai ${mod.name}`).filter({ visible: true }).first()).toBeVisible({ timeout: 20000 });
             }
             
-            const parentRow = page.locator('tr').filter({ hasText: `Pai ${mod.name}` }).first();
+            const parentRow = page.locator('tr, div').filter({ hasText: `Pai ${mod.name}` }).filter({ visible: true }).first();
             await parentRow.getByRole('button', { name: /Revisar/i }).click({ force: true });
             
             await page.getByRole('spinbutton').fill(mod.value);

@@ -58,7 +58,7 @@ const hrefToIdMap: Record<string, string> = {
 
 const operationalLinks = [
   { href: "/dashboard/overview", label: "Painel Financeiro", icon: LayoutGrid },
-  { href: "/dashboard/management/route-planning", label: "Planejamento Diário", icon: Route },
+  { href: "/dashboard/management/route-planning", label: "Planejamento de Rota", icon: Route },
   { href: "/dashboard/performance", label: "Performance & Eco", icon: BarChart3 },
   { href: "/dashboard/history", label: "Histórico (30d)", icon: MapIcon },
   { href: "/dashboard/management/incidents", label: "Telemetria & Incidentes", icon: Activity },
@@ -210,11 +210,33 @@ export function MainSidebar() {
                 variant="outline" 
                 size="sm" 
                 className="w-full text-[10px] font-black uppercase text-muted-foreground hover:text-destructive hover:border-destructive transition-all gap-2 h-8"
-                onClick={() => {
-                  if (confirm("Deseja resetar todos os dados do protótipo? Isso limpará o cache local.")) {
+                onClick={async () => {
+                  if (confirm("Deseja resetar todos os dados do protótipo? Isso limpará o cache e atualizará para a versão mais recente.")) {
                     localStorage.clear();
                     sessionStorage.clear();
-                    window.location.href = '/';
+                    
+                    // Limpar Cache Storage do Service Worker
+                    if ('caches' in window) {
+                      try {
+                        const keys = await caches.keys();
+                        await Promise.all(keys.map(key => caches.delete(key)));
+                      } catch (e) {
+                        console.error("Erro ao limpar caches:", e);
+                      }
+                    }
+                    
+                    // Remover Service Workers
+                    if ('serviceWorker' in navigator) {
+                      try {
+                        const regs = await navigator.serviceWorker.getRegistrations();
+                        await Promise.all(regs.map(reg => reg.unregister()));
+                      } catch (e) {
+                        console.error("Erro ao remover service workers:", e);
+                      }
+                    }
+                    
+                    // Forçar redirecionamento limpando o cache
+                    window.location.href = '/login?clear-cache=true';
                   }
                 }}
             >

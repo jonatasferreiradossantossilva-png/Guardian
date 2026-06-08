@@ -205,7 +205,7 @@ export const initialMockData: MockDB = {
         { id: "parent-val", userId: "val-pai", name: "Validador Responsável", email: "val.pai@guardian.com", phone: "11999998888", active: true },
     ],
     students: [
-        { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-val", shift: "Manhã" as const, status: "aguardando" as const, active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "5º Ano", turma: "Sala 101", medicalConditions: ["Alergia"], medicalNote: "ALERGIA GRAVE A GLÚTEN E LACTOSE.", serviceModality: 'completo' as const },
+        { id: "student-1", name: "Enzo Pereira", schoolId: "school-1", parentId: "parent-val", shift: "Manhã" as const, status: "ausente_ida" as const, active: true, latitude: -23.5580, longitude: -46.6600, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "5º Ano", turma: "Sala 101", medicalConditions: ["Alergia"], medicalNote: "ALERGIA GRAVE A GLÚTEN E LACTOSE.", serviceModality: 'completo' as const },
         { id: "student-2", name: "Valentina Pereira", schoolId: "school-1", parentId: "parent-val", shift: "Manhã" as const, status: "aguardando" as const, active: true, latitude: -23.5585, longitude: -46.6605, street: "Rua das Acácias", number: "10", city: "São Paulo", state: "SP", monthlyFee: 450, preferredPaymentDay: 10, serie: "3º Ano", turma: "Sala 202", medicalConditions: ["Respiratório"], medicalNote: "Possui bronquite asmática. Bombinha na mochila.", serviceModality: 'completo' as const },
         { id: "student-3", name: "Bernardo Silva", schoolId: "school-2", parentId: "parent-2", shift: "Manhã" as const, status: "aguardando" as const, active: true, latitude: -23.5234, longitude: -46.8345, street: "Av. Inocêncio Seráfico", number: "50", city: "Carapicuíba", state: "SP", monthlyFee: 300, preferredPaymentDay: 5, serie: "1º Ano Médio", serviceModality: 'so_ida' as const },
         { id: "student-4", name: "Alice Souza", schoolId: "school-2", parentId: "parent-3", shift: "Tarde" as const, status: "aguardando" as const, active: true, latitude: -23.5345, longitude: -46.8456, street: "Rua Rui Barbosa", number: "200", city: "Carapicuíba", state: "SP", monthlyFee: 320, preferredPaymentDay: 15, serie: "7º Ano", medicalConditions: ["Diabetes"], medicalNote: "Uso de insulina após o almoço.", serviceModality: 'so_volta' as const },
@@ -356,7 +356,7 @@ export const initialMockData: MockDB = {
     ],
     trip_history: generateTripHistory(),
     trip_requests: [
-        { id: "tr-1", studentId: "student-1", parentUserId: "user-pai-1", schoolId: "school-1", startDate: getRecentDay(-2), endDate: getRecentDay(-2), type: "ida_e_volta", shift: "manha", status: "pendente", reason: "Evento extra de robótica na escola.", createdAt: getRecentDay(1) },
+        { id: "tr-1", studentId: "student-1", parentUserId: "user-pai-1", schoolId: "school-1", startDate: getRecentDay(0), endDate: getRecentDay(0), type: "ida_e_volta", shift: "manha", status: "aprovada", reason: "Evento extra de robótica na escola.", createdAt: getRecentDay(1) },
         { id: "tr-2", studentId: "student-2", parentUserId: "user-pai-1", schoolId: "school-1", startDate: getRecentDay(-1), endDate: getRecentDay(-1), type: "ida", shift: "tarde", status: "aguardando_aprovacao_pai", amount: 45.00, reason: "Reposição de aula.", createdAt: getRecentDay(2) },
     ],
     pending_registrations: [

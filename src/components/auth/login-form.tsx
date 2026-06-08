@@ -52,6 +52,28 @@ export function LoginForm() {
 
   useEffect(() => {
     setIsMounted(true);
+
+    // Auto-limpeza silenciosa se houver o parâmetro na URL
+    if (typeof window !== 'undefined' && window.location.search.includes('clear-cache')) {
+      const performSilentClear = async () => {
+        try {
+          localStorage.clear();
+          sessionStorage.clear();
+          if ('caches' in window) {
+            const keys = await caches.keys();
+            await Promise.all(keys.map(key => caches.delete(key)));
+          }
+          if ('serviceWorker' in navigator) {
+            const regs = await navigator.serviceWorker.getRegistrations();
+            await Promise.all(regs.map(reg => reg.unregister()));
+          }
+        } catch (e) {
+          console.error("Erro na auto-limpeza:", e);
+        }
+        window.location.href = '/login';
+      };
+      performSilentClear();
+    }
   }, []);
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -266,7 +288,36 @@ export function LoginForm() {
 
 
       </CardContent>
-      <CardFooter className="flex flex-col items-center justify-center space-y-2">
+      <CardFooter className="flex flex-col items-center justify-center space-y-3">
+        {isFirestoreMode() && (
+          <div className="w-full text-center pb-2 border-b border-secondary/40">
+            <button
+              type="button"
+              onClick={async () => {
+                if (confirm("Deseja forçar a atualização total do aplicativo? Isso limpará caches e arquivos temporários antigos do seu celular.")) {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  if ('caches' in window) {
+                    try {
+                      const keys = await caches.keys();
+                      await Promise.all(keys.map(key => caches.delete(key)));
+                    } catch (e) {}
+                  }
+                  if ('serviceWorker' in navigator) {
+                    try {
+                      const regs = await navigator.serviceWorker.getRegistrations();
+                      await Promise.all(regs.map(reg => reg.unregister()));
+                    } catch (e) {}
+                  }
+                  window.location.reload();
+                }
+              }}
+              className="text-[11px] font-bold text-muted-foreground hover:text-primary transition-colors underline decoration-dotted uppercase tracking-wider"
+            >
+              Problemas no celular? Limpar cache e atualizar
+            </button>
+          </div>
+        )}
         {!isFirestoreMode() ? (
           <p className="text-xs text-center text-muted-foreground px-2">
             Selecione o perfil desejado para acessar a demonstração interativa.

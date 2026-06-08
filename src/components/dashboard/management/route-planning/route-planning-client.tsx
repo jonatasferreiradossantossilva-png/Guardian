@@ -15,6 +15,8 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { Calendar } from '@/components/ui/calendar';
 import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/lib/utils';
+import { SafeRow } from '@/components/shared/safe-table';
 
 export function RoutePlanningClient() {
   const { data: routes } = useDataCollection<Route>('routes');
@@ -23,6 +25,7 @@ export function RoutePlanningClient() {
   const { data: schools } = useDataCollection<any>('schools');
   const { data: vehicles } = useDataCollection<any>('vehicles');
   const { data: drivers } = useDataCollection<Driver>('drivers');
+  const { data: tripRequests } = useDataCollection<TripRequest>('trip_requests');
 
   const { addDoc, updateDoc } = useData();
 
@@ -76,6 +79,23 @@ export function RoutePlanningClient() {
     }
   }, [toastMessage]);
 
+  const isStudentAbsent = (student: Student): boolean => {
+    if (!student || !student.status) return false;
+    if (student.status === 'ausente_dia_todo') return true;
+    if (selectedDirection === 'ida' && student.status === 'ausente_ida') return true;
+    if (selectedDirection === 'volta' && student.status === 'ausente_volta') return true;
+    return false;
+  };
+
+  const hasApprovedTripRequestToday = (studentId: string): boolean => {
+    if (!tripRequests) return false;
+    return tripRequests.some(tr => 
+      tr.studentId === studentId && 
+      tr.status === 'aprovada' && 
+      (tr.date === dateStr || (tr.startDate && tr.endDate && dateStr >= tr.startDate && dateStr <= tr.endDate))
+    );
+  };
+
   // 1. Available Routes (filtered by shift + vehicle)
   const availableRoutes = useMemo(() => {
     let filtered = (routes || []).filter(r => r && (r.shift === selectedShift || r.shift === 'Integral'));
@@ -110,8 +130,12 @@ export function RoutePlanningClient() {
     if (selectedRouteId === 'none') return;
     
     const exists = (availableRoutes || []).some(r => r.id === selectedRouteId);
-    if (!exists && (availableRoutes || []).length > 0 && selectedRouteId !== '') {
-      setSelectedRouteId(availableRoutes[0].id);
+    if (!exists) {
+      if ((availableRoutes || []).length > 0) {
+        setSelectedRouteId(availableRoutes[0].id);
+      } else {
+        setSelectedRouteId('none');
+      }
     }
   }, [availableRoutes, selectedRouteId]);
 
@@ -657,17 +681,19 @@ export function RoutePlanningClient() {
                       {vehicleStudents.filter(student => student && student.id).map((student: Student) => {
                         const currentRoute = getStudentCurrentRoute(student.id);
                         return (
-                          <div key={student.id} className="p-4 flex items-center justify-between bg-card hover:bg-muted/50 transition-colors">
-                            <div className="flex-1 min-w-0">
-                              <p className="text-sm font-medium">{student.name}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
+                          <SafeRow key={student.id} name={`vehicle-student-${student.id}`}>
+                            <div className="p-4 flex items-center justify-between bg-card hover:bg-muted/50 transition-colors">
+                              <div className="flex-1 min-w-0">
+                                <p className="text-sm font-medium">{student.name}</p>
+                                <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
+                              </div>
+                              {currentRoute && (
+                                <Badge variant="outline" className="text-xs font-bold border-orange-500/30 text-orange-500 bg-orange-500/5">
+                                  {currentRoute.name}
+                                </Badge>
+                              )}
                             </div>
-                            {currentRoute && (
-                              <Badge variant="outline" className="text-xs font-bold border-orange-500/30 text-orange-500 bg-orange-500/5">
-                                {currentRoute.name}
-                              </Badge>
-                            )}
-                          </div>
+                          </SafeRow>
                         );
                       })}
                     </div>
@@ -708,15 +734,25 @@ export function RoutePlanningClient() {
                     <Badge variant="secondary">{(extraStudents || []).length}</Badge>
                   </CardHeader>
                   <div className="divide-y divide-border">
-                    {(extraStudents || []).filter(student => student && student.id).map((student: Student) => (
-                      <div key={student.id} className="p-4 flex items-center gap-4 bg-card hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => toggleRouteStudent(student.id)}>
-                        <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{student.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">Manifesto Extra • {getSchoolName(student.schoolId)}</p>
-                        </div>
-                      </div>
-                    ))}
+                    {(extraStudents || []).filter(student => student && student.id).map((student: Student) => {
+                      const isAbsent = isStudentAbsent(student);
+                      return (
+                        <SafeRow key={student.id} name={`extra-student-${student.id}`}>
+                          <div className={cn("p-4 flex items-center gap-4 bg-card hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
+                            <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                            <div className="flex-1 min-w-0">
+                              <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">Manifesto Extra • {getSchoolName(student.schoolId)}</p>
+                            </div>
+                            {isAbsent && (
+                              <Badge variant="destructive" className="text-[10px] font-bold">
+                                🚫 Falta
+                              </Badge>
+                            )}
+                          </div>
+                        </SafeRow>
+                      );
+                    })}
                   </div>
                 </Card>
               )}
@@ -729,15 +765,25 @@ export function RoutePlanningClient() {
                   <div className="p-10 text-center text-muted-foreground text-sm">Nenhum aluno fixo nesta rota.</div>
                 ) : (
                   <div className="divide-y divide-border">
-                    {(fixedStudents || []).filter(student => student && student.id).map((student: Student) => (
-                      <div key={student.id} className="p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => toggleRouteStudent(student.id)}>
-                        <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium">{student.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
-                        </div>
-                      </div>
-                    ))}
+                    {(fixedStudents || []).filter(student => student && student.id).map((student: Student) => {
+                      const isAbsent = isStudentAbsent(student);
+                      return (
+                        <SafeRow key={student.id} name={`fixed-student-${student.id}`}>
+                          <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
+                            <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                            <div className="flex-1 min-w-0">
+                              <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
+                            </div>
+                            {isAbsent && (
+                              <Badge variant="destructive" className="text-[10px] font-bold">
+                                🚫 Falta
+                              </Badge>
+                            )}
+                          </div>
+                        </SafeRow>
+                      );
+                    })}
                   </div>
                 )}
               </Card>
@@ -844,23 +890,37 @@ export function RoutePlanningClient() {
               <div className="divide-y divide-border">
                 {(availableExtras || []).filter(student => student && student.id).map((student: Student) => {
                   const currentRoute = getStudentCurrentRoute(student.id);
+                  const isAbsent = isStudentAbsent(student);
+                  const isExtra = hasApprovedTripRequestToday(student.id);
                   return (
-                    <div key={student.id} className="p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors" onClick={() => toggleExtraStudent(student.id)}>
-                      <Checkbox checked={selectedExtraStudentIds.includes(student.id)} onCheckedChange={() => {}} />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium">{student.name}</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
+                    <SafeRow key={student.id} name={`available-extra-${student.id}`}>
+                      <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleExtraStudent(student.id)}>
+                        <Checkbox checked={selectedExtraStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                        <div className="flex-1 min-w-0">
+                          <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
+                        </div>
+                        {isAbsent && (
+                          <Badge variant="destructive" className="text-[10px] font-bold mr-2">
+                            🚫 Falta
+                          </Badge>
+                        )}
+                        {isExtra && (
+                          <Badge variant="outline" className="text-[10px] font-bold border-amber-500 text-amber-500 bg-amber-500/5 mr-2">
+                            ✨ Avulso (Aprovado)
+                          </Badge>
+                        )}
+                        {currentRoute ? (
+                          <Badge variant="outline" className="text-xs font-bold border-orange-500/30 text-orange-500 bg-orange-500/5">
+                            {currentRoute.name}
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-xs font-semibold text-muted-foreground bg-muted">
+                            Sem Rota
+                          </Badge>
+                        )}
                       </div>
-                      {currentRoute ? (
-                        <Badge variant="outline" className="text-xs font-bold border-orange-500/30 text-orange-500 bg-orange-500/5">
-                          {currentRoute.name}
-                        </Badge>
-                      ) : (
-                        <Badge variant="secondary" className="text-xs font-semibold text-muted-foreground bg-muted">
-                          Sem Rota
-                        </Badge>
-                      )}
-                    </div>
+                    </SafeRow>
                   );
                 })}
               </div>

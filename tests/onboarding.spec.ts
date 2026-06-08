@@ -81,9 +81,9 @@ test.describe('Onboarding de Gestor', () => {
     // 5. NOVA ETAPA: Ativação do Negócio
     await expect(page.getByText('Ativação do Negócio')).toBeVisible({ timeout: 15000 });
     
-    // Verificar se o nome da empresa foi auto-preenchido
-    const companyInput = page.locator('input#companyName');
-    await expect(companyInput).toHaveValue(`Transportes ${formatedName}`, { timeout: 10000 });
+    // Verificar se o nome da rota principal foi auto-preenchido
+    const routeInput = page.locator('input#routeName');
+    await expect(routeInput).toHaveValue(`Rota Colégio - ${formatedName}`, { timeout: 10000 });
     
     // Definir nome da rota
     await page.fill('input#routeName', 'Rota Colégio Amos - Manhã');

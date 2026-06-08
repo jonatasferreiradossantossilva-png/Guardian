@@ -41,10 +41,37 @@ export default function RootLayout({
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(function(registration) {
-                    console.log('ServiceWorker registration successful with scope: ', registration.scope);
-                  }, function(err) {
-                    console.log('ServiceWorker registration failed: ', err);
+                    console.log('ServiceWorker registered:', registration.scope);
+                    
+                    // 1. Forçar verificação de atualizações no carregamento da página
+                    registration.update();
+                    
+                    // 2. Se já houver um Service Worker esperando, mandar ativar imediatamente
+                    if (registration.waiting) {
+                      registration.waiting.postMessage({ type: 'SKIP_WAITING' });
+                    }
+                    
+                    // 3. Monitorar novas atualizações encontradas em segundo plano
+                    registration.addEventListener('updatefound', function() {
+                      const newWorker = registration.installing;
+                      if (newWorker) {
+                        newWorker.addEventListener('statechange', function() {
+                          if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                            newWorker.postMessage({ type: 'SKIP_WAITING' });
+                          }
+                        });
+                      }
+                    });
                   });
+                });
+
+                // 4. Recarregar automaticamente a tela assim que o novo Service Worker assumir
+                let refreshing = false;
+                navigator.serviceWorker.addEventListener('controllerchange', function() {
+                  if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                  }
                 });
               }
             `,
