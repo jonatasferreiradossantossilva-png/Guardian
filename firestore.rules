@@ -135,6 +135,16 @@ service cloud.firestore {
     }
 
     /**
+     * @description Manages daily route manifest documents.
+     * @principle Admins have full access. Drivers and Monitors can read and update.
+     * Any signed-in user can read to support parent tracking.
+     */
+    match /route_manifests/{manifestId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin() || isDriver() || isMonitor();
+    }
+
+    /**
      * @description Manages invoice documents for billing.
      * @principle Admins have full access. Parents can only read invoices linked to them.
      */
