@@ -5,7 +5,7 @@ import { Route, Student, RouteManifest, TripRequest, Driver } from '@/types/mock
 import { useData, useDataCollection } from '@/hooks/use-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, Bus, User as UserIcon, ArrowRightLeft, School, UserPlus, Truck, Info, CheckSquare, Users, Plus, Search, ArrowLeft, History } from 'lucide-react';
+import { CalendarIcon, Bus, User as UserIcon, ArrowRightLeft, School, UserPlus, Truck, Info, CheckSquare, Users, Plus, Search, ArrowLeft, History, Loader2 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -61,6 +61,7 @@ export function RoutePlanningClient() {
   const [statusFilter, setStatusFilter] = useState<'all' | 'unallocated' | 'allocated'>('all');
   // Visual Toast notifications
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [isPublishing, setIsPublishing] = useState(false);
 
   const dateStr = format(selectedDate, 'yyyy-MM-dd');
   
@@ -371,8 +372,8 @@ export function RoutePlanningClient() {
   };
 
   // Atomic transfer logic with double-allocation prevention
-  const pullMultipleStudentsToRoute = (studentIds: string[], targetRouteId: string) => {
-    const targetRoute = (routes || []).find(r => r.id === targetRouteId);
+  const pullMultipleStudentsToRoute = (studentIds: string[], targetRouteId: string, newlyCreatedRoute?: Route) => {
+    const targetRoute = newlyCreatedRoute || (routes || []).find(r => r.id === targetRouteId);
     if (!targetRoute || studentIds.length === 0) return;
 
     const newLocalManifests = { ...localManifests };
@@ -477,7 +478,7 @@ export function RoutePlanningClient() {
 
       try {
         await addDoc('routes', newRoute);
-        pullMultipleStudentsToRoute(selectedExtraStudentIds, newRouteId);
+        pullMultipleStudentsToRoute(selectedExtraStudentIds, newRouteId, newRoute);
       } catch (err) {
         console.error("Erro ao criar rota dinâmica:", err);
       }
@@ -511,6 +512,7 @@ export function RoutePlanningClient() {
   };
 
   const publishItinerary = async () => {
+    setIsPublishing(true);
     try {
       for (const manifestId of Object.keys(localManifests)) {
         const localManifest = localManifests[manifestId];
@@ -531,9 +533,16 @@ export function RoutePlanningClient() {
       setSelectedRouteStudentIds([]);
       setSelectedExtraStudentIds([]);
       setToastMessage("Itinerários publicados com sucesso!");
+      
+      // Smoothly redirect back to landing page after 1.2 seconds
+      setTimeout(() => {
+        setIsPlanningActive(false);
+        setIsPublishing(false);
+      }, 1200);
     } catch (error) {
       console.error("Erro ao salvar os itinerários:", error);
       setToastMessage("Erro ao publicar itinerários.");
+      setIsPublishing(false);
     }
   };
 
@@ -1295,11 +1304,29 @@ export function RoutePlanningClient() {
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
-                  <Button variant="outline" size="sm" onClick={discardChanges} className="border-border text-foreground hover:bg-muted/50 font-medium">
+                   <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={discardChanges} 
+                    disabled={isPublishing}
+                    className="border-border text-foreground hover:bg-muted/50 font-medium"
+                  >
                     Descartar
                   </Button>
-                  <Button size="sm" onClick={publishItinerary} className="bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-md shadow-orange-500/10">
-                    Publicar Itinerário
+                  <Button 
+                    size="sm" 
+                    onClick={publishItinerary} 
+                    disabled={isPublishing}
+                    className="bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-md shadow-orange-500/10 min-w-[150px] flex items-center justify-center gap-2"
+                  >
+                    {isPublishing ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Salvando...
+                      </>
+                    ) : (
+                      'Publicar Itinerário'
+                    )}
                   </Button>
                 </div>
               </div>
