@@ -5,7 +5,7 @@ import { Route, Student, RouteManifest, TripRequest, Driver } from '@/types/mock
 import { useData, useDataCollection } from '@/hooks/use-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, Bus, User as UserIcon, ArrowRightLeft, School, UserPlus, Truck, Info, CheckSquare, Users } from 'lucide-react';
+import { CalendarIcon, Bus, User as UserIcon, ArrowRightLeft, School, UserPlus, Truck, Info, CheckSquare, Users, Plus, Search, ArrowLeft, History } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,6 +17,8 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { SafeRow } from '@/components/shared/safe-table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 
 export function RoutePlanningClient() {
   const { data: routes } = useDataCollection<Route>('routes');
@@ -29,6 +31,18 @@ export function RoutePlanningClient() {
 
   const { addDoc, updateDoc } = useData();
 
+  // ─── Gate / Landing View States ───────────────────────────────
+  const [isPlanningActive, setIsPlanningActive] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isWizardOpen, setIsWizardOpen] = useState(false);
+
+  // Wizard form states (temporary until user confirms)
+  const [wizardDate, setWizardDate] = useState<Date>(new Date());
+  const [wizardShift, setWizardShift] = useState<'Manhã' | 'Tarde' | 'Integral'>('Manhã');
+  const [wizardDirection, setWizardDirection] = useState<'ida' | 'volta'>('ida');
+  const [wizardRouteId, setWizardRouteId] = useState<string>('none');
+
+  // ─── Workspace States ─────────────────────────────────────────
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('all');
   const [selectedShift, setSelectedShift] = useState<'Manhã' | 'Tarde' | 'Integral'>('Manhã');
@@ -529,6 +543,82 @@ export function RoutePlanningClient() {
     return school ? school.name : 'Escola não encontrada';
   };
 
+  // ─── Gate / Landing Helpers ───────────────────────────────────
+
+  // Grouped manifest summaries for the Landing view
+  const publishedManifestSummaries = useMemo(() => {
+    const manifests = routeManifests || [];
+    const summaries = manifests
+      .filter(m => m && m.routeId && m.date)
+      .map(m => {
+        const route = (routes || []).find(r => r && r.id === m.routeId);
+        return {
+          ...m,
+          routeName: route?.name || 'Rota desconhecida',
+          studentCount: (m.studentIds || []).length,
+        };
+      })
+      .sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+
+    // Apply search filter
+    if (searchQuery.trim()) {
+      const q = searchQuery.toLowerCase();
+      return summaries.filter(s =>
+        s.routeName.toLowerCase().includes(q) ||
+        s.date.includes(q) ||
+        (s.shift || '').toLowerCase().includes(q)
+      );
+    }
+    return summaries;
+  }, [routeManifests, routes, searchQuery]);
+
+  // Stats for the landing dashboard
+  const landingStats = useMemo(() => {
+    const totalStudents = (students || []).length;
+    const totalRoutes = (routes || []).length;
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    const todayManifests = (routeManifests || []).filter(m => m && m.date === todayStr);
+    const studentsAllocatedToday = new Set(todayManifests.flatMap(m => m.studentIds || [])).size;
+    return { totalStudents, totalRoutes, todayManifests: todayManifests.length, studentsAllocatedToday };
+  }, [students, routes, routeManifests]);
+
+  // Wizard routes (filtered by wizardShift)
+  const wizardAvailableRoutes = useMemo(() => {
+    return (routes || []).filter(r => r && (r.shift === wizardShift || r.shift === 'Integral'));
+  }, [routes, wizardShift]);
+
+  const handleWizardConfirm = () => {
+    setSelectedDate(wizardDate);
+    setSelectedShift(wizardShift);
+    setSelectedDirection(wizardDirection);
+    setSelectedRouteId(wizardRouteId);
+    setSelectedSchoolId('all');
+    setSelectedVehicleId('all');
+    setIsWizardOpen(false);
+    setIsPlanningActive(true);
+  };
+
+  const handleBackToLanding = () => {
+    if (isDirty) {
+      const confirmed = window.confirm('Você tem alterações não publicadas. Deseja realmente sair sem publicar?');
+      if (!confirmed) return;
+      setLocalManifests({});
+    }
+    setIsPlanningActive(false);
+    setSelectedRouteStudentIds([]);
+    setSelectedExtraStudentIds([]);
+  };
+
+  const handleEditManifest = (manifest: RouteManifest & { routeName: string }) => {
+    setSelectedDate(new Date(manifest.date + 'T12:00:00'));
+    setSelectedShift(manifest.shift as 'Manhã' | 'Tarde' | 'Integral');
+    setSelectedDirection(manifest.direction as 'ida' | 'volta');
+    setSelectedRouteId(manifest.routeId);
+    setSelectedSchoolId('all');
+    setSelectedVehicleId('all');
+    setIsPlanningActive(true);
+  };
+
   return (
     <div className="relative pb-24">
       {/* PREMIUM TOAST NOTIFICATION */}
@@ -541,36 +631,21 @@ export function RoutePlanningClient() {
         </div>
       )}
 
-      {/* HEADER */}
-      <div className="flex items-center justify-between mb-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Planejamento de Rotas</h1>
-          <p className="text-muted-foreground">Orquestração de manifestos e rotas em tempo real.</p>
-        </div>
-      </div>
+      {/* ═══════════════════ WIZARD MODAL ═══════════════════ */}
+      <Dialog open={isWizardOpen} onOpenChange={setIsWizardOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-xl font-bold flex items-center gap-2">
+              <Plus className="w-5 h-5 text-orange-500" />
+              Novo Planejamento
+            </DialogTitle>
+            <DialogDescription>
+              Configure os parâmetros para iniciar um novo planejamento de rota.
+            </DialogDescription>
+          </DialogHeader>
 
-      {/* FILTER CARD */}
-      <Card className="mb-6">
-        <CardHeader>
-          <CardTitle>Filtros</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <label className="text-sm font-medium flex items-center gap-2">
-                <School className="w-4 h-4 text-muted-foreground" /> Escola Base
-              </label>
-              <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Selecione a Escola" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Escolas</SelectItem>
-                  {(schools || []).filter(s => s && s.id).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-            
+          <div className="space-y-5 py-4">
+            {/* Wizard: Date */}
             <div className="space-y-2">
               <label className="text-sm font-medium flex items-center gap-2">
                 <CalendarIcon className="w-4 h-4 text-muted-foreground" /> Data do Planejamento
@@ -579,20 +654,19 @@ export function RoutePlanningClient() {
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-start text-left">
                     <CalendarIcon className="mr-2 h-4 w-4" />
-                    {format(selectedDate, 'PPP', { locale: ptBR })}
+                    {format(wizardDate, 'PPP', { locale: ptBR })}
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar mode="single" selected={selectedDate} onSelect={(d) => d && setSelectedDate(d)} initialFocus />
+                  <Calendar mode="single" selected={wizardDate} onSelect={(d) => d && setWizardDate(d)} initialFocus />
                 </PopoverContent>
               </Popover>
             </div>
-          </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {/* Wizard: Shift */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Turno</label>
-              <Select value={selectedShift} onValueChange={(v: any) => setSelectedShift(v)}>
+              <Select value={wizardShift} onValueChange={(v: any) => setWizardShift(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Turno" />
                 </SelectTrigger>
@@ -604,9 +678,10 @@ export function RoutePlanningClient() {
               </Select>
             </div>
 
+            {/* Wizard: Direction */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Sentido</label>
-              <Select value={selectedDirection} onValueChange={(v: any) => setSelectedDirection(v)}>
+              <Select value={wizardDirection} onValueChange={(v: any) => setWizardDirection(v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Sentido" />
                 </SelectTrigger>
@@ -617,167 +692,577 @@ export function RoutePlanningClient() {
               </Select>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium">Van</label>
-              <Select value={selectedVehicleId} onValueChange={setSelectedVehicleId}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Frota" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Todas as Vans</SelectItem>
-                  {(vehicles || []).filter(v => v && v.id).map(v => <SelectItem key={v.id} value={v.id}>{v.model}</SelectItem>)}
-                </SelectContent>
-              </Select>
-            </div>
-
+            {/* Wizard: Route */}
             <div className="space-y-2">
               <label className="text-sm font-medium">Rota</label>
-              <Select value={selectedRouteId} onValueChange={setSelectedRouteId}>
+              <Select value={wizardRouteId} onValueChange={setWizardRouteId}>
                 <SelectTrigger>
-                  <SelectValue placeholder={(availableRoutes || []).length > 0 ? "Escolher Rota" : "Vazio"} />
+                  <SelectValue placeholder="Escolher Rota" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="none">Geral</SelectItem>
-                  {(availableRoutes || []).filter(r => r && r.id).map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                  <SelectItem value="none">Visão Geral (Todas)</SelectItem>
+                  {(wizardAvailableRoutes || []).filter(r => r && r.id).map(r => (
+                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* UNIFIED TABS & CONTENT */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 mb-6">
-          <TabsTrigger value="minha-rota">
-            <Bus className="w-4 h-4 mr-2" />
-            Na Van ({hasActiveRoute ? (allRouteStudents || []).length : (selectedVehicleId !== 'all' ? (vehicleStudents || []).length : 0)})
-          </TabsTrigger>
-          <TabsTrigger value="adicionar">
-            <UserPlus className="w-4 h-4 mr-2" />
-            Buscar / Puxar ({(availableExtras || []).length})
-          </TabsTrigger>
-        </TabsList>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsWizardOpen(false)}>Cancelar</Button>
+            <Button onClick={handleWizardConfirm} className="bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-md shadow-orange-500/20">
+              Iniciar Planejamento
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
-        {/* TAB: NA VAN */}
-        <TabsContent value="minha-rota" className="space-y-4">
-          {!hasActiveRoute ? (
-            selectedVehicleId !== 'all' ? (
-              <>
-                <div className="flex items-center justify-between bg-card rounded-md p-4 border shadow-sm">
-                  <span className="text-sm font-semibold text-muted-foreground">
-                    Alunos alocados neste veículo ({vehicleStudents.length})
-                  </span>
+      {/* ═══════════════════ LANDING / GATE VIEW ═══════════════════ */}
+      {!isPlanningActive ? (
+        <div className="space-y-6">
+          {/* Landing Header */}
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Planejamento de Rotas</h1>
+              <p className="text-muted-foreground mt-1">Gerencie e crie planejamentos de transporte escolar.</p>
+            </div>
+            <Button
+              onClick={() => {
+                setWizardDate(new Date());
+                setWizardShift('Manhã');
+                setWizardDirection('ida');
+                setWizardRouteId('none');
+                setIsWizardOpen(true);
+              }}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-lg shadow-orange-500/20 h-11 px-6 text-sm"
+              id="btn-new-planning"
+            >
+              <Plus className="w-4 h-4 mr-2" />
+              Novo Planejamento
+            </Button>
+          </div>
+
+          {/* Stats Cards */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-orange-500/10 flex items-center justify-center text-orange-500">
+                    <Users className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{landingStats.totalStudents}</p>
+                    <p className="text-xs text-muted-foreground font-medium">Total de Alunos</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-blue-500/10 flex items-center justify-center text-blue-500">
+                    <Bus className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{landingStats.totalRoutes}</p>
+                    <p className="text-xs text-muted-foreground font-medium">Rotas Cadastradas</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-emerald-500/10 flex items-center justify-center text-emerald-500">
+                    <CheckSquare className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{landingStats.todayManifests}</p>
+                    <p className="text-xs text-muted-foreground font-medium">Manifestos Hoje</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+            <Card className="relative overflow-hidden">
+              <CardContent className="p-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500">
+                    <UserIcon className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <p className="text-2xl font-bold">{landingStats.studentsAllocatedToday}</p>
+                    <p className="text-xs text-muted-foreground font-medium">Alocados Hoje</p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* Search + Manifest History */}
+          <Card>
+            <CardHeader className="pb-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <CardTitle className="flex items-center gap-2 text-lg">
+                  <History className="w-5 h-5 text-muted-foreground" />
+                  Planejamentos Publicados
+                </CardTitle>
+                <div className="relative w-full sm:w-72">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                  <Input
+                    placeholder="Buscar por rota, data, turno..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 h-9"
+                    id="search-manifests"
+                  />
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent>
+              {publishedManifestSummaries.length === 0 ? (
+                <div className="p-12 text-center flex flex-col items-center justify-center">
+                  <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mb-4 border border-muted-foreground/10 text-muted-foreground/50">
+                    <Bus className="w-8 h-8" />
+                  </div>
+                  <h3 className="text-base font-bold text-foreground mb-1">Nenhum planejamento encontrado</h3>
+                  <p className="text-muted-foreground text-sm max-w-sm">
+                    {searchQuery.trim()
+                      ? 'Tente buscar com outros termos ou limpe a pesquisa.'
+                      : 'Clique em "Novo Planejamento" para criar seu primeiro manifesto de rota.'}
+                  </p>
+                </div>
+              ) : (
+                <div className="divide-y divide-border rounded-lg border overflow-hidden">
+                  {publishedManifestSummaries.map((manifest) => (
+                    <SafeRow key={manifest.id} name={`manifest-row-${manifest.id}`}>
+                      <div
+                        className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer group"
+                        onClick={() => handleEditManifest(manifest)}
+                      >
+                        <div className="flex-1 min-w-0">
+                          <p className="text-sm font-semibold group-hover:text-orange-500 transition-colors">{manifest.routeName}</p>
+                          <p className="text-xs text-muted-foreground mt-0.5">
+                            {(() => {
+                              try {
+                                return format(new Date(manifest.date + 'T12:00:00'), 'dd MMM yyyy', { locale: ptBR });
+                              } catch {
+                                return manifest.date;
+                              }
+                            })()}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge variant="outline" className="text-[10px] font-bold">
+                            {manifest.shift || '—'}
+                          </Badge>
+                          <Badge variant="outline" className={cn(
+                            "text-[10px] font-bold",
+                            manifest.direction === 'ida'
+                              ? 'border-blue-500/30 text-blue-500 bg-blue-500/5'
+                              : 'border-violet-500/30 text-violet-500 bg-violet-500/5'
+                          )}>
+                            {manifest.direction === 'ida' ? '↗ Ida' : '↙ Volta'}
+                          </Badge>
+                          <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/30 text-[10px] font-bold">
+                            {manifest.studentCount} {manifest.studentCount === 1 ? 'aluno' : 'alunos'}
+                          </Badge>
+                        </div>
+                      </div>
+                    </SafeRow>
+                  ))}
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      ) : (
+        /* ═══════════════════ WORKSPACE VIEW ═══════════════════ */
+        <>
+          {/* Back Button */}
+          <div className="mb-4">
+            <Button variant="ghost" size="sm" onClick={handleBackToLanding} className="text-muted-foreground hover:text-foreground gap-2 -ml-2">
+              <ArrowLeft className="w-4 h-4" />
+              Voltar para o Painel
+            </Button>
+          </div>
+
+          {/* HEADER */}
+          <div className="flex items-center justify-between mb-6">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Planejamento de Rotas</h1>
+              <p className="text-muted-foreground">Orquestração de manifestos e rotas em tempo real.</p>
+            </div>
+          </div>
+
+          {/* FILTER CARD */}
+          <Card className="mb-6">
+            <CardHeader>
+              <CardTitle>Filtros</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <School className="w-4 h-4 text-muted-foreground" /> Escola Base
+                  </label>
+                  <Select value={selectedSchoolId} onValueChange={setSelectedSchoolId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione a Escola" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as Escolas</SelectItem>
+                      {(schools || []).filter(s => s && s.id).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+                
+                <div className="space-y-2">
+                  <label className="text-sm font-medium flex items-center gap-2">
+                    <CalendarIcon className="w-4 h-4 text-muted-foreground" /> Data do Planejamento
+                  </label>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button variant="outline" className="w-full justify-start text-left">
+                        <CalendarIcon className="mr-2 h-4 w-4" />
+                        {format(selectedDate, 'PPP', { locale: ptBR })}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar mode="single" selected={selectedDate} onSelect={(d) => d && setSelectedDate(d)} initialFocus />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Turno</label>
+                  <Select value={selectedShift} onValueChange={(v: any) => setSelectedShift(v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Turno" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Manhã">Manhã</SelectItem>
+                      <SelectItem value="Tarde">Tarde</SelectItem>
+                      <SelectItem value="Integral">Integral</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
-                <Card className="overflow-hidden">
-                  <CardHeader className="bg-muted/50 py-3">
-                    <CardTitle className="text-sm font-semibold text-muted-foreground">Manifesto Consolidado do Veículo</CardTitle>
-                  </CardHeader>
-                  {vehicleStudents.length === 0 ? (
-                    <div className="p-10 text-center text-muted-foreground text-sm">Nenhum aluno alocado neste veículo hoje.</div>
-                  ) : (
-                    <div className="divide-y divide-border">
-                      {vehicleStudents.filter(student => student && student.id).map((student: Student) => {
-                        const currentRoute = getStudentCurrentRoute(student.id);
-                        return (
-                          <SafeRow key={student.id} name={`vehicle-student-${student.id}`}>
-                            <div className="p-4 flex items-center justify-between bg-card hover:bg-muted/50 transition-colors">
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-medium">{student.name}</p>
-                                <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
-                              </div>
-                              {currentRoute && (
-                                <Badge variant="outline" className="text-xs font-bold border-orange-500/30 text-orange-500 bg-orange-500/5">
-                                  {currentRoute.name}
-                                </Badge>
-                              )}
-                            </div>
-                          </SafeRow>
-                        );
-                      })}
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Sentido</label>
+                  <Select value={selectedDirection} onValueChange={(v: any) => setSelectedDirection(v)}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sentido" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ida">Ida (Casa ➔ Escola)</SelectItem>
+                      <SelectItem value="volta">Volta (Escola ➔ Casa)</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Van</label>
+                  <Select value={selectedVehicleId} onValueChange={setSelectedVehicleId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Frota" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Todas as Vans</SelectItem>
+                      {(vehicles || []).filter(v => v && v.id).map(v => <SelectItem key={v.id} value={v.id}>{v.model}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-sm font-medium">Rota</label>
+                  <Select value={selectedRouteId} onValueChange={setSelectedRouteId}>
+                    <SelectTrigger>
+                      <SelectValue placeholder={(availableRoutes || []).length > 0 ? "Escolher Rota" : "Vazio"} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="none">Geral</SelectItem>
+                      {(availableRoutes || []).filter(r => r && r.id).map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* UNIFIED TABS & CONTENT */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-6">
+              <TabsTrigger value="minha-rota">
+                <Bus className="w-4 h-4 mr-2" />
+                Na Van ({hasActiveRoute ? (allRouteStudents || []).length : (selectedVehicleId !== 'all' ? (vehicleStudents || []).length : 0)})
+              </TabsTrigger>
+              <TabsTrigger value="adicionar">
+                <UserPlus className="w-4 h-4 mr-2" />
+                Buscar / Puxar ({(availableExtras || []).length})
+              </TabsTrigger>
+            </TabsList>
+
+            {/* TAB: NA VAN */}
+            <TabsContent value="minha-rota" className="space-y-4">
+              {!hasActiveRoute ? (
+                selectedVehicleId !== 'all' ? (
+                  <>
+                    <div className="flex items-center justify-between bg-card rounded-md p-4 border shadow-sm">
+                      <span className="text-sm font-semibold text-muted-foreground">
+                        Alunos alocados neste veículo ({vehicleStudents.length})
+                      </span>
                     </div>
+
+                    <Card className="overflow-hidden">
+                      <CardHeader className="bg-muted/50 py-3">
+                        <CardTitle className="text-sm font-semibold text-muted-foreground">Manifesto Consolidado do Veículo</CardTitle>
+                      </CardHeader>
+                      {vehicleStudents.length === 0 ? (
+                        <div className="p-10 text-center text-muted-foreground text-sm">Nenhum aluno alocado neste veículo hoje.</div>
+                      ) : (
+                        <div className="divide-y divide-border">
+                          {vehicleStudents.filter(student => student && student.id).map((student: Student) => {
+                            const currentRoute = getStudentCurrentRoute(student.id);
+                            return (
+                              <SafeRow key={student.id} name={`vehicle-student-${student.id}`}>
+                                <div className="p-4 flex items-center justify-between bg-card hover:bg-muted/50 transition-colors">
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium">{student.name}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
+                                  </div>
+                                  {currentRoute && (
+                                    <Badge variant="outline" className="text-xs font-bold border-orange-500/30 text-orange-500 bg-orange-500/5">
+                                      {currentRoute.name}
+                                    </Badge>
+                                  )}
+                                </div>
+                              </SafeRow>
+                            );
+                          })}
+                        </div>
+                      )}
+                    </Card>
+                  </>
+                ) : (
+                  <Card className="p-16 text-center flex flex-col items-center justify-center border-dashed bg-muted/10 border-muted-foreground/20">
+                    <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mb-6 border border-muted-foreground/10 text-muted-foreground/60">
+                      <Truck className="w-8 h-8" />
+                    </div>
+                    <h3 className="text-lg font-bold text-foreground mb-1">Nenhuma Rota Selecionada</h3>
+                    <p className="text-muted-foreground max-w-sm text-sm">
+                      Selecione uma rota/van específica no filtro acima para visualizar e gerenciar os alunos que estão alocados nela.
+                    </p>
+                  </Card>
+                )
+              ) : (
+                <>
+                  <div className="flex items-center justify-between bg-card rounded-md p-4 border shadow-sm">
+                    <Button variant="ghost" size="sm" onClick={selectAllRouteStudents}>
+                      <CheckSquare className="w-4 h-4 mr-2" />
+                      {selectedRouteStudentIds.length === (allRouteStudents || []).length && (allRouteStudents || []).length > 0 ? 'Desmarcar' : 'Selecionar Tudo'}
+                    </Button>
+                    {(selectedRouteStudentIds || []).length > 0 && (
+                      <Button variant="destructive" size="sm" onClick={removeStudentsFromRoute}>
+                        Remover {selectedRouteStudentIds.length} da Rota
+                      </Button>
+                    )}
+                  </div>
+
+                  {(extraStudents || []).length > 0 && (
+                    <Card className="overflow-hidden">
+                      <CardHeader className="bg-muted/50 py-3 flex flex-row items-center justify-between space-y-0">
+                        <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                          Encaixes Temporários
+                        </CardTitle>
+                        <Badge variant="secondary">{(extraStudents || []).length}</Badge>
+                      </CardHeader>
+                      <div className="divide-y divide-border">
+                        {(extraStudents || []).filter(student => student && student.id).map((student: Student) => {
+                          const isAbsent = isStudentAbsent(student);
+                          return (
+                            <SafeRow key={student.id} name={`extra-student-${student.id}`}>
+                              <div className={cn("p-4 flex items-center gap-4 bg-card hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
+                                <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                                <div className="flex-1 min-w-0">
+                                  <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">Manifesto Extra • {getSchoolName(student.schoolId)}</p>
+                                </div>
+                                {isAbsent && (
+                                  <Badge variant="destructive" className="text-[10px] font-bold">
+                                    🚫 Falta
+                                  </Badge>
+                                )}
+                              </div>
+                            </SafeRow>
+                          );
+                        })}
+                      </div>
+                    </Card>
                   )}
-                </Card>
-              </>
-            ) : (
-              <Card className="p-16 text-center flex flex-col items-center justify-center border-dashed bg-muted/10 border-muted-foreground/20">
-                <div className="w-16 h-16 bg-muted/20 rounded-full flex items-center justify-center mb-6 border border-muted-foreground/10 text-muted-foreground/60">
-                  <Truck className="w-8 h-8" />
-                </div>
-                <h3 className="text-lg font-bold text-foreground mb-1">Nenhuma Rota Selecionada</h3>
-                <p className="text-muted-foreground max-w-sm text-sm">
-                  Selecione uma rota/van específica no filtro acima para visualizar e gerenciar os alunos que estão alocados nela.
-                </p>
-              </Card>
-            )
-          ) : (
-            <>
-              <div className="flex items-center justify-between bg-card rounded-md p-4 border shadow-sm">
-                <Button variant="ghost" size="sm" onClick={selectAllRouteStudents}>
-                  <CheckSquare className="w-4 h-4 mr-2" />
-                  {selectedRouteStudentIds.length === (allRouteStudents || []).length && (allRouteStudents || []).length > 0 ? 'Desmarcar' : 'Selecionar Tudo'}
-                </Button>
-                {(selectedRouteStudentIds || []).length > 0 && (
-                  <Button variant="destructive" size="sm" onClick={removeStudentsFromRoute}>
-                    Remover {selectedRouteStudentIds.length} da Rota
+
+                  <Card className="overflow-hidden">
+                    <CardHeader className="bg-muted/50 py-3">
+                      <CardTitle className="text-sm font-semibold text-muted-foreground">Manifesto Regular ({(fixedStudents || []).length})</CardTitle>
+                    </CardHeader>
+                    {(fixedStudents || []).length === 0 ? (
+                      <div className="p-10 text-center text-muted-foreground text-sm">Nenhum aluno fixo nesta rota.</div>
+                    ) : (
+                      <div className="divide-y divide-border">
+                        {(fixedStudents || []).filter(student => student && student.id).map((student: Student) => {
+                          const isAbsent = isStudentAbsent(student);
+                          return (
+                            <SafeRow key={student.id} name={`fixed-student-${student.id}`}>
+                              <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
+                                <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                                <div className="flex-1 min-w-0">
+                                  <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
+                                  <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
+                                </div>
+                                {isAbsent && (
+                                  <Badge variant="destructive" className="text-[10px] font-bold">
+                                    🚫 Falta
+                                  </Badge>
+                                )}
+                              </div>
+                            </SafeRow>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </Card>
+                </>
+              )}
+            </TabsContent>
+
+            {/* TAB: BUSCAR / PUXAR */}
+            <TabsContent value="adicionar" className="space-y-4">
+              {/* Pill Status Filters in General view */}
+              {!hasActiveRoute && (
+                <div className="flex flex-wrap items-center gap-2 mb-4 bg-muted/20 p-2 rounded-lg border border-border/40">
+                  <span className="text-xs text-muted-foreground font-semibold px-2">Filtrar Alunos:</span>
+                  <Button 
+                    variant={statusFilter === 'all' ? 'default' : 'ghost'} 
+                    size="sm" 
+                    onClick={() => setStatusFilter('all')}
+                    className={statusFilter === 'all' ? 'bg-orange-500 hover:bg-orange-600 text-white font-bold h-8 rounded-full' : 'h-8 rounded-full text-foreground hover:bg-muted/50'}
+                  >
+                    Todos ({(students || []).filter(s => s && (selectedSchoolId === 'all' || s.schoolId === selectedSchoolId) && (s.shift === selectedShift || s.shift === 'Integral')).length})
                   </Button>
+                  <Button 
+                    variant={statusFilter === 'unallocated' ? 'default' : 'ghost'} 
+                    size="sm" 
+                    onClick={() => setStatusFilter('unallocated')}
+                    className={statusFilter === 'unallocated' ? 'bg-orange-500 hover:bg-orange-600 text-white font-bold h-8 rounded-full' : 'h-8 rounded-full text-foreground hover:bg-muted/50'}
+                  >
+                    Sem Rota ({
+                      (students || []).filter(s => {
+                        if (!s) return false;
+                        const matchSchool = selectedSchoolId === 'all' || s.schoolId === selectedSchoolId;
+                        const matchShift = s.shift === selectedShift || s.shift === 'Integral';
+                        return matchSchool && matchShift && !getStudentCurrentRoute(s.id);
+                      }).length
+                    })
+                  </Button>
+                  <Button 
+                    variant={statusFilter === 'allocated' ? 'default' : 'ghost'} 
+                    size="sm" 
+                    onClick={() => setStatusFilter('allocated')}
+                    className={statusFilter === 'allocated' ? 'bg-orange-500 hover:bg-orange-600 text-white font-bold h-8 rounded-full' : 'h-8 rounded-full text-foreground hover:bg-muted/50'}
+                  >
+                    Já Alocados ({
+                      (students || []).filter(s => {
+                        if (!s) return false;
+                        const matchSchool = selectedSchoolId === 'all' || s.schoolId === selectedSchoolId;
+                        const matchShift = s.shift === selectedShift || s.shift === 'Integral';
+                        return matchSchool && matchShift && !!getStudentCurrentRoute(s.id);
+                      }).length
+                    })
+                  </Button>
+                </div>
+              )}
+
+              <div className="flex items-center justify-between bg-card rounded-md p-4 border shadow-sm">
+                <Button variant="ghost" size="sm" onClick={selectAllExtras}>
+                  <CheckSquare className="w-4 h-4 mr-2" />
+                  {selectedExtraStudentIds.length === (availableExtras || []).length && (availableExtras || []).length > 0 ? 'Desmarcar' : 'Selecionar Tudo'}
+                </Button>
+                {(selectedExtraStudentIds || []).length > 0 && (
+                  (hasActiveRoute || singleRouteFromFilter) ? (
+                    <Button 
+                      size="sm" 
+                      onClick={() => {
+                        const targetRouteId = hasActiveRoute ? selectedRouteId : (singleRouteFromFilter?.id || '');
+                        pullMultipleStudentsToRoute(selectedExtraStudentIds, targetRouteId);
+                      }} 
+                      className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
+                    >
+                      <ArrowRightLeft className="mr-2 h-4 w-4" />
+                      Puxar {selectedExtraStudentIds.length} para a Van {activeVehicle ? `(${activeVehicle.model})` : ''}
+                    </Button>
+                  ) : (
+                    <Select onValueChange={(routeId) => pullMultipleStudentsToRoute(selectedExtraStudentIds, routeId)}>
+                      <SelectTrigger className="w-[240px] h-9 bg-orange-500 hover:bg-orange-600 text-white font-bold border-none shadow-md shadow-orange-500/10 cursor-pointer">
+                        <div className="flex items-center justify-center w-full">
+                          <ArrowRightLeft className="mr-2 h-4 w-4 shrink-0" />
+                          <span>Puxar {selectedExtraStudentIds.length} para a Van ▾</span>
+                        </div>
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(availableRoutes || []).filter(r => r && r.id).map(r => (
+                          <SelectItem key={r.id} value={r.id}>
+                            {r.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  )
                 )}
               </div>
 
-              {(extraStudents || []).length > 0 && (
-                <Card className="overflow-hidden">
-                  <CardHeader className="bg-muted/50 py-3 flex flex-row items-center justify-between space-y-0">
-                    <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                      Encaixes Temporários
-                    </CardTitle>
-                    <Badge variant="secondary">{(extraStudents || []).length}</Badge>
-                  </CardHeader>
-                  <div className="divide-y divide-border">
-                    {(extraStudents || []).filter(student => student && student.id).map((student: Student) => {
-                      const isAbsent = isStudentAbsent(student);
-                      return (
-                        <SafeRow key={student.id} name={`extra-student-${student.id}`}>
-                          <div className={cn("p-4 flex items-center gap-4 bg-card hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
-                            <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
-                            <div className="flex-1 min-w-0">
-                              <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">Manifesto Extra • {getSchoolName(student.schoolId)}</p>
-                            </div>
-                            {isAbsent && (
-                              <Badge variant="destructive" className="text-[10px] font-bold">
-                                🚫 Falta
-                              </Badge>
-                            )}
-                          </div>
-                        </SafeRow>
-                      );
-                    })}
-                  </div>
-                </Card>
-              )}
-
               <Card className="overflow-hidden">
                 <CardHeader className="bg-muted/50 py-3">
-                  <CardTitle className="text-sm font-semibold text-muted-foreground">Manifesto Regular ({(fixedStudents || []).length})</CardTitle>
+                  <CardTitle className="text-sm font-semibold text-muted-foreground">Alunos Disponíveis</CardTitle>
                 </CardHeader>
-                {(fixedStudents || []).length === 0 ? (
-                  <div className="p-10 text-center text-muted-foreground text-sm">Nenhum aluno fixo nesta rota.</div>
+                {(availableExtras || []).length === 0 ? (
+                  <div className="p-16 text-center text-muted-foreground">
+                    <Info className="w-10 h-10 mx-auto mb-4 opacity-20" />
+                    <p className="text-sm font-medium">Nenhum aluno disponível</p>
+                    <p className="text-xs mt-1">Tente ajustar os filtros ou mudar o status das pílulas.</p>
+                  </div>
                 ) : (
                   <div className="divide-y divide-border">
-                    {(fixedStudents || []).filter(student => student && student.id).map((student: Student) => {
+                    {(availableExtras || []).filter(student => student && student.id).map((student: Student) => {
+                      const currentRoute = getStudentCurrentRoute(student.id);
                       const isAbsent = isStudentAbsent(student);
+                      const isExtra = hasApprovedTripRequestToday(student.id);
                       return (
-                        <SafeRow key={student.id} name={`fixed-student-${student.id}`}>
-                          <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
-                            <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                        <SafeRow key={student.id} name={`available-extra-${student.id}`}>
+                          <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleExtraStudent(student.id)}>
+                            <Checkbox checked={selectedExtraStudentIds.includes(student.id)} onCheckedChange={() => {}} />
                             <div className="flex-1 min-w-0">
                               <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
                               <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
                             </div>
                             {isAbsent && (
-                              <Badge variant="destructive" className="text-[10px] font-bold">
+                              <Badge variant="destructive" className="text-[10px] font-bold mr-2">
                                 🚫 Falta
+                              </Badge>
+                            )}
+                            {isExtra && (
+                              <Badge variant="outline" className="text-[10px] font-bold border-amber-500 text-amber-500 bg-amber-500/5 mr-2">
+                                ✨ Avulso (Aprovado)
+                              </Badge>
+                            )}
+                            {currentRoute ? (
+                              <Badge variant="outline" className="text-xs font-bold border-orange-500/30 text-orange-500 bg-orange-500/5">
+                                {currentRoute.name}
+                              </Badge>
+                            ) : (
+                              <Badge variant="secondary" className="text-xs font-semibold text-muted-foreground bg-muted">
+                                Sem Rota
                               </Badge>
                             )}
                           </div>
@@ -787,177 +1272,40 @@ export function RoutePlanningClient() {
                   </div>
                 )}
               </Card>
-            </>
-          )}
-        </TabsContent>
+            </TabsContent>
+          </Tabs>
 
-        {/* TAB: BUSCAR / PUXAR */}
-        <TabsContent value="adicionar" className="space-y-4">
-          {/* Pill Status Filters in General view */}
-          {!hasActiveRoute && (
-            <div className="flex flex-wrap items-center gap-2 mb-4 bg-muted/20 p-2 rounded-lg border border-border/40">
-              <span className="text-xs text-muted-foreground font-semibold px-2">Filtrar Alunos:</span>
-              <Button 
-                variant={statusFilter === 'all' ? 'default' : 'ghost'} 
-                size="sm" 
-                onClick={() => setStatusFilter('all')}
-                className={statusFilter === 'all' ? 'bg-orange-500 hover:bg-orange-600 text-white font-bold h-8 rounded-full' : 'h-8 rounded-full text-foreground hover:bg-muted/50'}
-              >
-                Todos ({(students || []).filter(s => s && (selectedSchoolId === 'all' || s.schoolId === selectedSchoolId) && (s.shift === selectedShift || s.shift === 'Integral')).length})
-              </Button>
-              <Button 
-                variant={statusFilter === 'unallocated' ? 'default' : 'ghost'} 
-                size="sm" 
-                onClick={() => setStatusFilter('unallocated')}
-                className={statusFilter === 'unallocated' ? 'bg-orange-500 hover:bg-orange-600 text-white font-bold h-8 rounded-full' : 'h-8 rounded-full text-foreground hover:bg-muted/50'}
-              >
-                Sem Rota ({
-                  (students || []).filter(s => {
-                    if (!s) return false;
-                    const matchSchool = selectedSchoolId === 'all' || s.schoolId === selectedSchoolId;
-                    const matchShift = s.shift === selectedShift || s.shift === 'Integral';
-                    return matchSchool && matchShift && !getStudentCurrentRoute(s.id);
-                  }).length
-                })
-              </Button>
-              <Button 
-                variant={statusFilter === 'allocated' ? 'default' : 'ghost'} 
-                size="sm" 
-                onClick={() => setStatusFilter('allocated')}
-                className={statusFilter === 'allocated' ? 'bg-orange-500 hover:bg-orange-600 text-white font-bold h-8 rounded-full' : 'h-8 rounded-full text-foreground hover:bg-muted/50'}
-              >
-                Já Alocados ({
-                  (students || []).filter(s => {
-                    if (!s) return false;
-                    const matchSchool = selectedSchoolId === 'all' || s.schoolId === selectedSchoolId;
-                    const matchShift = s.shift === selectedShift || s.shift === 'Integral';
-                    return matchSchool && matchShift && !!getStudentCurrentRoute(s.id);
-                  }).length
-                })
-              </Button>
+          {/* STICKY BOTTOM SAVE ACTION BAR */}
+          {isDirty && (
+            <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 ease-out">
+              <div className="bg-background/80 backdrop-blur-md border border-orange-500/30 rounded-xl p-4 shadow-[0_10px_30px_-10px_rgba(249,115,22,0.3)] flex items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 animate-pulse">
+                    <Info className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-bold text-foreground">Alterações Não Publicadas</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {modifiedRoutesList.length > 0 ? (
+                        <>Edições pendentes em: <span className="font-semibold text-orange-500">{modifiedRoutesList.join(', ')}</span></>
+                      ) : (
+                        'Você possui manifestos modificados na memória local.'
+                      )}
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={discardChanges} className="border-border text-foreground hover:bg-muted/50 font-medium">
+                    Descartar
+                  </Button>
+                  <Button size="sm" onClick={publishItinerary} className="bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-md shadow-orange-500/10">
+                    Publicar Itinerário
+                  </Button>
+                </div>
+              </div>
             </div>
           )}
-
-          <div className="flex items-center justify-between bg-card rounded-md p-4 border shadow-sm">
-            <Button variant="ghost" size="sm" onClick={selectAllExtras}>
-              <CheckSquare className="w-4 h-4 mr-2" />
-              {selectedExtraStudentIds.length === (availableExtras || []).length && (availableExtras || []).length > 0 ? 'Desmarcar' : 'Selecionar Tudo'}
-            </Button>
-            {(selectedExtraStudentIds || []).length > 0 && (
-              (hasActiveRoute || singleRouteFromFilter) ? (
-                <Button 
-                  size="sm" 
-                  onClick={() => {
-                    const targetRouteId = hasActiveRoute ? selectedRouteId : (singleRouteFromFilter?.id || '');
-                    pullMultipleStudentsToRoute(selectedExtraStudentIds, targetRouteId);
-                  }} 
-                  className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
-                >
-                  <ArrowRightLeft className="mr-2 h-4 w-4" />
-                  Puxar {selectedExtraStudentIds.length} para a Van {activeVehicle ? `(${activeVehicle.model})` : ''}
-                </Button>
-              ) : (
-                <Select onValueChange={(routeId) => pullMultipleStudentsToRoute(selectedExtraStudentIds, routeId)}>
-                  <SelectTrigger className="w-[240px] h-9 bg-orange-500 hover:bg-orange-600 text-white font-bold border-none shadow-md shadow-orange-500/10 cursor-pointer">
-                    <div className="flex items-center justify-center w-full">
-                      <ArrowRightLeft className="mr-2 h-4 w-4 shrink-0" />
-                      <span>Puxar {selectedExtraStudentIds.length} para a Van ▾</span>
-                    </div>
-                  </SelectTrigger>
-                  <SelectContent>
-                    {(availableRoutes || []).filter(r => r && r.id).map(r => (
-                      <SelectItem key={r.id} value={r.id}>
-                        {r.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )
-            )}
-          </div>
-
-          <Card className="overflow-hidden">
-            <CardHeader className="bg-muted/50 py-3">
-              <CardTitle className="text-sm font-semibold text-muted-foreground">Alunos Disponíveis</CardTitle>
-            </CardHeader>
-            {(availableExtras || []).length === 0 ? (
-              <div className="p-16 text-center text-muted-foreground">
-                <Info className="w-10 h-10 mx-auto mb-4 opacity-20" />
-                <p className="text-sm font-medium">Nenhum aluno disponível</p>
-                <p className="text-xs mt-1">Tente ajustar os filtros ou mudar o status das pílulas.</p>
-              </div>
-            ) : (
-              <div className="divide-y divide-border">
-                {(availableExtras || []).filter(student => student && student.id).map((student: Student) => {
-                  const currentRoute = getStudentCurrentRoute(student.id);
-                  const isAbsent = isStudentAbsent(student);
-                  const isExtra = hasApprovedTripRequestToday(student.id);
-                  return (
-                    <SafeRow key={student.id} name={`available-extra-${student.id}`}>
-                      <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleExtraStudent(student.id)}>
-                        <Checkbox checked={selectedExtraStudentIds.includes(student.id)} onCheckedChange={() => {}} />
-                        <div className="flex-1 min-w-0">
-                          <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
-                        </div>
-                        {isAbsent && (
-                          <Badge variant="destructive" className="text-[10px] font-bold mr-2">
-                            🚫 Falta
-                          </Badge>
-                        )}
-                        {isExtra && (
-                          <Badge variant="outline" className="text-[10px] font-bold border-amber-500 text-amber-500 bg-amber-500/5 mr-2">
-                            ✨ Avulso (Aprovado)
-                          </Badge>
-                        )}
-                        {currentRoute ? (
-                          <Badge variant="outline" className="text-xs font-bold border-orange-500/30 text-orange-500 bg-orange-500/5">
-                            {currentRoute.name}
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="text-xs font-semibold text-muted-foreground bg-muted">
-                            Sem Rota
-                          </Badge>
-                        )}
-                      </div>
-                    </SafeRow>
-                  );
-                })}
-              </div>
-            )}
-          </Card>
-        </TabsContent>
-      </Tabs>
-
-      {/* STICKY BOTTOM SAVE ACTION BAR */}
-      {isDirty && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-300 ease-out">
-          <div className="bg-background/80 backdrop-blur-md border border-orange-500/30 rounded-xl p-4 shadow-[0_10px_30px_-10px_rgba(249,115,22,0.3)] flex items-center justify-between gap-4">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500 animate-pulse">
-                <Info className="w-4 h-4" />
-              </div>
-              <div>
-                <p className="text-sm font-bold text-foreground">Alterações Não Publicadas</p>
-                <p className="text-xs text-muted-foreground mt-0.5">
-                  {modifiedRoutesList.length > 0 ? (
-                    <>Edições pendentes em: <span className="font-semibold text-orange-500">{modifiedRoutesList.join(', ')}</span></>
-                  ) : (
-                    'Você possui manifestos modificados na memória local.'
-                  )}
-                </p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" onClick={discardChanges} className="border-border text-foreground hover:bg-muted/50 font-medium">
-                Descartar
-              </Button>
-              <Button size="sm" onClick={publishItinerary} className="bg-orange-500 hover:bg-orange-600 text-white font-bold shadow-md shadow-orange-500/10">
-                Publicar Itinerário
-              </Button>
-            </div>
-          </div>
-        </div>
+        </>
       )}
     </div>
   );
