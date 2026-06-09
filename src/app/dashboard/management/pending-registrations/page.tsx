@@ -219,7 +219,7 @@ export default function PendingRegistrationsPage() {
             (addDoc as any)('invoices', {
                 studentId: newStudentId,
                 parentUserId: parentUserIdToUse,
-                description: `Mensalidade - ${format(today, 'MMMM/yyyy', { locale: ptBR })}`,
+                description: `Mensalidade Transporte`,
                 amount: feeNum,
                 dueDate: dueDate,
                 status: isOverdue ? 'overdue' : 'pending',

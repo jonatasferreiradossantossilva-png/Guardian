@@ -48,13 +48,8 @@ export function InviteDialog({ isOpen, onOpenChange }: InviteDialogProps) {
     };
 
     const handleShare = async (type: 'mensalista' | 'avulso') => {
-        let baseOrigin = window.location.origin;
+        const baseOrigin = window.location.origin;
         
-        // Se estiver em localhost, forçamos o IP da rede local para o link funcionar no celular do pai
-        if (window.location.hostname === 'localhost') {
-            baseOrigin = baseOrigin.replace('localhost', '192.168.0.30');
-        }
-
         const registrationLink = type === 'avulso' 
             ? `${baseOrigin}/register?type=avulso`
             : `${baseOrigin}/register`;
@@ -104,14 +99,6 @@ export function InviteDialog({ isOpen, onOpenChange }: InviteDialogProps) {
                     </DialogDescription>
                 </DialogHeader>
 
-                {typeof window !== 'undefined' && window.location.hostname === 'localhost' && (
-                    <Alert className="bg-blue-500/10 border-blue-500/20 py-2">
-                        <AlertCircle className="h-4 w-4 text-blue-500" />
-                        <AlertDescription className="text-[10px] text-blue-600 font-medium">
-                            Detectamos que você está em <strong>localhost</strong>. O link será convertido automaticamente para <strong>192.168.0.30</strong> para funcionar no celular do pai.
-                        </AlertDescription>
-                    </Alert>
-                )}
                 <div className="grid grid-cols-1 gap-4 py-4">
                     <Button 
                         variant="outline" 

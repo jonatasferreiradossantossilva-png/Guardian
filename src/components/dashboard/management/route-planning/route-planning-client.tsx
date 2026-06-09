@@ -5,7 +5,7 @@ import { Route, Student, RouteManifest, TripRequest, Driver } from '@/types/mock
 import { useData, useDataCollection } from '@/hooks/use-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, Bus, User as UserIcon, ArrowRightLeft, School, UserPlus, Truck, Info, CheckSquare, Users, Plus, Search, ArrowLeft, History, Loader2 } from 'lucide-react';
+import { CalendarIcon, Bus, User as UserIcon, ArrowRightLeft, School, UserPlus, Truck, Info, CheckSquare, Users, Plus, Search, ArrowLeft, History, Loader2, Trash2 } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -29,7 +29,7 @@ export function RoutePlanningClient() {
   const { data: drivers } = useDataCollection<Driver>('drivers');
   const { data: tripRequests } = useDataCollection<TripRequest>('trip_requests');
 
-  const { addDoc, updateDoc } = useData();
+  const { addDoc, updateDoc, deleteDoc } = useData();
 
   // ─── Gate / Landing View States ───────────────────────────────
   const [isPlanningActive, setIsPlanningActive] = useState(false);
@@ -41,6 +41,7 @@ export function RoutePlanningClient() {
   const [wizardShift, setWizardShift] = useState<'Manhã' | 'Tarde' | 'Integral'>('Manhã');
   const [wizardDirection, setWizardDirection] = useState<'ida' | 'volta'>('ida');
   const [wizardRouteId, setWizardRouteId] = useState<string>('none');
+  const [wizardDriverId, setWizardDriverId] = useState<string>('');
 
   // ─── Workspace States ─────────────────────────────────────────
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -93,6 +94,18 @@ export function RoutePlanningClient() {
       return () => clearTimeout(timer);
     }
   }, [toastMessage]);
+
+  // Sync wizard default driver based on chosen route
+  useEffect(() => {
+    if (wizardRouteId && wizardRouteId !== 'none' && routes) {
+      const r = routes.find(route => route.id === wizardRouteId);
+      if (r) {
+        setWizardDriverId(r.driverId || '');
+      }
+    } else {
+      setWizardDriverId('');
+    }
+  }, [wizardRouteId, routes]);
 
   const isStudentAbsent = (student: Student): boolean => {
     if (!student || !student.status) return false;
@@ -596,13 +609,61 @@ export function RoutePlanningClient() {
     return (routes || []).filter(r => r && (r.shift === wizardShift || r.shift === 'Integral'));
   }, [routes, wizardShift]);
 
-  const handleWizardConfirm = () => {
+  const handleWizardConfirm = async () => {
     setSelectedDate(wizardDate);
     setSelectedShift(wizardShift);
     setSelectedDirection(wizardDirection);
-    setSelectedRouteId(wizardRouteId);
     setSelectedSchoolId('all');
-    setSelectedVehicleId('all');
+
+    let targetRouteId = wizardRouteId;
+    let targetVehicleId = 'all';
+
+    if (wizardRouteId === 'none') {
+      if (wizardDriverId && wizardDriverId !== 'none') {
+        // Find route associated with this driver for active shift
+        const assocRoute = (routes || []).find(r => 
+          r && r.driverId === wizardDriverId && 
+          (r.shift === wizardShift || r.shift === 'Integral')
+        );
+        if (assocRoute) {
+          targetRouteId = assocRoute.id;
+        } else {
+          targetRouteId = 'none';
+        }
+        
+        // Find driver's vehicle
+        const d = (drivers || []).find(drv => drv.id === wizardDriverId);
+        if (d && d.vehicleId) {
+          targetVehicleId = d.vehicleId;
+        }
+      } else {
+        targetRouteId = 'none';
+        targetVehicleId = 'all';
+      }
+    } else {
+      // Specific route selected
+      targetRouteId = wizardRouteId;
+      const r = (routes || []).find(route => route.id === wizardRouteId);
+      if (r) {
+        // Find route's vehicle via its assigned driver
+        const d = (drivers || []).find(drv => drv.id === (wizardDriverId || r.driverId));
+        if (d && d.vehicleId) {
+          targetVehicleId = d.vehicleId;
+        }
+        
+        // Update route's driver if changed in wizard
+        if (wizardDriverId && wizardDriverId !== 'none' && r.driverId !== wizardDriverId) {
+          try {
+            await updateDoc('routes', wizardRouteId, { driverId: wizardDriverId });
+          } catch (err) {
+            console.error("Erro ao atualizar motorista da rota via wizard:", err);
+          }
+        }
+      }
+    }
+
+    setSelectedRouteId(targetRouteId);
+    setSelectedVehicleId(targetVehicleId);
     setIsWizardOpen(false);
     setIsPlanningActive(true);
   };
@@ -626,6 +687,37 @@ export function RoutePlanningClient() {
     setSelectedSchoolId('all');
     setSelectedVehicleId('all');
     setIsPlanningActive(true);
+  };
+
+  const handleDeleteManifest = async (manifestId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    const confirmed = window.confirm('Deseja realmente excluir este planejamento publicado? Esta ação não pode ser desfeita.');
+    if (!confirmed) return;
+
+    try {
+      await deleteDoc('route_manifests', manifestId);
+      setToastMessage('Planejamento excluído com sucesso.');
+    } catch (err) {
+      console.error('Erro ao excluir planejamento:', err);
+      setToastMessage('Erro ao excluir o planejamento.');
+    }
+  };
+
+  const activeRouteDriverId = useMemo(() => {
+    if (!selectedRouteId || selectedRouteId === 'none' || !routes) return '';
+    const r = routes.find(route => route.id === selectedRouteId);
+    return r?.driverId || '';
+  }, [routes, selectedRouteId]);
+
+  const handleDriverChange = async (newDriverId: string) => {
+    if (!selectedRouteId || selectedRouteId === 'none') return;
+    try {
+      await updateDoc('routes', selectedRouteId, { driverId: newDriverId });
+      setToastMessage('Motorista da rota atualizado com sucesso.');
+    } catch (err) {
+      console.error('Erro ao atualizar motorista da rota:', err);
+      setToastMessage('Erro ao atualizar motorista da rota.');
+    }
   };
 
   return (
@@ -682,7 +774,6 @@ export function RoutePlanningClient() {
                 <SelectContent>
                   <SelectItem value="Manhã">Manhã</SelectItem>
                   <SelectItem value="Tarde">Tarde</SelectItem>
-                  <SelectItem value="Integral">Integral</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -712,6 +803,26 @@ export function RoutePlanningClient() {
                   <SelectItem value="none">Visão Geral (Todas)</SelectItem>
                   {(wizardAvailableRoutes || []).filter(r => r && r.id).map(r => (
                     <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Wizard: Driver (always shown) */}
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Motorista</label>
+              <Select value={wizardDriverId} onValueChange={setWizardDriverId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione o Motorista" />
+                </SelectTrigger>
+                <SelectContent>
+                  {wizardRouteId === 'none' && (
+                    <SelectItem value="none">Todos os Motoristas</SelectItem>
+                  )}
+                  {(drivers || []).filter(d => d && d.id).map(d => (
+                    <SelectItem key={d.id} value={d.id}>
+                      {d.name} {d.vehicleId ? `(Van: ${(vehicles || []).find((v: any) => v.id === d.vehicleId)?.model || 'Atribuída'})` : ''}
+                    </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -816,15 +927,26 @@ export function RoutePlanningClient() {
                   <History className="w-5 h-5 text-muted-foreground" />
                   Planejamentos Publicados
                 </CardTitle>
-                <div className="relative w-full sm:w-72">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+                <div className="relative w-full sm:w-96 group">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-400 group-hover:text-orange-500 transition-colors" />
                   <Input
                     placeholder="Buscar por rota, data, turno..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="pl-9 h-9"
+                    className="pl-9 pr-10 h-11 bg-zinc-900/40 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 rounded-lg focus-visible:ring-1 focus-visible:ring-orange-500/30 focus-visible:border-orange-500/50 transition-all duration-300"
                     id="search-manifests"
                   />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
+                      type="button"
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
                 </div>
               </div>
             </CardHeader>
@@ -842,16 +964,36 @@ export function RoutePlanningClient() {
                   </p>
                 </div>
               ) : (
-                <div className="divide-y divide-border rounded-lg border overflow-hidden">
+                <div className="divide-y divide-border rounded-lg border overflow-hidden bg-zinc-950/20">
                   {publishedManifestSummaries.map((manifest) => (
                     <SafeRow key={manifest.id} name={`manifest-row-${manifest.id}`}>
-                      <div
-                        className="p-4 flex items-center justify-between hover:bg-muted/50 transition-colors cursor-pointer group"
-                        onClick={() => handleEditManifest(manifest)}
-                      >
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold group-hover:text-orange-500 transition-colors">{manifest.routeName}</p>
-                          <p className="text-xs text-muted-foreground mt-0.5">
+                      <div className="p-4 flex flex-col gap-2 hover:bg-zinc-900/10 transition-colors border-b border-zinc-800 last:border-none">
+                        {/* Top line: Route Name (left) & Actions (right) */}
+                        <div className="flex items-center justify-between gap-4">
+                          <p className="text-sm font-semibold text-zinc-100 truncate">{manifest.routeName}</p>
+                          <div className="flex items-center gap-2 shrink-0">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleEditManifest(manifest)}
+                              className="h-8 text-xs font-semibold hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all duration-300"
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              onClick={(e) => handleDeleteManifest(manifest.id, e)}
+                              className="h-8 w-8 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-colors"
+                              title="Excluir Planejamento"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </Button>
+                          </div>
+                        </div>
+                        {/* Bottom line: Date & Badges */}
+                        <div className="flex flex-wrap items-center justify-between gap-2 mt-1">
+                          <p className="text-xs text-muted-foreground">
                             {(() => {
                               try {
                                 return format(new Date(manifest.date + 'T12:00:00'), 'dd MMM yyyy', { locale: ptBR });
@@ -860,22 +1002,22 @@ export function RoutePlanningClient() {
                               }
                             })()}
                           </p>
-                        </div>
-                        <div className="flex items-center gap-2 shrink-0">
-                          <Badge variant="outline" className="text-[10px] font-bold">
-                            {manifest.shift || '—'}
-                          </Badge>
-                          <Badge variant="outline" className={cn(
-                            "text-[10px] font-bold",
-                            manifest.direction === 'ida'
-                              ? 'border-blue-500/30 text-blue-500 bg-blue-500/5'
-                              : 'border-violet-500/30 text-violet-500 bg-violet-500/5'
-                          )}>
-                            {manifest.direction === 'ida' ? '↗ Ida' : '↙ Volta'}
-                          </Badge>
-                          <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/30 text-[10px] font-bold">
-                            {manifest.studentCount} {manifest.studentCount === 1 ? 'aluno' : 'alunos'}
-                          </Badge>
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <Badge variant="outline" className="text-[10px] font-bold border-zinc-800 text-zinc-300">
+                              {manifest.shift || '—'}
+                            </Badge>
+                            <Badge variant="outline" className={cn(
+                              "text-[10px] font-bold",
+                              manifest.direction === 'ida'
+                                ? 'border-blue-500/30 text-blue-500 bg-blue-500/5'
+                                : 'border-violet-500/30 text-violet-500 bg-violet-500/5'
+                            )}>
+                              {manifest.direction === 'ida' ? '↗ Ida' : '↙ Volta'}
+                            </Badge>
+                            <Badge className="bg-orange-500/10 text-orange-500 border-orange-500/30 text-[10px] font-bold">
+                              {manifest.studentCount} {manifest.studentCount === 1 ? 'aluno' : 'alunos'}
+                            </Badge>
+                          </div>
                         </div>
                       </div>
                     </SafeRow>
@@ -954,7 +1096,6 @@ export function RoutePlanningClient() {
                     <SelectContent>
                       <SelectItem value="Manhã">Manhã</SelectItem>
                       <SelectItem value="Tarde">Tarde</SelectItem>
-                      <SelectItem value="Integral">Integral</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
@@ -998,6 +1139,37 @@ export function RoutePlanningClient() {
                   </Select>
                 </div>
               </div>
+
+              {hasActiveRoute && (
+                <div className="pt-4 border-t border-zinc-800 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-3">
+                    <div className="w-9 h-9 bg-orange-500/10 rounded-full flex items-center justify-center text-orange-500">
+                      <UserIcon className="w-4 h-4" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-semibold text-zinc-200">Motorista da Rota</p>
+                      <p className="text-xs text-muted-foreground">Altere o motorista atribuído a esta rota para as próximas viagens.</p>
+                    </div>
+                  </div>
+                  <div className="w-full md:w-64">
+                    <Select
+                      value={activeRouteDriverId}
+                      onValueChange={handleDriverChange}
+                    >
+                      <SelectTrigger className="bg-zinc-900 border-zinc-800 text-zinc-100">
+                        <SelectValue placeholder="Selecione o Motorista" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(drivers || []).filter(d => d && d.id).map(d => (
+                          <SelectItem key={d.id} value={d.id}>
+                            {d.name} {d.vehicleId ? `(Van: ${(vehicles || []).find((v: any) => v.id === d.vehicleId)?.model || 'Atribuída'})` : ''}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              )}
             </CardContent>
           </Card>
 

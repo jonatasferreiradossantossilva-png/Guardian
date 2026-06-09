@@ -391,7 +391,6 @@ export function RouteForm({
                                     <SelectContent>
                                         <SelectItem value="Manhã">Manhã</SelectItem>
                                         <SelectItem value="Tarde">Tarde</SelectItem>
-                                        <SelectItem value="Integral">Integral</SelectItem>
                                     </SelectContent>
                                 </Select>
                             </div>
