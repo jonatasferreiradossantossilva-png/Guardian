@@ -26,34 +26,32 @@ This command handles production deployment with pre-flight checks, deployment ex
 
 ---
 
-## Pre-Deployment Checklist
+## Pre-Deployment Checklist (MANDATÓRIO)
 
-Before any deployment:
+Before any production deployment:
 
 ```markdown
-## 🚀 Pre-Deploy Checklist
+## 🚀 Pre-Deploy Checklist (P0)
 
-### Code Quality
-- [ ] No TypeScript errors (`npx tsc --noEmit`)
-- [ ] ESLint passing (`npx eslint .`)
-- [ ] All tests passing (`npm test`)
+### 1. 🔒 Backup Mandatório
+- [ ] Snapshot de dados gerado e arquivado em `backups/pre-deploy-[timestamp]/`
+- [ ] Configurações e variáveis de ambiente preservadas
+- [ ] Ponto de restauração / rollback criado no Git
 
-### Security
-- [ ] No hardcoded secrets
-- [ ] Environment variables documented
-- [ ] Dependencies audited (`npm audit`)
+### 2. 🧪 Validação dos Testes de Deploy
+- [ ] Suíte de validação 100% verde (`npm run validate:report` - 48 cenários / 100 passos aprovados)
+- [ ] Relatório HTML inspecionado (`reports/guardian-test-report.html`)
+- [ ] Checagem estrita de tipos sem erros (`npx tsc --noEmit`)
+- [ ] Build de produção compilado com sucesso (`npm run build`)
 
-### Performance
-- [ ] Bundle size acceptable
-- [ ] No console.log statements
-- [ ] Images optimized
+### 3. 🚫 Escopo Blindado
+- [ ] Verificado que nenhuma funcionalidade adicional não autorizada foi criada
+- [ ] Apenas o escopo solicitado pelo usuário foi alterado
 
-### Documentation
-- [ ] README updated
-- [ ] CHANGELOG updated
-- [ ] API docs current
-
-### Ready to deploy? (y/n)
+### 4. 🛑 Gate de Autorização Humana (OBRIGATÓRIO)
+- [ ] Apresentar resumo completo de validações e backup ao usuário
+- [ ] Pergunta obrigatória: "Você autoriza a subida para produção agora?"
+- [ ] AGUARDAR confirmação expressa do usuário (NUNCA disparar deploy automático)
 ```
 
 ---

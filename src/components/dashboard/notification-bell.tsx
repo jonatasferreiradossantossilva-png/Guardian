@@ -17,7 +17,7 @@ import { useDataCollection, useData } from '@/hooks/use-data';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { safeString, safeArray } from '@/lib/safe-render';
+import { safeString, safeArray, getSafeDate } from '@/lib/safe-render';
 import { SafeRow } from '@/components/shared/safe-table';
 import { Notification as MockNotification } from '@/types/mock-data';
 
@@ -36,7 +36,7 @@ export function NotificationBell() {
   const sortedNotifications = useMemo(() => {
     const list = safeArray<MockNotification>(notifications);
     return [...list].sort((a: MockNotification, b: MockNotification) => 
-      new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime()
     );
   }, [notifications]);
 
@@ -146,7 +146,7 @@ export function NotificationBell() {
                         <p className="text-[10px] font-black text-muted-foreground/50 uppercase tracking-widest">
                           {(() => {
                             try {
-                              const date = new Date(n.createdAt);
+                              const date = getSafeDate(n.createdAt);
                               if (isNaN(date.getTime())) return 'Recente';
                               return formatDistanceToNow(date, { addSuffix: true, locale: ptBR });
                             } catch (e) {

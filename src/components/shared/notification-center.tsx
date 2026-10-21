@@ -20,7 +20,7 @@ import { Notification as MockNotification } from '@/types/mock-data';
 import { cn } from '@/lib/utils';
 import { formatDistanceToNow } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { safeString, safeArray } from '@/lib/safe-render';
+import { safeString, safeArray, getSafeDate } from '@/lib/safe-render';
 import { SafeRow } from './safe-table';
 
 
@@ -33,8 +33,8 @@ export function NotificationCenter({ userId }: { userId: string }) {
     return list
       .filter((n: MockNotification) => n && (n.userId === userId || n.userId === 'all'))
       .sort((a, b) => {
-        const dateA = new Date(a.createdAt || (a as any).timestamp || 0).getTime();
-        const dateB = new Date(b.createdAt || (b as any).timestamp || 0).getTime();
+        const dateA = getSafeDate(a.createdAt || (a as any).timestamp || 0).getTime();
+        const dateB = getSafeDate(b.createdAt || (b as any).timestamp || 0).getTime();
         return dateB - dateA;
       });
   }, [allNotifications, userId]);
@@ -135,7 +135,7 @@ export function NotificationCenter({ userId }: { userId: string }) {
                         <span className="text-[10px] text-muted-foreground font-medium italic">
                           {(() => {
                             try {
-                              const date = new Date(notification.createdAt || (notification as any).timestamp || '');
+                              const date = getSafeDate(notification.createdAt || (notification as any).timestamp || '');
                               if (isNaN(date.getTime())) return 'Recente';
                               return formatDistanceToNow(date, { addSuffix: true, locale: ptBR });
                             } catch (e) {

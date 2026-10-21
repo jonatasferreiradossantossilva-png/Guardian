@@ -39,7 +39,7 @@ import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 
 import { ReportIncidentForm } from '@/components/dashboard/report-incident-form';
 import { SafeRow } from '@/components/shared/safe-table';
-import { safeString, safeArray, safeInitials } from '@/lib/safe-render';
+import { safeString, safeArray, safeInitials, getSafeDate } from '@/lib/safe-render';
 
 
 export default function MonitorDashboardContent() {
@@ -62,9 +62,9 @@ export default function MonitorDashboardContent() {
   useEffect(() => {
     const list = safeArray<MockNotification>(notifications);
     if (list.length) {
-        const sorted = [...list].sort((a: MockNotification, b: MockNotification) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+        const sorted = [...list].sort((a: MockNotification, b: MockNotification) => getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime());
         const lastNotif = sorted[0];
-        const isRecent = new Date().getTime() - new Date(lastNotif.createdAt).getTime() < 10000;
+        const isRecent = new Date().getTime() - getSafeDate(lastNotif.createdAt).getTime() < 10000;
         
         if (isRecent && !lastNotif.read) {
             toast({

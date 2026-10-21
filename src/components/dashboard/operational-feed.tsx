@@ -12,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import Link from 'next/link';
 import { SafeComponent } from '@/components/shared/safe-component';
-import { safeString, safeArray } from '@/lib/safe-render';
+import { safeString, safeArray, getSafeDate } from '@/lib/safe-render';
 import { SafeRow } from '@/components/shared/safe-table';
 
 
@@ -106,7 +106,7 @@ function OperationalFeedContent() {
             });
         }
 
-        return [...items].sort((a, b) => new Date(safeString(b.timestamp)).getTime() - new Date(safeString(a.timestamp)).getTime());
+        return [...items].sort((a, b) => getSafeDate(b.timestamp).getTime() - getSafeDate(a.timestamp).getTime());
 
     }, [incidents]);
 
@@ -152,7 +152,7 @@ function OperationalFeedContent() {
                                                 <span className="text-[9px] text-muted-foreground whitespace-nowrap font-black uppercase">
                                                     {(() => {
                                                         try {
-                                                            const date = new Date(item.timestamp);
+                                                            const date = getSafeDate(item.timestamp);
                                                             if (isNaN(date.getTime())) return 'H/N';
                                                             return format(date, 'HH:mm', { locale: ptBR });
                                                         } catch (e) {

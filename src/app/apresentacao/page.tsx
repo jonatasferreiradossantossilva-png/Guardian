@@ -99,15 +99,15 @@ function ProductTour() {
                     <Badge className="bg-green-500 animate-pulse">Setup Ativo</Badge>
                   </div>
                   <div className="space-y-4">
-                     <div className="h-12 w-full bg-muted/50 rounded-lg flex items-center px-4 gap-4 animate-in slide-in-from-left duration-[500ms]">
+                     <div className="h-12 w-full bg-muted/50 rounded-lg flex items-center px-4 gap-4 animate-in slide-in-from-left duration-500">
                         <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center"><Check className="w-4 h-4 text-primary" /></div>
                         <span className="text-sm font-semibold flex-1">Cadastro de Frota & Motoristas</span>
                      </div>
-                     <div className="h-12 w-full bg-muted/50 rounded-lg flex items-center px-4 gap-4 animate-in slide-in-from-left duration-[800ms]">
+                     <div className="h-12 w-full bg-muted/50 rounded-lg flex items-center px-4 gap-4 animate-in slide-in-from-left duration-700">
                         <div className="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center"><Check className="w-4 h-4 text-primary" /></div>
                         <span className="text-sm font-semibold flex-1">Lista de Escolas Integrada</span>
                      </div>
-                     <div className="h-12 w-full border-2 border-primary/40 bg-primary/5 rounded-lg flex items-center justify-center px-4 gap-2 cursor-pointer shadow-lg shadow-primary/20 hover:scale-105 transition-transform animate-in slide-in-from-left duration-[1100ms]">
+                     <div className="h-12 w-full border-2 border-primary/40 bg-primary/5 rounded-lg flex items-center justify-center px-4 gap-2 cursor-pointer shadow-lg shadow-primary/20 hover:scale-105 transition-transform animate-in slide-in-from-left duration-1000">
                         <Share2 className="w-5 h-5 text-green-500" />
                         <span className="text-sm font-bold text-primary">Gerar Link p/ WhatsApp Pais</span>
                      </div>
@@ -117,7 +117,7 @@ function ProductTour() {
 
               {/* Tela do App - Estado 2: Mobile Motorista */}
               {activeTab === 2 && (
-                <div className="flex-1 bg-zinc-950 p-2 relative animate-in fade-in slide-in-from-bottom-10 duration-[600ms]">
+                <div className="flex-1 bg-zinc-950 p-2 relative animate-in fade-in slide-in-from-bottom-10 duration-500">
                    {/* Mapa Falso Escuro */}
                    <div className="absolute inset-0 bg-zinc-900 border-2 border-zinc-800 rounded-b-xl overflow-hidden p-6 flex items-center justify-center">
                       <div className="w-full h-full relative">
@@ -155,7 +155,7 @@ function ProductTour() {
 
               {/* Tela do App - Estado 3: Faturas */}
               {activeTab === 3 && (
-                <div className="flex-1 p-6 flex flex-col gap-6 bg-card animate-in fade-in slide-in-from-right duration-[600ms] relative overflow-hidden">
+                <div className="flex-1 p-6 flex flex-col gap-6 bg-card animate-in fade-in slide-in-from-right duration-500 relative overflow-hidden">
                   <Image src="/mockups/guardian_manager_dashboard.png" alt="Finance UI" fill className="object-cover opacity-10 blur-[1px] mix-blend-luminosity pointer-events-none" />
                   <div className="flex justify-between items-end border-b pb-4">
                     <div>

@@ -14,15 +14,12 @@ test.describe('Financial Dashboards Health Check', () => {
             'fonts.googleapis', 'fonts.gstatic'
         ];
         if (excludeList.some(domain => url.includes(domain))) {
-            return route.abort();
+            return route.fulfill({ status: 200, body: '' });
         }
         return route.continue();
     });
 
-    await page.goto('/'); // Acessar o domínio antes de limpar
-    await page.evaluate(() => {
-      localStorage.clear();
-      sessionStorage.clear();
+    await page.addInitScript(() => {
       localStorage.setItem('hide-ios-prompt', 'true');
       (window as any).IS_TESTING = true;
     });

@@ -40,6 +40,7 @@ import {
   Megaphone,
   ShieldCheck,
   Clock,
+  Info,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -47,6 +48,7 @@ import Link from 'next/link';
 import { useDataCollection, useData, useDataNestedDoc } from '@/hooks/use-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
+import { getSafeDateStr } from '@/lib/safe-render';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
@@ -74,7 +76,7 @@ import { ErrorBoundary } from '@/components/shared/error-boundary';
 
 
 type Stop = 
-  | { id: string; type: 'student'; data: Student }
+  | { id: string; type: 'student'; data: Student; isExtra?: boolean }
   | { id: string; type: 'school'; data: SchoolData };
 
 const statusText: Record<StudentStatus, string> = {
@@ -123,6 +125,7 @@ export default function DriverDashboardContent() {
   const [optimizationStep, setOptimizationStep] = useState<'idle' | 'routing' | 'polyline' | 'done'>('idle');
   const [absentStudentsNames, setAbsentStudentsNames] = useState<string[]>([]);
   const [showAbsenceAlert, setShowAbsenceAlert] = useState(false);
+  const [showExtraAlert, setShowExtraAlert] = useState(true);
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const isOnline = useOnlineStatus();
   const [isMounted, setIsMounted] = useState(false);
@@ -163,7 +166,7 @@ export default function DriverDashboardContent() {
     if (!route || !routeManifests || !todayStr) return null;
     return routeManifests.find(m =>
       m && m.routeId === route.id &&
-      m.date === todayStr &&
+      getSafeDateStr(m.date) === todayStr &&
       m.direction === selectedDirection
     );
   }, [route, routeManifests, todayStr, selectedDirection]);
@@ -229,7 +232,8 @@ export default function DriverDashboardContent() {
         if (selectedDirection === 'ida' && isAbsentIda) continue;
         if (selectedDirection === 'volta' && isAbsentVolta) continue;
 
-        studentStops.push({ id, type: 'student', data: student as Student });
+        const isExtra = route && !(route.baseStudentIds || route.studentIds || []).includes(id);
+        studentStops.push({ id, type: 'student', data: student as Student, isExtra });
         if (student.schoolId) neededSchoolIds.add(student.schoolId);
     }
 
@@ -412,6 +416,8 @@ export default function DriverDashboardContent() {
 
   const handleStartRoute = async () => {
     if (!route || !driverProfile || !allStudents) return;
+    
+    setShowExtraAlert(true);
     
     // 1. Resetar status de todos os alunos da rota para o estado inicial (aguardando)
     // Isso evita que a rota comece "finalizada" se houver lixo de sessões anteriores no localStorage
@@ -850,6 +856,26 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                     </Alert>
                                 )}
 
+                                {showExtraAlert && (() => {
+                                  const extraStudentsCount = (safeArray(activeStudentIds) as string[]).filter(id => 
+                                      route && !(route.baseStudentIds || route.studentIds || []).includes(id)
+                                  ).length;
+                                  if (extraStudentsCount === 0) return null;
+                                  return (
+                                        <Alert className="bg-orange-500/10 border-orange-500/20 text-orange-700 dark:text-orange-400 relative mt-2">
+                                            <Info className="h-4 w-4 text-orange-500" />
+                                            <AlertTitle className="text-xs font-black uppercase tracking-tight text-orange-500">Alunos Extras Alocados</AlertTitle>
+                                            <AlertDescription className="text-[11px] leading-tight text-muted-foreground mt-1">
+                                                Há {extraStudentsCount} {extraStudentsCount > 1 ? 'alunos de encaixe temporário alocados' : 'aluno de encaixe temporário alocado'} nesta rota hoje. Eles estão sinalizados com o badge **"ENCAIXE"** no trajeto.
+                                            </AlertDescription>
+
+                                            <Button variant="ghost" size="icon" className="absolute top-1 right-1 h-6 w-6 opacity-50 hover:opacity-100" onClick={() => setShowExtraAlert(false)}>
+                                                <X className="h-3 w-3" />
+                                            </Button>
+                                        </Alert>
+                                  );
+                                })()}
+
                                 {!activeStop ? (
                                     <div className="w-full flex-1 flex items-center justify-center animate-in zoom-in-95 duration-500 py-10">
                                         <Card className="text-center p-8 bg-green-500/10 border-green-500/30 border-2 shadow-2xl w-full">
@@ -866,6 +892,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                         <SafeRow name="ActiveStopCard">
                                             <NextStopCard 
                                                 student={activeStop.data as Student} 
+                                                isExtra={activeStop.isExtra}
                                                 onStatusChange={handleStatusChange} 
                                                 onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
                                                 direction={selectedDirection} 
@@ -893,7 +920,9 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                                                     <span className="text-xs font-black truncate uppercase">{safeString(stop.data?.name, 'Escola')}</span>
                                                                 </div>
                                                             )}
-                                                            <Badge variant="secondary" className="text-[9px] font-black uppercase">{stop.type === 'student' ? 'Aluno' : 'Escola'}</Badge>
+                                                            <Badge variant="secondary" className={cn("text-[9px] font-black uppercase", stop.type === 'student' && stop.isExtra && "bg-orange-500 text-white hover:bg-orange-600")}>
+                                                              {stop.type === 'student' ? (stop.isExtra ? 'Encaixe' : 'Aluno') : 'Escola'}
+                                                            </Badge>
                                                         </div>
                                                     </SafeRow>
                                                 ))}
@@ -968,7 +997,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   );
 }
 
-function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, direction, onScanQrCode, onEndEarly }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onScanQrCode: () => void, onEndEarly: () => void }) {
+function NextStopCard({ student, isExtra, onStatusChange, onOpenAuthorizedModal, direction, onScanQrCode, onEndEarly }: { student: Student, isExtra?: boolean, onStatusChange: (id: string, status: StudentStatus) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onScanQrCode: () => void, onEndEarly: () => void }) {
   const isVolta = direction === 'volta';
   const isGoing = direction === 'ida';
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
@@ -994,6 +1023,7 @@ function NextStopCard({ student, onStatusChange, onOpenAuthorizedModal, directio
                             <span>{formatStudentClassInfo(student)}</span>
                             {student.serviceModality === 'avulso' && <Badge variant="secondary" className="bg-amber-500 border-transparent text-white hover:bg-amber-600 text-[9px] py-0 h-4 px-1.5 font-black">AVULSA</Badge>}
                             {student.shift === 'Integral' && <Badge variant="secondary" className="bg-indigo-500 border-transparent text-white hover:bg-indigo-600 text-[9px] py-0 h-4 px-1.5 font-black">INTEGRAL</Badge>}
+                            {isExtra && <Badge variant="secondary" className="bg-orange-500 border-transparent text-white hover:bg-orange-600 text-[9px] py-0 h-4 px-1.5 font-black animate-pulse">ENCAIXE</Badge>}
                         </div>
                         <div className="flex flex-wrap items-center gap-1.5 text-muted-foreground">
                             <MapPin className="h-3 w-3 text-primary shrink-0" />

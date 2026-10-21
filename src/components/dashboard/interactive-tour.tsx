@@ -26,9 +26,6 @@ export function InteractiveTour() {
   const [isClient, setIsClient] = useState(false);
   const [run, setRun] = useState(false);
 
-  if (DISABLE_TOUR_TEMPORARILY) {
-    return null;
-  }
   const [stepIndex, setStepIndex] = useState(0);
 
   // Load user session
@@ -102,6 +99,10 @@ export function InteractiveTour() {
       window.removeEventListener('guardian:restart-onboarding', handleRestartOnboarding);
     };
   }, [isClient, toast, currentUserId, updateDoc]);
+
+  if (DISABLE_TOUR_TEMPORARILY) {
+    return null;
+  }
 
   if (!isClient) return null;
 

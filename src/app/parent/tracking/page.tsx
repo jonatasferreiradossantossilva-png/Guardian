@@ -36,7 +36,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { safeInitials } from "@/lib/safe-render";
+import { safeInitials, getSafeDate } from "@/lib/safe-render";
 import { RoutePolyline } from "@/components/shared/route-polyline";
 import { SmartMap } from "@/components/shared/smart-map";
 import {
@@ -180,7 +180,7 @@ function GoogleMapMarkers({
                     <Bus className="h-4 w-4" />
                 </Pin>
                 <div className="absolute -bottom-6 left-1/2 -translate-x-1/2 bg-black/60 text-white text-[7px] font-bold px-1 rounded uppercase tracking-tighter whitespace-nowrap">
-                    {busLoc?.timestamp ? new Date(busLoc.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
+                    {busLoc?.timestamp ? getSafeDate(busLoc.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '--:--'}
                 </div>
             </div>
         </AdvancedMarker>
@@ -302,7 +302,7 @@ function ParentTrackingContent() {
   const unreadCount = useMemo(() => {
       if (!allMessages || !mockUserId) return 0;
       const recentLimit = new Date(Date.now() - 1800000); 
-      return allMessages.filter((m: any) => m.recipientId === mockUserId && new Date(m.timestamp) > recentLimit).length;
+      return allMessages.filter((m: any) => m.recipientId === mockUserId && getSafeDate(m.timestamp) > recentLimit).length;
   }, [allMessages, mockUserId]);
 
   // Sincronizar seleção inicial
@@ -324,7 +324,7 @@ function ParentTrackingContent() {
   const route = useMemo(() => allRoutes?.find((r: any) => r.studentIds.includes(student?.id || '')), [allRoutes, student]);
   const displayLocation = useMemo(() => allLocations?.find((l: any) => l.id === route?.driverId), [allLocations, route]);
   const { data: announcements } = useDataCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
-  const latestAnnouncement = useMemo(() => announcements?.sort((a: any, b: any) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0], [announcements]);
+  const latestAnnouncement = useMemo(() => announcements?.sort((a: any, b: any) => getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime())[0], [announcements]);
 
   useEffect(() => {
     if (!student || !displayLocation || typeof student.latitude !== 'number' || typeof displayLocation.latitude !== 'number') return;
@@ -550,7 +550,7 @@ function ParentTrackingContent() {
                                     </p>
                                     <p className="text-[9px] text-green-700/80 font-black uppercase mt-1 tracking-widest flex items-center gap-2">
                                         <ShieldCheck className="h-3 w-3" />
-                                        {new Date(student.lastHandover.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} • Segurado via App
+                                        {getSafeDate(student.lastHandover.timestamp).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })} • Segurado via App
                                     </p>
                                 </div>
                             </div>

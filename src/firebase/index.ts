@@ -4,7 +4,7 @@ import { firebaseConfig } from '@/firebase/config';
 import { initializeApp, getApps, getApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
 import { getFirestore, initializeFirestore, persistentLocalCache } from 'firebase/firestore';
-import { getDatabase } from 'firebase/database';
+import { getDatabase, type Database } from 'firebase/database';
 
 function createFirebaseApp() {
   if (getApps().length) return getApp();
@@ -35,13 +35,34 @@ export const firestore = (() => {
   }
 })();
 
-export const database = getDatabase(firebaseApp);
+let _cachedDatabase: Database | null = null;
+
+/**
+ * Retorna a instância do Realtime Database de forma segura/lazy.
+ * Se databaseURL não estiver configurado, previne o travamento da aplicação.
+ */
+export function getSafeDatabase(): Database | null {
+  if (_cachedDatabase) return _cachedDatabase;
+  try {
+    _cachedDatabase = getDatabase(firebaseApp);
+    return _cachedDatabase;
+  } catch (e) {
+    if (process.env.NODE_ENV !== 'production') {
+      console.warn('[Firebase] Realtime Database não inicializado (databaseURL ausente ou inválido).');
+    }
+    return null;
+  }
+}
+
+export const database: Database | null = (() => {
+  return getSafeDatabase();
+})();
 
 /**
  * Main initialization wrapper for compatibility with existing components
  */
 export function initializeFirebase() {
-  return { firebaseApp, auth, firestore, database };
+  return { firebaseApp, auth, firestore, database: getSafeDatabase() };
 }
 
 export * from './provider';

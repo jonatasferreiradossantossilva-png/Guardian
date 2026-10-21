@@ -42,7 +42,7 @@ export function useTelemetry() {
     const now = Date.now();
     
     // 1. ATUALIZAÇÃO EM TEMPO REAL (RTDB - Sempre que possível)
-    if (now - lastRealtimeTimestamp >= REALTIME_UPDATE_INTERVAL_MS) {
+    if (database && now - lastRealtimeTimestamp >= REALTIME_UPDATE_INTERVAL_MS) {
         try {
             const locationRef = ref(database, `locations/${driverId}`);
             await set(locationRef, {
@@ -93,7 +93,7 @@ export function useDriverLocation(driverId: string | null) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    if (!driverId) {
+    if (!driverId || !database) {
       setLoading(false);
       return;
     }

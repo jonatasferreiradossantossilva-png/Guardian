@@ -10,6 +10,7 @@ import { useRouter } from 'next/navigation';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
+import { getSafeDate } from '@/lib/safe-render';
 import {
   Dialog,
   DialogContent,
@@ -165,12 +166,12 @@ export default function IncidentsLogsPage() {
                 {isLoading ? (
                   <TableRow><TableCell colSpan={5} className="text-center">Carregando...</TableCell></TableRow>
                 ) : incidents && incidents.length > 0 ? (
-                  [...incidents].sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()).map((item: any, idx: number) => (
+                  [...incidents].sort((a, b) => getSafeDate(b.timestamp).getTime() - getSafeDate(a.timestamp).getTime()).map((item: any, idx: number) => (
                     <TableRow key={item.id || idx}>
                       <TableCell className="text-xs whitespace-nowrap">
                         <div className="flex items-center gap-2">
                             <Clock className="h-3 w-3 text-muted-foreground" />
-                            {format(new Date(item.timestamp), "HH:mm:ss", { locale: ptBR })}
+                            {format(getSafeDate(item.timestamp), "HH:mm:ss", { locale: ptBR })}
                         </div>
                       </TableCell>
                       <TableCell>
@@ -198,7 +199,7 @@ export default function IncidentsLogsPage() {
                                         {item.category}
                                     </DialogTitle>
                                     <DialogDescription>
-                                        Detalhes técnicos do evento capturado em {format(new Date(item.timestamp), "pp 'em' dd/MM/yyyy", { locale: ptBR })}
+                                        Detalhes técnicos do evento capturado em {format(getSafeDate(item.timestamp), "pp 'em' dd/MM/yyyy", { locale: ptBR })}
                                     </DialogDescription>
                                 </DialogHeader>
                                 <div className="space-y-4 py-4">

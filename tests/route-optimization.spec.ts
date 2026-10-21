@@ -12,7 +12,7 @@ test.describe('Otimização de Itinerários Inteligentes (E2E)', () => {
                 'fonts.googleapis', 'fonts.gstatic'
             ];
             if (excludeList.some(domain => url.includes(domain))) {
-                return route.abort();
+                return route.fulfill({ status: 200, body: '' });
             }
             return route.continue();
         });

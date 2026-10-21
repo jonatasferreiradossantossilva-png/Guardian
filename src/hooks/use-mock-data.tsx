@@ -23,7 +23,7 @@ export interface MockDataContextType {
   createNotification: (userId: string, title: string, message: string, type?: 'info' | 'warning' | 'emergency' | 'success') => void;
 }
 
-const MockDataContext = createContext<MockDataContextType | null>(null);
+export const MockDataContext = createContext<MockDataContextType | null>(null);
 
 // --- UTILITÁRIOS DE QUALIDADE ---
 const generateId = (prefix: string) => {
@@ -503,21 +503,24 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 }
 
 // --- HOOKS ---
-import { useFirestoreData } from '@/hooks/firestore-data-provider';
+/**
+ * Normaliza o valor de NEXT_PUBLIC_DATA_MODE removendo espaços, quebras de linha e aspas acidentais.
+ */
+export function normalizeDataMode(mode?: string): 'firestore' | 'mock' {
+  if (!mode) return 'mock';
+  const clean = mode.trim().replace(/^["']|["']$/g, '').trim().toLowerCase();
+  return clean === 'firestore' ? 'firestore' : 'mock';
+}
 
 export function isFirestoreMode(): boolean {
-  return typeof process !== 'undefined' && process.env.NEXT_PUBLIC_DATA_MODE === 'firestore';
+  if (typeof process === 'undefined') return false;
+  return normalizeDataMode(process.env.NEXT_PUBLIC_DATA_MODE) === 'firestore';
 }
 
 export const useMockData = () => {
-  if (isFirestoreMode()) {
-    // eslint-disable-next-line react-hooks/rules-of-hooks
-    return useFirestoreData();
-  }
-  // eslint-disable-next-line react-hooks/rules-of-hooks
   const context = useContext(MockDataContext);
   if (!context) {
-    throw new Error('useMockData must be used within a MockDataProvider');
+    throw new Error('useData / useMockData must be used within a DataProvider');
   }
   return context;
 };

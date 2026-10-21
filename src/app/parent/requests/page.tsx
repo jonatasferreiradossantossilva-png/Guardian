@@ -25,6 +25,7 @@ import { useToast } from '@/hooks/use-toast';
 import { useDataCollection, useData } from '@/hooks/use-data';
 import { TripRequestForm } from '@/components/parent/requests/request-form';
 import { Badge } from '@/components/ui/badge';
+import { getSafeDate, getSafeDateStr } from '@/lib/safe-render';
 
 type TripRequest = {
   id: string;
@@ -110,12 +111,14 @@ export default function TripRequestsPage() {
     (updateDoc as any)('trip_requests', request.id, { status: newStatus });
     
     if (approved && request.amount) {
+        const startStr = getSafeDateStr(request.startDate);
+        const dateStr = getSafeDateStr(request.date);
         (addDoc as any)('invoices', {
             studentId: request.studentId,
             parentUserId: request.parentUserId,
-            description: `Viagem Avulsa - ${request.startDate?.split('-').reverse().join('/') || request.date?.split('-').reverse().join('/')}`,
+            description: `Viagem Avulsa - ${startStr ? startStr.split('-').reverse().join('/') : (dateStr ? dateStr.split('-').reverse().join('/') : '')}`,
             amount: request.amount,
-            dueDate: request.startDate || request.date || new Date().toISOString().split('T')[0],
+            dueDate: startStr || dateStr || new Date().toISOString().split('T')[0],
             status: 'pending'
         });
         toast({
@@ -132,7 +135,7 @@ export default function TripRequestsPage() {
   
   const sortedRequests = useMemo(() => {
     if (!tripRequests) return [];
-    return [...tripRequests].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return [...tripRequests].sort((a, b) => getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime());
   }, [tripRequests]);
 
   const handleEdit = (request: TripRequest) => {
@@ -208,11 +211,11 @@ export default function TripRequestsPage() {
                         <TableCell className="font-medium">
                             {request.startDate ? (
                                 <span>
-                                    {request.startDate.split('-').reverse().join('/')}
-                                    {request.endDate && request.endDate !== request.startDate && ` - ${request.endDate.split('-').reverse().join('/')}`}
+                                    {getSafeDateStr(request.startDate).split('-').reverse().join('/')}
+                                    {request.endDate && getSafeDateStr(request.endDate) !== getSafeDateStr(request.startDate) && ` - ${getSafeDateStr(request.endDate).split('-').reverse().join('/')}`}
                                 </span>
                             ) : (
-                                request.date?.split('-').reverse().join('/')
+                                request.date ? getSafeDateStr(request.date).split('-').reverse().join('/') : ''
                             )}
                         </TableCell>
                         <TableCell>{typeMap[request.type]}</TableCell>
@@ -279,11 +282,11 @@ export default function TripRequestsPage() {
                                         <Calendar className="h-3.5 w-3.5 text-primary" />
                                         {request.startDate ? (
                                             <span>
-                                                {request.startDate.split('-').reverse().join('/')}
-                                                {request.endDate && request.endDate !== request.startDate && ` - ${request.endDate.split('-').reverse().join('/')}`}
+                                                {getSafeDateStr(request.startDate).split('-').reverse().join('/')}
+                                                {request.endDate && getSafeDateStr(request.endDate) !== getSafeDateStr(request.startDate) && ` - ${getSafeDateStr(request.endDate).split('-').reverse().join('/')}`}
                                             </span>
                                         ) : (
-                                            request.date?.split('-').reverse().join('/')
+                                            request.date ? getSafeDateStr(request.date).split('-').reverse().join('/') : ''
                                         )}
                                     </div>
                                     <p className="text-sm text-muted-foreground">{typeMap[request.type]}</p>

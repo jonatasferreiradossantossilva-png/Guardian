@@ -42,7 +42,7 @@ import { useDataCollection, useData } from '@/hooks/use-data';
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SafeTableRow, SafeRow } from "@/components/shared/safe-table";
-import { safeString, safeArray } from "@/lib/safe-render";
+import { safeString, safeArray, getSafeDate, getSafeDateStr } from "@/lib/safe-render";
 
 
 import { TripRequest, Student, Parent, SchoolData, Route, TripRequestStatus } from "@/types/mock-data";
@@ -112,7 +112,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
             addDoc('invoices', {
                 studentId: req.studentId,
                 parentUserId: req.parentUserId,
-                description: `Viagem Extra - ${req.startDate?.split('-').reverse().join('/') || 'Configurada'}`,
+                description: `Viagem Extra - ${req.startDate ? getSafeDateStr(req.startDate).split('-').reverse().join('/') : 'Configurada'}`,
                 amount: req.amount,
                 dueDate: new Date().toISOString().split('T')[0], // Vencimento imediato
                 status: 'pending',
@@ -150,7 +150,7 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
     return [...requests].sort((a, b) => {
         if (a.status === 'pendente' && b.status !== 'pendente') return -1;
         if (a.status !== 'pendente' && b.status === 'pendente') return 1;
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime();
     });
   }, [requests]);
 
@@ -233,15 +233,15 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                           </TableCell>
                           <TableCell>{schoolName as any}</TableCell>
                           <TableCell>
-                            {request.startDate ? (
-                              <span className="text-xs font-medium">
-                                {request.startDate.split('-').reverse().join('/')}
-                                {request.endDate && request.endDate !== request.startDate && ` - ${request.endDate.split('-').reverse().join('/')}`}
-                              </span>
-                            ) : (
-                              request.date?.includes('-') ? request.date.split('-').reverse().join('/') : (request.date || 'N/A')
-                            )}
-                          </TableCell>
+                             {request.startDate ? (
+                               <span className="text-xs font-medium">
+                                 {getSafeDateStr(request.startDate).split('-').reverse().join('/')}
+                                 {request.endDate && getSafeDateStr(request.endDate) !== getSafeDateStr(request.startDate) && ` - ${getSafeDateStr(request.endDate).split('-').reverse().join('/')}`}
+                               </span>
+                             ) : (
+                               getSafeDateStr(request.date).includes('-') ? getSafeDateStr(request.date).split('-').reverse().join('/') : (safeString(request.date) || 'N/A')
+                             )}
+                           </TableCell>
                           <TableCell>{typeMap[request.type as keyof typeof typeMap]}</TableCell>
                           <TableCell>{request.amount ? `R$ ${Number(request.amount).toFixed(2)}` : '-'}</TableCell>
                           <TableCell>
@@ -328,15 +328,15 @@ export function TripRequestsList({ initialRequests, initialStudents, initialPare
                               <Calendar className="h-3 w-3" />
                               <span className="text-[11px]">
                                 {request.startDate ? (
-                                  <>
-                                    {request.startDate.split('-').reverse().join('/')}
-                                    {request.endDate && request.endDate !== request.startDate && (
-                                      <span className="block text-[9px] text-muted-foreground">até {request.endDate.split('-').reverse().join('/')}</span>
-                                    )}
-                                  </>
-                                ) : (
-                                  request.date?.includes('-') ? request.date.split('-').reverse().join('/') : (request.date || 'N/A')
-                                )}
+                                 <>
+                                   {getSafeDateStr(request.startDate).split('-').reverse().join('/')}
+                                   {request.endDate && getSafeDateStr(request.endDate) !== getSafeDateStr(request.startDate) && (
+                                     <span className="block text-[9px] text-muted-foreground">até {getSafeDateStr(request.endDate).split('-').reverse().join('/')}</span>
+                                   )}
+                                 </>
+                               ) : (
+                                 getSafeDateStr(request.date).includes('-') ? getSafeDateStr(request.date).split('-').reverse().join('/') : (safeString(request.date) || 'N/A')
+                               )}
                               </span>
                             </div>
                           </div>

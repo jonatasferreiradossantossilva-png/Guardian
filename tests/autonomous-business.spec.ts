@@ -15,15 +15,14 @@ test.describe('Autonomous Driver Business Flow', () => {
             'fonts.googleapis', 'fonts.gstatic'
         ];
         if (excludeList.some(domain => url.includes(domain))) {
-            return route.abort();
+            return route.fulfill({ status: 200, body: '' });
         }
         return route.continue();
     });
 
-    // Configuração inicial básica
-    await page.goto('/?isTesting=true');
-    await page.evaluate(() => {
+    await page.addInitScript(() => {
         localStorage.setItem('hide-ios-prompt', 'true');
+        (window as any).IS_TESTING = true;
     });
   });
 

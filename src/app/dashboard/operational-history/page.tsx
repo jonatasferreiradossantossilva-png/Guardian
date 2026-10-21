@@ -11,6 +11,7 @@ import { ptBR } from 'date-fns/locale';
 import { Button } from '@/components/ui/button';
 import Link from 'next/link';
 import { cn } from '@/lib/utils';
+import { getSafeDate } from '@/lib/safe-render';
 
 type FeedItem = {
     id: string;
@@ -68,7 +69,7 @@ export default function OperationalHistoryPage() {
             color: 'text-green-500 bg-green-500/10 border-green-500/20'
         });
 
-        return items.sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime());
+        return items.sort((a, b) => getSafeDate(b.timestamp).getTime() - getSafeDate(a.timestamp).getTime());
     }, [incidents]);
 
     return (
@@ -132,7 +133,7 @@ export default function OperationalHistoryPage() {
                                                     )}
                                                 </div>
                                                 <span className="text-[10px] text-muted-foreground font-black uppercase whitespace-nowrap">
-                                                    {format(new Date(item.timestamp), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
+                                                    {format(getSafeDate(item.timestamp), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
                                                 </span>
                                             </div>
                                             <p className="text-sm text-muted-foreground leading-relaxed max-w-3xl">

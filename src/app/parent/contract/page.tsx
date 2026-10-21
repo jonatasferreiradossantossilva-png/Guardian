@@ -11,6 +11,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { Checkbox } from '@/components/ui/checkbox';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { getSafeDate } from '@/lib/safe-render';
 
 type Contract = {
   id: string;
@@ -127,13 +128,13 @@ export default function ParentContractPage() {
                                         Aluno(a): {student?.name}
                                     </CardDescription>
                                     <CardDescription className="print:text-black/60 text-[10px] uppercase font-bold">
-                                        Gerado em: {format(new Date(contract.createdAt), "dd/MM/yyyy", { locale: ptBR })}
+                                        Gerado em: {format(getSafeDate(contract.createdAt), "dd/MM/yyyy", { locale: ptBR })}
                                     </CardDescription>
                                 </div>
                                 {contract.status === 'accepted' && contract.acceptedAt && (
                                      <div className="text-sm p-3 rounded-md bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800 print:bg-white print:border-black print:text-black">
                                         <p className="font-bold flex items-center gap-2 uppercase text-[10px]"><CheckCircle className="h-4 w-4"/>Contrato Aceito</p>
-                                        <p className="text-xs">Em: {format(new Date(contract.acceptedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
+                                        <p className="text-xs">Em: {format(getSafeDate(contract.acceptedAt), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}</p>
                                     </div>
                                 )}
                             </div>

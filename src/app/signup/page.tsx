@@ -141,6 +141,7 @@ export default function SignupPage() {
               >
                 <Label
                   htmlFor="empresa"
+                  onClick={() => form.setValue("type", "empresa")}
                   className={cn(
                     "flex flex-col items-center justify-between rounded-xl border-2 p-6 cursor-pointer transition-all hover:bg-primary/5",
                     form.watch("type") === "empresa" ? "border-primary bg-primary/5" : "border-muted"
@@ -157,6 +158,7 @@ export default function SignupPage() {
 
                 <Label
                   htmlFor="autonomo"
+                  onClick={() => form.setValue("type", "autonomo")}
                   className={cn(
                     "flex flex-col items-center justify-between rounded-xl border-2 p-6 cursor-pointer transition-all hover:bg-primary/5 relative",
                     form.watch("type") === "autonomo" ? "border-primary bg-primary/5" : "border-muted"
@@ -434,7 +436,7 @@ export default function SignupPage() {
                  </div>
               </div>
 
-              <Button asChild className="w-full h-14 text-lg font-bold" onClick={() => router.push("/dashboard")}>
+              <Button className="w-full h-14 text-lg font-bold" onClick={() => router.push("/dashboard")}>
                 <div className="flex items-center gap-2">
                   Acessar Painel Agora
                   <ArrowRight className="h-5 w-5" />

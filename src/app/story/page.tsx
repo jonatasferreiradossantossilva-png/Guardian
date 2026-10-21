@@ -284,7 +284,7 @@ export default function StoryPage() {
 // Helpers
 function SetupRow({ text, active, delay = "" }: { text: string, active: boolean, delay?: string }) {
   return (
-    <div className={cn("bg-zinc-800/80 p-4 rounded-xl flex items-center justify-between transition-all duration-[600ms] border border-zinc-700/50", active ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10", delay)}>
+    <div className={cn("bg-zinc-800/80 p-4 rounded-xl flex items-center justify-between transition-all duration-500 border border-zinc-700/50", active ? "opacity-100 translate-x-0" : "opacity-0 -translate-x-10", delay)}>
        <span className="font-bold text-sm text-zinc-300">{text}</span>
        <div className={cn("w-6 h-6 rounded-full flex items-center justify-center transition-colors duration-500", active ? "bg-green-500" : "bg-zinc-700")}>
          {active && <Check className="w-4 h-4 text-white" />}

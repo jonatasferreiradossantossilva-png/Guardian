@@ -22,6 +22,7 @@ import { PixPaymentModal } from '@/components/parent/financial/pix-payment-modal
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { SafeRow, SafeTableRow } from '@/components/shared/safe-table';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
+import { getSafeDate, getSafeDateStr } from '@/lib/safe-render';
 
 type Invoice = {
   id: string;
@@ -127,7 +128,7 @@ export default function ParentFinancialPage() {
     return [...filteredInvoices].sort((a, b) => {
         const statusComparison = statusOrder[a.status] - statusOrder[b.status];
         if (statusComparison !== 0) return statusComparison;
-        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime()
+        return getSafeDate(b.dueDate).getTime() - getSafeDate(a.dueDate).getTime()
     });
   }, [filteredInvoices]);
 
@@ -216,7 +217,7 @@ export default function ParentFinancialPage() {
                             <TableRow>
                               <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'N/A'}</TableCell>
                               <TableCell>{invoice.description}</TableCell>
-                              <TableCell>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</TableCell>
+                              <TableCell>{getSafeDateStr(invoice.dueDate).split('-').reverse().join('/')}</TableCell>
                               <TableCell>R$ {invoice.amount.toFixed(2)}</TableCell>
                               <TableCell>
                               <Badge variant={statusVariantMap[invoice.status as Invoice['status']]} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
@@ -267,7 +268,7 @@ export default function ParentFinancialPage() {
                                 <div className="mt-4 grid grid-cols-2 gap-y-4 text-sm">
                                     <div>
                                         <p className="text-xs text-muted-foreground">Vencimento</p>
-                                        <p>{invoice.dueDate.split('T')[0].split('-').reverse().join('/')}</p>
+                                        <p>{getSafeDateStr(invoice.dueDate).split('-').reverse().join('/')}</p>
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground">Valor</p>

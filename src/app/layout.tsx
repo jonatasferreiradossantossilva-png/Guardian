@@ -1,5 +1,8 @@
 import type {Metadata} from 'next';
+import { Inter } from 'next/font/google';
 import './globals.css';
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
 import { Toaster } from "@/components/ui/toaster";
 import { FirebaseClientProvider } from '@/firebase/client-provider';
 import { DataProvider } from '@/hooks/use-data';
@@ -32,9 +35,6 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark" suppressHydrationWarning>
       <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
@@ -78,16 +78,16 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="font-body antialiased" suppressHydrationWarning>
+      <body className={`${inter.className} font-body antialiased`} suppressHydrationWarning>
         <ErrorBoundary>
-          <DataProvider>
-            <FirebaseClientProvider>
+          <FirebaseClientProvider>
+            <DataProvider>
               {children}
-            </FirebaseClientProvider>
-            <ClientOnly>
-              {process.env.NEXT_PUBLIC_DATA_MODE !== 'firestore' && <DemoOrchestrator />}
-            </ClientOnly>
-          </DataProvider>
+              <ClientOnly>
+                {process.env.NEXT_PUBLIC_DATA_MODE !== 'firestore' && <DemoOrchestrator />}
+              </ClientOnly>
+            </DataProvider>
+          </FirebaseClientProvider>
         </ErrorBoundary>
         <ClientOnly>
           <IosInstallPrompt />

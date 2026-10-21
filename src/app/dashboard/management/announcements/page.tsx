@@ -16,6 +16,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Label } from '@/components/ui/label';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { getSafeDate } from '@/lib/safe-render';
 
 import { Announcement } from '@/types/mock-data';
 
@@ -146,7 +147,7 @@ export default function AnnouncementsManagementPage() {
                       </TableRow>
                     </TableHeader>
                     <TableBody>
-                      {announcements.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ann: Announcement) => (
+                      {announcements.sort((a,b) => getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime()).map((ann: Announcement) => (
                         <TableRow key={ann.id}>
                           <TableCell className="max-w-[300px]">
                             <p className="font-medium truncate">{ann.title}</p>
@@ -161,7 +162,7 @@ export default function AnnouncementsManagementPage() {
                             {ann.target === 'all' ? 'Todos' : ann.target === 'parents' ? 'Pais' : 'Motoristas'}
                           </TableCell>
                           <TableCell className="text-xs text-muted-foreground">
-                            {format(new Date(ann.createdAt), "dd/MM/yy HH:mm")}
+                            {format(getSafeDate(ann.createdAt), "dd/MM/yy HH:mm")}
                           </TableCell>
                           <TableCell className="text-right">
                             <Button variant="ghost" size="icon" className="text-destructive" onClick={() => handleDelete(ann.id)}>
@@ -176,7 +177,7 @@ export default function AnnouncementsManagementPage() {
               </div>
 
               <div className="md:hidden divide-y">
-                {announcements.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ann: Announcement) => (
+                {announcements.sort((a,b) => getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime()).map((ann: Announcement) => (
                   <div key={ann.id} className="p-4 space-y-3">
                     <div className="flex justify-between items-start gap-2">
                       <div className="min-w-0">
@@ -197,7 +198,7 @@ export default function AnnouncementsManagementPage() {
                     <p className="text-sm text-muted-foreground leading-snug line-clamp-3">{ann.content}</p>
                     <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground pt-1">
                       <Clock className="h-3 w-3" />
-                      {format(new Date(ann.createdAt), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
+                      {format(getSafeDate(ann.createdAt), "dd 'de' MMM 'às' HH:mm", { locale: ptBR })}
                     </div>
                   </div>
                 ))}

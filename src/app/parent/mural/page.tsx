@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { cn } from '@/lib/utils';
+import { getSafeDate } from '@/lib/safe-render';
 
 export default function ParentMuralPage() {
   const { data: announcements, isLoading } = useDataCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'parents'] }]);
@@ -28,7 +29,7 @@ export default function ParentMuralPage() {
           <div className="text-center py-20">Carregando avisos...</div>
         ) : announcements && announcements.length > 0 ? (
           <div className="space-y-4">
-            {announcements.sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()).map((ann) => (
+            {announcements.sort((a,b) => getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime()).map((ann) => (
               <Card key={ann.id} className={cn(
                 "border-l-4",
                 ann.priority === 'high' ? "border-l-destructive shadow-md" : "border-l-primary"
@@ -42,7 +43,7 @@ export default function ParentMuralPage() {
                   </div>
                   <div className="flex items-center gap-2 text-xs text-muted-foreground mt-1">
                     <Clock className="h-3 w-3" />
-                    <span>{format(new Date(ann.createdAt), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}</span>
+                    <span>{format(getSafeDate(ann.createdAt), "dd 'de' MMMM 'às' HH:mm", { locale: ptBR })}</span>
                   </div>
                 </CardHeader>
                 <CardContent>

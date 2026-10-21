@@ -264,11 +264,11 @@ export function MainSidebar() {
           </div>
             <Tooltip>
                 <TooltipTrigger asChild>
-                    <Link href="/" className="ml-auto">
-                        <Button variant="ghost" size="icon">
-                        <LogOut className="h-5 w-5 text-muted-foreground" />
-                        </Button>
-                    </Link>
+                    <Button variant="ghost" size="icon" asChild className="ml-auto">
+                        <Link href="/">
+                            <LogOut className="h-5 w-5 text-muted-foreground" />
+                        </Link>
+                    </Button>
                 </TooltipTrigger>
                 <TooltipContent side="right" align="center">
                     Sair

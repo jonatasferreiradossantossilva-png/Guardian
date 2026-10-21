@@ -17,6 +17,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn } from '@/lib/utils';
 import { SafeRow } from '@/components/shared/safe-table';
+import { safeString, safeArray, getSafeDateStr } from '@/lib/safe-render';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 
@@ -120,7 +121,7 @@ export function RoutePlanningClient() {
     return tripRequests.some(tr => 
       tr.studentId === studentId && 
       tr.status === 'aprovada' && 
-      (tr.date === dateStr || (tr.startDate && tr.endDate && dateStr >= tr.startDate && dateStr <= tr.endDate))
+      (getSafeDateStr(tr.date) === dateStr || (tr.startDate && tr.endDate && dateStr >= getSafeDateStr(tr.startDate) && dateStr <= getSafeDateStr(tr.endDate)))
     );
   };
 
@@ -185,7 +186,7 @@ export function RoutePlanningClient() {
     // 1. Check local manifests
     for (const manifestId of Object.keys(localManifests)) {
       const m = localManifests[manifestId];
-      if (m.date === dateStr && m.direction === selectedDirection) {
+      if (getSafeDateStr(m.date) === dateStr && m.direction === selectedDirection) {
         if (m.studentIds.includes(studentId)) {
           const r = (routes || []).find(route => route.id === m.routeId);
           if (r) return { id: r.id, name: r.name };
@@ -195,7 +196,7 @@ export function RoutePlanningClient() {
 
     // 2. Check DB manifests
     const dbManifest = (routeManifests || []).find(m => 
-      m && m.date === dateStr && m.direction === selectedDirection && m.studentIds.includes(studentId)
+      m && getSafeDateStr(m.date) === dateStr && m.direction === selectedDirection && m.studentIds.includes(studentId)
     );
     if (dbManifest) {
       const r = (routes || []).find(route => route.id === dbManifest.routeId);
@@ -241,7 +242,7 @@ export function RoutePlanningClient() {
     // 2. Check DB manifests
     const existing = (routeManifests || []).find(m =>
       m && m.routeId === route.id &&
-      m.date === dateStr &&
+      getSafeDateStr(m.date) === dateStr &&
       m.direction === selectedDirection
     );
 
@@ -300,7 +301,7 @@ export function RoutePlanningClient() {
     vehicleRoutes.forEach(r => {
       const manifestId = `manifest_${r.id}_${dateStr}_${selectedDirection}`;
       const manifest = localManifests[manifestId] || (routeManifests || []).find(m => 
-        m && m.routeId === r.id && m.date === dateStr && m.direction === selectedDirection
+        m && m.routeId === r.id && getSafeDateStr(m.date) === dateStr && m.direction === selectedDirection
       );
       const studentIds = manifest ? manifest.studentIds : (r.baseStudentIds || r.studentIds || []);
       console.log(`PLANNER DEBUG - vehicleStudents processing route ${r.name}:`, { manifestId, hasManifest: !!manifest, studentIds });
@@ -400,7 +401,7 @@ export function RoutePlanningClient() {
         
         if (!sourceManifest) {
           const dbManifest = (routeManifests || []).find(m => 
-            m && m.routeId === currentRoute.id && m.date === dateStr && m.direction === selectedDirection
+            m && m.routeId === currentRoute.id && getSafeDateStr(m.date) === dateStr && m.direction === selectedDirection
           );
           if (dbManifest) {
             sourceManifest = { ...dbManifest };
@@ -431,7 +432,7 @@ export function RoutePlanningClient() {
 
       if (!targetManifest) {
         const dbManifest = (routeManifests || []).find(m => 
-          m && m.routeId === targetRouteId && m.date === dateStr && m.direction === selectedDirection
+          m && m.routeId === targetRouteId && getSafeDateStr(m.date) === dateStr && m.direction === selectedDirection
         );
         if (dbManifest) {
           targetManifest = { ...dbManifest };
@@ -571,11 +572,17 @@ export function RoutePlanningClient() {
   const publishedManifestSummaries = useMemo(() => {
     const manifests = routeManifests || [];
     const summaries = manifests
-      .filter(m => m && m.routeId && m.date)
+      .filter(m => {
+        if (!m || !m.routeId) return false;
+        const dateStr = getSafeDateStr(m.date);
+        return !!dateStr;
+      })
       .map(m => {
         const route = (routes || []).find(r => r && r.id === m.routeId);
+        const dateStr = getSafeDateStr(m.date);
         return {
           ...m,
+          date: dateStr,
           routeName: route?.name || 'Rota desconhecida',
           studentCount: (m.studentIds || []).length,
         };
@@ -599,7 +606,7 @@ export function RoutePlanningClient() {
     const totalStudents = (students || []).length;
     const totalRoutes = (routes || []).length;
     const todayStr = format(new Date(), 'yyyy-MM-dd');
-    const todayManifests = (routeManifests || []).filter(m => m && m.date === todayStr);
+    const todayManifests = (routeManifests || []).filter(m => m && getSafeDateStr(m.date) === todayStr);
     const studentsAllocatedToday = new Set(todayManifests.flatMap(m => m.studentIds || [])).size;
     return { totalStudents, totalRoutes, todayManifests: todayManifests.length, studentsAllocatedToday };
   }, [students, routes, routeManifests]);
@@ -680,7 +687,8 @@ export function RoutePlanningClient() {
   };
 
   const handleEditManifest = (manifest: RouteManifest & { routeName: string }) => {
-    setSelectedDate(new Date(manifest.date + 'T12:00:00'));
+    const safeDate = getSafeDateStr(manifest.date);
+    setSelectedDate(new Date(safeDate + 'T12:00:00'));
     setSelectedShift(manifest.shift as 'Manhã' | 'Tarde' | 'Integral');
     setSelectedDirection(manifest.direction as 'ida' | 'volta');
     setSelectedRouteId(manifest.routeId);
@@ -802,7 +810,7 @@ export function RoutePlanningClient() {
                 <SelectContent>
                   <SelectItem value="none">Visão Geral (Todas)</SelectItem>
                   {(wizardAvailableRoutes || []).filter(r => r && r.id).map(r => (
-                    <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>
+                    <SelectItem key={r.id} value={r.id}>{safeString(r.name)}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -821,7 +829,7 @@ export function RoutePlanningClient() {
                   )}
                   {(drivers || []).filter(d => d && d.id).map(d => (
                     <SelectItem key={d.id} value={d.id}>
-                      {d.name} {d.vehicleId ? `(Van: ${(vehicles || []).find((v: any) => v.id === d.vehicleId)?.model || 'Atribuída'})` : ''}
+                      {safeString(d.name)} {d.vehicleId ? `(Van: ${safeString((vehicles || []).find((v: any) => v.id === d.vehicleId)?.model, 'Atribuída')})` : ''}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -907,7 +915,7 @@ export function RoutePlanningClient() {
             <Card className="relative overflow-hidden">
               <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-violet-500/10 flex items-center justify-center text-violet-500">
+                  <div className="w-10 h-10 rounded-full bg-amber-500/10 flex items-center justify-center text-amber-500">
                     <UserIcon className="w-5 h-5" />
                   </div>
                   <div>
@@ -935,12 +943,14 @@ export function RoutePlanningClient() {
                     onChange={(e) => setSearchQuery(e.target.value)}
                     className="pl-9 pr-10 h-11 bg-zinc-900/40 border-zinc-800 text-zinc-100 placeholder:text-zinc-500 rounded-lg focus-visible:ring-1 focus-visible:ring-orange-500/30 focus-visible:border-orange-500/50 transition-all duration-300"
                     id="search-manifests"
+                    aria-label="Buscar planejamentos de rotas por nome, data ou turno"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
                       className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-500 hover:text-zinc-300 transition-colors"
                       type="button"
+                      aria-label="Limpar campo de busca"
                     >
                       <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -970,13 +980,14 @@ export function RoutePlanningClient() {
                       <div className="p-4 flex flex-col gap-2 hover:bg-zinc-900/10 transition-colors border-b border-zinc-800 last:border-none">
                         {/* Top line: Route Name (left) & Actions (right) */}
                         <div className="flex items-center justify-between gap-4">
-                          <p className="text-sm font-semibold text-zinc-100 truncate">{manifest.routeName}</p>
+                          <p className="text-sm font-semibold text-zinc-100 truncate">{safeString(manifest.routeName)}</p>
                           <div className="flex items-center gap-2 shrink-0">
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => handleEditManifest(manifest)}
                               className="h-8 text-xs font-semibold hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all duration-300"
+                              aria-label={`Editar planejamento da rota ${safeString(manifest.routeName)}`}
                             >
                               Editar
                             </Button>
@@ -986,6 +997,7 @@ export function RoutePlanningClient() {
                               onClick={(e) => handleDeleteManifest(manifest.id, e)}
                               className="h-8 w-8 text-zinc-500 hover:text-red-500 hover:bg-red-500/10 transition-colors"
                               title="Excluir Planejamento"
+                              aria-label={`Excluir planejamento da rota ${safeString(manifest.routeName)}`}
                             >
                               <Trash2 className="w-4 h-4" />
                             </Button>
@@ -996,9 +1008,11 @@ export function RoutePlanningClient() {
                           <p className="text-xs text-muted-foreground">
                             {(() => {
                               try {
-                                return format(new Date(manifest.date + 'T12:00:00'), 'dd MMM yyyy', { locale: ptBR });
+                                const safeDate = getSafeDateStr(manifest.date);
+                                if (!safeDate) return '—';
+                                return format(new Date(safeDate + 'T12:00:00'), 'dd MMM yyyy', { locale: ptBR });
                               } catch {
-                                return manifest.date;
+                                return typeof manifest.date === 'string' ? manifest.date : '—';
                               }
                             })()}
                           </p>
@@ -1010,7 +1024,7 @@ export function RoutePlanningClient() {
                               "text-[10px] font-bold",
                               manifest.direction === 'ida'
                                 ? 'border-blue-500/30 text-blue-500 bg-blue-500/5'
-                                : 'border-violet-500/30 text-violet-500 bg-violet-500/5'
+                                : 'border-emerald-500/30 text-emerald-500 bg-emerald-500/5'
                             )}>
                               {manifest.direction === 'ida' ? '↗ Ida' : '↙ Volta'}
                             </Badge>
@@ -1063,7 +1077,7 @@ export function RoutePlanningClient() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todas as Escolas</SelectItem>
-                      {(schools || []).filter(s => s && s.id).map(s => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                      {(schools || []).filter(s => s && s.id).map(s => <SelectItem key={s.id} value={s.id}>{safeString(s.name)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -1121,7 +1135,7 @@ export function RoutePlanningClient() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="all">Todas as Vans</SelectItem>
-                      {(vehicles || []).filter(v => v && v.id).map(v => <SelectItem key={v.id} value={v.id}>{v.model}</SelectItem>)}
+                      {(vehicles || []).filter(v => v && v.id).map(v => <SelectItem key={v.id} value={v.id}>{safeString(v.model)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -1134,7 +1148,7 @@ export function RoutePlanningClient() {
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="none">Geral</SelectItem>
-                      {(availableRoutes || []).filter(r => r && r.id).map(r => <SelectItem key={r.id} value={r.id}>{r.name}</SelectItem>)}
+                      {(availableRoutes || []).filter(r => r && r.id).map(r => <SelectItem key={r.id} value={r.id}>{safeString(r.name)}</SelectItem>)}
                     </SelectContent>
                   </Select>
                 </div>
@@ -1162,7 +1176,7 @@ export function RoutePlanningClient() {
                       <SelectContent>
                         {(drivers || []).filter(d => d && d.id).map(d => (
                           <SelectItem key={d.id} value={d.id}>
-                            {d.name} {d.vehicleId ? `(Van: ${(vehicles || []).find((v: any) => v.id === d.vehicleId)?.model || 'Atribuída'})` : ''}
+                            {safeString(d.name)} {d.vehicleId ? `(Van: ${safeString((vehicles || []).find((v: any) => v.id === d.vehicleId)?.model, 'Atribuída')})` : ''}
                           </SelectItem>
                         ))}
                       </SelectContent>
@@ -1211,7 +1225,7 @@ export function RoutePlanningClient() {
                               <SafeRow key={student.id} name={`vehicle-student-${student.id}`}>
                                 <div className="p-4 flex items-center justify-between bg-card hover:bg-muted/50 transition-colors">
                                   <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium">{student.name}</p>
+                                    <p className="text-sm font-medium">{safeString(student.name)}</p>
                                     <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
                                   </div>
                                   {currentRoute && (
@@ -1268,7 +1282,7 @@ export function RoutePlanningClient() {
                               <div className={cn("p-4 flex items-center gap-4 bg-card hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
                                 <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
                                 <div className="flex-1 min-w-0">
-                                  <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
+                                  <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{safeString(student.name)}</p>
                                   <p className="text-xs text-muted-foreground mt-0.5">Manifesto Extra • {getSchoolName(student.schoolId)}</p>
                                 </div>
                                 {isAbsent && (
@@ -1299,7 +1313,7 @@ export function RoutePlanningClient() {
                               <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
                                 <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
                                 <div className="flex-1 min-w-0">
-                                  <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
+                                  <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{safeString(student.name)}</p>
                                   <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
                                 </div>
                                 {isAbsent && (
@@ -1424,7 +1438,7 @@ export function RoutePlanningClient() {
                           <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleExtraStudent(student.id)}>
                             <Checkbox checked={selectedExtraStudentIds.includes(student.id)} onCheckedChange={() => {}} />
                             <div className="flex-1 min-w-0">
-                              <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{student.name}</p>
+                              <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{safeString(student.name)}</p>
                               <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
                             </div>
                             {isAbsent && (

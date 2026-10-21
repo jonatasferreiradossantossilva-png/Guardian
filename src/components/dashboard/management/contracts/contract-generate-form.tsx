@@ -112,10 +112,10 @@ export function ContractGenerateForm({ students, parents, templates, existingCon
     return students.filter(s => !contractedStudentIds.has(s.id) && s.active !== false);
   }, [students, existingContracts]);
 
-  const studentsMap = useMemo(() => new Map(students.map((s: Student) => [s.id, s])), [students]);
-  const parentsMap = useMemo(() => new Map(parents.map((p: Parent) => [p.id, p])), [parents]);
-  const schoolsMap = useMemo(() => new Map(schools?.map((s: any) => [s.id, s.name])), [schools]);
-  const templatesMap = useMemo(() => new Map(templates.map((t: any) => [t.id, t])), [templates]);
+  const studentsMap = useMemo(() => new Map(students?.map((s: Student) => [s.id, s]) || []), [students]);
+  const parentsMap = useMemo(() => new Map(parents?.map((p: Parent) => [p.id, p]) || []), [parents]);
+  const schoolsMap = useMemo(() => new Map(schools?.map((s: any) => [s.id, s.name]) || []), [schools]);
+  const templatesMap = useMemo(() => new Map(templates?.map((t: any) => [t.id, t]) || []), [templates]);
 
   const selectedStudentData = useMemo(() => {
       if (!watchStudentId) return null;

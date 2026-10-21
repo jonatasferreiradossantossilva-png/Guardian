@@ -39,6 +39,7 @@ import { cn } from '@/lib/utils';
 import { format, isSameDay, startOfDay } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { DateRange } from "react-day-picker";
+import { getSafeDate } from '@/lib/safe-render';
 
 const formSchema = z.object({
   startDate: z.date({ required_error: 'A data de início é obrigatória.' }),
@@ -93,8 +94,8 @@ export function TripRequestForm({ request, studentId, schoolId: defaultSchoolId,
 
   useEffect(() => {
     if (request) {
-      const start = request.startDate ? new Date(request.startDate) : (request.date ? new Date(request.date) : undefined);
-      const end = request.endDate ? new Date(request.endDate) : (request.date ? new Date(request.date) : undefined);
+      const start = request.startDate ? getSafeDate(request.startDate) : (request.date ? getSafeDate(request.date) : undefined);
+      const end = request.endDate ? getSafeDate(request.endDate) : (request.date ? getSafeDate(request.date) : undefined);
       
       form.reset({
         startDate: start,

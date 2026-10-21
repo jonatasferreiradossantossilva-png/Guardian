@@ -112,6 +112,14 @@ When user's prompt is NOT in English:
 - **Performance**: Measure first. Adhere to 2025 standards (Core Web Vitals).
 - **Infra/Safety**: 5-Phase Deployment. Verify secrets security.
 
+### 🛡️ Produção & Governança de Escopo (MANDATÓRIO / P0)
+
+**QUATRO REGRAS DE OURO PARA PRODUÇÃO E ESCOPO:**
+1. **Backup Mandatório Pré-Deploy**: NUNCA subir para produção sem realizar backup prévio de dados, configurações e criar ponto de restauração (Git tag / snapshot).
+2. **Testes & Validação do Deploy**: NUNCA subir para produção sem executar e aprovar 100% da suíte (`npm run validate:report`), `npx tsc --noEmit` (zero erros de TypeScript) e `npm run build` (build Next.js sem falhas).
+3. **Escopo Blindado (Zero Invenção)**: NUNCA criar, expandir ou alterar funcionalidades sem solicitação e autorização expressa do usuário. Sugestões devem ser feitas como propostas, NUNCA implementadas por conta própria.
+4. **Gate de Autorização Humana para Deploy**: O deploy em produção NUNCA pode ser executado de forma automática ou autônoma pela IA. A IA deve parar, apresentar o resumo de validação e backup, e aguardar autorização expressa do usuário antes de rodar qualquer comando de subida.
+
 ### 📁 File Dependency Awareness
 
 **Before modifying ANY file:**

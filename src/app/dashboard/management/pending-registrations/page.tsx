@@ -52,7 +52,7 @@ export default function PendingRegistrationsPage() {
   const [editableParentName, setEditableParentName] = useState('');
   const [selectedRouteId, setSelectedRouteId] = useState<string>('none');
 
-  const schoolsMap = useMemo(() => new Map(schools?.map((s: any) => [s.id, s.name])), [schools]);
+  const schoolsMap = useMemo(() => new Map(schools?.map((s: any) => [s.id, s.name]) || []), [schools]);
   const company = companyProfiles?.[0];
   const defaultTemplate = templates?.[0];
 

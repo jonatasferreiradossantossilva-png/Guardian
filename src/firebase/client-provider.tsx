@@ -9,19 +9,9 @@ interface FirebaseClientProviderProps {
 }
 
 export function FirebaseClientProvider({ children }: FirebaseClientProviderProps) {
-  const [isMounted, setIsMounted] = React.useState(false);
-
-  React.useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
   const firebaseServices = React.useMemo(() => {
     return initializeFirebase();
   }, []);
-
-  if (!isMounted) {
-    return null; // Don't render anything on the server to prevent hydration mismatch
-  }
 
   return (
     <FirebaseProvider

@@ -54,3 +54,58 @@ export function sanitize(obj: any): any {
     });
     return result;
 }
+
+/**
+ * Parses and returns a safe date string in 'yyyy-MM-dd' format.
+ * Handles strings, Date objects, and Firestore Timestamp objects ({seconds, nanoseconds}).
+ */
+export function getSafeDateStr(dateVal: unknown): string {
+  if (!dateVal) return '';
+  if (typeof dateVal === 'string') return dateVal.split('T')[0];
+  if (typeof dateVal === 'object') {
+    // Firestore Timestamp checks
+    if ('toDate' in dateVal && typeof (dateVal as any).toDate === 'function') {
+      try {
+        return (dateVal as any).toDate().toISOString().split('T')[0];
+      } catch {}
+    }
+    if ('seconds' in dateVal && typeof (dateVal as any).seconds === 'number') {
+      try {
+        return new Date((dateVal as any).seconds * 1000).toISOString().split('T')[0];
+      } catch {}
+    }
+    if (dateVal instanceof Date) {
+      try {
+        return dateVal.toISOString().split('T')[0];
+      } catch {}
+    }
+  }
+  return String(dateVal).split('T')[0];
+}
+
+/**
+ * Resolves any date-like input to a valid JS Date object.
+ * Safe fallback to new Date() if invalid, avoiding RangeErrors.
+ */
+export function getSafeDate(dateVal: unknown): Date {
+  if (!dateVal) return new Date();
+  if (dateVal instanceof Date) return dateVal;
+  if (typeof dateVal === 'object') {
+    if ('toDate' in dateVal && typeof (dateVal as any).toDate === 'function') {
+      try {
+        return (dateVal as any).toDate();
+      } catch {}
+    }
+    if ('seconds' in dateVal && typeof (dateVal as any).seconds === 'number') {
+      try {
+        return new Date((dateVal as any).seconds * 1000);
+      } catch {}
+    }
+  }
+  const parsed = new Date(dateVal as any);
+  if (isNaN(parsed.getTime())) {
+    return new Date();
+  }
+  return parsed;
+}
+

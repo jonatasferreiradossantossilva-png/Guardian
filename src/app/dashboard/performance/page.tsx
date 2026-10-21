@@ -12,6 +12,7 @@ import { useDataCollection } from '@/hooks/use-data';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogTrigger } from '@/components/ui/dialog';
 import { MaintenanceForm } from '@/components/dashboard/management/vehicles/maintenance-form';
+import { getSafeDateStr } from '@/lib/safe-render';
 
 const chartConfig = {
   planejado: { label: "KM Planejado", color: "hsl(var(--muted))" },
@@ -29,19 +30,19 @@ export default function PerformancePage() {
     
     // Agrupar por data
     const grouped = history.reduce((acc: any, trip: any) => {
-        const date = trip.date;
-        if (!date) return acc; // Defensive check
+        const dateStr = getSafeDateStr(trip.date);
+        if (!dateStr) return acc; // Defensive check
 
         // FIXED: Safe date parsing to avoid crash if format is unexpected
-        const dateParts = date.split('-');
-        let displayDay = date;
+        const dateParts = dateStr.split('-');
+        let displayDay = dateStr;
         if (dateParts.length >= 2) {
             displayDay = `${dateParts[dateParts.length - 1]}/${dateParts[dateParts.length - 2]}`;
         }
 
-        if (!acc[date]) acc[date] = { day: displayDay, planejado: 0, real: 0 };
-        acc[date].planejado += Number(trip.plannedKm || 0);
-        acc[date].real += Number(trip.actualKm || 0);
+        if (!acc[dateStr]) acc[dateStr] = { day: displayDay, planejado: 0, real: 0 };
+        acc[dateStr].planejado += Number(trip.plannedKm || 0);
+        acc[dateStr].real += Number(trip.actualKm || 0);
         return acc;
     }, {} as Record<string, any>);
 

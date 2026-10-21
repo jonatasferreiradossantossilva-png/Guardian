@@ -11,10 +11,10 @@ const nextConfig: NextConfig = {
   /* config options here */
   allowedDevOrigins: ['192.168.0.30', '192.168.0.*', 'localhost'],
   typescript: {
-    ignoreBuildErrors: true,
+    ignoreBuildErrors: false,
   },
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   images: {
     remotePatterns: [

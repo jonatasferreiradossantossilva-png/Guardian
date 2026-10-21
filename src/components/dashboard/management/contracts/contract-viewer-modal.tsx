@@ -13,6 +13,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { FileText } from 'lucide-react';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
+import { getSafeDate } from '@/lib/safe-render';
 
 type Contract = {
   id: string;
@@ -41,7 +42,7 @@ export function ContractViewerModal({ contract, isOpen, onClose }: ContractViewe
             Visualizar Contrato
           </DialogTitle>
           <DialogDescription>
-            Contrato gerado para <span className="font-semibold">{contract.studentName}</span> em {format(new Date(contract.createdAt), "dd/MM/yyyy", { locale: ptBR })}.
+            Contrato gerado para <span className="font-semibold">{contract.studentName}</span> em {format(getSafeDate(contract.createdAt), "dd/MM/yyyy", { locale: ptBR })}.
           </DialogDescription>
         </DialogHeader>
         <div className="my-4">

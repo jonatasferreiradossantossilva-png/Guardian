@@ -20,7 +20,7 @@ import {
 import { firestore, auth } from '@/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { MockDB } from '@/types/mock-data';
-import type { MockDataContextType } from '@/hooks/use-mock-data';
+import { MockDataContext, type MockDataContextType } from '@/hooks/use-mock-data';
 
 /**
  * FirestoreDataProvider — Drop-in replacement for MockDataProvider.
@@ -380,7 +380,9 @@ export function FirestoreDataProvider({ children }: { children: React.ReactNode 
 
   return (
     <FirestoreDataContext.Provider value={value}>
-      {children}
+      <MockDataContext.Provider value={value}>
+        {children}
+      </MockDataContext.Provider>
     </FirestoreDataContext.Provider>
   );
 }

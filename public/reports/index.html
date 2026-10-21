@@ -1,0 +1,3700 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Guardian QA - Relatório de Validação e Regressão</title>
+  <style>
+    :root {
+      --bg: #090d16;
+      --card-bg: #111827;
+      --card-header: #151e32;
+      --border: #1f2937;
+      --border-focus: #38bdf8;
+      --text: #f3f4f6;
+      --text-muted: #9ca3af;
+      --primary: #38bdf8;
+      --green: #22c55e;
+      --red: #ef4444;
+      --yellow: #eab308;
+      --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      padding: 2rem 1.5rem;
+      line-height: 1.5;
+    }
+    .container {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 2rem;
+      padding-bottom: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .badge-icon {
+      background: linear-gradient(135deg, #0284c7, #38bdf8);
+      width: 52px;
+      height: 52px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 900;
+      font-size: 26px;
+      box-shadow: 0 0 25px rgba(56, 189, 248, 0.4);
+    }
+    .title h1 {
+      font-size: 1.65rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+    }
+    .title p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+    .header-actions {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .btn-action {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.5rem 0.9rem;
+      border-radius: 8px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .btn-action:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .progress-bar-wrap {
+      width: 100%;
+      height: 6px;
+      background: rgba(255, 255, 255, 0.08);
+      border-radius: 999px;
+      margin-bottom: 2rem;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #22c55e, #38bdf8);
+      border-radius: 999px;
+      transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1rem;
+      margin-bottom: 2rem;
+    }
+    .stat-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+    .stat-label {
+      font-size: 0.75rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      font-weight: 700;
+    }
+    .stat-value {
+      font-size: 1.85rem;
+      font-weight: 800;
+    }
+    .stat-value.green { color: var(--green); }
+    .stat-value.red { color: var(--red); }
+    .stat-value.blue { color: var(--primary); }
+
+    .controls-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+    }
+
+    .search-input {
+      flex: 1;
+      min-width: 280px;
+      max-width: 480px;
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 0.6rem 1rem;
+      border-radius: 10px;
+      font-size: 0.875rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    .search-input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
+    }
+
+    .filters {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+    .filter-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 0.45rem 0.85rem;
+      border-radius: 8px;
+      font-size: 0.825rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .filter-btn:hover, .filter-btn.active {
+      background: var(--primary);
+      color: #000;
+      border-color: var(--primary);
+    }
+
+    .suite-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      margin-bottom: 1.5rem;
+      overflow: hidden;
+      transition: opacity 0.2s;
+    }
+    .suite-header {
+      padding: 1.1rem 1.5rem;
+      background: var(--card-header);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .suite-title-area {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+    .cat-badge {
+      font-size: 0.7rem;
+      font-weight: 800;
+      padding: 0.2rem 0.55rem;
+      border-radius: 6px;
+      letter-spacing: 0.05em;
+      background: rgba(56, 189, 248, 0.15);
+      color: var(--primary);
+      border: 1px solid rgba(56, 189, 248, 0.3);
+    }
+    .suite-title {
+      font-size: 1.05rem;
+      font-weight: 700;
+    }
+    .scenarios-list {
+      padding: 1rem 1.25rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.85rem;
+    }
+    .scenario-item {
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      background: rgba(0, 0, 0, 0.25);
+      overflow: hidden;
+    }
+    .scenario-header {
+      padding: 0.85rem 1.2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      user-select: none;
+      background: rgba(255, 255, 255, 0.015);
+      transition: background 0.15s;
+    }
+    .scenario-header:hover {
+      background: rgba(255, 255, 255, 0.045);
+    }
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      font-size: 0.75rem;
+      font-weight: 800;
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+    }
+    .status-badge.pass {
+      background: rgba(34, 197, 94, 0.15);
+      color: var(--green);
+      border: 1px solid rgba(34, 197, 94, 0.3);
+    }
+    .status-badge.fail {
+      background: rgba(239, 68, 68, 0.15);
+      color: var(--red);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+    }
+    .steps-container {
+      padding: 1rem 1.25rem;
+      border-top: 1px solid var(--border);
+      background: rgba(0, 0, 0, 0.4);
+      font-size: 0.875rem;
+    }
+    .step-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.45rem 0;
+      border-bottom: 1px dashed rgba(255, 255, 255, 0.05);
+    }
+    .step-row:last-child { border-bottom: none; }
+    .step-left {
+      display: flex;
+      align-items: center;
+      gap: 0.65rem;
+    }
+    .step-icon {
+      font-size: 0.9rem;
+      font-weight: bold;
+    }
+    .step-icon.pass { color: var(--green); }
+    .step-icon.fail { color: var(--red); }
+    .step-time {
+      color: var(--text-muted);
+      font-size: 0.75rem;
+      font-family: monospace;
+    }
+    .error-box {
+      margin-top: 0.75rem;
+      padding: 0.75rem;
+      border-radius: 6px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+      font-family: monospace;
+      font-size: 0.8rem;
+    }
+    footer {
+      text-align: center;
+      margin-top: 3rem;
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      border-top: 1px solid var(--border);
+      padding-top: 1.5rem;
+    }
+
+    @media print {
+      body { background: #fff; color: #000; padding: 0; }
+      .btn-action, .search-input, .filters { display: none !important; }
+      .suite-card { border-color: #ccc; break-inside: avoid; }
+      .scenario-item { border-color: #ddd; }
+      .steps-container { display: block !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <div class="brand">
+        <div class="badge-icon">🛡️</div>
+        <div class="title">
+          <h1>Guardian Quality & Validation Report</h1>
+          <p>Validação Integral das 4 Jornadas (Gestor, Motorista, Monitor, Pai) + Testes de Regressão & Segurança</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn-action" onclick="toggleAllSteps(true)">📂 Expandir Todos</button>
+        <button class="btn-action" onclick="toggleAllSteps(false)">📁 Recolher Todos</button>
+        <button class="btn-action" onclick="window.print()">🖨️ Imprimir / PDF</button>
+        <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">21/10/2026, 20:24:15</span>
+      </div>
+    </header>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-fill" style="width: 100%;"></div>
+    </div>
+
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-label">Taxa de Sucesso</span>
+        <span class="stat-value green">100%</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Cenários Testados</span>
+        <span class="stat-value blue">92</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Passos Verificados</span>
+        <span class="stat-value">174</span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Sucesso / Falhas</span>
+        <span class="stat-value"><span style="color:var(--green)">92</span> / <span style="color:var(--red)">0</span></span>
+      </div>
+      <div class="stat-card">
+        <span class="stat-label">Tempo Total</span>
+        <span class="stat-value" style="font-size:1.4rem">0.08s</span>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <input 
+        type="text" 
+        class="search-input" 
+        id="scenario-search" 
+        placeholder="🔍 Filtrar por código (ex: GST-01, MOT-03, REG) ou texto..." 
+        oninput="searchScenarios(this.value)" 
+      />
+
+      <div class="filters">
+        <button class="filter-btn active" onclick="filterCategory('ALL', this)">Todos (92)</button>
+        <button class="filter-btn" onclick="filterCategory('GESTOR', this)">👔 Gestor</button>
+        <button class="filter-btn" onclick="filterCategory('MOTORISTA', this)">🚐 Motorista</button>
+        <button class="filter-btn" onclick="filterCategory('MONITOR', this)">📋 Monitor</button>
+        <button class="filter-btn" onclick="filterCategory('PAI', this)">👨‍👩‍👧 Pai & Família</button>
+        <button class="filter-btn" onclick="filterCategory('PLANEJAMENTO', this)">🗺️ Planejamento</button>
+        <button class="filter-btn" onclick="filterCategory('REGRESSAO', this)">🔒 Regressão & Segurança</button>
+        <button class="filter-btn" onclick="filterCategory('E2E', this)">⚡ Jornada E2E Ponta a Ponta</button>
+      </div>
+    </div>
+
+    <div id="suites-container">
+      
+        <div class="suite-card" data-category="GESTOR">
+          <div class="suite-header">
+            <div class="suite-title-area">
+              <span class="cat-badge">GESTOR</span>
+              <h2 class="suite-title">Jornada Completa do Gestor de Frota</h2>
+            </div>
+            <div>
+              <span class="status-badge pass">✔ APROVADA</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">28ms</span>
+            </div>
+          </div>
+          <div class="scenarios-list">
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-01 onboarding do gestor e configuração inicial de frota">
+                <div class="scenario-header" onclick="toggleSteps('GST-01')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-01</strong>
+                    <span>Onboarding do Gestor e Configuração Inicial de Frota</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-01">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar criação de novo perfil corporativo de gestor</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Configurar perfil da transportadora e frota padrão</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-02 triagem e aprovação de solicitação pendente de aluno">
+                <div class="scenario-header" onclick="toggleSteps('GST-02')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-02</strong>
+                    <span>Triagem e Aprovação de Solicitação Pendente de Aluno</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-02">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Identificar solicitação pendente na fila do gestor</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Aprovar cadastro, gerar aluno ativo e vincular à rota principal</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-03 otimização de rota com algoritmo nearest neighbor & 2-opt">
+                <div class="scenario-header" onclick="toggleSteps('GST-03')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-03</strong>
+                    <span>Otimização de Rota com Algoritmo Nearest Neighbor & 2-Opt</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-03">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar alunos e destino da rota antes da otimização</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Executar motor de otimização de paradas (Zero Custo)</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-04 fechamento financeiro: receitas, faturas e despesas">
+                <div class="scenario-header" onclick="toggleSteps('GST-04')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-04</strong>
+                    <span>Fechamento Financeiro: Receitas, Faturas e Despesas</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-04">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Calcular balanço total de receitas líquidas e inadimplência</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-05 auditoria de telemetria e prova de roi para o gestor">
+                <div class="scenario-header" onclick="toggleSteps('GST-05')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-05</strong>
+                    <span>Auditoria de Telemetria e Prova de ROI para o Gestor</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-05">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar comparativo de KM e alerta de manutenção preventiva</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-06 inativação de aluno e expurgamento automático da rota ativa">
+                <div class="scenario-header" onclick="toggleSteps('GST-06')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-06</strong>
+                    <span>Inativação de Aluno e Expurgamento Automático da Rota Ativa</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-06">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Inativar contrato do aluno por solicitação do gestor</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Remover aluno inativo da lista de itinerário da rota</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-07 alerta preventivo de vencimento de cnh e vistoria escolar">
+                <div class="scenario-header" onclick="toggleSteps('GST-07')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-07</strong>
+                    <span>Alerta Preventivo de Vencimento de CNH e Vistoria Escolar</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-07">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar status de conformidade documental de condutores e vans</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Disparar alerta preventivo quando vistoria veicular estiver a menos de 30 dias do fim</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-08 disparo de notificação em massa de atraso para os pais da rota">
+                <div class="scenario-header" onclick="toggleSteps('GST-08')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-08</strong>
+                    <span>Disparo de Notificação em Massa de Atraso para os Pais da Rota</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-08">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Identificar todos os responsáveis vinculados à rota em trânsito</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Disparar comunicado de atraso de 15 minutos com motivo de trânsito intenso</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-09 sanitização automática de endereço com erros de digitação e espaços extras">
+                <div class="scenario-header" onclick="toggleSteps('GST-09')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-09</strong>
+                    <span>Sanitização Automática de Endereço com Erros de Digitação e Espaços Extras</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-09">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Sanitizar entrada com espaços no início/fim, múltiplos espaços e vírgulas duplicadas</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-10 bloqueio de salto irreal no odômetro por erro de digitação (zero a mais)">
+                <div class="scenario-header" onclick="toggleSteps('GST-10')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-10</strong>
+                    <span>Bloqueio de Salto Irreal no Odômetro por Erro de Digitação (Zero a Mais)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-10">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Rejeitar quando o usuário digita um zero a mais por engano (ex: 1.254.000 km)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Aceitar incremento diário plausível de rota escolar (ex: 45 km)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-11 painel de cobrança com status em semáforo e mensagem humanizada">
+                <div class="scenario-header" onclick="toggleSteps('GST-11')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-11</strong>
+                    <span>Painel de Cobrança com Status em Semáforo e Mensagem Humanizada</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-11">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Traduzir status técnicos para linguagem leiga com ação imediata</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-12 validação de placa escolar nos padrões antigo e mercosul">
+                <div class="scenario-header" onclick="toggleSteps('GST-12')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-12</strong>
+                    <span>Validação de Placa Escolar nos Padrões Antigo e Mercosul</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-12">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar placa no formato tradicional brasileiro (ABC-1234)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar placa no formato padrão Mercosul (BRA2E19)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Rejeitar formatos inválidos ou incompletos</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-13 controle preventivo de documentos veiculares e seguro escolar obrigatório">
+                <div class="scenario-header" onclick="toggleSteps('GST-13')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-13</strong>
+                    <span>Controle Preventivo de Documentos Veiculares e Seguro Escolar Obrigatório</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-13">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Emitir alerta amarelo para seguro escolar que vence em 20 dias</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Bloquear operação veicular se vistoria semestral do Detran estiver vencida</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="GESTOR" data-search="gst-14 exportação de lista de presença tabular com fonte grande para prancheta">
+                <div class="scenario-header" onclick="toggleSteps('GST-14')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">GST-14</strong>
+                    <span>Exportação de Lista de Presença Tabular com Fonte Grande para Prancheta</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-GST-14">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar estrutura de impressão clara para uso em papel pelo condutor</span>
+                      </div>
+                      <span class="step-time">18ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      
+        <div class="suite-card" data-category="MOTORISTA">
+          <div class="suite-header">
+            <div class="suite-title-area">
+              <span class="cat-badge">MOTORISTA</span>
+              <h2 class="suite-title">Jornada Completa do Motorista</h2>
+            </div>
+            <div>
+              <span class="status-badge pass">✔ APROVADA</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">6ms</span>
+            </div>
+          </div>
+          <div class="scenarios-list">
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-01 vinculação de motorista e inicialização de rota designada">
+                <div class="scenario-header" onclick="toggleSteps('MOT-01')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-01</strong>
+                    <span>Vinculação de Motorista e Inicialização de Rota Designada</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-01">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Verificar se o motorista tem rota associada ativa</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Definir turno da manhã e sentido IDA para a rota</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-02 disparo de viagem e transição de status em tempo real">
+                <div class="scenario-header" onclick="toggleSteps('MOT-02')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-02</strong>
+                    <span>Disparo de Viagem e Transição de Status em Tempo Real</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-02">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Transicionar status da rota para "em_rota"</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Garantir que alunos da rota iniciem com status "aguardando"</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-03 validação de telemetria por delta (filtro anti-custo de gps)">
+                <div class="scenario-header" onclick="toggleSteps('MOT-03')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-03</strong>
+                    <span>Validação de Telemetria por Delta (Filtro Anti-Custo de GPS)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-03">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Ignorar pequena variação de ruído de GPS (< 5 metros no mesmo minuto)</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gravar no banco quando veículo se deslocar mais de 30 metros</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gravar no banco por heartbeat de tempo mesmo se parado (> 30s)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-04 auto-cura de itinerário após paradas concluídas">
+                <div class="scenario-header" onclick="toggleSteps('MOT-04')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-04</strong>
+                    <span>Auto-Cura de Itinerário após Paradas Concluídas</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-04">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Identificar primeira parada e registrar embarque</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Recalcular rota ativa excluindo alunos já atendidos</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-05 encerramento de viagem com atualização de odômetro do veículo">
+                <div class="scenario-header" onclick="toggleSteps('MOT-05')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-05</strong>
+                    <span>Encerramento de Viagem com Atualização de Odômetro do Veículo</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-05">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Finalizar viagem da rota com sucesso</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Incrementar odômetro acumulado no veículo</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-06 pulo de parada por impedimento na via com justificativa">
+                <div class="scenario-header" onclick="toggleSteps('MOT-06')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-06</strong>
+                    <span>Pulo de Parada por Impedimento na Via com Justificativa</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-06">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Registrar impedimento de acesso físico (rua interditada por obras)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Continuar rota mantendo paradas subsequentes ativas</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-07 buffer offline de telemetria e despejo em lote ao reconectar">
+                <div class="scenario-header" onclick="toggleSteps('MOT-07')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-07</strong>
+                    <span>Buffer Offline de Telemetria e Despejo em Lote ao Reconectar</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-07">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Armazenar coordenadas na fila local enquanto o motorista passa por túnel/área de sombra</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Sincronizar lote com o servidor mantendo ordem cronológica e limpar buffer</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-08 inversão automática de rota e priorização no turno da tarde">
+                <div class="scenario-header" onclick="toggleSteps('MOT-08')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-08</strong>
+                    <span>Inversão Automática de Rota e Priorização no Turno da Tarde</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-08">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Configurar viagem com sentido VOLTA (Tarde)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Ponto de partida DEVE ser a Escola e paradas finais as residências</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-09 proteção contra encerramento acidental de rota durante direção">
+                <div class="scenario-header" onclick="toggleSteps('MOT-09')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-09</strong>
+                    <span>Proteção contra Encerramento Acidental de Rota durante Direção</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-09">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Ignorar toque rápido acidental de 200ms na tela (trepidação do veículo)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Permitir encerramento legítimo com toque prolongado de 2 segundos</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-10 conformidade de contraste para visualização sob sol forte no painel">
+                <div class="scenario-header" onclick="toggleSteps('MOT-10')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-10</strong>
+                    <span>Conformidade de Contraste para Visualização sob Sol Forte no Painel</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-10">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Garantir que botões de ação possuam contraste mínimo para uso veicular</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-11 contagem regressiva de espera no portão com disparo push aos pais">
+                <div class="scenario-header" onclick="toggleSteps('MOT-11')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-11</strong>
+                    <span>Contagem Regressiva de Espera no Portão com Disparo Push aos Pais</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-11">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Iniciar contagem regressiva ao estacionar no portão do aluno</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Disparar notificação automática de 1 minuto restante para a mãe</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-12 preservação de estado da rota em caso de crash ou reinicialização do app">
+                <div class="scenario-header" onclick="toggleSteps('MOT-12')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-12</strong>
+                    <span>Preservação de Estado da Rota em Caso de Crash ou Reinicialização do App</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-12">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Recuperar progresso da viagem a partir do cache local após o celular religar</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-13 geração de áudio simplificado para paradas sem desviar olhar da direção">
+                <div class="scenario-header" onclick="toggleSteps('MOT-13')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-13</strong>
+                    <span>Geração de Áudio Simplificado para Paradas sem Desviar Olhar da Direção</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-13">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar instrução de fala clara em português natural para sintetizador TTS</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MOTORISTA" data-search="mot-14 acionamento rápido de sos por pane mecânica sem digitação em trânsito">
+                <div class="scenario-header" onclick="toggleSteps('MOT-14')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MOT-14</strong>
+                    <span>Acionamento Rápido de SOS por Pane Mecânica sem Digitação em Trânsito</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MOT-14">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Registrar SOS com localização precisa e quantidade de alunos a bordo</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar protocolo de resgate para central enviar van de transbordo</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      
+        <div class="suite-card" data-category="MONITOR">
+          <div class="suite-header">
+            <div class="suite-title-area">
+              <span class="cat-badge">MONITOR</span>
+              <h2 class="suite-title">Jornada Completa do Monitor Escolar</h2>
+            </div>
+            <div>
+              <span class="status-badge pass">✔ APROVADA</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">6ms</span>
+            </div>
+          </div>
+          <div class="scenarios-list">
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-01 sincronização com a van e geração do manifesto de embarque">
+                <div class="scenario-header" onclick="toggleSteps('MON-01')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-01</strong>
+                    <span>Sincronização com a Van e Geração do Manifesto de Embarque</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-01">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Vincular monitor à van e obter lista de passageiros</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar ordenação e dados básicos de contato para cada aluno</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-02 validação de embarque seguro (qr code e foto)">
+                <div class="scenario-header" onclick="toggleSteps('MON-02')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-02</strong>
+                    <span>Validação de Embarque Seguro (QR Code e Foto)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-02">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar dados cadastrais do aluno antes do embarque</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Efetuar check-in com sucesso e alterar status para "a_bordo"</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-03 exibição de badges de condições médicas e alergias no embarque">
+                <div class="scenario-header" onclick="toggleSteps('MON-03')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-03</strong>
+                    <span>Exibição de Badges de Condições Médicas e Alergias no Embarque</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-03">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Identificar condições médicas críticas do passageiro</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar presença de instruções de emergência visíveis para o monitor</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-04 registro de incidente operacional com nível de gravidade">
+                <div class="scenario-header" onclick="toggleSteps('MON-04')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-04</strong>
+                    <span>Registro de Incidente Operacional com Nível de Gravidade</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-04">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Registrar incidente de trânsito moderado durante a viagem</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-05 desembarque na escola e protocolo anti-esquecimento (van vazia)">
+                <div class="scenario-header" onclick="toggleSteps('MON-05')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-05</strong>
+                    <span>Desembarque na Escola e Protocolo Anti-Esquecimento (Van Vazia)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-05">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Colocar alunos a bordo para simular chegada na escola</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Realizar desembarque coletivo no portão do colégio</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Auditoria Anti-Esquecimento: Garantir que 0 alunos permaneçam "a_bordo"</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-06 registro de ausência não pré-notificada no ponto de embarque">
+                <div class="scenario-header" onclick="toggleSteps('MON-06')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-06</strong>
+                    <span>Registro de Ausência não Pré-Notificada no Ponto de Embarque</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-06">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Aguardar tolerância de 3 minutos no ponto e constatar não comparecimento</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Emitir alerta imediato de urgência para o responsável e liberar a van</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-07 transferência de passageiros para van de apoio em pane mecânica">
+                <div class="scenario-header" onclick="toggleSteps('MON-07')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-07</strong>
+                    <span>Transferência de Passageiros para Van de Apoio em Pane Mecânica</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-07">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Migrar lista integral de passageiros e preservar status de bordo individual</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Vincular monitor à nova rota de contingência</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-08 auditoria de administração de medicamento conforme prescrição">
+                <div class="scenario-header" onclick="toggleSteps('MON-08')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-08</strong>
+                    <span>Auditoria de Administração de Medicamento Conforme Prescrição</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-08">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Checar prescrição cadastrada e instruções de emergência</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Registrar aplicação/ingestão com horário exato e assinatura digital do monitor</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-09 diferenciação visual automática de alunos homônimos no manifesto">
+                <div class="scenario-header" onclick="toggleSteps('MON-09')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-09</strong>
+                    <span>Diferenciação Visual Automática de Alunos Homônimos no Manifesto</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-09">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Adicionar identificador de série e escola quando houver dois alunos com o mesmo nome</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-10 varredura obrigatória do fundo da van com confirmação física banco a banco">
+                <div class="scenario-header" onclick="toggleSteps('MON-10')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-10</strong>
+                    <span>Varredura Obrigatória do Fundo da Van com Confirmação Física Banco a Banco</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-10">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Impedir conclusão de viagem se o monitor não confirmar varredura até o último banco</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Liberar encerramento somente após conferência física completa do fundo da van</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-11 acesso imediato a telefone de emergência em caso de crise médica do aluno">
+                <div class="scenario-header" onclick="toggleSteps('MON-11')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-11</strong>
+                    <span>Acesso Imediato a Telefone de Emergência em Caso de Crise Médica do Aluno</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-11">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Disponibilizar botão de discagem direta para o contato primário em 1 toque</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-12 conferência segura de documento e foto de terceiro no desembarque">
+                <div class="scenario-header" onclick="toggleSteps('MON-12')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-12</strong>
+                    <span>Conferência Segura de Documento e Foto de Terceiro no Desembarque</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-12">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Exibir foto e código de retirada fornecido pela mãe para liberar o aluno</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-13 checklist de objetos esquecidos na van e notificação imediata à família">
+                <div class="scenario-header" onclick="toggleSteps('MON-13')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-13</strong>
+                    <span>Checklist de Objetos Esquecidos na Van e Notificação Imediata à Família</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-13">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Registrar item esquecido após vistoria dos assentos</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar mensagem carinhosa e tranquilizadora para a mãe</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="MONITOR" data-search="mon-14 diário de bordo rápido por emojis para informar bem-estar aos pais">
+                <div class="scenario-header" onclick="toggleSteps('MON-14')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">MON-14</strong>
+                    <span>Diário de Bordo Rápido por Emojis para Informar Bem-Estar aos Pais</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-MON-14">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Registrar que a criança dormiu a viagem com seleção de 1 toque no emoji</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      
+        <div class="suite-card" data-category="PAI">
+          <div class="suite-header">
+            <div class="suite-title-area">
+              <span class="cat-badge">PAI</span>
+              <h2 class="suite-title">Jornada Completa do Pai / Responsável</h2>
+            </div>
+            <div>
+              <span class="status-badge pass">✔ APROVADA</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">7ms</span>
+            </div>
+          </div>
+          <div class="scenarios-list">
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-01 rastreamento em tempo real da van escolar">
+                <div class="scenario-header" onclick="toggleSteps('PAI-01')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-01</strong>
+                    <span>Rastreamento em Tempo Real da Van Escolar</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-01">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Localizar dependentes vinculados ao responsável</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Consultar localização ativa do motorista da van da rota do aluno</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-02 cálculo de proximidade (alerta de 800m via fórmula de haversine)">
+                <div class="scenario-header" onclick="toggleSteps('PAI-02')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-02</strong>
+                    <span>Cálculo de Proximidade (Alerta de 800m via Fórmula de Haversine)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-02">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Garantir que NÃO dispare alerta quando a van estiver distante (> 800m)</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Disparar alerta push/local quando a van cruzar o raio de 800m</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-03 comunicação de ausência com sincronização instantânea na rota">
+                <div class="scenario-header" onclick="toggleSteps('PAI-03')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-03</strong>
+                    <span>Comunicação de Ausência com Sincronização Instantânea na Rota</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-03">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Pai registra ausência pontual: "Faltará na Ida"</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Sistema deve expurgar aluno da lista de paradas do turno da manhã (Ida)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Garantir que o aluno ainda esteja apto para a viagem da tarde (Volta)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-04 consulta de faturas do aluno e geração de código pix">
+                <div class="scenario-header" onclick="toggleSteps('PAI-04')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-04</strong>
+                    <span>Consulta de Faturas do Aluno e Geração de Código Pix</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-04">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Consultar lista de faturas do responsável</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar geração de dados Pix para fatura pendente</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-05 cadastro e validação de terceiros autorizados a retirar o aluno">
+                <div class="scenario-header" onclick="toggleSteps('PAI-05')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-05</strong>
+                    <span>Cadastro e Validação de Terceiros Autorizados a Retirar o Aluno</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-05">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Cadastrar pessoa autorizada (avó/tio) com documento e telefone</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-06 alteração excepcional de endereço de desembarque pelo responsável">
+                <div class="scenario-header" onclick="toggleSteps('PAI-06')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-06</strong>
+                    <span>Alteração Excepcional de Endereço de Desembarque pelo Responsável</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-06">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Pai solicita desembarque na residência da avó para a data de hoje</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar que o endereço temporário esteja dentro da área de cobertura operacional</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-07 auditoria de histórico de viagens dos últimos 30 dias do filho">
+                <div class="scenario-header" onclick="toggleSteps('PAI-07')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-07</strong>
+                    <span>Auditoria de Histórico de Viagens dos Últimos 30 Dias do Filho</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-07">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Consultar viagens realizadas do aluno nos últimos 30 dias</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar integridade do log de embarque e desembarque na escola</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-08 confirmação de pagamento pix e liberação de recibo autenticado">
+                <div class="scenario-header" onclick="toggleSteps('PAI-08')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-08</strong>
+                    <span>Confirmação de Pagamento Pix e Liberação de Recibo Autenticado</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-08">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Receber webhook bancário com liquidação do Pix (E2E ID)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar recibo com hash de autenticidade para o responsável</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-09 sanitização automática de código pix copia-e-cola com espaços e quebras">
+                <div class="scenario-header" onclick="toggleSteps('PAI-09')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-09</strong>
+                    <span>Sanitização Automática de Código Pix Copia-e-Cola com Espaços e Quebras</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-09">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Remover espaços e quebras de linha que o pai selecionou acidentalmente ao copiar</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-10 tradução de telemetria técnica para mensagens claras e acolhedoras aos pais">
+                <div class="scenario-header" onclick="toggleSteps('PAI-10')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-10</strong>
+                    <span>Tradução de Telemetria Técnica para Mensagens Claras e Acolhedoras aos Pais</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-10">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar mensagem acolhedora de aproximação do portão (< 500m)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar mensagem de confirmação de entrega segura na escola</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-11 geração de informe anual consolidado de gastos com transporte para irpf">
+                <div class="scenario-header" onclick="toggleSteps('PAI-11')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-11</strong>
+                    <span>Geração de Informe Anual Consolidado de Gastos com Transporte para IRPF</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-11">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Consolidar histórico anual de pagamentos com CNPJ e CPF para declaração fiscal</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-12 comunicação instantânea de falta com seleção simplificada de motivo">
+                <div class="scenario-header" onclick="toggleSteps('PAI-12')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-12</strong>
+                    <span>Comunicação Instantânea de Falta com Seleção Simplificada de Motivo</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-12">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Registrar ausência matinal imediata escolhendo "Febre / Gripe" em 2 toques</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-13 autorização de retirada por terceiro com token de segurança de 4 dígitos">
+                <div class="scenario-header" onclick="toggleSteps('PAI-13')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-13</strong>
+                    <span>Autorização de Retirada por Terceiro com Token de Segurança de 4 Dígitos</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-13">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar autorização expressa com código PIN e mensagem pronta para WhatsApp</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PAI" data-search="pai-14 geração de 2ª via de recibo simplificado sem jargões contábeis">
+                <div class="scenario-header" onclick="toggleSteps('PAI-14')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PAI-14</strong>
+                    <span>Geração de 2ª Via de Recibo Simplificado sem Jargões Contábeis</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PAI-14">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar comprovante humanizado com mensagem acolhedora de agradecimento</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      
+        <div class="suite-card" data-category="PLANEJAMENTO">
+          <div class="suite-header">
+            <div class="suite-title-area">
+              <span class="cat-badge">PLANEJAMENTO</span>
+              <h2 class="suite-title">Tela de Planejamento de Rotas e Acessibilidade (A11y)</h2>
+            </div>
+            <div>
+              <span class="status-badge pass">✔ APROVADA</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">17ms</span>
+            </div>
+          </div>
+          <div class="scenarios-list">
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-01 inicialização do wizard de planejamento e chave única de manifesto">
+                <div class="scenario-header" onclick="toggleSteps('PLN-01')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-01</strong>
+                    <span>Inicialização do Wizard de Planejamento e Chave Única de Manifesto</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-01">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Configurar parâmetros no Wizard (Data, Turno, Sentido, Rota, Motorista)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gerar identificador canônico imutável para o manifesto diário</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-02 reconciliação e expurgamento automático de alunos ausentes">
+                <div class="scenario-header" onclick="toggleSteps('PLN-02')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-02</strong>
+                    <span>Reconciliação e Expurgamento Automático de Alunos Ausentes</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-02">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>No turno de IDA: Expurgar ausentes_ida e ausentes_dia_todo, mantendo ausentes_volta</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>No turno de VOLTA: Expurgar ausentes_volta e ausentes_dia_todo, mantendo ausentes_ida</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-03 alocação de passageiros com solicitações avulsas aprovadas">
+                <div class="scenario-header" onclick="toggleSteps('PLN-03')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-03</strong>
+                    <span>Alocação de Passageiros com Solicitações Avulsas Aprovadas</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-03">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Identificar viagem extra autorizada para a data do planejamento</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Alocar passageiro avulso como "extra" no manifesto do dia</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-04 bloqueio de publicação em caso de superlotação da van">
+                <div class="scenario-header" onclick="toggleSteps('PLN-04')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-04</strong>
+                    <span>Bloqueio de Publicação em Caso de Superlotação da Van</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-04">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Calcular ocupação e confirmar capacidade disponível</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Disparar barreira de segurança quando passageiros excederem os assentos</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-05 transferência dinâmica de alunos entre rotas na escala do dia">
+                <div class="scenario-header" onclick="toggleSteps('PLN-05')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-05</strong>
+                    <span>Transferência Dinâmica de Alunos entre Rotas na Escala do Dia</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-05">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Mover aluno da Rota A para a Rota B para equilibrar itinerários</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-06 execução do motor local de otimização de paradas na tela">
+                <div class="scenario-header" onclick="toggleSteps('PLN-06')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-06</strong>
+                    <span>Execução do Motor Local de Otimização de Paradas na Tela</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-06">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Executar motor de otimização no sentido IDA (Residências ➔ Escola)</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Executar motor de otimização no sentido VOLTA (Escola ➔ Residências)</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-07 publicação do manifesto no banco e auditoria de exclusão segura">
+                <div class="scenario-header" onclick="toggleSteps('PLN-07')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-07</strong>
+                    <span>Publicação do Manifesto no Banco e Auditoria de Exclusão Segura</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-07">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Publicar escala diária em route_manifests</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Excluir planejamento publicado mantendo a rota base cadastral intacta</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-08 auditoria estrita de acessibilidade (wcag 2.1 aa / a11y) do componente">
+                <div class="scenario-header" onclick="toggleSteps('PLN-08')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-08</strong>
+                    <span>Auditoria Estrita de Acessibilidade (WCAG 2.1 AA / A11y) do Componente</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">5 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-08">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar existência e legibilidade do código-fonte do RoutePlanningClient</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Garantir que campos de input possuam identificador e aria-label explícitos</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Garantir que botões de ação e ícones possuam rótulo acessível (aria-label/title)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Garantir estrutura semântica de diálogos com DialogTitle e DialogDescription</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Auditoria de Estilo: Cumprir a Purple Ban (Zero classes violet/purple)</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-09 sugestão inteligente de alocação de alunos órfãos por menor raio geográfico">
+                <div class="scenario-header" onclick="toggleSteps('PLN-09')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-09</strong>
+                    <span>Sugestão Inteligente de Alocação de Alunos Órfãos por Menor Raio Geográfico</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-09">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Calcular distância do aluno sem rota até as paradas existentes da rota</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Sugerir alocação com aviso amigável de desvio mínimo estimado</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-10 trava preventiva contra conflito de turno escolar no manifesto diário">
+                <div class="scenario-header" onclick="toggleSteps('PLN-10')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-10</strong>
+                    <span>Trava Preventiva contra Conflito de Turno Escolar no Manifesto Diário</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-10">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Impedir adição silenciosa de aluno de turno oposto na rota da Manhã</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Permitir inclusão quando os turnos coincidirem</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-11 estimativa transparente de custo de combustível da rota para o transportador">
+                <div class="scenario-header" onclick="toggleSteps('PLN-11')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-11</strong>
+                    <span>Estimativa Transparente de Custo de Combustível da Rota para o Transportador</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-11">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Calcular litros de combustível necessários para a escala</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Exibir custo estimado em R$ de forma legível e sem termos técnicos</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-12 restauração da escala padrão em 1 toque com preservação cadastral">
+                <div class="scenario-header" onclick="toggleSteps('PLN-12')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-12</strong>
+                    <span>Restauração da Escala Padrão em 1 Toque com Preservação Cadastral</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-12">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Constatar divergência entre a escala editada e o cadastro padrão da van</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Desfazer alterações do dia e restaurar os alunos originais da rota em 1 toque</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-13 alerta preventivo de conforto infantil para trajetos superiores a 60 minutos">
+                <div class="scenario-header" onclick="toggleSteps('PLN-13')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-13</strong>
+                    <span>Alerta Preventivo de Conforto Infantil para Trajetos Superiores a 60 Minutos</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-13">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Disparar recomendação preventiva quando o itinerário infantil passar de 60 min</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Aprovar rota de 45 minutos com bem-estar infantil garantido</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="PLANEJAMENTO" data-search="pln-14 reordenação manual de paradas com renumeração sequencial automática">
+                <div class="scenario-header" onclick="toggleSteps('PLN-14')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">PLN-14</strong>
+                    <span>Reordenação Manual de Paradas com Renumeração Sequencial Automática</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-PLN-14">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Mover última parada para a primeira posição (Botão Subir)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      
+        <div class="suite-card" data-category="REGRESSAO">
+          <div class="suite-header">
+            <div class="suite-title-area">
+              <span class="cat-badge">REGRESSAO</span>
+              <h2 class="suite-title">Testes de Regressão e Segurança de Dados</h2>
+            </div>
+            <div>
+              <span class="status-badge pass">✔ APROVADA</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">9ms</span>
+            </div>
+          </div>
+          <div class="scenarios-list">
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-01 integridade referencial completa (zero referências órfãs)">
+                <div class="scenario-header" onclick="toggleSteps('REG-01')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-01</strong>
+                    <span>Integridade Referencial Completa (Zero Referências Órfãs)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">4 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-01">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar que todo Aluno pertence a uma Escola existente</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar que todo Aluno possui um Responsável (Parent) válido</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar que todas as Rotas possuem um Motorista vinculado existente</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar que todo Motorista está vinculado a um Veículo válido</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-02 sanitização de máscaras (cpf, telefone, cep e unmask)">
+                <div class="scenario-header" onclick="toggleSteps('REG-02')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-02</strong>
+                    <span>Sanitização de Máscaras (CPF, Telefone, CEP e Unmask)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-02">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Formatar CPF com pontuação padrão brasileira</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Formatar Telefone Celular com 9 dígitos e DDD</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Formatar CEP brasileiro de 8 dígitos</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-03 blindagem e fallback seguro de apis externas / geocoding">
+                <div class="scenario-header" onclick="toggleSteps('REG-03')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-03</strong>
+                    <span>Blindagem e Fallback Seguro de APIs Externas / Geocoding</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-03">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Retornar coordenadas de segurança mesmo sem chave da API do Google</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-04 regra de faturamento: faturas vs mensalidades de alunos">
+                <div class="scenario-header" onclick="toggleSteps('REG-04')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-04</strong>
+                    <span>Regra de Faturamento: Faturas vs Mensalidades de Alunos</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-04">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Garantir que todo valor monetário de aluno e fatura seja positivo</span>
+                      </div>
+                      <span class="step-time">2ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-05 bloqueio de alocação excedente à capacidade nominal da van">
+                <div class="scenario-header" onclick="toggleSteps('REG-05')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-05</strong>
+                    <span>Bloqueio de Alocação Excedente à Capacidade Nominal da Van</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-05">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Permitir alocação enquanto houver assentos disponíveis</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Rejeitar adição de passageiro que ultrapasse a capacidade regulamentar</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-06 blindagem contra coordenadas geográficas corrompidas (nan / out-of-bounds)">
+                <div class="scenario-header" onclick="toggleSteps('REG-06')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-06</strong>
+                    <span>Blindagem contra Coordenadas Geográficas Corrompidas (NaN / Out-of-Bounds)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-06">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Detectar e sanear coordenadas NaN ou strings inválidas</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Detectar e sanear latitudes fora dos limites do globo terrestre</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Preservar coordenadas válidas</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-07 validação algorítmica de cpf com cálculo de módulo 11">
+                <div class="scenario-header" onclick="toggleSteps('REG-07')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-07</strong>
+                    <span>Validação Algorítmica de CPF com Cálculo de Módulo 11</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-07">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Rejeitar CPFs com sequências repetidas (ex: 111.111.111-11)</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Rejeitar CPF com dígitos verificadores matematicamente falsos</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Validar algoritmo com CPF padrão de teste da Receita Federal</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-08 idempotência e proteção contra duplo check-in concorrente">
+                <div class="scenario-header" onclick="toggleSteps('REG-08')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-08</strong>
+                    <span>Idempotência e Proteção contra Duplo Check-in Concorrente</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-08">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Permitir primeiro check-in de embarque do aluno</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Descartar segundo clique acidental de "Rage-Click" (mesmo segundo)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-09 debounce defensivo em formulários contra múltiplos toques ansiosos">
+                <div class="scenario-header" onclick="toggleSteps('REG-09')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-09</strong>
+                    <span>Debounce Defensivo em Formulários Contra Múltiplos Toques Ansiosos</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-09">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Processar apenas 1 submissão quando o usuário clica 4 vezes no botão de Salvar</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-10 sanitização de emojis e apelidos em documentos e contratos formais">
+                <div class="scenario-header" onclick="toggleSteps('REG-10')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-10</strong>
+                    <span>Sanitização de Emojis e Apelidos em Documentos e Contratos Formais</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-10">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Preservar emojis para saudação calorosa no app e sanitizar para contrato oficial</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-11 resiliência com cache local e fila de sincronização ao perder sinal 4g">
+                <div class="scenario-header" onclick="toggleSteps('REG-11')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-11</strong>
+                    <span>Resiliência com Cache Local e Fila de Sincronização ao Perder Sinal 4G</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-11">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Ao ficar sem sinal, salvar evento no cache local com mensagem acolhedora</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Ao restabelecer conexão, descarregar fila acumulada automaticamente</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-12 validação rigorosa de ddds oficiais da telefonia brasileira (anatel)">
+                <div class="scenario-header" onclick="toggleSteps('REG-12')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-12</strong>
+                    <span>Validação Rigorosa de DDDs Oficiais da Telefonia Brasileira (Anatel)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-12">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Rejeitar DDDs inexistentes (ex: DDD 00, 20, 23)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Rejeitar número sem o dígito 9 inicial de celular</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Aprovar números válidos em capitais e interior (11 SP e 85 CE)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-13 sanitização contra injeção de tags html/scripts em recados e alergias">
+                <div class="scenario-header" onclick="toggleSteps('REG-13')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-13</strong>
+                    <span>Sanitização contra Injeção de Tags HTML/Scripts em Recados e Alergias</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-13">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Neutralizar tags <script> em observação médica de alergia</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="REGRESSAO" data-search="reg-14 consistência de calendário no fuso horário oficial de brasília (gmt-3)">
+                <div class="scenario-header" onclick="toggleSteps('REG-14')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">REG-14</strong>
+                    <span>Consistência de Calendário no Fuso Horário Oficial de Brasília (GMT-3)</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">1 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-REG-14">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Evitar que 23h00 do Brasil avance para o dia seguinte por fuso UTC</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      
+        <div class="suite-card" data-category="E2E">
+          <div class="suite-header">
+            <div class="suite-title-area">
+              <span class="cat-badge">E2E</span>
+              <h2 class="suite-title">Simulação E2E Interconectada de Ponta a Ponta</h2>
+            </div>
+            <div>
+              <span class="status-badge pass">✔ APROVADA</span>
+              <span style="font-size: 0.8rem; color: var(--text-muted); margin-left: 0.5rem;">5ms</span>
+            </div>
+          </div>
+          <div class="scenarios-list">
+            
+              <div class="scenario-item" data-category="E2E" data-search="e2e-01 fase 1: cadastro da empresa, van, motorista, monitora e escola pelo gestor">
+                <div class="scenario-header" onclick="toggleSteps('E2E-01')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">E2E-01</strong>
+                    <span>Fase 1: Cadastro da Empresa, Van, Motorista, Monitora e Escola pelo Gestor</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-E2E-01">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Cadastrar Empresa e Van com Placa Mercosul e Capacidade para 15 Lugares</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Cadastrar Condutor Oficial com CNH D e Monitora Escolar de Apoio</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Cadastrar Escola de Destino e Criar Rota Base Vinculada</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="E2E" data-search="e2e-02 fase 2: solicitação de matrícula pelo pai, triagem e alocação na van">
+                <div class="scenario-header" onclick="toggleSteps('E2E-02')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">E2E-02</strong>
+                    <span>Fase 2: Solicitação de Matrícula pelo Pai, Triagem e Alocação na Van</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-E2E-02">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Responsável submete solicitação com endereço residencial e dados da criança</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Gestor revisa dados, aprova solicitação e efetiva aluno na rota da van</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="E2E" data-search="e2e-03 fase 3: planejamento diário, reconciliação de ausências e otimização">
+                <div class="scenario-header" onclick="toggleSteps('E2E-03')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">E2E-03</strong>
+                    <span>Fase 3: Planejamento Diário, Reconciliação de Ausências e Otimização</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-E2E-03">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Reconciliar ausências e montar lista de alunos presentes para a manhã</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Executar otimização de paradas com chegada garantida na escola</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="E2E" data-search="e2e-04 fase 4: inicialização da viagem matinal e abertura da chamada digital">
+                <div class="scenario-header" onclick="toggleSteps('E2E-04')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">E2E-04</strong>
+                    <span>Fase 4: Inicialização da Viagem Matinal e Abertura da Chamada Digital</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-E2E-04">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Motorista pressiona "Iniciar Rota" com trava anti-toque de 1.5s</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Monitora acessa chamada digital e inicializa alunos como "aguardando"</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="E2E" data-search="e2e-05 fase 5: deslocamento gps, geofence e notificação push de proximidade ao pai">
+                <div class="scenario-header" onclick="toggleSteps('E2E-05')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">E2E-05</strong>
+                    <span>Fase 5: Deslocamento GPS, Geofence e Notificação Push de Proximidade ao Pai</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">2 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-E2E-05">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Van se desloca e entra no raio de 1 km (Geofence Inicial)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Van atinge raio de 400m (< 500m): Disparar notificação push acolhedora para a mãe</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="E2E" data-search="e2e-06 fase 6: embarque seguro do aluno, cinto de segurança e notificação de embarque">
+                <div class="scenario-header" onclick="toggleSteps('E2E-06')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">E2E-06</strong>
+                    <span>Fase 6: Embarque Seguro do Aluno, Cinto de Segurança e Notificação de Embarque</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-E2E-06">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Van estaciona no portão residencial e monitora confere o aluno</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Monitora realiza Check-in com 1 toque e afivela o cinto de segurança</span>
+                      </div>
+                      <span class="step-time">1ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Sistema dispara notificação de confirmação imediata para a mãe</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="E2E" data-search="e2e-07 fase 7: desembarque na escola, notificação aos pais e trava de varredura">
+                <div class="scenario-header" onclick="toggleSteps('E2E-07')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">E2E-07</strong>
+                    <span>Fase 7: Desembarque na Escola, Notificação aos Pais e Trava de Varredura</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-E2E-07">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Van chega nas coordenadas do Colégio Objetivo</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Monitora desembarca o aluno, entrega ao colégio e notifica a família</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Trava de Segurança: Monitora realiza varredura obrigatória no último banco</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+              <div class="scenario-item" data-category="E2E" data-search="e2e-08 fase 8: faturamento automático, pagamento pix pelo pai e conciliação financeira">
+                <div class="scenario-header" onclick="toggleSteps('E2E-08')">
+                  <div style="display:flex; align-items:center; gap:0.6rem;">
+                    <strong style="color:var(--primary); font-family:monospace;">E2E-08</strong>
+                    <span>Fase 8: Faturamento Automático, Pagamento Pix pelo Pai e Conciliação Financeira</span>
+                  </div>
+                  <div style="display:flex; align-items:center; gap:0.75rem;">
+                    <span style="font-size:0.75rem; color:var(--text-muted);">3 passos</span>
+                    <span class="status-badge pass">PASS</span>
+                  </div>
+                </div>
+                <div class="steps-container" id="steps-E2E-08">
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Sistema gera fatura mensal automática no valor contratado (R$ 420,00)</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Mãe acessa fatura no app e realiza pagamento instantâneo via Pix</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                    <div class="step-row">
+                      <div class="step-left">
+                        <span class="step-icon pass">✔</span>
+                        <span>Painel do Gestor atualiza status para Verde ("Pago") e consolida balanço positivo</span>
+                      </div>
+                      <span class="step-time">0ms</span>
+                    </div>
+                    
+                  
+                  
+                </div>
+              </div>
+            
+          </div>
+        </div>
+      
+    </div>
+
+    <footer>
+      Guardian Intelligence Platform — Validação Determinística & Suite de Regressão Contínua
+    </footer>
+  </div>
+
+  <script>
+    let currentCategory = 'ALL';
+
+    function toggleSteps(id) {
+      const el = document.getElementById('steps-' + id);
+      if (el) {
+        el.style.display = el.style.display === 'none' ? 'block' : 'none';
+      }
+    }
+
+    function toggleAllSteps(expand) {
+      document.querySelectorAll('.steps-container').forEach(el => {
+        el.style.display = expand ? 'block' : 'none';
+      });
+    }
+
+    function filterCategory(cat, btn) {
+      currentCategory = cat;
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      if (btn) btn.classList.add('active');
+
+      applyFilters();
+    }
+
+    function searchScenarios(query) {
+      applyFilters();
+    }
+
+    function applyFilters() {
+      const query = (document.getElementById('scenario-search')?.value || '').toLowerCase().trim();
+
+      document.querySelectorAll('.suite-card').forEach(card => {
+        const cat = card.getAttribute('data-category');
+        const matchCategory = (currentCategory === 'ALL' || cat === currentCategory);
+
+        let visibleScenarios = 0;
+        const scenarios = card.querySelectorAll('.scenario-item');
+        scenarios.forEach(sc => {
+          const searchContent = sc.getAttribute('data-search') || '';
+          const matchSearch = query === '' || searchContent.includes(query);
+
+          if (matchSearch) {
+            sc.style.display = 'block';
+            visibleScenarios++;
+          } else {
+            sc.style.display = 'none';
+          }
+        });
+
+        if (matchCategory && visibleScenarios > 0) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+  </script>
+</body>
+</html>

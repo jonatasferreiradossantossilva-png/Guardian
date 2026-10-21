@@ -21,6 +21,7 @@ import { ContractGenerateForm } from './contract-generate-form';
 import { ContractEditForm } from './contract-edit-form';
 import { ContractViewerModal } from './contract-viewer-modal';
 import { useToast } from '@/hooks/use-toast';
+import { getSafeDate } from '@/lib/safe-render';
 
 import { Student, Parent, MockDB } from '@/types/mock-data';
 
@@ -69,8 +70,8 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
   
   const isLoading = areContractsLoading || areStudentsLoading || areParentsLoading || areTemplatesLoading;
   
-  const studentsMap = useMemo(() => new Map(students?.map((s: Student) => [s.id, s.name])), [students]);
-  const parentDataMap = useMemo(() => new Map(parents?.map((p: Parent) => [p.userId, p.name])), [parents]);
+  const studentsMap = useMemo(() => new Map(students?.map((s: Student) => [s.id, s.name]) || []), [students]);
+  const parentDataMap = useMemo(() => new Map(parents?.map((p: Parent) => [p.userId, p.name]) || []), [parents]);
 
   const handleFormSubmit = useCallback(() => {
     setIsFormOpen(false);
@@ -80,15 +81,15 @@ export function ContractsList({ initialContracts, initialStudents, initialParent
   
   const sortedContracts = useMemo(() => {
     if (!contracts) return [];
-    return [...contracts].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    return [...contracts].sort((a, b) => getSafeDate(b.createdAt).getTime() - getSafeDate(a.createdAt).getTime());
   }, [contracts]);
 
-  const formatDate = (dateString?: string) => {
+  const formatDate = (dateString?: any) => {
     if (!dateString) return '-';
     try {
-        return format(new Date(dateString), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
+        return format(getSafeDate(dateString), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR });
     } catch (e) {
-        return dateString;
+        return String(dateString);
     }
   };
   

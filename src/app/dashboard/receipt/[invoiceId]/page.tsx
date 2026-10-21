@@ -10,6 +10,7 @@ import { Loader2, ArrowLeft, Printer, MessageCircle, Rocket } from 'lucide-react
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import { useToast } from '@/hooks/use-toast';
+import { getSafeDate } from '@/lib/safe-render';
 
 export default function ReceiptPage() {
     const params = useParams();
@@ -160,7 +161,7 @@ export default function ReceiptPage() {
                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-6 text-sm">
                              <div>
                                 <h3 className="font-semibold text-muted-foreground mb-2">Data do Vencimento</h3>
-                                <p>{format(new Date(invoice.dueDate), "dd/MM/yyyy", { locale: ptBR })}</p>
+                                <p>{format(getSafeDate(invoice.dueDate), "dd/MM/yyyy", { locale: ptBR })}</p>
                             </div>
                              <div>
                                 <h3 className="font-semibold text-muted-foreground mb-2">Data do Pagamento</h3>

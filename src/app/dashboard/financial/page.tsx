@@ -43,6 +43,7 @@ import { PaginationControls } from '@/components/ui/pagination-controls';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { ErrorBoundary } from '@/components/shared/error-boundary';
 import { SafeRow, SafeTableRow } from '@/components/shared/safe-table';
+import { getSafeDate, getSafeDateStr } from '@/lib/safe-render';
 
 // --- COMPONENTES AUXILIARES MEMOIZADOS PARA QUALIDADE ---
 
@@ -107,7 +108,7 @@ const InvoiceRow = React.memo(({
             <TableCell className="font-medium">{studentsMap.get(invoice.studentId) || 'Aluno removido'}</TableCell>
             <TableCell>{parentUserToNameMap.get(invoice.parentUserId) || 'Responsável não encontrado'}</TableCell>
             <TableCell title={invoice.description}>{invoice.description || 'Sem descrição'}</TableCell>
-            <TableCell>{invoice.dueDate ? invoice.dueDate.split('-').reverse().join('/') : '--/--/----'}</TableCell>
+            <TableCell>{invoice.dueDate ? getSafeDateStr(invoice.dueDate).split('-').reverse().join('/') : '--/--/----'}</TableCell>
             <TableCell>R$ {(invoice.amount || 0).toFixed(2).replace('.',',')}</TableCell>
             <TableCell>
                 <Badge variant={statusVariantMap[invoice.status] || 'secondary'} className={cn(invoice.status === 'pagamento_em_analise' && 'border-amber-500 text-amber-500')}>
@@ -152,7 +153,7 @@ interface ExpenseRowProps {
 const ExpenseRow = React.memo(({ expense, handleEdit, handleDelete }: ExpenseRowProps) => (
     <SafeTableRow name={`Expense-${expense.id}`}>
         <TableRow key={expense.id}>
-            <TableCell>{expense.date ? expense.date.split('-').reverse().join('/') : '--/--/----'}</TableCell>
+            <TableCell>{expense.date ? getSafeDateStr(expense.date).split('-').reverse().join('/') : '--/--/----'}</TableCell>
             <TableCell className="font-medium" title={expense.description}>{expense.description || 'Sem descrição'}</TableCell>
             <TableCell><Badge variant="outline">{expense.category || 'Outros'}</Badge></TableCell>
             <TableCell>R$ {(expense.amount || 0).toFixed(2).replace('.',',')}</TableCell>
@@ -288,8 +289,8 @@ function RevenuesTab() {
   const { data: students, isLoading: areStudentsLoading } = useDataCollection('students');
   const { data: parents, isLoading: areParentsLoading } = useDataCollection('parents');
 
-  const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name])), [students]);
-  const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name])), [parents]);
+  const studentsMap = useMemo(() => new Map(students?.map((s) => [s.id, s.name]) || []), [students]);
+  const parentUserToNameMap = useMemo(() => new Map(parents?.map(p => [p.userId, p.name]) || []), [parents]);
 
   useEffect(() => {
     setCurrentPage(1);
@@ -299,8 +300,9 @@ function RevenuesTab() {
     if (!invoices) return [];
     const months = new Set<string>();
     invoices.forEach(inv => {
-        if (inv && inv.dueDate && typeof inv.dueDate === 'string' && inv.dueDate.length >= 7) {
-            months.add(inv.dueDate.substring(0, 7));
+        const dateStr = getSafeDateStr(inv?.dueDate);
+        if (dateStr && dateStr.length >= 7) {
+            months.add(dateStr.substring(0, 7));
         }
     });
     return Array.from(months).sort().reverse();
@@ -313,7 +315,7 @@ function RevenuesTab() {
         filtered = filtered.filter(inv => inv.studentId === selectedStudentId);
     }
     if (selectedMonth !== 'all') {
-        filtered = filtered.filter(inv => inv && inv.dueDate && typeof inv.dueDate === 'string' && inv.dueDate.substring(0, 7) === selectedMonth);
+        filtered = filtered.filter(inv => inv && getSafeDateStr(inv.dueDate).substring(0, 7) === selectedMonth);
     }
     return filtered;
   }, [invoices, selectedStudentId, selectedMonth]);
@@ -359,7 +361,7 @@ function RevenuesTab() {
       return [...list].sort((a, b) => {
         const statusComparison = (statusOrder[a.status] || 99) - (statusOrder[b.status] || 99);
         if (statusComparison !== 0) return statusComparison;
-        return new Date(b.dueDate).getTime() - new Date(a.dueDate).getTime();
+        return getSafeDate(b.dueDate).getTime() - getSafeDate(a.dueDate).getTime();
       });
   }, [filteredInvoicesForSummary, selectedStatus]);
 
@@ -657,7 +659,7 @@ function RevenuesTab() {
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground">Vencimento</p>
-                                            <p>{invoice.dueDate ? invoice.dueDate.split('-').reverse().join('/') : '--/--/----'}</p>
+                                            <p>{invoice.dueDate ? getSafeDateStr(invoice.dueDate).split('-').reverse().join('/') : '--/--/----'}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs text-muted-foreground">Valor</p>
@@ -771,8 +773,9 @@ function ExpensesTab() {
     if (!expenses) return [];
     const months = new Set<string>();
     expenses.forEach(exp => {
-        if (exp && exp.date && typeof exp.date === 'string' && exp.date.length >= 7) {
-            months.add(exp.date.substring(0, 7));
+        const dateStr = getSafeDateStr(exp?.date);
+        if (dateStr && dateStr.length >= 7) {
+            months.add(dateStr.substring(0, 7));
         }
     });
     return Array.from(months).sort().reverse();
@@ -782,9 +785,9 @@ function ExpensesTab() {
     if (!expenses) return [];
     let filtered = expenses;
     if (selectedMonth !== 'all') {
-        filtered = filtered.filter(exp => exp && exp.date && typeof exp.date === 'string' && exp.date.substring(0, 7) === selectedMonth);
+        filtered = filtered.filter(exp => exp && getSafeDateStr(exp.date).substring(0, 7) === selectedMonth);
     }
-    return filtered.sort((a, b) => new Date(b.date || 0).getTime() - new Date(a.date || 0).getTime());
+    return filtered.sort((a, b) => getSafeDate(b.date).getTime() - getSafeDate(a.date).getTime());
   }, [expenses, selectedMonth]);
 
   const totalSpent = useMemo(() => filteredExpensesList.reduce((acc, exp) => acc + exp.amount, 0), [filteredExpensesList]);
@@ -919,7 +922,7 @@ function ExpensesTab() {
                                             </DropdownMenu>
                                         </div>
                                         <div className="mt-2 grid grid-cols-3 gap-y-2 gap-x-2 text-sm">
-                                            <div><p className="text-xs text-muted-foreground">Data</p><p>{expense.date ? expense.date.split('-').reverse().join('/') : '--/--/----'}</p></div>
+                                            <div><p className="text-xs text-muted-foreground">Data</p><p>{expense.date ? getSafeDateStr(expense.date).split('-').reverse().join('/') : '--/--/----'}</p></div>
                                             <div><p className="text-xs text-muted-foreground">Valor</p><p>R$ {expense.amount.toFixed(2)}</p></div>
                                             <div><p className="text-xs text-muted-foreground">Categoria</p><Badge variant="outline" className="mt-1">{expense.category}</Badge></div>
                                         </div>
