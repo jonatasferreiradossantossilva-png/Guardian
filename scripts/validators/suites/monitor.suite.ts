@@ -1,5 +1,6 @@
 import { runner, expect } from '../core/test-runner';
 import { initialMockData } from '../../../src/lib/mock-data';
+import { MonitorActionController } from '../core/action-controllers';
 
 export async function runMonitorSuite() {
   await runner.suite('Jornada Completa do Monitor Escolar', 'MONITOR', async () => {
@@ -360,6 +361,42 @@ export async function runMonitorSuite() {
         expect(note).toContain('😴');
         expect(note).toContain('dormiu a viagem toda');
         expect(note).toContain('Clara');
+      });
+    });
+
+    // CENÁRIO 15: Validação Funcional das Ações de Monitor (Embarque Coletivo, Varredura e Incidentes)
+    await runner.scenario('MON-15', 'Acionamento Funcional de Botões do Monitor: Embarque Coletivo e Varredura', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const monitorCtrl = new MonitorActionController(state);
+      const school = state.schools[0];
+      const schoolStudents = state.students.filter((s: any) => s.schoolId === school.id);
+
+      // 1. Botão "EMBARQUE COLETIVO"
+      await runner.step('Botão [EMBARQUE COLETIVO]: Embarcar todos os alunos da escola com 1 toque', () => {
+        schoolStudents.forEach((s: any) => { s.status = 'aguardando'; });
+        const studentIds = schoolStudents.map((s: any) => s.id);
+        const result = monitorCtrl.clickEmbarqueColetivo(school.id, studentIds);
+        expect(result.success).toBe(true);
+        expect(result.data.count).toBe(schoolStudents.length);
+        expect(schoolStudents.every((s: any) => s.status === 'a_bordo')).toBe(true);
+      });
+
+      // 2. Trava de Varredura / Inspeção do Último Banco
+      await runner.step('Trava [CONFIRMAR VARREDURA]: Registrar inspeção visual obrigatória do veículo', () => {
+        const route = state.routes[0];
+        const sweepResult = monitorCtrl.confirmSafetySweep(route.id);
+        expect(sweepResult.success).toBe(true);
+        expect(sweepResult.toasts?.[0]?.title).toBe('Varredura Confirmada');
+        expect((route as any).safetySweepConfirmedAt).toBeDefined();
+      });
+
+      // 3. Botão [REGISTRAR INCIDENTE]
+      await runner.step('Botão [REGISTRAR INCIDENTE]: Submeter ocorrência de alta gravidade', () => {
+        const route = state.routes[0];
+        const incResult = monitorCtrl.submitIncidentReport(route.id, 'alta', 'Pneu traseiro com baixa pressão identificado na parada escolar.');
+        expect(incResult.success).toBe(true);
+        expect(incResult.data.severity).toBe('alta');
+        expect(incResult.toasts?.[0]?.variant).toBe('destructive');
       });
     });
 

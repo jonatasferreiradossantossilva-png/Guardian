@@ -1,7 +1,7 @@
 import fs from 'fs';
 import path from 'path';
 
-export type ProfileCategory = 'GESTOR' | 'MOTORISTA' | 'MONITOR' | 'PAI' | 'PLANEJAMENTO' | 'REGRESSAO' | 'E2E';
+export type ProfileCategory = 'AUT' | 'GESTOR' | 'MOTORISTA' | 'MONITOR' | 'PAI' | 'PLANEJAMENTO' | 'REGRESSAO' | 'E2E';
 
 export interface TestStep {
   title: string;
@@ -524,6 +524,7 @@ class TestRunner {
 
       <div class="filters">
         <button class="filter-btn active" onclick="filterCategory('ALL', this)">Todos (${totalScenarios})</button>
+        <button class="filter-btn" onclick="filterCategory('AUT', this)">🔑 Login & Auth</button>
         <button class="filter-btn" onclick="filterCategory('GESTOR', this)">👔 Gestor</button>
         <button class="filter-btn" onclick="filterCategory('MOTORISTA', this)">🚐 Motorista</button>
         <button class="filter-btn" onclick="filterCategory('MONITOR', this)">📋 Monitor</button>
@@ -716,6 +717,18 @@ export function expect(actual: any) {
       const pass = actual === undefined || actual === null;
       if (isNot ? pass : !pass) {
         throw new Error(msg || (isNot ? `Esperava que o valor estivesse definido` : `Esperava que o valor fosse undefined, mas obteve [${actual}]`));
+      }
+    },
+    toBeNull(msg?: string) {
+      const pass = actual === null;
+      if (isNot ? pass : !pass) {
+        throw new Error(msg || (isNot ? `Esperava que o valor NÃO fosse null` : `Esperava null, mas obteve [${actual}]`));
+      }
+    },
+    toBeFalsy(msg?: string) {
+      const pass = !actual;
+      if (isNot ? pass : !pass) {
+        throw new Error(msg || (isNot ? `Esperava valor truthy, mas obteve [${actual}]` : `Esperava valor falsy, mas obteve [${actual}]`));
       }
     }
   });

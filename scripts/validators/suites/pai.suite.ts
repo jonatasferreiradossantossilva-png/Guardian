@@ -1,5 +1,6 @@
 import { runner, expect } from '../core/test-runner';
 import { initialMockData } from '../../../src/lib/mock-data';
+import { ParentActionController } from '../core/action-controllers';
 
 // Fórmula de Haversine estabilizada do Guardian (em metros)
 function haversineDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -388,6 +389,45 @@ export async function runPaiSuite() {
         expect(receipt.statusLabel).toContain('PAGO COM SUCESSO');
         expect(receipt.valueFormatted).toContain('R$');
         expect(receipt.note).toContain('cuidado com o seu filho');
+      });
+    });
+
+    // CENÁRIO 15: Validação Funcional das Ações do Pai (Ausência em Tempo Real, Pagamento Pix e Autorização de Terceiros)
+    await runner.scenario('PAI-15', 'Acionamento Funcional de Botões da Família: Ausência, Pagamento Pix e Autorização', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const parentCtrl = new ParentActionController(state);
+      const student = state.students[0];
+
+      // 1. Botão "AVISAR AUSÊNCIA"
+      await runner.step('Botão [AVISAR AUSÊNCIA]: Notificar ausência de ida com motivo', () => {
+        const absenceResult = parentCtrl.submitAbsenceNotification(student.id, 'ida', 'Consulta com pediatra');
+        expect(absenceResult.success).toBe(true);
+        expect(student.status).toBe('ausente_ida');
+        expect((student as any).absenceReason).toBe('Consulta com pediatra');
+      });
+
+      // 2. Botão "PAGAR COM PIX"
+      await runner.step('Botão [PAGAR PIX]: Realizar conciliação instantânea de fatura mensal', () => {
+        const invoice = state.invoices.find((i: any) => i.status === 'pending') || state.invoices[0];
+        const payResult = parentCtrl.payInvoicePix(invoice.id);
+        expect(payResult.success).toBe(true);
+        expect(invoice.status).toBe('paga');
+        expect(invoice.paymentMethod).toBe('pix');
+        expect(invoice.paidAt).toBeDefined();
+      });
+
+      // 3. Botão "AUTORIZAR RETIRADA" com validação de CPF
+      await runner.step('Botão [AUTORIZAR RETIRADA]: Rejeitar cadastro com CPF inválido', () => {
+        const invalidCpfResult = parentCtrl.submitAuthorizedPickupPerson(student.id, 'Tio Marcos', '123', '11988887777');
+        expect(invalidCpfResult.success).toBe(false);
+        expect(invalidCpfResult.message).toContain('CPF válido');
+      });
+
+      await runner.step('Botão [AUTORIZAR RETIRADA]: Autorizar retirada com dados auditados', () => {
+        const validResult = parentCtrl.submitAuthorizedPickupPerson(student.id, 'Marcos Silva (Tio)', '111.444.777-35', '(11) 98888-7777');
+        expect(validResult.success).toBe(true);
+        expect(validResult.data.name).toBe('Marcos Silva (Tio)');
+        expect((student as any).authorizedPickups.length).toBeGreaterThan(0);
       });
     });
 

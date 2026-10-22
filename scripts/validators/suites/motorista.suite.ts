@@ -1,5 +1,6 @@
 import { runner, expect } from '../core/test-runner';
 import { initialMockData } from '../../../src/lib/mock-data';
+import { DriverActionController } from '../core/action-controllers';
 
 // Fórmula de Haversine pura (utilizada no use-telemetry)
 function calculateDistanceMeters(lat1: number, lon1: number, lat2: number, lon2: number) {
@@ -426,48 +427,75 @@ export async function runMotoristaSuite() {
       });
     });
 
-    // CENÁRIO 17: Garantia de Atualização Otimista Imediata do Botão EMBARCOU
-    await runner.scenario('MOT-17', 'Garantia de Atualização Otimista e Não-Regressão do Botão EMBARCOU', async () => {
-      let db = JSON.parse(JSON.stringify(initialMockData));
-      const route = db.routes[0];
-      const students = db.students.filter((s: any) => route.studentIds.includes(s.id));
-      const studentA = students[0];
-      const studentB = students[1];
+    // CENÁRIO 18: Validação Funcional Completa de Todos os Botões da Tela do Motorista
+    await runner.scenario('MOT-18', 'Acionamento Funcional de Todos os Botões da Interface do Motorista', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const route = state.routes[0];
+      const controller = new DriverActionController(state, route.id, 'Manhã', 'ida');
 
-      studentA.status = 'aguardando';
-      studentB.status = 'aguardando';
-
-      // Simulação do updateDoc com atualização otimista (idêntico ao firestore-data-provider)
-      const updateDocOptimistic = (collectionName: string, id: string, data: any) => {
-        db[collectionName] = db[collectionName].map((item: any) => item.id === id ? { ...item, ...data } : item);
-      };
-
-      await runner.step('Passo 1: Parada atual inicial aponta para o primeiro aluno (A)', () => {
-        const currentPending = db.students
-          .filter((s: any) => route.studentIds.includes(s.id))
-          .find((s: any) => s.status === 'aguardando');
-        expect(currentPending.id).toBe(studentA.id);
+      // 1. Botão "INICIAR OPERAÇÃO"
+      await runner.step('Botão 1 [INICIAR OPERAÇÃO]: Disparo do início da rota e ativação do motorista', () => {
+        const startResult = controller.clickStartRoute();
+        expect(startResult.success).toBe(true, 'Botão iniciar operação deve aprovar início');
+        expect(controller.getRoute()?.journeyStatus).toBe('em_rota');
+        expect(controller.getDriver()?.status).toBe('em_rota');
+        expect(startResult.toasts?.[0]?.title).toBe('Viagem Iniciada!');
       });
 
-      await runner.step('Passo 2: Disparo de EMBARCOU aplica atualização otimista imediata na memória', () => {
-        updateDocOptimistic('students', studentA.id, { status: 'a_bordo' });
-        const updatedStudentA = db.students.find((s: any) => s.id === studentA.id);
-        expect(updatedStudentA.status).toBe('a_bordo');
+      // 2. Botão "EMBARCOU"
+      const firstStop = controller.getActiveStop();
+      expect(firstStop).toBeDefined();
+      const student1Id = firstStop!.stop.id;
+
+      await runner.step('Botão 2 [EMBARCOU]: Clique de embarque do primeiro aluno com avanço de parada', () => {
+        const embarqueResult = controller.clickEmbarcou(student1Id);
+        expect(embarqueResult.success).toBe(true);
+        expect(embarqueResult.toasts?.[0]?.title).toBe('Embarque Confirmado!');
+        expect(embarqueResult.data.boardedCount).toBe(1);
+
+        // A parada ativa obrigatoriamente avançou para o próximo
+        const secondStop = controller.getActiveStop();
+        expect(secondStop).toBeDefined();
+        expect(secondStop!.stop.id).not.toBe(student1Id);
       });
 
-      await runner.step('Passo 3: Parada ativa avança obrigatoriamente para o segundo aluno (B)', () => {
-        const nextPending = db.students
-          .filter((s: any) => route.studentIds.includes(s.id))
-          .find((s: any) => s.status === 'aguardando');
-        expect(nextPending).toBeDefined();
-        expect(nextPending.id).toBe(studentB.id);
-        expect(nextPending.id).not.toBe(studentA.id);
+      // 3. Botão "AUSENTE"
+      const currentStopForAbsence = controller.getActiveStop();
+      expect(currentStopForAbsence).toBeDefined();
+      const student2Id = currentStopForAbsence!.stop.id;
+
+      await runner.step('Botão 3 [AUSENTE]: Registro de ausência e remoção automática da parada ativa', () => {
+        const ausenteResult = controller.clickAusente(student2Id);
+        expect(ausenteResult.success).toBe(true);
+        expect(ausenteResult.toasts?.[0]?.title).toBe('Ausência Registrada');
+
+        // A parada ativa avançou novamente
+        const thirdStop = controller.getActiveStop();
+        if (thirdStop) {
+          expect(thirdStop.stop.id).not.toBe(student2Id);
+        }
       });
 
-      await runner.step('Passo 4: Blindagem contra loop/reversão: aluno A permanece permanentemente em "a_bordo"', () => {
-        const boardedList = db.students
-          .filter((s: any) => route.studentIds.includes(s.id) && s.status === 'a_bordo');
-        expect(boardedList.some((s: any) => s.id === studentA.id)).toBe(true);
+      // 4. Trava de Segurança [BLOQUEIO ANTI-ESQUECIMENTO] e Botão "DESEMBARCOU"
+      await runner.step('Trava Anti-Esquecimento: Bloquear encerramento de viagem com crianças a bordo', () => {
+        const prematureEndResult = controller.clickEndRoute(true);
+        expect(prematureEndResult.success).toBe(false, 'Deveria bloquear encerramento com alunos a bordo');
+        expect(prematureEndResult.message).toContain('BLOQUEIO DE SEGURANÇA');
+      });
+
+      await runner.step('Botão [DESEMBARCOU]: Desembarcar aluno no destino escolar', () => {
+        const desembarqueResult = controller.clickDesembarcou(student1Id);
+        expect(desembarqueResult.success).toBe(true);
+        expect(desembarqueResult.toasts?.[0]?.title).toBe('Desembarque Confirmado!');
+        expect(controller.getBoardedStudents().length).toBe(0);
+      });
+
+      // 5. Botão "REINICIAR / ENCERRAR VIAGEM"
+      await runner.step('Botão [REINICIAR/ENCERRAR]: Restauração para tela de prontidão com van vazia', () => {
+        const endResult = controller.clickEndRoute(true);
+        expect(endResult.success).toBe(true);
+        expect(controller.getRoute()?.journeyStatus).toBe('pendente');
+        expect(controller.getDriver()?.status).toBe('inativo');
       });
     });
 

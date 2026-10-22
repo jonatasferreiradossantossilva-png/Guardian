@@ -1,6 +1,7 @@
 import { runner, expect } from '../core/test-runner';
 import { initialMockData } from '../../../src/lib/mock-data';
 import { optimizeSchoolVanRoute } from '../../../src/ai/flows/optimizeSchoolVanRoute';
+import { CrudActionController } from '../core/action-controllers';
 
 export async function runGestorSuite() {
   await runner.suite('Jornada Completa do Gestor de Frota', 'GESTOR', async () => {
@@ -442,6 +443,81 @@ export async function runGestorSuite() {
         expect(sheet.rows.length).toBe(students.length);
         expect(sheet.fontSizeRecommended).toBe('14pt');
         expect(sheet.rows[0].checkMorning).toBe('[ ] IDA');
+      });
+    });
+
+    // CENÁRIO 15: Validação Funcional dos Formulários de CRUD e Travas Regulamentares
+    await runner.scenario('GST-15', 'Validação Funcional de CRUD: Trava Anti-Superlotação e Integridade Regulatória', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const crud = new CrudActionController(state);
+
+      // 1. Trava anti-superlotação de van
+      await runner.step('Trava de Lotação: Bloquear alocação de aluno quando a van atinge a capacidade máxima', () => {
+        const route = state.routes[0];
+        const driver = state.drivers.find((d: any) => d.id === route.driverId);
+        const vehicle = state.vehicles.find((v: any) => v.id === route.vehicleId) ||
+                        state.vehicles.find((v: any) => v.id === driver?.vehicleId) ||
+                        state.vehicles[0];
+        expect(vehicle).toBeDefined();
+        route.vehicleId = vehicle.id;
+
+        // Encher a rota até a capacidade máxima
+        route.studentIds = [];
+        for (let i = 0; i < vehicle!.capacity; i++) {
+          const fakeStudentId = `fill-std-${i}`;
+          state.students.push({
+            id: fakeStudentId,
+            name: `Aluno Lotação ${i}`,
+            schoolId: 'school-1',
+            parentId: 'parent-1',
+            active: true
+          });
+          route.studentIds.push(fakeStudentId);
+        }
+
+        // Tentar alocar o passageiro extra que excede a capacidade
+        const extraStudentId = 'extra-student-overfill';
+        state.students.push({
+          id: extraStudentId,
+          name: 'Aluno Excedente',
+          schoolId: 'school-1',
+          parentId: 'parent-1',
+          active: true
+        });
+
+        const overfillResult = crud.submitAssignStudentToRoute(route.id, extraStudentId);
+        expect(overfillResult.success).toBe(false, 'Deveria bloquear alocação excedente');
+        expect(overfillResult.message).toContain('CAPACIDADE EXCEDIDA');
+      });
+
+      // 2. Trava de criação de rota sem condutor
+      await runner.step('Validação de Rota: Rejeitar criação de rota sem motorista designado', () => {
+        const invalidRouteResult = crud.submitCreateRoute({
+          name: 'Rota Sem Condutor',
+          driverId: '' // sem motorista
+        });
+        expect(invalidRouteResult.success).toBe(false);
+        expect(invalidRouteResult.message).toContain('Motorista deve ser vinculado');
+      });
+
+      // 3. Exigência legal de CNH D ou E para condutor escolar
+      await runner.step('Validação Regulatória de CNH: Rejeitar condutor com Categoria B de automóvel de passeio', () => {
+        const invalidDriverResult = crud.submitCreateDriver({
+          name: 'Condutor Inapto',
+          cnhCategory: 'B'
+        });
+        expect(invalidDriverResult.success).toBe(false);
+        expect(invalidDriverResult.message).toContain('exige CNH categoria D ou E');
+      });
+
+      // 4. Exclusão com cascata de integridade
+      await runner.step('Exclusão com Cascata: Remover aluno da base e expurgar de todas as rotas', () => {
+        const studentToDelete = state.students[0];
+        const studentId = studentToDelete.id;
+        const deleteResult = crud.submitDeleteStudent(studentId);
+        expect(deleteResult.success).toBe(true);
+        expect(state.students.some((s: any) => s.id === studentId)).toBe(false);
+        expect(state.routes.every((r: any) => !r.studentIds.includes(studentId))).toBe(true);
       });
     });
 

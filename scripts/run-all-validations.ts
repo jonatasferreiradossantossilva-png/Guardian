@@ -1,5 +1,6 @@
 import path from 'path';
 import { runner } from './validators/core/test-runner';
+import { runAuthSuite } from './validators/suites/auth.suite';
 import { runGestorSuite } from './validators/suites/gestor.suite';
 import { runMotoristaSuite } from './validators/suites/motorista.suite';
 import { runMonitorSuite } from './validators/suites/monitor.suite';
@@ -19,6 +20,7 @@ async function main() {
   const globalStart = Date.now();
 
   // Executar todas as suítes
+  await runAuthSuite();
   await runGestorSuite();
   await runMotoristaSuite();
   await runMonitorSuite();
