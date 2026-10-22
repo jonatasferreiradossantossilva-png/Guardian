@@ -265,7 +265,7 @@ export const initialMockData: MockDB = {
             studentIds: ["student-1", "student-2", "student-5", "student-3", "student-6", "student-7", "student-8", "student-9", "student-10"],
             lastOptimizedAt: new Date().toISOString(),
             lastResetDate: new Date().toISOString().split('T')[0],
-            journeyStatus: 'em_rota' as const,
+            journeyStatus: 'pendente' as const,
             polyline: JSON.stringify({
                 type: "LineString",
                 coordinates: [

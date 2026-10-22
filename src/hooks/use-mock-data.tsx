@@ -252,7 +252,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const memoResetData = useCallback(resetData, []);
 
   const lastProcessedEvent = useRef<string | null>(null);
-  const MOCK_VERSION = 'v8-autonomous'; // Incremento de versão para limpar caches antigos
+  const MOCK_VERSION = 'v9-trip-status'; // Incremento de versão para limpar caches antigos e sincronizar estado de rota
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -461,7 +461,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
                     r.id === 'route-1' ? { ...r, journeyStatus: 'pendente' } : r
                 );
                 newData.drivers = (newData.drivers || []).map((d: any) => 
-                    d.id === 'driver-1' ? { ...d, status: 'inativo' } : d
+                    ({ ...d, status: 'inativo' })
                 );
                 // Resetar alunos
                 // Mantemos os status atuais para permitir testes de fluxo entre personas

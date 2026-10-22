@@ -105,6 +105,9 @@ export function LoginForm() {
           router.push("/dashboard");
           break;
         case "motorista":
+          sessionStorage.removeItem('activeRouteId');
+          sessionStorage.removeItem('activeShift');
+          sessionStorage.removeItem('activeDirection');
           router.push("/driver/route-plan");
           break;
         case "pai":

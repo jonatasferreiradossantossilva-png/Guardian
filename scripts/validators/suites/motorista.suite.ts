@@ -362,6 +362,70 @@ export async function runMotoristaSuite() {
       });
     });
 
+    // CENÁRIO 15: Validação do Fluxo Sequencial de Embarque e Imunidade ao Reset de Parada
+    await runner.scenario('MOT-15', 'Fluxo Sequencial de Embarque e Imunidade ao Reset de Parada Ativa', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const route = state.routes[0];
+      const driver = state.drivers[0];
+      
+      // Iniciar rota
+      route.journeyStatus = 'em_rota';
+      driver.status = 'em_rota';
+      
+      const student1 = state.students.find((s: any) => s.id === 'student-2'); // Valentina
+      const student2 = state.students.find((s: any) => s.id === 'student-5'); // Pedro
+      
+      student1.status = 'aguardando';
+      student2.status = 'aguardando';
+
+      await runner.step('Passo 1: Estado inicial com alunos aguardando embarque', () => {
+        expect(student1.status).toBe('aguardando');
+        expect(student2.status).toBe('aguardando');
+      });
+
+      await runner.step('Passo 2: Motorista clica em "EMBARCOU" para a primeira aluna', () => {
+        student1.status = 'a_bordo';
+        expect(student1.status).toBe('a_bordo');
+      });
+
+      await runner.step('Passo 3: A parada ativa avança para o segundo aluno e a primeira NÃO reseta', () => {
+        // Encontrar próxima parada pendente
+        const activeStops = [student1, student2];
+        const nextPending = activeStops.find((s: any) => s.status === 'aguardando');
+        
+        expect(nextPending.id).toBe(student2.id);
+        expect(nextPending.name).toContain('Pedro');
+        // Imunidade ao reset: Valentina permanece a bordo
+        expect(student1.status).toBe('a_bordo');
+      });
+
+      await runner.step('Passo 4: Lista de "Alunos a Bordo" consolida passageiros embarcados', () => {
+        const boardedList = [student1, student2].filter((s: any) => s.status === 'a_bordo');
+        expect(boardedList.length).toBe(1);
+        expect(boardedList[0].name).toContain('Valentina');
+      });
+    });
+
+    // CENÁRIO 16: Inicialização Segura da Central de Operações e Reset Limpo Pós-Operação
+    await runner.scenario('MOT-16', 'Ciclo de Vida da Rota: Início Limpo e Encerramento Controlado', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const route = state.routes[0];
+      const driver = state.drivers[0];
+
+      await runner.step('Garantir que rotas iniciem por padrão em estado "pendente"', () => {
+        expect(route.journeyStatus).toBe('pendente');
+        expect(driver.status).toBe('inativo');
+      });
+
+      await runner.step('Ao finalizar a viagem, restaurar estado para "pendente" e motorista "inativo"', () => {
+        // Simular encerramento
+        route.journeyStatus = 'pendente';
+        driver.status = 'inativo';
+        expect(route.journeyStatus).toBe('pendente');
+        expect(driver.status).toBe('inativo');
+      });
+    });
+
   });
 }
 

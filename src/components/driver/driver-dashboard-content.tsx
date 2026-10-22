@@ -41,6 +41,7 @@ import {
   ShieldCheck,
   Clock,
   Info,
+  RotateCcw,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -153,7 +154,25 @@ export default function DriverDashboardContent() {
   const { data: driverLocation } = useDataNestedDoc(driverId ? `locations/${driverId}` : null);
 
   const { data: routes, isLoading: isRouteLoading } = useDataCollection('routes', driverId ? [{ field: 'driverId', op: '==', value: driverId }] : []);
-  const route = useMemo(() => (driverProfile?.status !== 'inativo' && activeRouteId) ? (routes?.find(r => r.id === activeRouteId) || null) : (routes?.find(r => r.id === selectedRouteIdForStart) || null), [routes, driverProfile, activeRouteId, selectedRouteIdForStart]);
+  const route = useMemo(() => {
+    if (activeRouteId && routes) {
+      const found = routes.find(r => r.id === activeRouteId);
+      if (found) return found;
+    }
+    if (selectedRouteIdForStart && routes) {
+      const found = routes.find(r => r.id === selectedRouteIdForStart);
+      if (found) return found;
+    }
+    return (routes && routes.length > 0) ? routes[0] : null;
+  }, [routes, activeRouteId, selectedRouteIdForStart]);
+
+  const isTripActive = useMemo(() => {
+    if (!driverProfile || driverProfile.status === 'inativo') return false;
+    if (driverProfile.status === 'em_rota' || driverProfile.status === 'pausa') {
+      return route?.journeyStatus === 'em_rota';
+    }
+    return false;
+  }, [driverProfile?.status, route?.journeyStatus]);
   const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
   const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
   const { data: routeManifests } = useDataCollection<RouteManifest>('route_manifests');
@@ -250,6 +269,11 @@ export default function DriverDashboardContent() {
             return [...schoolStops, ...studentStops];
         }
   }, [activeStudentIds, allStudents, schools, selectedShift, selectedDirection, studentsMap, schoolsMap]);
+
+  const boardedStops = useMemo<Stop[]>(() => {
+    if (!orderedStops) return [];
+    return orderedStops.filter(s => s.type === 'student' && s.data.status === 'a_bordo');
+  }, [orderedStops]);
 
   const { activeStop, upcomingStops, progressData } = useMemo(() => {
     if (!orderedStops || driverProfile?.status === 'inativo') return { activeStop: null, upcomingStops: [], progressData: { current: 0, total: 0, percentage: 0 } };
@@ -505,8 +529,28 @@ export default function DriverDashboardContent() {
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
     updateDoc('students', studentId, { status: newStatus });
     
-    // Notificação automática para o pai sobre o embarque/desembarque
+    // Notificação e Toast automático sobre o embarque/desembarque
     const student = studentsMap.get(studentId);
+    const firstName = student?.name ? student.name.split(' ')[0] : 'Aluno';
+
+    if (newStatus === 'a_bordo') {
+        toast({
+            title: "Embarque Confirmado!",
+            description: `✅ ${firstName} embarcou com segurança na van.`,
+        });
+    } else if (newStatus === 'desembarcado') {
+        toast({
+            title: "Desembarque Confirmado!",
+            description: `🏠 ${firstName} desembarcou com segurança.`,
+        });
+    } else if (newStatus.startsWith('ausente')) {
+        toast({
+            title: "Ausência Registrada",
+            description: `⚠️ ${firstName} registrado como ausente hoje.`,
+            variant: "destructive"
+        });
+    }
+
     if (student && student.parentId) {
         const parent = (allParents as any)?.find((p: any) => p.id === student.parentId);
         if (parent) {
@@ -514,14 +558,14 @@ export default function DriverDashboardContent() {
                 createNotification(
                     parent.userId,
                     "Embarque Confirmado",
-                    `✅ ${student.name.split(' ')[0]} embarcou com segurança na van. Boa viagem!`,
+                    `✅ ${firstName} embarcou com segurança na van. Boa viagem!`,
                     "success"
                 );
             } else if (newStatus === 'desembarcado') {
                 createNotification(
                     parent.userId,
                     "Desembarque Confirmado",
-                    `🏠 ${student.name.split(' ')[0]} desembarcou com segurança no destino final.`,
+                    `🏠 ${firstName} desembarcou com segurança no destino final.`,
                     "success"
                 );
             }
@@ -537,7 +581,7 @@ export default function DriverDashboardContent() {
             performRouteOptimization(route, adjustedStops);
         }, 500);
     }
-  }, [updateDoc, driverProfile?.status, route, orderedStops, performRouteOptimization]);
+  }, [updateDoc, studentsMap, allParents, createNotification, toast, driverProfile?.status, route, orderedStops, performRouteOptimization]);
 
   const handleSchoolAction = useCallback(() => {
       const isIda = selectedDirection === 'ida';
@@ -653,7 +697,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     <div className="bg-background flex flex-col min-h-[100dvh] h-[100dvh] overflow-hidden">
         {!isOnline && <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm z-[2000] shrink-0"><WifiOff className="h-4 w-4 inline mr-2" />Offline.</div>}
         
-        {driverProfile?.status === 'inativo' ? (
+        {!isTripActive ? (
             <div className="flex-1 flex flex-col bg-background w-full relative">
                 <div className="w-full bg-primary/10 pt-6 pb-4 px-6 flex flex-col items-center justify-center border-b shadow-sm relative overflow-hidden shrink-0">
                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
@@ -803,6 +847,9 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                         <Button variant={driverProfile?.status === 'pausa' ? 'default' : 'outline'} size="icon" onClick={handlePauseToggle} className="h-10 w-10 bg-background">
                             {driverProfile?.status === 'pausa' ? <Play className="fill-current text-white"/> : <Pause className="text-primary" />}
                         </Button>
+                        <Button variant="outline" size="icon" title="Reiniciar/Encerrar Rota" onClick={handleEndRoute} className="h-10 w-10 bg-background text-muted-foreground hover:text-destructive">
+                            <RotateCcw className="h-4 w-4" />
+                        </Button>
                         <NotificationBell />
                         <Button variant="outline" size="icon" asChild className="h-10 w-10 bg-background"><Link href="/driver/messages"><MessageSquare className="text-primary" /></Link></Button>
                         <Dialog><DialogTrigger asChild><Button variant="destructive" size="icon" className="h-10 w-10"><Siren className="animate-pulse"/></Button></DialogTrigger><ReportIncidentForm onFormSubmit={() => {}} /></Dialog>
@@ -893,6 +940,8 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                             <NextStopCard 
                                                 student={activeStop.data as Student} 
                                                 isExtra={activeStop.isExtra}
+                                                stopNumber={progressData.current + 1}
+                                                totalStops={progressData.total}
                                                 onStatusChange={handleStatusChange} 
                                                 onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
                                                 direction={selectedDirection} 
@@ -900,6 +949,32 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                                 onEndEarly={handleEndRoute}
                                             />
                                         </SafeRow>
+                                        
+                                        {safeArray(boardedStops).length > 0 && (
+                                            <div className="space-y-2">
+                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 px-3 flex items-center gap-1.5">
+                                                    <CheckCircle className="h-3.5 w-3.5" />
+                                                    Alunos a Bordo ({boardedStops.length})
+                                                </h3>
+                                                {(safeArray(boardedStops) as Stop[]).map((stop) => (
+                                                    <SafeRow key={`boarded-${stop.id}`} name={`BoardedStop-${stop.id}`}>
+                                                        <div className="flex items-center gap-3 p-2.5 rounded-lg border-2 bg-green-500/5 border-green-500/20 shadow-sm">
+                                                            <Avatar className="h-8 w-8 border border-green-500/30">
+                                                                <AvatarImage src={(stop.data as any)?.photoUrl || undefined}/>
+                                                                <AvatarFallback className="text-xs bg-green-500/20 text-green-700 font-black">{safeInitials(stop.data?.name)}</AvatarFallback>
+                                                            </Avatar>
+                                                            <div className="flex-1 min-w-0">
+                                                                <p className="text-xs font-black truncate uppercase text-foreground">{safeString(stop.data?.name, 'Aluno')}</p>
+                                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{safeString(formatStudentClassInfo(stop.data as Student))}</p>
+                                                            </div>
+                                                            <Badge variant="outline" className="text-[9px] font-black uppercase text-green-600 border-green-500/40 bg-green-500/10">
+                                                                A Bordo
+                                                            </Badge>
+                                                        </div>
+                                                    </SafeRow>
+                                                ))}
+                                            </div>
+                                        )}
                                         {safeArray(upcomingStops).length > 0 && (
                                             <div className="space-y-2">
                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-3">Próximas Paradas</h3>
@@ -997,7 +1072,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
   );
 }
 
-function NextStopCard({ student, isExtra, onStatusChange, onOpenAuthorizedModal, direction, onScanQrCode, onEndEarly }: { student: Student, isExtra?: boolean, onStatusChange: (id: string, status: StudentStatus) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onScanQrCode: () => void, onEndEarly: () => void }) {
+function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange, onOpenAuthorizedModal, direction, onScanQrCode, onEndEarly }: { student: Student, isExtra?: boolean, stopNumber?: number, totalStops?: number, onStatusChange: (id: string, status: StudentStatus) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onScanQrCode: () => void, onEndEarly: () => void }) {
   const isVolta = direction === 'volta';
   const isGoing = direction === 'ida';
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
@@ -1006,7 +1081,9 @@ function NextStopCard({ student, isExtra, onStatusChange, onOpenAuthorizedModal,
     <Card className={cn("w-full shadow-2xl border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
         <CardHeader className="pb-3 border-b bg-muted/10">
             <div className="flex justify-between items-center mb-3">
-                <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase text-primary">Parada Atual</Badge>
+                <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase text-primary">
+                    {stopNumber && totalStops ? `Parada ${stopNumber} de ${totalStops}` : 'Parada Atual'}
+                </Badge>
                 {hasMedicalAlert && <Badge variant="destructive" className="animate-pulse font-black"><HeartPulse className="h-3 w-3 mr-1" /> CUIDADO MÉDICO</Badge>}
             </div>
             <div className="flex items-center gap-4">
