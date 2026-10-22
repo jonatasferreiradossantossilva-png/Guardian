@@ -521,6 +521,64 @@ export async function runGestorSuite() {
       });
     });
 
+    // CENÁRIO 16: Geração de Contrato Digital e Bloqueio de Duplicidade Concorrente
+    await runner.scenario('GST-16', 'Geração de Contrato Digital Escolar e Envio para Assinatura Eletrônica', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const crud = new CrudActionController(state);
+      const student = state.students[0];
+      const parent = state.parents[0];
+
+      await runner.step('Gerar novo contrato escolar com valor de mensalidade e vincular ao responsável', () => {
+        // Garantir que a lista de contratos não tenha contrato ativo para este aluno
+        state.contracts = [];
+        const res = crud.submitGenerateContract({
+          studentId: student.id,
+          parentId: parent.id,
+          monthlyFee: 480
+        });
+        expect(res.success).toBe(true);
+        expect(res.data.status).toBe('aguardando_assinatura');
+        expect(res.data.monthlyFee).toBe(480);
+        expect(res.data.studentName).toBe(student.name);
+      });
+
+      await runner.step('Impedir geração acidental de segundo contrato concorrente para o mesmo aluno', () => {
+        const duplicateRes = crud.submitGenerateContract({
+          studentId: student.id,
+          parentId: parent.id,
+          monthlyFee: 500
+        });
+        expect(duplicateRes.success).toBe(false);
+        expect(duplicateRes.message).toContain('já possui um contrato');
+      });
+    });
+
+    // CENÁRIO 17: Publicação de Comunicados no Mural Geral com Segmentação por Turno
+    await runner.scenario('GST-17', 'Publicação de Comunicados no Mural Geral com Segmentação por Turno', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const crud = new CrudActionController(state);
+
+      await runner.step('Rejeitar comunicado sem conteúdo ou com título excessivamente curto', () => {
+        const invalidRes = crud.submitBroadcastAnnouncement({
+          title: 'Oi',
+          content: '...'
+        });
+        expect(invalidRes.success).toBe(false);
+        expect(invalidRes.message).toContain('no mínimo 3 caracteres');
+      });
+
+      await runner.step('Publicar comunicado de feriado escolar para toda a frota no mural', () => {
+        const validRes = crud.submitBroadcastAnnouncement({
+          title: 'Feriado Municipal - Sem Transporte na Sexta',
+          content: 'Informamos a todas as famílias que na sexta-feira não haverá operação escolar devido ao feriado.',
+          targetShift: 'all'
+        });
+        expect(validRes.success).toBe(true);
+        expect(validRes.data.title).toContain('Feriado Municipal');
+        expect(state.announcements.some((a: any) => a.id === validRes.data.id)).toBe(true);
+      });
+    });
+
   });
 }
 

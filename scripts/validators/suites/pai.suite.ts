@@ -431,6 +431,72 @@ export async function runPaiSuite() {
       });
     });
 
+    // CENÁRIO 16: Assinatura Eletrônica do Contrato Digital pelo Responsável
+    await runner.scenario('PAI-16', 'Assinatura Eletrônica do Contrato de Transporte com Validade Jurídica', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const parentCtrl = new ParentActionController(state);
+      const parentUser = state.parents[0];
+      const student = state.students[0];
+
+      // Simular contrato gerado
+      const contractId = `contract-test-${Date.now()}`;
+      state.contracts = [{
+        id: contractId,
+        studentId: student.id,
+        parentId: parentUser.id,
+        parentUserId: parentUser.userId,
+        studentName: student.name,
+        monthlyFee: 450,
+        status: 'aguardando_assinatura',
+        createdAt: new Date().toISOString()
+      }];
+
+      await runner.step('Rejeitar tentativa de assinatura por usuário não titular do contrato', () => {
+        const unauthRes = parentCtrl.signDigitalContract(contractId, 'outro-usuario-intruso');
+        expect(unauthRes.success).toBe(false);
+        expect(unauthRes.message).toContain('não tem permissão');
+      });
+
+      await runner.step('Assinar contrato eletronicamente com gravação de IP e timestamp', () => {
+        const signRes = parentCtrl.signDigitalContract(contractId, parentUser.userId);
+        expect(signRes.success).toBe(true);
+        expect(signRes.data.status).toBe('signed');
+        expect(signRes.data.signedAt).toBeDefined();
+        expect(signRes.data.signatureIp).toBeDefined();
+      });
+    });
+
+    // CENÁRIO 17: Solicitação de Viagem Extra / Avulsa pelo Responsável
+    await runner.scenario('PAI-17', 'Solicitação de Viagem Extra/Avulsa com Triagem e Cobrança', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const parentCtrl = new ParentActionController(state);
+      const student = state.students[0];
+      const parentUser = state.parents[0];
+
+      let createdRequestId = '';
+
+      await runner.step('Responsável solicita viagem de ida avulsa para feira de ciências', () => {
+        const tripRes = parentCtrl.submitTripRequest({
+          studentId: student.id,
+          parentUserId: parentUser.userId,
+          type: 'ida',
+          date: '2026-11-15',
+          reason: 'Apresentação de robótica no sábado'
+        });
+        expect(tripRes.success).toBe(true);
+        expect(tripRes.data.status).toBe('aguardando_aprovacao_pai');
+        expect(tripRes.data.amount).toBe(45.00);
+        createdRequestId = tripRes.data.id;
+      });
+
+      await runner.step('Responsável aprova o orçamento da viagem e confirma inclusão no itinerário', () => {
+        const approveRes = parentCtrl.approveTripRequestQuote(createdRequestId);
+        expect(approveRes.success).toBe(true);
+        expect(approveRes.data.status).toBe('aprovada');
+        expect(approveRes.data.confirmedAt).toBeDefined();
+      });
+    });
+
   });
 }
 

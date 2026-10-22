@@ -108,5 +108,26 @@ export async function runAuthSuite() {
       });
     });
 
+    // CENÁRIO 7: Link Público de Convite para Rota (/invite/[routeId])
+    await runner.scenario('AUT-07', 'Validação de Acesso via Link de Convite Público de Rota (/invite/[routeId])', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const auth = new AuthController(state);
+
+      await runner.step('Acessar rota existente via link de convite e retornar dados operacionais', () => {
+        const route = state.routes[0];
+        const res = auth.validateInviteLink(route.id);
+        expect(res.success).toBe(true);
+        expect(res.data.route.id).toBe(route.id);
+        expect(res.data.driver).toBeDefined();
+        expect(res.data.studentCount).toBeGreaterThan(0);
+      });
+
+      await runner.step('Bloquear link com rota inexistente com mensagem amigável', () => {
+        const res = auth.validateInviteLink('rota-inexistente-xyz');
+        expect(res.success).toBe(false);
+        expect(res.message).toContain('Link de convite inválido');
+      });
+    });
+
   });
 }

@@ -427,6 +427,26 @@ export async function runMotoristaSuite() {
       });
     });
 
+    // CENÁRIO 17: Disparo de Mensagens Rápidas de Trânsito em 1 Toque (Sem Digitação ao Volante)
+    await runner.scenario('MOT-17', 'Disparo de Mensagens Rápidas de Trânsito em 1 Toque (Sem Digitação ao Volante)', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const route = state.routes[0];
+      const controller = new DriverActionController(state, route.id, 'Manhã', 'ida');
+
+      await runner.step('Disparar mensagem rápida "Chegando em 5 minutos" para o grupo da van', () => {
+        const res = controller.sendPredefinedQuickMessage('chegando_5_min');
+        expect(res.success).toBe(true);
+        expect(res.data.text).toContain('chegando em 5 minutos');
+        expect(res.toasts?.[0]?.title).toBe('Mensagem enviada aos pais!');
+      });
+
+      await runner.step('Disparar alerta rápido de "Trânsito Lento" sem distração do condutor', () => {
+        const res = controller.sendPredefinedQuickMessage('transito_lento');
+        expect(res.success).toBe(true);
+        expect(res.data.text).toContain('Trânsito lento na rota escolar');
+      });
+    });
+
     // CENÁRIO 18: Validação Funcional Completa de Todos os Botões da Tela do Motorista
     await runner.scenario('MOT-18', 'Acionamento Funcional de Todos os Botões da Interface do Motorista', async () => {
       const state = JSON.parse(JSON.stringify(initialMockData));

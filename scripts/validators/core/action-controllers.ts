@@ -104,6 +104,27 @@ export class AuthController {
       toasts: [{ title: `Bem-vindo(a), ${user.name}!`, description: `Redirecionando para o painel de ${user.profile}.` }]
     };
   }
+
+  /**
+   * Valida link público de convite para rota (/invite/[routeId])
+   */
+  public validateInviteLink(routeId: string): ActionResult {
+    const route = this.db.routes.find(r => r.id === routeId);
+    if (!route) {
+      return { success: false, message: 'Link de convite inválido ou rota não encontrada.' };
+    }
+
+    const driver = this.db.drivers.find(d => d.id === route.driverId);
+    return {
+      success: true,
+      data: {
+        route,
+        driver,
+        shift: route.shift,
+        studentCount: route.studentIds.length
+      }
+    };
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -390,6 +411,46 @@ export class DriverActionController {
       }]
     };
   }
+
+  /**
+   * Disparo de mensagem rápida de trânsito em 1 toque (sem digitação)
+   */
+  public sendPredefinedQuickMessage(messageType: 'chegando_5_min' | 'transito_lento' | 'portao_fechado' | 'embarque_iniciado'): ActionResult {
+    const route = this.getRoute();
+    const driver = this.getDriver();
+    if (!route || !driver) {
+      return { success: false, message: 'Rota ou motorista não disponível.' };
+    }
+
+    const messageTemplates = {
+      chegando_5_min: '🚐 Tio da van chegando em 5 minutos! Preparem os alunos no portão.',
+      transito_lento: '⚠️ Trânsito lento na rota escolar. Previsão de pequeno atraso.',
+      portao_fechado: '🚪 Van no portão aguardando o aluno!',
+      embarque_iniciado: '🚀 Rota escolar iniciada! Todos os passageiros a caminho.'
+    };
+
+    const text = messageTemplates[messageType] || 'Mensagem operacional da van.';
+
+    const messageRecord = {
+      id: `msg-quick-${Date.now()}`,
+      routeId: route.id,
+      senderId: driver.userId,
+      text,
+      timestamp: new Date().toISOString(),
+      type: 'broadcast_route'
+    };
+
+    if (!Array.isArray((this.db as any).route_messages)) {
+      (this.db as any).route_messages = [];
+    }
+    (this.db as any).route_messages.push(messageRecord);
+
+    return {
+      success: true,
+      data: messageRecord,
+      toasts: [{ title: 'Mensagem enviada aos pais!', description: text }]
+    };
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -615,6 +676,79 @@ export class CrudActionController {
       toasts: [{ title: 'Motorista cadastrado!', description: `${newDriver.name} pronto para ser designado.` }]
     };
   }
+
+  /**
+   * Geração de contrato digital escolar
+   */
+  public submitGenerateContract(data: { studentId: string; parentId: string; monthlyFee?: number; templateId?: string }): ActionResult {
+    const student = this.db.students.find(s => s.id === data.studentId);
+    if (!student) return { success: false, message: 'Aluno não encontrado.' };
+
+    const parent = this.db.parents.find(p => p.id === data.parentId);
+    if (!parent) return { success: false, message: 'Responsável não encontrado.' };
+
+    const contracts = (this.db as any).contracts || [];
+    const existing = contracts.find((c: any) => c.studentId === data.studentId && ['active', 'aguardando_assinatura', 'signed'].includes(c.status));
+    if (existing) {
+      return { success: false, message: `O aluno ${student.name} já possui um contrato ativo ou em processo de assinatura.` };
+    }
+
+    const newContract = {
+      id: `contract-${Date.now()}`,
+      studentId: data.studentId,
+      parentId: data.parentId,
+      parentUserId: parent.userId,
+      studentName: student.name,
+      parentName: parent.name,
+      monthlyFee: data.monthlyFee || student.monthlyFee || 450,
+      status: 'aguardando_assinatura',
+      createdAt: new Date().toISOString(),
+      schoolYear: 2026
+    };
+
+    if (!Array.isArray((this.db as any).contracts)) {
+      (this.db as any).contracts = [];
+    }
+    (this.db as any).contracts.push(newContract);
+
+    return {
+      success: true,
+      data: newContract,
+      toasts: [{ title: 'Contrato gerado!', description: `Enviado para assinatura de ${parent.name}.` }]
+    };
+  }
+
+  /**
+   * Publicação de comunicado no mural escolar com segmentação
+   */
+  public submitBroadcastAnnouncement(data: { title: string; content: string; targetShift?: 'all' | 'Manhã' | 'Tarde' }): ActionResult {
+    if (!data.title || data.title.trim().length < 3) {
+      return { success: false, message: 'Título do comunicado deve ter no mínimo 3 caracteres.' };
+    }
+    if (!data.content || data.content.trim().length < 5) {
+      return { success: false, message: 'Conteúdo do comunicado deve ter no mínimo 5 caracteres.' };
+    }
+
+    const announcement = {
+      id: `ann-${Date.now()}`,
+      title: data.title.trim(),
+      content: data.content.trim(),
+      targetShift: data.targetShift || 'all',
+      publishedAt: new Date().toISOString(),
+      active: true
+    };
+
+    if (!Array.isArray((this.db as any).announcements)) {
+      (this.db as any).announcements = [];
+    }
+    (this.db as any).announcements.push(announcement);
+
+    return {
+      success: true,
+      data: announcement,
+      toasts: [{ title: 'Comunicado publicado no mural!', description: announcement.title }]
+    };
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -792,6 +926,78 @@ export class ParentActionController {
         title: 'Pagamento Concluído!',
         description: 'Recibo emitido e status financeiro atualizado instantaneamente.'
       }]
+    };
+  }
+
+  /**
+   * Assinatura digital do contrato de transporte pelo pai
+   */
+  public signDigitalContract(contractId: string, parentUserId: string): ActionResult {
+    const contracts = (this.db as any).contracts || [];
+    const contract = contracts.find((c: any) => c.id === contractId);
+    if (!contract) return { success: false, message: 'Contrato não encontrado.' };
+
+    if (contract.parentUserId && contract.parentUserId !== parentUserId) {
+      return { success: false, message: 'Você não tem permissão para assinar este contrato.' };
+    }
+
+    contract.status = 'signed';
+    contract.signedAt = new Date().toISOString();
+    contract.signatureIp = '189.120.45.10';
+
+    return {
+      success: true,
+      data: contract,
+      toasts: [{ title: 'Contrato assinado!', description: 'Transporte escolar homologado com sucesso.' }]
+    };
+  }
+
+  /**
+   * Solicitação de viagem extra / avulsa pelo pai
+   */
+  public submitTripRequest(data: { studentId: string; parentUserId: string; type: 'ida' | 'volta' | 'ida_e_volta'; date: string; reason?: string }): ActionResult {
+    const student = this.db.students.find(s => s.id === data.studentId);
+    if (!student) return { success: false, message: 'Aluno não encontrado.' };
+
+    const tripRequest = {
+      id: `tr-${Date.now()}`,
+      studentId: data.studentId,
+      parentUserId: data.parentUserId,
+      type: data.type,
+      date: data.date,
+      reason: data.reason || 'Solicitação avulsa do responsável',
+      status: 'aguardando_aprovacao_pai',
+      amount: 45.00,
+      createdAt: new Date().toISOString()
+    };
+
+    if (!Array.isArray((this.db as any).trip_requests)) {
+      (this.db as any).trip_requests = [];
+    }
+    (this.db as any).trip_requests.push(tripRequest);
+
+    return {
+      success: true,
+      data: tripRequest,
+      toasts: [{ title: 'Solicitação avulsa enviada!', description: 'Aguardando confirmação do transportador.' }]
+    };
+  }
+
+  /**
+   * Aprovação do orçamento da viagem avulsa pelo pai
+   */
+  public approveTripRequestQuote(tripRequestId: string): ActionResult {
+    const requests = (this.db as any).trip_requests || [];
+    const request = requests.find((r: any) => r.id === tripRequestId);
+    if (!request) return { success: false, message: 'Solicitação de viagem não encontrada.' };
+
+    request.status = 'aprovada';
+    request.confirmedAt = new Date().toISOString();
+
+    return {
+      success: true,
+      data: request,
+      toasts: [{ title: 'Viagem avulsa confirmada!', description: 'Inclusa no itinerário da data solicitada.' }]
     };
   }
 }
