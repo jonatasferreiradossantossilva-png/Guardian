@@ -94,7 +94,7 @@ service cloud.firestore {
       allow list: if isSignedIn();
       allow create: if isAdmin() || (request.resource.data.active == false && request.resource.data.status == 'aguardando_aprovacao');
       allow update: if (isAdmin() && resource != null) || 
-                     ((isDriver() || isMonitor()) && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
+                     (isSignedIn() && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status']));
       allow delete: if isAdmin() && resource != null;
     }
 
@@ -106,7 +106,8 @@ service cloud.firestore {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
       allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
+      allow update: if (isAdmin() && resource != null) || 
+                     (isSignedIn() && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasAny(['status', 'latitude', 'longitude']));
       allow delete: if isAdmin() && resource != null;
     }
 
@@ -130,7 +131,8 @@ service cloud.firestore {
       allow get: if isSignedIn();
       allow list: if isSignedIn();
       allow create: if isAdmin();
-      allow update: if isAdmin() && resource != null;
+      allow update: if (isAdmin() && resource != null) || 
+                     (isSignedIn() && resource != null && request.resource.data.diff(resource.data).affectedKeys().hasAny(['activeShift', 'activeDirection', 'journeyStatus', 'startedBy', 'actualDriverId', 'actualMonitorId', 'polyline', 'lastOptimizedAt', 'studentIds']));
       allow delete: if isAdmin() && resource != null;
     }
 

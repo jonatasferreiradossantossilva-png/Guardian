@@ -235,6 +235,18 @@ export function FirestoreDataProvider({ children }: { children: React.ReactNode 
       const docData = { ...data };
       delete docData.id; // Firestore uses doc ID separately
 
+      // Atualização otimista imediata para reatividade instantânea na UI
+      setDb((prevDb) => {
+        const collection = prevDb[collectionName];
+        if (Array.isArray(collection)) {
+          return {
+            ...prevDb,
+            [collectionName]: [...collection, { ...data, id: newId }],
+          };
+        }
+        return prevDb;
+      });
+
       // Write to Firestore (async, but we return ID immediately for compat)
       const docRef = doc(firestore, collName, newId);
       firestoreSetDoc(docRef, docData).catch((err) => {
@@ -269,6 +281,20 @@ export function FirestoreDataProvider({ children }: { children: React.ReactNode 
 
   const updateDocFn = useCallback(
     (collectionName: keyof MockDB, docId: string, data: any): void => {
+      // Atualização otimista imediata para reatividade instantânea na UI
+      setDb((prevDb) => {
+        const collection = prevDb[collectionName];
+        if (Array.isArray(collection)) {
+          return {
+            ...prevDb,
+            [collectionName]: collection.map((doc: any) =>
+              doc.id === docId ? { ...doc, ...data } : doc
+            ),
+          };
+        }
+        return prevDb;
+      });
+
       const collName = getFirestoreCollectionName(collectionName);
 
       if (collectionName === 'locations') {
@@ -288,6 +314,18 @@ export function FirestoreDataProvider({ children }: { children: React.ReactNode 
 
   const deleteDocFn = useCallback(
     (collectionName: keyof MockDB, docId: string): void => {
+      // Atualização otimista imediata para reatividade instantânea na UI
+      setDb((prevDb) => {
+        const collection = prevDb[collectionName];
+        if (Array.isArray(collection)) {
+          return {
+            ...prevDb,
+            [collectionName]: collection.filter((doc: any) => doc.id !== docId),
+          };
+        }
+        return prevDb;
+      });
+
       const collName = getFirestoreCollectionName(collectionName);
       const docRef = doc(firestore, collName, docId);
       firestoreDeleteDoc(docRef).catch((err) => {
