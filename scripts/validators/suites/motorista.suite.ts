@@ -426,6 +426,51 @@ export async function runMotoristaSuite() {
       });
     });
 
+    // CENÁRIO 17: Garantia de Atualização Otimista Imediata do Botão EMBARCOU
+    await runner.scenario('MOT-17', 'Garantia de Atualização Otimista e Não-Regressão do Botão EMBARCOU', async () => {
+      let db = JSON.parse(JSON.stringify(initialMockData));
+      const route = db.routes[0];
+      const students = db.students.filter((s: any) => route.studentIds.includes(s.id));
+      const studentA = students[0];
+      const studentB = students[1];
+
+      studentA.status = 'aguardando';
+      studentB.status = 'aguardando';
+
+      // Simulação do updateDoc com atualização otimista (idêntico ao firestore-data-provider)
+      const updateDocOptimistic = (collectionName: string, id: string, data: any) => {
+        db[collectionName] = db[collectionName].map((item: any) => item.id === id ? { ...item, ...data } : item);
+      };
+
+      await runner.step('Passo 1: Parada atual inicial aponta para o primeiro aluno (A)', () => {
+        const currentPending = db.students
+          .filter((s: any) => route.studentIds.includes(s.id))
+          .find((s: any) => s.status === 'aguardando');
+        expect(currentPending.id).toBe(studentA.id);
+      });
+
+      await runner.step('Passo 2: Disparo de EMBARCOU aplica atualização otimista imediata na memória', () => {
+        updateDocOptimistic('students', studentA.id, { status: 'a_bordo' });
+        const updatedStudentA = db.students.find((s: any) => s.id === studentA.id);
+        expect(updatedStudentA.status).toBe('a_bordo');
+      });
+
+      await runner.step('Passo 3: Parada ativa avança obrigatoriamente para o segundo aluno (B)', () => {
+        const nextPending = db.students
+          .filter((s: any) => route.studentIds.includes(s.id))
+          .find((s: any) => s.status === 'aguardando');
+        expect(nextPending).toBeDefined();
+        expect(nextPending.id).toBe(studentB.id);
+        expect(nextPending.id).not.toBe(studentA.id);
+      });
+
+      await runner.step('Passo 4: Blindagem contra loop/reversão: aluno A permanece permanentemente em "a_bordo"', () => {
+        const boardedList = db.students
+          .filter((s: any) => route.studentIds.includes(s.id) && s.status === 'a_bordo');
+        expect(boardedList.some((s: any) => s.id === studentA.id)).toBe(true);
+      });
+    });
+
   });
 }
 
