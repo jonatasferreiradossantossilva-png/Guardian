@@ -47,3 +47,6 @@ firestore-debug.log
 
 scratch/
 backups/
+
+test-results/
+playwright-report/

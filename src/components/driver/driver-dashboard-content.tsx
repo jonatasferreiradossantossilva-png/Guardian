@@ -1023,6 +1023,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                         )}
                                         <SafeRow name="ActiveStopCard">
                                             <NextStopCard 
+                                                key={`next-stop-${activeStop.id}`}
                                                 student={activeStop.data as Student} 
                                                 isExtra={activeStop.isExtra}
                                                 stopNumber={progressData.current + 1}
@@ -1163,6 +1164,10 @@ function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange
   const isGoing = direction === 'ida';
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
 
+  useEffect(() => {
+    setIsProcessing(false);
+  }, [student?.id]);
+
   const handleAction = (status: StudentStatus) => {
     if (isProcessing) return;
     setIsProcessing(true);
@@ -1170,7 +1175,7 @@ function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange
   };
 
   return (
-    <Card className={cn("w-full shadow-2xl border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
+    <Card data-testid="ActiveStopCard" className={cn("w-full shadow-2xl border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
         <CardHeader className="pb-3 border-b bg-muted/10">
             <div className="flex justify-between items-center mb-3">
                 <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase text-primary">
@@ -1185,7 +1190,7 @@ function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange
                 </Avatar>
 
                 <div className="flex-grow min-w-0">
-                    <CardTitle className="text-base font-black truncate uppercase leading-tight">{safeString(student?.name, 'Aluno')}</CardTitle>
+                    <CardTitle data-testid="active-student-name" className="text-base font-black truncate uppercase leading-tight">{safeString(student?.name, 'Aluno')}</CardTitle>
 
                     <div className="space-y-1 mt-1">
                         <div className="flex flex-wrap items-center gap-1.5 text-primary font-bold text-[10px] uppercase">
