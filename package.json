@@ -13,6 +13,7 @@
     "validate:report": "tsx scripts/run-all-validations.ts",
     "validate:e2e": "npx playwright test",
     "validate:ui": "npx playwright test --ui",
+    "seed:firestore": "tsx scripts/seed-firestore-full.ts",
     "pre-deploy": "tsx scripts/pre-deploy-check.ts"
   },
   "dependencies": {
