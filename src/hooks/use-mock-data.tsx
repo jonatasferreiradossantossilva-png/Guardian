@@ -181,18 +181,29 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
   function updateDoc(collectionName: keyof MockDB, docId: string, data: any) {
     if (collectionName === 'locations') {
-        setDb(prevDb => ({
-            ...prevDb,
-            locations: { ...prevDb.locations, [docId]: { ...(prevDb.locations[docId] || {}), ...data } }
-        }));
-    } else if (Array.isArray(db[collectionName])) {
+        setDb(prevDb => {
+            const nextDb = {
+                ...prevDb,
+                locations: { ...prevDb.locations, [docId]: { ...(prevDb.locations[docId] || {}), ...data } }
+            };
+            return nextDb;
+        });
+    } else {
         setDb(prevDb => {
             const collection = prevDb[collectionName];
             if (Array.isArray(collection)) {
-                return {
+                const nextDb = {
                     ...prevDb,
                     [collectionName]: collection.map((doc: any) => doc.id === docId ? { ...doc, ...data } : doc),
                 };
+                if (typeof window !== 'undefined') {
+                    try {
+                        localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nextDb));
+                    } catch (e) {
+                        console.error("[Guardian] Falha ao persistir updateDoc:", e);
+                    }
+                }
+                return nextDb;
             }
             return prevDb;
         });
@@ -210,18 +221,24 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   }
 
   function deleteDoc(collectionName: keyof MockDB, docId: string) {
-    if (Array.isArray(db[collectionName])) {
-      setDb(prevDb => {
-        const collection = prevDb[collectionName];
-        if (Array.isArray(collection)) {
-            return {
-                ...prevDb,
-                [collectionName]: collection.filter((doc: any) => doc.id !== docId),
-            };
-        }
-        return prevDb;
-      });
-    }
+    setDb(prevDb => {
+      const collection = prevDb[collectionName];
+      if (Array.isArray(collection)) {
+          const nextDb = {
+              ...prevDb,
+              [collectionName]: collection.filter((doc: any) => doc.id !== docId),
+          };
+          if (typeof window !== 'undefined') {
+              try {
+                  localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(nextDb));
+              } catch (e) {
+                  console.error("[Guardian] Falha ao persistir deleteDoc:", e);
+              }
+          }
+          return nextDb;
+      }
+      return prevDb;
+    });
   }
 
   function clearCollection(collectionName: keyof MockDB) {
@@ -252,7 +269,7 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
   const memoResetData = useCallback(resetData, []);
 
   const lastProcessedEvent = useRef<string | null>(null);
-  const MOCK_VERSION = 'v9-trip-status'; // Incremento de versão para limpar caches antigos e sincronizar estado de rota
+  const MOCK_VERSION = 'v10-sync-persist'; // Incremento de versão para sincronizar estado limpo e persistência imediata
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -286,7 +303,11 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
 
           if (savedVersion !== MOCK_VERSION) {
             setDb(initialMockData);
+            localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(initialMockData));
             localStorage.setItem(LOCAL_STORAGE_KEY + '_version', MOCK_VERSION);
+            sessionStorage.removeItem('activeRouteId');
+            sessionStorage.removeItem('activeShift');
+            sessionStorage.removeItem('activeDirection');
           } else {
             setDb(parsed);
           }
@@ -295,6 +316,9 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
           setDb(initialMockData);
           localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(initialMockData));
           localStorage.setItem(LOCAL_STORAGE_KEY + '_version', MOCK_VERSION);
+          sessionStorage.removeItem('activeRouteId');
+          sessionStorage.removeItem('activeShift');
+          sessionStorage.removeItem('activeDirection');
         }
       } else {
         localStorage.setItem(LOCAL_STORAGE_KEY + '_version', MOCK_VERSION);

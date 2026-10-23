@@ -1212,6 +1212,7 @@ function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange
             <div className="grid grid-cols-2 gap-3">
                 {isGoing ? (
                     <Button 
+                        type="button"
                         disabled={isProcessing}
                         className={cn(
                             "h-14 font-black text-white text-xs transition-all shadow-md active:scale-95",
@@ -1233,6 +1234,7 @@ function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange
                     </Button>
                 ) : (
                     <Button 
+                        type="button"
                         disabled={isProcessing}
                         className={cn(
                             "h-14 font-black text-white text-xs transition-all shadow-md active:scale-95",
@@ -1254,6 +1256,7 @@ function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange
                     </Button>
                 )}
                 <Button 
+                    type="button"
                     disabled={isProcessing}
                     variant="destructive" 
                     className="h-14 font-black text-xs transition-all shadow-md active:scale-95" 

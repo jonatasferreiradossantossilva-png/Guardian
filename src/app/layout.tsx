@@ -64,15 +64,6 @@ export default function RootLayout({
                     });
                   });
                 });
-
-                // 4. Recarregar automaticamente a tela assim que o novo Service Worker assumir
-                let refreshing = false;
-                navigator.serviceWorker.addEventListener('controllerchange', function() {
-                  if (!refreshing) {
-                    refreshing = true;
-                    window.location.reload();
-                  }
-                });
               }
             `,
           }}
