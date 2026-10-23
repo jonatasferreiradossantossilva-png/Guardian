@@ -74,7 +74,11 @@ export class SafeComponent extends Component<Props, State> {
       );
     }
 
-    return this.props.children;
+    return (
+      <div className="contents" data-safe-component={this.props.name || 'Anonymous'}>
+        {this.props.children}
+      </div>
+    );
   }
 }
 

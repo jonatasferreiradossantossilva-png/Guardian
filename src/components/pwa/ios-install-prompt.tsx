@@ -31,11 +31,10 @@ export function IosInstallPrompt() {
     }
   }, []);
 
-  if (!showPrompt) return null;
-
   return (
     <AnimatePresence>
-      <div className="fixed bottom-6 left-4 right-4 z-[100] flex justify-center pointer-events-none">
+      {showPrompt && (
+        <div className="fixed bottom-6 left-4 right-4 z-[100] flex justify-center pointer-events-none">
         <motion.div
           initial={{ opacity: 0, y: 50, scale: 0.95 }}
           animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -96,6 +95,7 @@ export function IosInstallPrompt() {
           </Card>
         </motion.div>
       </div>
+      )}
     </AnimatePresence>
   );
 }

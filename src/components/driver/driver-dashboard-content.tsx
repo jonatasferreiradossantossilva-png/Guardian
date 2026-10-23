@@ -381,8 +381,10 @@ export default function DriverDashboardContent() {
         return;
     }
 
-    setIsOptimizing(true);
-    setOptimizationStep('routing');
+    if (!isManualStart) {
+        setIsOptimizing(true);
+        setOptimizationStep('routing');
+    }
     try {
         const studentStops = currentStops
             .filter((s): s is { id: string; type: 'student'; data: Student } => s.type === 'student')
@@ -456,8 +458,10 @@ export default function DriverDashboardContent() {
     } catch (e) {
         console.error("Erro na otimização automatizada:", e);
     } finally {
-        setOptimizationStep('idle');
-        setIsOptimizing(false);
+        if (!isManualStart) {
+            setOptimizationStep('idle');
+            setIsOptimizing(false);
+        }
     }
   }, [allStudents, schools, selectedDirection, driverLocation, studentsMap, schoolsMap, updateDoc, toast, activeManifest]);
 
@@ -860,20 +864,6 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                     </div>
                                 )}
 
-                                <div className="pt-8 pb-12 mt-8 border-t flex flex-col gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm z-50 w-full mb-[-120px]">
-                                    <Button className="w-full h-20 font-black text-lg shadow-2xl bg-primary hover:bg-primary/90 text-white rounded-xl relative overflow-hidden group" onClick={handleStartRoute} disabled={isOptimizing}>
-                                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-                                        {isOptimizing ? (
-                                            <div className="flex flex-col items-center relative z-10">
-                                                <div className="flex items-center gap-2">
-                                                    <Loader2 className="h-6 w-6 animate-spin"/> 
-                                                    <span>{optimizationStep === 'routing' ? 'OTIMIZANDO ROTEIRO...' : optimizationStep === 'polyline' ? 'TRAÇANDO MAPA...' : 'PREPARANDO VIAGEM...'}</span>
-                                                </div>
-                                            </div>
-                                        ) : <><Play className="mr-3 h-8 w-8 fill-current relative z-10" /> <span className="relative z-10 uppercase tracking-widest text-lg">INICIAR OPERAÇÃO</span></>}
-                                    </Button>
-                                    <Link href="/" className="w-full text-center text-xs font-black text-muted-foreground hover:text-primary transition-colors uppercase tracking-widest pb-8">Voltar ao Login</Link>
-                            </div>
                         </div>
                     </TabsContent>
                 </Tabs>
@@ -894,7 +884,12 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                 <span>{optimizationStep === 'routing' ? 'OTIMIZANDO...' : optimizationStep === 'polyline' ? 'MAPA...' : 'INICIANDO...'}</span>
                             </div>
                         </div>
-                    ) : <><Play className="mr-3 h-6 w-6 fill-current relative z-10" /> <span className="relative z-10 uppercase tracking-widest text-base">INICIAR OPERAÇÃO</span></>}
+                    ) : (
+                        <span className="flex items-center justify-center relative z-10">
+                            <Play className="mr-3 h-6 w-6 fill-current" /> 
+                            <span className="uppercase tracking-widest text-base">INICIAR OPERAÇÃO</span>
+                        </span>
+                    )}
                 </Button>
             </div>
         </div>
@@ -1021,9 +1016,8 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                                 </Badge>
                                             </div>
                                         )}
-                                        <SafeRow name="ActiveStopCard">
+                                        <SafeRow key={`active-stop-${activeStop.id}`} name="ActiveStopCard">
                                             <NextStopCard 
-                                                key={`next-stop-${activeStop.id}`}
                                                 student={activeStop.data as Student} 
                                                 isExtra={activeStop.isExtra}
                                                 stopNumber={progressData.current + 1}

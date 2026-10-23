@@ -67,10 +67,12 @@ import { SafeComponent } from './safe-component';
  * SafeRow: Agora utiliza o SafeComponent genérico para evitar o erro removeChild 
  * causado por <tr> órfãs em grids que não são tabelas.
  */
-export function SafeRow({ children, name }: { children: React.ReactNode, name?: string }) {
+export function SafeRow({ children, name, className }: { children: React.ReactNode, name?: string, className?: string }) {
     return (
         <SafeComponent name={name}>
-            {children}
+            <div className={className || "contents"}>
+                {children}
+            </div>
         </SafeComponent>
     );
 }
