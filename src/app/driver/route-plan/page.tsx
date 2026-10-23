@@ -26,5 +26,5 @@ export default function DriverRoutePlanPage() {
 
   if (!isMounted) return null;
 
-  return <DriverDashboard />;
+  return <DriverDashboard mode="setup" />;
 }

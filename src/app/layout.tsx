@@ -33,25 +33,29 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="pt-BR" className="dark" translate="no" suppressHydrationWarning>
+    <html lang="pt-BR" className="dark notranslate" translate="no" suppressHydrationWarning>
       <head>
+        <meta name="google" content="notranslate" />
+        <meta name="googlebot" content="notranslate" />
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Recuperação automática de erro de versão desatualizada (ChunkLoadError)
+              window.addEventListener('error', function(e) {
+                if (e.message && (e.message.includes('ChunkLoadError') || e.message.includes('Loading chunk') || e.message.includes('Failed to fetch dynamically imported module'))) {
+                  console.warn('Versão desatualizada detectada. Recarregando com versão mais recente...');
+                  window.location.reload();
+                }
+              });
+
               if ('serviceWorker' in navigator) {
                 window.addEventListener('load', function() {
                   navigator.serviceWorker.register('/sw.js').then(function(registration) {
                     console.log('ServiceWorker registered:', registration.scope);
-                    
-                    // 1. Forçar verificação de atualizações no carregamento da página
                     registration.update();
-                    
-                    // 2. Se já houver um Service Worker esperando, mandar ativar imediatamente
                     if (registration.waiting) {
                       registration.waiting.postMessage({ type: 'SKIP_WAITING' });
                     }
-                    
-                    // 3. Monitorar novas atualizações encontradas em segundo plano
                     registration.addEventListener('updatefound', function() {
                       const newWorker = registration.installing;
                       if (newWorker) {
@@ -69,7 +73,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.className} font-body antialiased`} suppressHydrationWarning>
+      <body className={`${inter.className} font-body antialiased notranslate`} translate="no" suppressHydrationWarning>
         <ErrorBoundary>
           <FirebaseClientProvider>
             <DataProvider>

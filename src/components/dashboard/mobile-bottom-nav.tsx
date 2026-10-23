@@ -82,7 +82,7 @@ export const MobileBottomNav = React.memo(() => {
           className="fixed bottom-0 left-0 right-0 z-40 bg-zinc-950/90 backdrop-blur-xl border-t border-white/5 h-[75px] flex items-center justify-around px-4 pb-safe md:hidden shadow-[0_-8px_32px_rgba(0,0,0,0.4)]"
         >
           {navItems.map((item) => {
-            const isActive = pathname === item.href;
+            const isActive = pathname === item.href || (item.href === '/driver/route-plan' && pathname === '/driver/active');
             return (
               <Link
                 key={item.href}

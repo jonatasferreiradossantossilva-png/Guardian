@@ -3,8 +3,11 @@ import withPWAInit from "@ducanh2912/next-pwa";
 
 const withPWA = withPWAInit({
   dest: "public",
-  disable: false, // Habilitado para teste local no celular (via Wi-Fi)
+  disable: false,
   register: true,
+  cacheOnFrontEndNav: false,
+  aggressiveFrontEndNavCaching: false,
+  reloadOnOnline: false,
 });
 
 const nextConfig: NextConfig = {

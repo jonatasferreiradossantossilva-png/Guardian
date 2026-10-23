@@ -46,6 +46,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useDataCollection, useData, useDataNestedDoc } from '@/hooks/use-data';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
@@ -105,7 +106,12 @@ const formatStudentClassInfo = (student: Student) => {
     return `${serie}º • ${turma} • ${student.shift}`;
 };
 
-export default function DriverDashboardContent() {
+export interface DriverDashboardContentProps {
+  mode?: 'setup' | 'active';
+}
+
+export default function DriverDashboardContent({ mode }: DriverDashboardContentProps = {}) {
+  const router = useRouter();
   const { updateDoc, setIsSimulating, forceScenario, createNotification } = useData() as any;
   const { data: allParents } = useDataCollection('parents');
   const { updateLocation: syncTelemetry } = useTelemetry();
@@ -174,6 +180,25 @@ export default function DriverDashboardContent() {
     }
     return false;
   }, [driverProfile?.status, route?.journeyStatus, activeRouteId]);
+
+  const showActiveTrip = mode === 'active' ? true : mode === 'setup' ? false : isTripActive;
+
+  // Se estiver no setup e a viagem já estiver ativa, redireciona para a tela de viagem ativa
+  useEffect(() => {
+    if (mode === 'setup' && isTripActive) {
+      router.replace('/driver/active');
+    }
+  }, [mode, isTripActive, router]);
+
+  // Se estiver na tela ativa e não houver viagem em andamento, retorna ao setup
+  useEffect(() => {
+    if (mode === 'active' && isMounted && !areDriversLoading && !isRouteLoading) {
+      const savedRoute = typeof window !== 'undefined' ? sessionStorage.getItem('activeRouteId') : null;
+      if (!savedRoute && !isTripActive) {
+        router.replace('/driver/route-plan');
+      }
+    }
+  }, [mode, isMounted, areDriversLoading, isRouteLoading, isTripActive, router]);
   const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
   const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
   const { data: routeManifests } = useDataCollection<RouteManifest>('route_manifests');
@@ -370,7 +395,11 @@ export default function DriverDashboardContent() {
           title: "Operação Finalizada",
           description: "O itinerário foi concluído e o sistema está pronto para uma nova viagem."
       });
-  }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, forceScenario, toast]);
+
+      if (mode === 'active') {
+          router.push('/driver/route-plan');
+      }
+  }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, forceScenario, toast, mode, router]);
 
   const performRouteOptimization = useCallback(async (currentRoute: Route | null, currentStops: Stop[], isManualStart: boolean = false) => {
     if (!currentRoute || !allStudents || !schools) return;
@@ -548,6 +577,10 @@ export default function DriverDashboardContent() {
     });
 
     toast({ title: "Viagem Iniciada!" });
+
+    if (mode === 'setup') {
+        router.push('/driver/active');
+    }
 
     // [MELHORIA DE UX] Roda a otimização em background (não aguarda para não travar a UI)
     performRouteOptimization(route, orderedStops, true);
@@ -736,8 +769,8 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
     <div className="bg-background flex flex-col min-h-[100dvh] h-[100dvh] overflow-hidden">
         {!isOnline && <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm z-[2000] shrink-0"><WifiOff className="h-4 w-4 inline mr-2" />Offline.</div>}
         
-        {!isTripActive ? (
-            <div className="flex-1 flex flex-col bg-background w-full relative">
+        {!showActiveTrip ? (
+            <div key="driver-setup-view" className="flex-1 flex flex-col bg-background w-full relative">
                 <div className="w-full bg-primary/10 pt-6 pb-4 px-6 flex flex-col items-center justify-center border-b shadow-sm relative overflow-hidden shrink-0">
                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
                     <div className="w-12 h-12 bg-background rounded-full flex items-center justify-center mb-2 border-4 border-primary/20 shadow-xl relative z-10 transition-transform active:scale-95">
@@ -894,7 +927,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
             </div>
         </div>
         ) : (
-            <div className="flex-1 flex flex-col overflow-hidden max-w-md mx-auto w-full border-x">
+            <div key="driver-active-view" className="flex-1 flex flex-col overflow-hidden max-w-md mx-auto w-full border-x">
                 <div className="bg-background pt-3 pb-2 px-4 border-b space-y-2 shrink-0">
                     <div className="flex items-center justify-between">
                         <p className="text-[10px] font-black uppercase text-primary tracking-widest">Progresso da Rota</p>

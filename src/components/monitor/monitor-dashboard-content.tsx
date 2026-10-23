@@ -148,7 +148,7 @@ export default function MonitorDashboardContent() {
   // 1. SEM ROTA ATRIBUÍDA
   if (!activeRoute) {
     return (
-        <div className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
+        <div key="monitor-unassigned" className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col items-center justify-center p-6 text-center">
             <div className="w-20 h-20 bg-muted rounded-full flex items-center justify-center mb-6">
                 <MapPin className="h-10 w-10 text-muted-foreground opacity-20" />
             </div>
@@ -162,7 +162,7 @@ export default function MonitorDashboardContent() {
   // 2. AGUARDANDO MOTORISTA (PENDENTE)
   if (activeRoute.journeyStatus === 'pendente') {
     return (
-        <div className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
+        <div key="monitor-pendente" className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
             <header className="bg-primary pt-14 pb-8 px-6 text-white shrink-0 text-center relative">
                 <div className="absolute top-14 right-4">
                     <NotificationBell />
@@ -212,7 +212,7 @@ export default function MonitorDashboardContent() {
   // 3. VIAGEM FINALIZADA (CONCLUÍDA)
   if (activeRoute.journeyStatus === 'concluida') {
     return (
-        <div className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
+        <div key="monitor-concluida" className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
              <header className="bg-green-600 pt-14 pb-8 px-6 text-white shrink-0 text-center">
                 <CheckCircle className="h-12 w-12 mx-auto mb-4" />
                 <h1 className="text-2xl font-black uppercase italic">Rota Finalizada</h1>
@@ -274,7 +274,7 @@ export default function MonitorDashboardContent() {
 
   // 4. FLUXO OPERACIONAL (EM ROTA)
   return (
-    <div className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
+    <div key="monitor-em_rota" className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
       {/* Header Estilo Guardian */}
       <header className="bg-primary pt-10 pb-6 px-6 text-white shrink-0 relative overflow-hidden">
         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
