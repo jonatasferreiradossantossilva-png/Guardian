@@ -128,6 +128,7 @@ export default function DriverDashboardContent() {
   const [showAbsenceAlert, setShowAbsenceAlert] = useState(false);
   const [showExtraAlert, setShowExtraAlert] = useState(true);
   const [showAnnouncement, setShowAnnouncement] = useState(true);
+  const [lastActionFeedback, setLastActionFeedback] = useState<{ studentName: string; action: string } | null>(null);
   const isOnline = useOnlineStatus();
   const [isMounted, setIsMounted] = useState(false);
   const lastNotifiedStopId = useRef<string | null>(null);
@@ -169,10 +170,10 @@ export default function DriverDashboardContent() {
   const isTripActive = useMemo(() => {
     if (!driverProfile || driverProfile.status === 'inativo') return false;
     if (driverProfile.status === 'em_rota' || driverProfile.status === 'pausa') {
-      return route?.journeyStatus === 'em_rota';
+      return route?.journeyStatus === 'em_rota' && Boolean(activeRouteId);
     }
     return false;
-  }, [driverProfile?.status, route?.journeyStatus]);
+  }, [driverProfile?.status, route?.journeyStatus, activeRouteId]);
   const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
   const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
   const { data: routeManifests } = useDataCollection<RouteManifest>('route_manifests');
@@ -330,24 +331,46 @@ export default function DriverDashboardContent() {
    }, [activeStop, allStudents, selectedDirection, selectedShift, activeStudentIds]);
 
   const handleEndRoute = useCallback(() => {
-      // 1. Resetar cenário para o padrão
-      forceScenario('motorista_inicio');
+      // 1. Atualizar status no banco de dados (funciona em Mock E em Firestore)
+      if (route?.id) {
+          (updateDoc as any)('routes', route.id, { 
+              journeyStatus: 'pendente',
+              completedAt: new Date().toISOString()
+          });
+      }
+      if (driverId) {
+          (updateDoc as any)('drivers', driverId, { status: 'inativo' });
+      }
       
-      // 2. Limpar sessões
-      sessionStorage.removeItem('activeRouteId');
-      sessionStorage.removeItem('activeShift');
-      sessionStorage.removeItem('activeDirection');
+      // 2. Resetar status de alunos para novo ciclo
+      if (activeStudentIds && Array.isArray(activeStudentIds)) {
+          activeStudentIds.forEach((id: string) => {
+              const student = studentsMap.get(id);
+              if (student && !student.status?.startsWith('ausente')) {
+                  (updateDoc as any)('students', id, { status: 'aguardando' });
+              }
+          });
+      }
+
+      // 3. Resetar cenário mock se disponível
+      if (forceScenario) {
+          forceScenario('motorista_inicio');
+      }
+      
+      // 4. Limpar sessões locais e desativar tela de viagem
+      setActiveRouteId(null);
+      setLastActionFeedback(null);
+      if (typeof window !== 'undefined') {
+          sessionStorage.removeItem('activeRouteId');
+          sessionStorage.removeItem('activeShift');
+          sessionStorage.removeItem('activeDirection');
+      }
 
       toast({
           title: "Operação Finalizada",
-          description: "O sistema foi reiniciado com sucesso."
+          description: "O itinerário foi concluído e o sistema está pronto para uma nova viagem."
       });
-
-      // 3. FORÇAR RECARREGAMENTO PARA VOLTAR AO LOGIN LIMPO
-      setTimeout(() => {
-          window.location.href = '/login';
-      }, 1500);
-  }, [forceScenario, toast]);
+  }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, forceScenario, toast]);
 
   const performRouteOptimization = useCallback(async (currentRoute: Route | null, currentStops: Stop[], isManualStart: boolean = false) => {
     if (!currentRoute || !allStudents || !schools) return;
@@ -534,16 +557,28 @@ export default function DriverDashboardContent() {
     const firstName = student?.name ? student.name.split(' ')[0] : 'Aluno';
 
     if (newStatus === 'a_bordo') {
+        setLastActionFeedback({
+            studentName: student?.name || 'Aluno',
+            action: 'embarcou com sucesso na van'
+        });
         toast({
             title: "Embarque Confirmado!",
             description: `✅ ${firstName} embarcou com segurança na van.`,
         });
     } else if (newStatus === 'desembarcado') {
+        setLastActionFeedback({
+            studentName: student?.name || 'Aluno',
+            action: 'desembarcou no destino final'
+        });
         toast({
             title: "Desembarque Confirmado!",
             description: `🏠 ${firstName} desembarcou com segurança.`,
         });
     } else if (newStatus.startsWith('ausente')) {
+        setLastActionFeedback({
+            studentName: student?.name || 'Aluno',
+            action: 'marcado como ausente'
+        });
         toast({
             title: "Ausência Registrada",
             description: `⚠️ ${firstName} registrado como ausente hoje.`,
@@ -786,6 +821,45 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                     </div>
                                 </div>
 
+                                {route?.journeyStatus === 'em_rota' && (
+                                    <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-2xl p-4 space-y-3 shadow-md animate-in fade-in duration-300">
+                                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-black text-xs uppercase tracking-wide">
+                                            <AlertTriangle className="h-5 w-5 shrink-0 animate-pulse text-amber-500" />
+                                            <span>Viagem em andamento detectada nesta rota</span>
+                                        </div>
+                                        <p className="text-[11px] text-muted-foreground font-bold leading-tight">
+                                            Esta rota já possui uma viagem iniciada anteriormente ({route.activeShift || 'Manhã'} • {route.activeDirection || 'ida'}). Você pode continuar de onde parou ou resetar para começar uma nova operação limpa.
+                                        </p>
+                                        <div className="grid grid-cols-2 gap-2 pt-1">
+                                            <Button 
+                                                type="button"
+                                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs h-12 shadow"
+                                                onClick={() => {
+                                                    setActiveRouteId(route.id);
+                                                    if (typeof window !== 'undefined') {
+                                                        sessionStorage.setItem('activeRouteId', route.id);
+                                                        if (route.activeShift) sessionStorage.setItem('activeShift', route.activeShift);
+                                                        if (route.activeDirection) sessionStorage.setItem('activeDirection', route.activeDirection);
+                                                    }
+                                                    if (route.activeShift) setSelectedShift(route.activeShift);
+                                                    if (route.activeDirection) setSelectedDirection(route.activeDirection);
+                                                    toast({ title: "Retomando Viagem", description: "Continuando a rota em andamento." });
+                                                }}
+                                            >
+                                                <Play className="h-4 w-4 mr-1 fill-current" /> Retomar Viagem
+                                            </Button>
+                                            <Button 
+                                                type="button"
+                                                variant="outline"
+                                                className="border-destructive/40 text-destructive hover:bg-destructive/10 font-black text-xs h-12"
+                                                onClick={handleEndRoute}
+                                            >
+                                                <RotateCcw className="h-4 w-4 mr-1" /> Resetar Rota
+                                            </Button>
+                                        </div>
+                                    </div>
+                                )}
+
                                 <div className="pt-8 pb-12 mt-8 border-t flex flex-col gap-4 sticky bottom-0 bg-background/95 backdrop-blur-sm z-50 w-full mb-[-120px]">
                                     <Button className="w-full h-20 font-black text-lg shadow-2xl bg-primary hover:bg-primary/90 text-white rounded-xl relative overflow-hidden group" onClick={handleStartRoute} disabled={isOptimizing}>
                                         <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
@@ -935,7 +1009,18 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                         </Card>
                                     </div>
                                 ) : activeStop.type === 'student' ? (
-                                    <div className="space-y-6 w-full animate-in slide-in-from-bottom-4 duration-300" key={activeStop.id}>
+                                    <div className="space-y-4 w-full animate-in slide-in-from-bottom-4 duration-300" key={activeStop.id}>
+                                        {lastActionFeedback && (
+                                            <div className="bg-emerald-500/15 border-2 border-emerald-500/30 rounded-xl p-3 flex items-center justify-between text-emerald-800 dark:text-emerald-300 animate-in fade-in slide-in-from-top-2 duration-300 shadow-sm">
+                                                <div className="flex items-center gap-2 font-black text-xs uppercase">
+                                                    <span className="flex h-2.5 w-2.5 rounded-full bg-emerald-500 animate-pulse" />
+                                                    <span>✅ {lastActionFeedback.studentName} {lastActionFeedback.action}!</span>
+                                                </div>
+                                                <Badge variant="outline" className="text-[9px] font-black uppercase text-emerald-600 border-emerald-500/40 bg-emerald-500/10">
+                                                    Registrado
+                                                </Badge>
+                                            </div>
+                                        )}
                                         <SafeRow name="ActiveStopCard">
                                             <NextStopCard 
                                                 student={activeStop.data as Student} 
@@ -1073,16 +1158,23 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
 }
 
 function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange, onOpenAuthorizedModal, direction, onScanQrCode, onEndEarly }: { student: Student, isExtra?: boolean, stopNumber?: number, totalStops?: number, onStatusChange: (id: string, status: StudentStatus) => void, onOpenAuthorizedModal: (student: Student) => void, direction: 'ida' | 'volta', onScanQrCode: () => void, onEndEarly: () => void }) {
+  const [isProcessing, setIsProcessing] = useState(false);
   const isVolta = direction === 'volta';
   const isGoing = direction === 'ida';
   const hasMedicalAlert = (student.medicalConditions && student.medicalConditions.length > 0) || student.medicalNote;
+
+  const handleAction = (status: StudentStatus) => {
+    if (isProcessing) return;
+    setIsProcessing(true);
+    onStatusChange(student.id, status);
+  };
 
   return (
     <Card className={cn("w-full shadow-2xl border-primary border-2", hasMedicalAlert && "ring-4 ring-destructive border-destructive bg-destructive/5")}>
         <CardHeader className="pb-3 border-b bg-muted/10">
             <div className="flex justify-between items-center mb-3">
                 <Badge variant="outline" className="text-[10px] font-black tracking-[0.2em] uppercase text-primary">
-                    {stopNumber && totalStops ? `Parada ${stopNumber} de ${totalStops}` : 'Parada Atual'}
+                    {stopNumber && totalStops ? `Parada ${stopNumber} de ${totalStops}` : 'Parada Atual'} • {isGoing ? 'EMBARQUE' : 'DESEMBARQUE'}
                 </Badge>
                 {hasMedicalAlert && <Badge variant="destructive" className="animate-pulse font-black"><HeartPulse className="h-3 w-3 mr-1" /> CUIDADO MÉDICO</Badge>}
             </div>
@@ -1114,11 +1206,56 @@ function NextStopCard({ student, isExtra, stopNumber, totalStops, onStatusChange
         <CardContent className="pt-6 space-y-4">
             <div className="grid grid-cols-2 gap-3">
                 {isGoing ? (
-                    <Button className="bg-green-600 hover:bg-green-700 h-14 font-black text-white text-xs" onClick={() => onStatusChange(student.id, 'a_bordo')}><CheckCircle className="mr-2" /> EMBARCOU</Button>
+                    <Button 
+                        disabled={isProcessing}
+                        className={cn(
+                            "h-14 font-black text-white text-xs transition-all shadow-md active:scale-95",
+                            isProcessing ? "bg-emerald-500 opacity-90 cursor-wait" : "bg-green-600 hover:bg-green-700"
+                        )} 
+                        onClick={() => handleAction('a_bordo')}
+                    >
+                        {isProcessing ? (
+                            <>
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                REGISTRANDO...
+                            </>
+                        ) : (
+                            <>
+                                <CheckCircle className="mr-2 h-5 w-5" />
+                                EMBARCOU
+                            </>
+                        )}
+                    </Button>
                 ) : (
-                    <Button className="bg-blue-600 hover:bg-blue-700 h-14 font-black text-white text-xs" onClick={() => onStatusChange(student.id, 'desembarcado')}><CheckCircle className="mr-2" /> DESEMBARCOU</Button>
+                    <Button 
+                        disabled={isProcessing}
+                        className={cn(
+                            "h-14 font-black text-white text-xs transition-all shadow-md active:scale-95",
+                            isProcessing ? "bg-blue-400 opacity-90 cursor-wait" : "bg-blue-600 hover:bg-blue-700"
+                        )} 
+                        onClick={() => handleAction('desembarcado')}
+                    >
+                        {isProcessing ? (
+                            <>
+                                <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                REGISTRANDO...
+                            </>
+                        ) : (
+                            <>
+                                <CheckCircle className="mr-2 h-5 w-5" />
+                                DESEMBARCOU
+                            </>
+                        )}
+                    </Button>
                 )}
-                <Button variant="destructive" className="h-14 font-black text-xs" onClick={() => onStatusChange(student.id, isGoing ? 'ausente_ida' : 'ausente_volta')}><XCircle className="mr-2" /> AUSENTE</Button>
+                <Button 
+                    disabled={isProcessing}
+                    variant="destructive" 
+                    className="h-14 font-black text-xs transition-all shadow-md active:scale-95" 
+                    onClick={() => handleAction(isGoing ? 'ausente_ida' : 'ausente_volta')}
+                >
+                    <XCircle className="mr-2 h-5 w-5" /> AUSENTE
+                </Button>
             </div>
             
             {hasMedicalAlert && (
