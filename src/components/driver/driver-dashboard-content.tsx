@@ -141,16 +141,24 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
 
   useEffect(() => {
     setIsMounted(true);
-    const userId = typeof window !== 'undefined' ? sessionStorage.getItem('mockUserId') : null;
+    const userId = typeof window !== 'undefined' 
+      ? (sessionStorage.getItem('mockUserId') || localStorage.getItem('mockUserId')) 
+      : null;
     setMockUserId(userId || "user-motorista-4"); 
     
-    const savedRouteId = typeof window !== 'undefined' ? sessionStorage.getItem('activeRouteId') : null;
+    const savedRouteId = typeof window !== 'undefined' 
+      ? (sessionStorage.getItem('activeRouteId') || localStorage.getItem('activeRouteId')) 
+      : null;
     if (savedRouteId) setActiveRouteId(savedRouteId);
     
-    const savedShift = typeof window !== 'undefined' ? sessionStorage.getItem('activeShift') as Shift : null;
+    const savedShift = typeof window !== 'undefined' 
+      ? ((sessionStorage.getItem('activeShift') || localStorage.getItem('activeShift')) as Shift) 
+      : null;
     if (savedShift) setSelectedShift(savedShift);
     
-    const savedDir = typeof window !== 'undefined' ? sessionStorage.getItem('activeDirection') as 'ida' | 'volta' : null;
+    const savedDir = typeof window !== 'undefined' 
+      ? ((sessionStorage.getItem('activeDirection') || localStorage.getItem('activeDirection')) as 'ida' | 'volta') 
+      : null;
     if (savedDir) setSelectedDirection(savedDir);
   }, []);
 
@@ -189,6 +197,13 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
       router.replace('/driver/active');
     }
   }, [mode, isTripActive, router]);
+
+  // Se estiver na tela de viagem ativa mas a rota encerrou/resetou, redireciona para a Central de Operações
+  useEffect(() => {
+    if (mode === 'active' && isMounted && !isTripActive && !activeRouteId) {
+      router.replace('/driver/route-plan');
+    }
+  }, [mode, isMounted, isTripActive, activeRouteId, router]);
 
   const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
   const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
@@ -347,50 +362,65 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
    }, [activeStop, allStudents, selectedDirection, selectedShift, activeStudentIds]);
 
   const handleEndRoute = useCallback(() => {
+    try {
       // 1. Atualizar status no banco de dados (funciona em Mock E em Firestore)
       if (route?.id) {
-          (updateDoc as any)('routes', route.id, { 
-              journeyStatus: 'pendente',
-              completedAt: new Date().toISOString()
-          });
+        (updateDoc as any)('routes', route.id, { 
+          journeyStatus: 'pendente',
+          completedAt: new Date().toISOString()
+        });
       }
       if (driverId) {
-          (updateDoc as any)('drivers', driverId, { status: 'inativo' });
+        (updateDoc as any)('drivers', driverId, { status: 'inativo' });
       }
       
       // 2. Resetar status de alunos para novo ciclo
       if (activeStudentIds && Array.isArray(activeStudentIds)) {
-          activeStudentIds.forEach((id: string) => {
-              const student = studentsMap.get(id);
-              if (student && !student.status?.startsWith('ausente')) {
-                  (updateDoc as any)('students', id, { status: 'aguardando' });
-              }
-          });
+        activeStudentIds.forEach((id: string) => {
+          if (!id || typeof id !== 'string') return;
+          const student = studentsMap.get(id);
+          if (student && !student.status?.startsWith('ausente')) {
+            (updateDoc as any)('students', id, { status: 'aguardando' });
+          }
+        });
       }
 
       // 3. Resetar cenário mock se disponível
       if (forceScenario) {
-          forceScenario('motorista_inicio');
+        forceScenario('motorista_inicio');
       }
       
       // 4. Limpar sessões locais e desativar tela de viagem
       setActiveRouteId(null);
       setLastActionFeedback(null);
       if (typeof window !== 'undefined') {
-          sessionStorage.removeItem('activeRouteId');
-          sessionStorage.removeItem('activeShift');
-          sessionStorage.removeItem('activeDirection');
+        sessionStorage.removeItem('activeRouteId');
+        sessionStorage.removeItem('activeShift');
+        sessionStorage.removeItem('activeDirection');
+        localStorage.removeItem('activeRouteId');
+        localStorage.removeItem('activeShift');
+        localStorage.removeItem('activeDirection');
       }
 
       toast({
-          title: "Operação Finalizada",
-          description: "O itinerário foi concluído e o sistema está pronto para uma nova viagem."
+        title: "Operação Finalizada",
+        description: "O itinerário foi concluído e o sistema está pronto para uma nova viagem."
       });
-
-      if (mode === 'active') {
-          router.push('/driver/route-plan');
+    } catch (err) {
+      console.error("[Guardian Driver] Erro ao finalizar rota:", err);
+    } finally {
+      // GARANTIA ABSOLUTA DE NAVEGAÇÃO:
+      // Redireciona o motorista de volta para a Central de Operações (/driver/route-plan)
+      router.replace('/driver/route-plan');
+      if (typeof window !== 'undefined') {
+        setTimeout(() => {
+          if (window.location.pathname.includes('/driver/active')) {
+            window.location.href = '/driver/route-plan';
+          }
+        }, 150);
       }
-  }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, forceScenario, toast, mode, router]);
+    }
+  }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, forceScenario, toast, router]);
 
   const performRouteOptimization = useCallback(async (currentRoute: Route | null, currentStops: Stop[], isManualStart: boolean = false) => {
     if (!currentRoute || !allStudents || !schools) return;
@@ -528,10 +558,13 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
         actualMonitorId: substituteMonitorId === 'default' ? route.monitorId : substituteMonitorId
     });
 
-    // 4. Salvar no sessionStorage para persistência em refresh
+    // 4. Salvar no sessionStorage e localStorage para persistência em refresh
     sessionStorage.setItem('activeRouteId', route.id);
     sessionStorage.setItem('activeShift', selectedShift);
     sessionStorage.setItem('activeDirection', selectedDirection);
+    localStorage.setItem('activeRouteId', route.id);
+    localStorage.setItem('activeShift', selectedShift);
+    localStorage.setItem('activeDirection', selectedDirection);
     
     // 5. Otimizar a rota (isso vai gerar a polyline e atualizar o itinerário)
     // Passamos orderedStops atualizado (que o React re-calculará no próximo tick)

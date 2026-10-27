@@ -108,6 +108,9 @@ export function LoginForm() {
           sessionStorage.removeItem('activeRouteId');
           sessionStorage.removeItem('activeShift');
           sessionStorage.removeItem('activeDirection');
+          localStorage.removeItem('activeRouteId');
+          localStorage.removeItem('activeShift');
+          localStorage.removeItem('activeDirection');
           router.push("/driver/route-plan");
           break;
         case "pai":
@@ -128,9 +131,13 @@ export function LoginForm() {
     
     // 2. Setar o usuário e LIMPAR MEMÓRIA TEMPORÁRIA
     sessionStorage.setItem('mockUserId', userId);
+    localStorage.setItem('mockUserId', userId);
     sessionStorage.removeItem('activeRouteId');
     sessionStorage.removeItem('activeShift');
     sessionStorage.removeItem('activeDirection');
+    localStorage.removeItem('activeRouteId');
+    localStorage.removeItem('activeShift');
+    localStorage.removeItem('activeDirection');
     
     toast({
         title: "Acesso Rápido Ativado",

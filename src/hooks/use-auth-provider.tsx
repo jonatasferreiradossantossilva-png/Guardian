@@ -59,6 +59,7 @@ export function useAuthProvider() {
             const userData = userDocSnap.data();
             fetchedProfile = userData.profile;
             sessionStorage.setItem('mockUserId', firebaseUser.uid);
+            localStorage.setItem('mockUserId', firebaseUser.uid);
             
           } else {
             // Sign in anonymously first to get query permissions for CPF lookup
@@ -92,6 +93,7 @@ export function useAuthProvider() {
             const firebaseUser = userCredential.user;
 
             sessionStorage.setItem('mockUserId', systemUserId);
+            localStorage.setItem('mockUserId', systemUserId);
           }
 
           setIsLoading(false);
@@ -135,6 +137,7 @@ export function useAuthProvider() {
         }
 
         sessionStorage.setItem('mockUserId', user.id);
+        localStorage.setItem('mockUserId', user.id);
         setIsLoading(false);
         return { success: true, user };
       }
@@ -188,6 +191,7 @@ export function useAuthProvider() {
           await setDoc(roleRef, { active: true });
 
           sessionStorage.setItem('mockUserId', firebaseUser.uid);
+          localStorage.setItem('mockUserId', firebaseUser.uid);
           setIsLoading(false);
           return { success: true, userId: firebaseUser.uid };
         } catch (error: any) {
@@ -220,6 +224,7 @@ export function useAuthProvider() {
         });
 
         sessionStorage.setItem('mockUserId', userId);
+        localStorage.setItem('mockUserId', userId);
         setIsLoading(false);
         return { success: true, userId };
       }
@@ -229,6 +234,7 @@ export function useAuthProvider() {
 
   const logout = useCallback(async () => {
     sessionStorage.removeItem('mockUserId');
+    localStorage.removeItem('mockUserId');
     if (isFirestoreMode() && auth) {
       await firebaseSignOut(auth);
     }

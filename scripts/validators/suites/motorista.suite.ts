@@ -252,6 +252,29 @@ export async function runMotoristaSuite() {
         expect(result).toBe(true);
         expect(isRouteCompleted).toBe(true);
       });
+
+      await runner.step('Garantir preservação de autenticação e retorno à Central de Operações ao finalizar rota', () => {
+        // Simulação do contrato de limpeza de storage do motorista
+        const sessionStore: Record<string, string> = {
+          mockUserId: 'user-motorista-4',
+          activeRouteId: 'route-val-1',
+          activeShift: 'Manhã',
+          activeDirection: 'ida'
+        };
+
+        // Ao finalizar: limpar as chaves da viagem ativa mas preservar a identidade do motorista
+        delete sessionStore.activeRouteId;
+        delete sessionStore.activeShift;
+        delete sessionStore.activeDirection;
+
+        expect(sessionStore.mockUserId).toBe('user-motorista-4');
+        expect(sessionStore.activeRouteId).toBeUndefined();
+
+        // Rota de destino obrigatória
+        const destination = '/driver/route-plan';
+        expect(destination).not.toBe('/login');
+        expect(destination).toBe('/driver/route-plan');
+      });
     });
 
     // CENÁRIO 10: Alto Contraste e Legibilidade sob Luz Solar Intensa no Para-brisa

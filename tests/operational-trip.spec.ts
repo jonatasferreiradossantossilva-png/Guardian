@@ -175,8 +175,9 @@ test.describe('Guardian Operational Trip - High Fidelity (3 Contexts)', () => {
         
         await driverPage.click('text=FINALIZAR OPERAÇÃO');
         
-        // Verificar se voltou para a tela inicial
-        await expect(driverPage.getByText(/Inicie sua jornada/i).or(driverPage.getByRole('heading', { name: /Guardian/i }))).toBeVisible({ timeout: 10000 });
+        // Verificar se voltou estritamente para a tela inicial do motorista e NÃO para o login
+        await expect(driverPage).not.toHaveURL(/\/login/);
+        await expect(driverPage.getByText(/Central de Operações/i).or(driverPage.getByText(/INICIAR OPERAÇÃO/i))).toBeVisible({ timeout: 10000 });
 
         // Cleanup
         await context.close();
