@@ -63,6 +63,9 @@ async function seedFirestore() {
     'H5rOBPWf4PgGFrsUfhu4kvky26f1', // JONATAS
     '4NImhtWHiMYVVNh7kTmrPMocZpj2', // JONATAS
     'GCSkcWPHUBfp0XW72fTQQhRCPQ73', // JONATAS
+    'XiRNvA2rXhRWwaCbxWiCJ3eJ1Wl1', // juliano.castro@rotasegura.com (Motorista)
+    'h9KRQeQ3CHZZTKjDFIdL2Lr94qV2', // fernanda.lima@rotasegura.com (Monitora)
+    'Yne2WUrT8ogPtSN8KQEha8ZFitN2', // ana.souza@email.com (Responsável)
     'user-admin-1',
     'val-gestor',
     'val-autonomo',

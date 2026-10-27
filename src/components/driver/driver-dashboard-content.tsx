@@ -190,15 +190,6 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
     }
   }, [mode, isTripActive, router]);
 
-  // Se estiver na tela ativa e não houver viagem em andamento, retorna ao setup
-  useEffect(() => {
-    if (mode === 'active' && isMounted && !areDriversLoading && !isRouteLoading) {
-      const savedRoute = typeof window !== 'undefined' ? sessionStorage.getItem('activeRouteId') : null;
-      if (!savedRoute && !isTripActive) {
-        router.replace('/driver/route-plan');
-      }
-    }
-  }, [mode, isMounted, areDriversLoading, isRouteLoading, isTripActive, router]);
   const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
   const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
   const { data: routeManifests } = useDataCollection<RouteManifest>('route_manifests');
@@ -487,10 +478,8 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
     } catch (e) {
         console.error("Erro na otimização automatizada:", e);
     } finally {
-        if (!isManualStart) {
-            setOptimizationStep('idle');
-            setIsOptimizing(false);
-        }
+        setOptimizationStep('idle');
+        setIsOptimizing(false);
     }
   }, [allStudents, schools, selectedDirection, driverLocation, studentsMap, schoolsMap, updateDoc, toast, activeManifest]);
 
