@@ -1047,7 +1047,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                   );
                                 })()}
 
-                                {!activeStop ? (
+                                {progressData.total > 0 && !activeStop ? (
                                     <div className="w-full flex-1 flex items-center justify-center animate-in zoom-in-95 duration-500 py-10">
                                         <Card className="text-center p-8 bg-green-500/10 border-green-500/30 border-2 shadow-2xl w-full">
                                             <div className="mx-auto w-24 h-24 bg-green-500/20 rounded-full flex items-center justify-center mb-6">
@@ -1058,7 +1058,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                             <Button variant="default" className="w-full h-14 text-sm font-black shadow-xl bg-green-600 hover:bg-green-700 text-white" onClick={handleEndRoute}>FINALIZAR OPERAÇÃO</Button>
                                         </Card>
                                     </div>
-                                ) : activeStop.type === 'student' ? (
+                                ) : activeStop?.type === 'student' ? (
                                     <div className="space-y-4 w-full animate-in slide-in-from-bottom-4 duration-300" key={activeStop.id}>
                                         {lastActionFeedback && (
                                             <div className="bg-emerald-500/15 border-2 border-emerald-500/30 rounded-xl p-3 flex items-center justify-between text-emerald-800 dark:text-emerald-300 animate-in fade-in slide-in-from-top-2 duration-300 shadow-sm">
@@ -1140,7 +1140,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                         )}
 
                                     </div>
-                                ) : (
+                                ) : activeStop?.type === 'school' ? (
                                     <div className="animate-in slide-in-from-bottom-4 duration-300" key={activeStop.id}>
                                         <NextStopSchoolCard 
                                             school={activeStop.data as SchoolData} 
@@ -1150,6 +1150,23 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                             onStatusChange={handleStatusChange}
                                             onEndEarly={handleEndRoute}
                                         />
+                                    </div>
+                                ) : (
+                                    <div className="w-full flex-1 flex flex-col items-center justify-center py-12 px-4 text-center space-y-4">
+                                        <div className="w-16 h-16 bg-muted/50 rounded-full flex items-center justify-center border-2 border-primary/20">
+                                            <Bus className="h-8 w-8 text-primary/60" />
+                                        </div>
+                                        <div className="space-y-1">
+                                            <h3 className="text-sm font-black uppercase text-foreground">Nenhuma Parada Ativa</h3>
+                                            <p className="text-xs text-muted-foreground font-medium">Inicie uma operação na Central para acompanhar as paradas em tempo real.</p>
+                                        </div>
+                                        <Button 
+                                            variant="outline" 
+                                            className="font-bold text-xs border-primary/30 hover:bg-primary/10"
+                                            onClick={handleEndRoute}
+                                        >
+                                            Ir para a Central de Operações
+                                        </Button>
                                     </div>
                                 )}
                             </div>

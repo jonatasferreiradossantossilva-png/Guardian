@@ -81,3 +81,27 @@ test('Jornada do Motorista: Login -> Iniciar Operação -> Finalizar Operação 
 
     console.log('--- TESTE CONCLUÍDO COM SUCESSO ---');
 });
+
+test('Acesso direto /driver/active sem viagem ativa: deve redirecionar e NUNCA exibir "Rota Concluída" falsa', async ({ page }) => {
+    await page.addInitScript(() => {
+        localStorage.clear();
+        sessionStorage.clear();
+        localStorage.setItem('hide-ios-prompt', 'true');
+        sessionStorage.setItem('hide-ios-prompt', 'true');
+    });
+
+    console.log('--- 1. ACESSANDO /driver/active DIRETAMENTE EM SESSÃO LIMPA (ANÔNIMA) ---');
+    await page.goto('/driver/active');
+
+    console.log('--- 2. VERIFICANDO REDIRECIONAMENTO IMEDIATO ---');
+    await expect(page).toHaveURL(/\/driver\/route-plan/, { timeout: 15000 });
+
+    console.log('--- 3. ASSEGURANDO QUE "ROTA CONCLUÍDA COM 0 PARADAS" NUNCA É EXIBIDA ---');
+    const completedTitle = page.getByText(/Rota Concluída!/i);
+    const zeroStopsDesc = page.getByText(/Todas as 0 paradas/i);
+    await expect(completedTitle).not.toBeVisible();
+    await expect(zeroStopsDesc).not.toBeVisible();
+
+    console.log('--- 4. ASSEGURANDO QUE A CENTRAL DE OPERAÇÕES É EXIBIDA CORRETAMENTE ---');
+    await expect(page.getByText(/Central de Operações/i)).toBeVisible({ timeout: 10000 });
+});
