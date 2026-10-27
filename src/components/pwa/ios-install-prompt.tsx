@@ -49,7 +49,10 @@ export function IosInstallPrompt() {
 
             <CardContent className="p-5">
               <button 
-                onClick={() => setShowPrompt(false)}
+                onClick={() => {
+                  setShowPrompt(false);
+                  localStorage.setItem('hide-ios-prompt', 'true');
+                }}
                 className="absolute top-2 right-2 p-1 text-muted-foreground hover:text-foreground transition-colors"
               >
                 <X className="h-4 w-4" />
@@ -87,7 +90,10 @@ export function IosInstallPrompt() {
               <Button 
                 variant="ghost" 
                 className="w-full mt-4 h-9 text-xs font-bold text-primary"
-                onClick={() => setShowPrompt(false)}
+                onClick={() => {
+                  setShowPrompt(false);
+                  localStorage.setItem('hide-ios-prompt', 'true');
+                }}
               >
                 Entendi, farei isso
               </Button>
