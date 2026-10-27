@@ -135,6 +135,7 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
   const [showExtraAlert, setShowExtraAlert] = useState(true);
   const [showAnnouncement, setShowAnnouncement] = useState(true);
   const [lastActionFeedback, setLastActionFeedback] = useState<{ studentName: string; action: string } | null>(null);
+  const [isEndingRoute, setIsEndingRoute] = useState(false);
   const isOnline = useOnlineStatus();
   const [isMounted, setIsMounted] = useState(false);
   const lastNotifiedStopId = useRef<string | null>(null);
@@ -190,20 +191,6 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
   }, [driverProfile?.status, route?.journeyStatus, activeRouteId]);
 
   const showActiveTrip = mode === 'active' ? true : mode === 'setup' ? false : isTripActive;
-
-  // Se estiver no setup e a viagem já estiver ativa, redireciona para a tela de viagem ativa
-  useEffect(() => {
-    if (mode === 'setup' && isTripActive) {
-      router.replace('/driver/active');
-    }
-  }, [mode, isTripActive, router]);
-
-  // Se estiver na tela de viagem ativa mas a rota encerrou/resetou, redireciona para a Central de Operações
-  useEffect(() => {
-    if (mode === 'active' && isMounted && !isTripActive && !activeRouteId) {
-      router.replace('/driver/route-plan');
-    }
-  }, [mode, isMounted, isTripActive, activeRouteId, router]);
 
   const { data: allStudents, isLoading: areStudentsLoading } = useDataCollection('students') as { data: Student[] | undefined, isLoading: boolean };
   const { data: schools, isLoading: areSchoolsLoading } = useDataCollection('schools') as { data: SchoolData[] | undefined, isLoading: boolean };
@@ -362,6 +349,7 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
    }, [activeStop, allStudents, selectedDirection, selectedShift, activeStudentIds]);
 
   const handleEndRoute = useCallback(async () => {
+    setIsEndingRoute(true);
     try {
       // 1. Atualizar status no banco de dados (funciona em Mock E em Firestore)
       const promises: Promise<any>[] = [];
@@ -426,6 +414,7 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
     } catch (err) {
       console.error("[Guardian Driver] Erro ao finalizar rota:", err);
     } finally {
+      setIsEndingRoute(false);
       // Redireciona de volta para a Central de Operações via SPA nativo
       // (preserva sessão de autenticação sem recarregar a página e sem pedir senha)
       router.replace('/driver/route-plan');
@@ -913,6 +902,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                                     if (route.activeShift) setSelectedShift(route.activeShift);
                                                     if (route.activeDirection) setSelectedDirection(route.activeDirection);
                                                     toast({ title: "Retomando Viagem", description: "Continuando a rota em andamento." });
+                                                    router.push('/driver/active');
                                                 }}
                                             >
                                                 <Play className="h-4 w-4 mr-1 fill-current" /> Retomar Viagem
@@ -981,8 +971,8 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                         <Button variant={driverProfile?.status === 'pausa' ? 'default' : 'outline'} size="icon" onClick={handlePauseToggle} className="h-10 w-10 bg-background">
                             {driverProfile?.status === 'pausa' ? <Play className="fill-current text-white"/> : <Pause className="text-primary" />}
                         </Button>
-                        <Button variant="outline" size="icon" title="Reiniciar/Encerrar Rota" onClick={handleEndRoute} className="h-10 w-10 bg-background text-muted-foreground hover:text-destructive">
-                            <RotateCcw className="h-4 w-4" />
+                        <Button variant="outline" size="icon" title="Reiniciar/Encerrar Rota" disabled={isEndingRoute} onClick={handleEndRoute} className="h-10 w-10 bg-background text-muted-foreground hover:text-destructive">
+                            <RotateCcw className={cn("h-4 w-4", isEndingRoute && "animate-spin")} />
                         </Button>
                         <NotificationBell />
                         <Button variant="outline" size="icon" asChild className="h-10 w-10 bg-background"><Link href="/driver/messages"><MessageSquare className="text-primary" /></Link></Button>
@@ -1065,7 +1055,21 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                             </div>
                                             <CardTitle className="text-3xl font-black text-green-600 uppercase tracking-tighter mb-2">Rota Concluída!</CardTitle>
                                             <CardDescription className="text-sm font-bold text-green-700/80 mb-8">Todas as {progressData.total} paradas foram finalizadas com sucesso.</CardDescription>
-                                            <Button variant="default" className="w-full h-14 text-sm font-black shadow-xl bg-green-600 hover:bg-green-700 text-white" onClick={handleEndRoute}>FINALIZAR OPERAÇÃO</Button>
+                                            <Button 
+                                                variant="default" 
+                                                disabled={isEndingRoute}
+                                                className="w-full h-14 text-sm font-black shadow-xl bg-green-600 hover:bg-green-700 text-white" 
+                                                onClick={handleEndRoute}
+                                            >
+                                                {isEndingRoute ? (
+                                                    <>
+                                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                        FINALIZANDO OPERAÇÃO...
+                                                    </>
+                                                ) : (
+                                                    "FINALIZAR OPERAÇÃO"
+                                                )}
+                                            </Button>
                                         </Card>
                                     </div>
                                 ) : activeStop?.type === 'student' ? (
