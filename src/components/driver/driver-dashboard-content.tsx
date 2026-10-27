@@ -361,17 +361,27 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
       });
    }, [activeStop, allStudents, selectedDirection, selectedShift, activeStudentIds]);
 
-  const handleEndRoute = useCallback(() => {
+  const handleEndRoute = useCallback(async () => {
     try {
       // 1. Atualizar status no banco de dados (funciona em Mock E em Firestore)
+      const promises: Promise<any>[] = [];
+
       if (route?.id) {
-        (updateDoc as any)('routes', route.id, { 
-          journeyStatus: 'pendente',
-          completedAt: new Date().toISOString()
-        });
+        promises.push(
+          Promise.resolve(
+            (updateDoc as any)('routes', route.id, { 
+              journeyStatus: 'pendente',
+              completedAt: new Date().toISOString()
+            })
+          )
+        );
       }
       if (driverId) {
-        (updateDoc as any)('drivers', driverId, { status: 'inativo' });
+        promises.push(
+          Promise.resolve(
+            (updateDoc as any)('drivers', driverId, { status: 'inativo' })
+          )
+        );
       }
       
       // 2. Resetar status de alunos para novo ciclo
@@ -380,10 +390,17 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
           if (!id || typeof id !== 'string') return;
           const student = studentsMap.get(id);
           if (student && !student.status?.startsWith('ausente')) {
-            (updateDoc as any)('students', id, { status: 'aguardando' });
+            promises.push(
+              Promise.resolve(
+                (updateDoc as any)('students', id, { status: 'aguardando' })
+              )
+            );
           }
         });
       }
+
+      // Aguarda confirmação das gravações no banco de dados antes de transicionar
+      await Promise.allSettled(promises);
 
       // 3. Resetar cenário mock se disponível
       if (forceScenario) {
@@ -409,16 +426,9 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
     } catch (err) {
       console.error("[Guardian Driver] Erro ao finalizar rota:", err);
     } finally {
-      // GARANTIA ABSOLUTA DE NAVEGAÇÃO:
-      // Redireciona o motorista de volta para a Central de Operações (/driver/route-plan)
+      // Redireciona de volta para a Central de Operações via SPA nativo
+      // (preserva sessão de autenticação sem recarregar a página e sem pedir senha)
       router.replace('/driver/route-plan');
-      if (typeof window !== 'undefined') {
-        setTimeout(() => {
-          if (window.location.pathname.includes('/driver/active')) {
-            window.location.href = '/driver/route-plan';
-          }
-        }, 150);
-      }
     }
   }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, forceScenario, toast, router]);
 

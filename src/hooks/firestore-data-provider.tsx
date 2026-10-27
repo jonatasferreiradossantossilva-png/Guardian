@@ -280,7 +280,7 @@ export function FirestoreDataProvider({ children }: { children: React.ReactNode 
   );
 
   const updateDocFn = useCallback(
-    (collectionName: keyof MockDB, docId: string, data: any): void => {
+    async (collectionName: keyof MockDB, docId: string, data: any): Promise<void> => {
       // Atualização otimista imediata para reatividade instantânea na UI
       setDb((prevDb) => {
         const collection = prevDb[collectionName];
@@ -297,16 +297,16 @@ export function FirestoreDataProvider({ children }: { children: React.ReactNode 
 
       const collName = getFirestoreCollectionName(collectionName);
 
-      if (collectionName === 'locations') {
-        const docRef = doc(firestore, 'locations', docId);
-        firestoreSetDoc(docRef, data, { merge: true }).catch((err) => {
-          console.error(`[Guardian Firestore] updateDoc error (locations/${docId}):`, err);
-        });
-      } else {
-        const docRef = doc(firestore, collName, docId);
-        firestoreUpdateDoc(docRef, data).catch((err) => {
-          console.error(`[Guardian Firestore] updateDoc error (${collName}/${docId}):`, err);
-        });
+      try {
+        if (collectionName === 'locations') {
+          const docRef = doc(firestore, 'locations', docId);
+          await firestoreSetDoc(docRef, data, { merge: true });
+        } else {
+          const docRef = doc(firestore, collName, docId);
+          await firestoreUpdateDoc(docRef, data);
+        }
+      } catch (err: any) {
+        console.error(`[Guardian Firestore] updateDoc error (${collName}/${docId}):`, err);
       }
     },
     []

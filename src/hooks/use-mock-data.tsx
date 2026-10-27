@@ -10,7 +10,7 @@ export interface MockDataContextType {
   getDoc: (collectionName: keyof MockDB, docId: string) => any;
   addDoc: (collectionName: keyof MockDB, data: any) => string;
   addDocsBatch: (collectionName: keyof MockDB, dataArray: any[]) => void;
-  updateDoc: (collectionName: keyof MockDB, docId: string, data: any) => void;
+  updateDoc: (collectionName: keyof MockDB, docId: string, data: any) => Promise<any> | void;
   clearCollection: (collectionName: keyof MockDB) => void;
   deleteDoc: (collectionName: keyof MockDB, docId: string) => void;
   getNestedDoc: (path: string) => any;
