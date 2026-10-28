@@ -48,6 +48,7 @@ import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useDataCollection, useData, useDataNestedDoc } from '@/hooks/use-data';
+import { useUser } from '@/firebase/provider';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { getSafeDateStr } from '@/lib/safe-render';
@@ -112,12 +113,13 @@ export interface DriverDashboardContentProps {
 
 export default function DriverDashboardContent({ mode }: DriverDashboardContentProps = {}) {
   const router = useRouter();
-  const { updateDoc, setIsSimulating, forceScenario, createNotification } = useData() as any;
+  const { updateDoc, setIsSimulating, createNotification } = useData() as any;
   const { data: allParents } = useDataCollection('parents');
+  const { user: authUser } = useUser();
   const { updateLocation: syncTelemetry } = useTelemetry();
   const { toast } = useToast();
   
-  const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
   const [activeRouteId, setActiveRouteId] = useState<string | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isScannerOpen, setIsScannerOpen] = useState(false);
@@ -142,10 +144,11 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
 
   useEffect(() => {
     setIsMounted(true);
-    const userId = typeof window !== 'undefined' 
+    const storedId = typeof window !== 'undefined' 
       ? (sessionStorage.getItem('mockUserId') || localStorage.getItem('mockUserId')) 
       : null;
-    setMockUserId(userId || "user-motorista-4"); 
+    const resolvedId = authUser?.uid || storedId || null;
+    if (resolvedId) setCurrentUserId(resolvedId);
     
     const savedRouteId = typeof window !== 'undefined' 
       ? (sessionStorage.getItem('activeRouteId') || localStorage.getItem('activeRouteId')) 
@@ -161,15 +164,28 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
       ? ((sessionStorage.getItem('activeDirection') || localStorage.getItem('activeDirection')) as 'ida' | 'volta') 
       : null;
     if (savedDir) setSelectedDirection(savedDir);
-  }, []);
+  }, [authUser?.uid]);
 
-  const driverFilter = useMemo(() => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined), [mockUserId]);
-  const { data: drivers, isLoading: areDriversLoading } = useDataCollection('drivers', driverFilter);
-  const driverProfile = useMemo(() => (drivers && drivers.length > 0 ? drivers[0] : null), [drivers]);
+  const driverFilter = useMemo(() => (currentUserId ? [{ field: 'userId', op: '==', value: currentUserId }] : undefined), [currentUserId]);
+  const { data: matchedDrivers, isLoading: areDriversLoading } = useDataCollection('drivers', driverFilter);
+  const { data: allDrivers } = useDataCollection('drivers');
+  const driverProfile = useMemo(() => {
+    if (matchedDrivers && matchedDrivers.length > 0) return matchedDrivers[0];
+    if (allDrivers && allDrivers.length > 0) return allDrivers[0];
+    return null;
+  }, [matchedDrivers, allDrivers]);
   const driverId = driverProfile?.id;
   const { data: driverLocation } = useDataNestedDoc(driverId ? `locations/${driverId}` : null);
 
-  const { data: routes, isLoading: isRouteLoading } = useDataCollection('routes', driverId ? [{ field: 'driverId', op: '==', value: driverId }] : []);
+  const { data: rawRoutes, isLoading: isRouteLoading } = useDataCollection('routes');
+  const routes = useMemo(() => {
+    if (!rawRoutes) return [];
+    if (driverId) {
+      const driverRoutes = rawRoutes.filter((r: any) => r.driverId === driverId);
+      if (driverRoutes.length > 0) return driverRoutes;
+    }
+    return rawRoutes;
+  }, [rawRoutes, driverId]);
   const route = useMemo(() => {
     if (activeRouteId && routes) {
       const found = routes.find(r => r.id === activeRouteId);
@@ -217,7 +233,6 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
     return route.baseStudentIds || route.studentIds || [];
   }, [route, activeManifest]);
   
-  const { data: allDrivers } = useDataCollection('drivers');
   const { data: monitors } = useDataCollection('users', [{ field: 'profile', op: '==', value: 'monitor' }]);
   const { data: announcements } = useDataCollection('announcements', [{ field: 'target', op: 'in', value: ['all', 'drivers'] }]);
   const latestAnnouncement = useMemo(() => {
@@ -389,13 +404,8 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
 
       // Aguarda confirmação das gravações no banco de dados antes de transicionar
       await Promise.allSettled(promises);
-
-      // 3. Resetar cenário mock se disponível
-      if (forceScenario) {
-        forceScenario('motorista_inicio');
-      }
       
-      // 4. Limpar sessões locais e desativar tela de viagem
+      // 3. Limpar sessões locais e desativar tela de viagem
       setActiveRouteId(null);
       setLastActionFeedback(null);
       if (typeof window !== 'undefined') {
@@ -419,7 +429,7 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
       // (preserva sessão de autenticação sem recarregar a página e sem pedir senha)
       router.replace('/driver/route-plan');
     }
-  }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, forceScenario, toast, router]);
+  }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, toast, router]);
 
   const performRouteOptimization = useCallback(async (currentRoute: Route | null, currentStops: Stop[], isManualStart: boolean = false) => {
     if (!currentRoute || !allStudents || !schools) return;
