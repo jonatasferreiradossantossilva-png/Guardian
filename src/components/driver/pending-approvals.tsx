@@ -111,7 +111,7 @@ export function PendingApprovals({ route }: PendingApprovalsProps) {
             const isWaitlist = index >= availableSlots;
             
             return (
-              <SafeRow key={`pending-student-${student.id}`} name={`PendingStudent-${student.id}`}>
+              <div key={`pending-student-${student.id}`} className="w-full">
                 <Card className={`overflow-hidden transition-all ${isWaitlist ? 'opacity-75 grayscale-[0.5] border-amber-200 bg-amber-50/30' : 'border-primary/20 shadow-md'}`}>
                 <div className={`h-1 w-full ${isWaitlist ? 'bg-amber-400' : 'bg-green-500'}`}></div>
                 <CardHeader className="p-4 pb-2">
@@ -164,7 +164,7 @@ export function PendingApprovals({ route }: PendingApprovalsProps) {
                   </div>
                 </CardContent>
               </Card>
-            </SafeRow>
+            </div>
           );
         })}
         </div>

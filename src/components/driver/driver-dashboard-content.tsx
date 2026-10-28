@@ -1085,73 +1085,73 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                                 </Badge>
                                             </div>
                                         )}
-                                        <SafeRow key={`active-stop-${activeStop.id}`} name="ActiveStopCard">
-                                            <NextStopCard 
-                                                student={activeStop.data as Student} 
-                                                isExtra={activeStop.isExtra}
-                                                stopNumber={progressData.current + 1}
-                                                totalStops={progressData.total}
-                                                onStatusChange={handleStatusChange} 
-                                                onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
-                                                direction={selectedDirection} 
-                                                onScanQrCode={() => setIsScannerOpen(true)} 
-                                                onEndEarly={handleEndRoute}
-                                            />
-                                        </SafeRow>
-                                        
-                                        {safeArray(boardedStops).length > 0 && (
-                                            <div className="space-y-2">
-                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 px-3 flex items-center gap-1.5">
-                                                    <CheckCircle className="h-3.5 w-3.5" />
-                                                    Alunos a Bordo ({boardedStops.length})
-                                                </h3>
-                                                {(safeArray(boardedStops) as Stop[]).map((stop) => (
-                                                    <SafeRow key={`boarded-${stop.id}`} name={`BoardedStop-${stop.id}`}>
-                                                        <div className="flex items-center gap-3 p-2.5 rounded-lg border-2 bg-green-500/5 border-green-500/20 shadow-sm">
-                                                            <Avatar className="h-8 w-8 border border-green-500/30">
-                                                                <AvatarImage src={(stop.data as any)?.photoUrl || undefined}/>
-                                                                <AvatarFallback className="text-xs bg-green-500/20 text-green-700 font-black">{safeInitials(stop.data?.name)}</AvatarFallback>
-                                                            </Avatar>
-                                                            <div className="flex-1 min-w-0">
-                                                                <p className="text-xs font-black truncate uppercase text-foreground">{safeString(stop.data?.name, 'Aluno')}</p>
-                                                                <p className="text-[9px] text-muted-foreground uppercase font-bold">{safeString(formatStudentClassInfo(stop.data as Student))}</p>
-                                                            </div>
-                                                            <Badge variant="outline" className="text-[9px] font-black uppercase text-green-600 border-green-500/40 bg-green-500/10">
-                                                                A Bordo
-                                                            </Badge>
-                                                        </div>
-                                                    </SafeRow>
-                                                ))}
-                                            </div>
-                                        )}
-                                        {safeArray(upcomingStops).length > 0 && (
-                                            <div className="space-y-2">
-                                                <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-3">Próximas Paradas</h3>
-                                                {(safeArray(upcomingStops) as Stop[]).filter(stop => !!stop && !!stop.id).map((stop) => (
-                                                    <SafeRow key={`upcoming-${stop.type}-${stop.id}`} name={`UpcomingStop-${stop.id}`}>
-                                                        <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
-                                                            {stop.type === 'student' ? (
-                                                                <div className="flex-1 min-w-0 flex items-center gap-3">
-                                                                    <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as any)?.photoUrl || undefined}/><AvatarFallback>{safeInitials(stop.data?.name)}</AvatarFallback></Avatar>
-                                                                    <div className="min-w-0">
-                                                                        <p className="text-xs font-black truncate uppercase">{safeString(stop.data?.name, 'Aluno')}</p>
-                                                                        <p className="text-[9px] text-muted-foreground uppercase font-bold">{safeString(formatStudentClassInfo(stop.data as Student))}</p>
-                                                                    </div>
-                                                                </div>
-                                                            ) : (
-                                                                <div className="flex-1 min-w-0 flex items-center gap-3">
-                                                                    <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>
-                                                                    <span className="text-xs font-black truncate uppercase">{safeString(stop.data?.name, 'Escola')}</span>
-                                                                </div>
-                                                            )}
-                                                            <Badge variant="secondary" className={cn("text-[9px] font-black uppercase", stop.type === 'student' && stop.isExtra && "bg-orange-500 text-white hover:bg-orange-600")}>
-                                                              {stop.type === 'student' ? (stop.isExtra ? 'Encaixe' : 'Aluno') : 'Escola'}
-                                                            </Badge>
-                                                        </div>
-                                                    </SafeRow>
-                                                ))}
-                                            </div>
-                                        )}
+                                         <div key={`active-stop-${activeStop.id}`} className="w-full">
+                                             <NextStopCard 
+                                                 student={activeStop.data as Student} 
+                                                 isExtra={activeStop.isExtra}
+                                                 stopNumber={progressData.current + 1}
+                                                 totalStops={progressData.total}
+                                                 onStatusChange={handleStatusChange} 
+                                                 onOpenAuthorizedModal={(s) => { setSelectedStudentForModal(s); setIsModalOpen(true); }} 
+                                                 direction={selectedDirection} 
+                                                 onScanQrCode={() => setIsScannerOpen(true)} 
+                                                 onEndEarly={handleEndRoute}
+                                             />
+                                         </div>
+                                         
+                                         {safeArray(boardedStops).length > 0 && (
+                                             <div className="space-y-2">
+                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-green-600 px-3 flex items-center gap-1.5">
+                                                     <CheckCircle className="h-3.5 w-3.5" />
+                                                     Alunos a Bordo ({boardedStops.length})
+                                                 </h3>
+                                                 {(safeArray(boardedStops) as Stop[]).map((stop) => (
+                                                     <div key={`boarded-${stop.id}`} className="w-full">
+                                                         <div className="flex items-center gap-3 p-2.5 rounded-lg border-2 bg-green-500/5 border-green-500/20 shadow-sm">
+                                                             <Avatar className="h-8 w-8 border border-green-500/30">
+                                                                 <AvatarImage src={(stop.data as any)?.photoUrl || undefined}/>
+                                                                 <AvatarFallback className="text-xs bg-green-500/20 text-green-700 font-black">{safeInitials(stop.data?.name)}</AvatarFallback>
+                                                             </Avatar>
+                                                             <div className="flex-1 min-w-0">
+                                                                 <p className="text-xs font-black truncate uppercase text-foreground">{safeString(stop.data?.name, 'Aluno')}</p>
+                                                                 <p className="text-[9px] text-muted-foreground uppercase font-bold">{safeString(formatStudentClassInfo(stop.data as Student))}</p>
+                                                             </div>
+                                                             <Badge variant="outline" className="text-[9px] font-black uppercase text-green-600 border-green-500/40 bg-green-500/10">
+                                                                 A Bordo
+                                                             </Badge>
+                                                         </div>
+                                                     </div>
+                                                 ))}
+                                             </div>
+                                         )}
+                                         {safeArray(upcomingStops).length > 0 && (
+                                             <div className="space-y-2">
+                                                 <h3 className="text-[10px] font-black uppercase tracking-[0.2em] text-primary/70 px-3">Próximas Paradas</h3>
+                                                 {(safeArray(upcomingStops) as Stop[]).filter(stop => !!stop && !!stop.id).map((stop) => (
+                                                     <div key={`upcoming-${stop.type}-${stop.id}`} className="w-full">
+                                                         <div className="flex items-center gap-3 p-3 rounded-lg border-2 bg-card shadow-sm">
+                                                             {stop.type === 'student' ? (
+                                                                 <div className="flex-1 min-w-0 flex items-center gap-3">
+                                                                     <Avatar className="h-8 w-8"><AvatarImage src={(stop.data as any)?.photoUrl || undefined}/><AvatarFallback>{safeInitials(stop.data?.name)}</AvatarFallback></Avatar>
+                                                                     <div className="min-w-0">
+                                                                         <p className="text-xs font-black truncate uppercase">{safeString(stop.data?.name, 'Aluno')}</p>
+                                                                         <p className="text-[9px] text-muted-foreground uppercase font-bold">{safeString(formatStudentClassInfo(stop.data as Student))}</p>
+                                                                     </div>
+                                                                 </div>
+                                                             ) : (
+                                                                 <div className="flex-1 min-w-0 flex items-center gap-3">
+                                                                     <div className="h-8 w-8 rounded-full bg-destructive text-white flex items-center justify-center"><School className="h-4 w-4" /></div>
+                                                                     <span className="text-xs font-black truncate uppercase">{safeString(stop.data?.name, 'Escola')}</span>
+                                                                 </div>
+                                                             )}
+                                                             <Badge variant="secondary" className={cn("text-[9px] font-black uppercase", stop.type === 'student' && stop.isExtra && "bg-orange-500 text-white hover:bg-orange-600")}>
+                                                               {stop.type === 'student' ? (stop.isExtra ? 'Encaixe' : 'Aluno') : 'Escola'}
+                                                             </Badge>
+                                                         </div>
+                                                     </div>
+                                                 ))}
+                                             </div>
+                                         )}
 
                                     </div>
                                 ) : activeStop?.type === 'school' ? (
@@ -1406,7 +1406,7 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                     {(safeArray(students) as Student[]).filter(s => !!s && !!s.id).map((s: Student) => {
                         const hasAlert = (safeArray(s.medicalConditions).length > 0) || s.medicalNote;
                         return (
-                            <SafeRow key={`school-list-student-${s.id}`} name={`SchoolMember-${s.id}`}>
+                            <div key={`school-list-student-${s.id}`} className="w-full">
                                 <div className={cn("flex items-center gap-2 p-2 rounded-xl border-2 bg-background shadow-sm", hasAlert && "border-destructive/30")}>
                                     <Avatar className="h-10 w-10 shrink-0"><AvatarImage src={s.photoUrl || undefined} /><AvatarFallback>{safeInitials(s.name)}</AvatarFallback></Avatar>
                                     <div className="flex-1 min-w-0">
@@ -1425,7 +1425,7 @@ function NextStopSchoolCard({ school, direction, onAction, students, onStatusCha
                                         <Button size="icon" variant="outline" className="h-8 w-8 text-destructive" onClick={() => onStatusChange(s.id, isIda ? 'ausente_ida' : 'ausente_volta')}><XCircle className="h-4 w-4" /></Button>
                                     </div>
                                 </div>
-                            </SafeRow>
+                            </div>
                         )
                     })}
                 </div>

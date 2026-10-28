@@ -68,11 +68,18 @@ import { SafeComponent } from './safe-component';
  * causado por <tr> órfãs em grids que não são tabelas.
  */
 export function SafeRow({ children, name, className }: { children: React.ReactNode, name?: string, className?: string }) {
+    if (className) {
+        return (
+            <SafeComponent name={name}>
+                <div className={className}>
+                    {children}
+                </div>
+            </SafeComponent>
+        );
+    }
     return (
         <SafeComponent name={name}>
-            <div className={className || "contents"}>
-                {children}
-            </div>
+            {children}
         </SafeComponent>
     );
 }
