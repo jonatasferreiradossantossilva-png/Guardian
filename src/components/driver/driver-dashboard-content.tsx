@@ -42,13 +42,15 @@ import {
   Clock,
   Info,
   RotateCcw,
+  LogOut,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { useDataCollection, useData, useDataNestedDoc } from '@/hooks/use-data';
-import { useUser } from '@/firebase/provider';
+import { useDataCollection, useData, useDataNestedDoc, isFirestoreMode } from '@/hooks/use-data';
+import { useUser, useAuth } from '@/firebase/provider';
+import { signOut as firebaseSignOut } from 'firebase/auth';
 import { AuthorizedContactsModal } from '@/components/shared/authorized-contacts-modal';
 import { useToast } from '@/hooks/use-toast';
 import { getSafeDateStr } from '@/lib/safe-render';
@@ -116,6 +118,7 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
   const { updateDoc, setIsSimulating, createNotification } = useData() as any;
   const { data: allParents } = useDataCollection('parents');
   const { user: authUser } = useUser();
+  const auth = useAuth();
   const { updateLocation: syncTelemetry } = useTelemetry();
   const { toast } = useToast();
   
@@ -430,6 +433,42 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
       router.replace('/driver/route-plan');
     }
   }, [route?.id, driverId, activeStudentIds, studentsMap, updateDoc, toast, router]);
+
+  const handleResumeTrip = useCallback(() => {
+    if (!route) return;
+    setActiveRouteId(route.id);
+    if (typeof window !== 'undefined') {
+      sessionStorage.setItem('activeRouteId', route.id);
+      if (route.activeShift) sessionStorage.setItem('activeShift', route.activeShift);
+      if (route.activeDirection) sessionStorage.setItem('activeDirection', route.activeDirection);
+      localStorage.setItem('activeRouteId', route.id);
+      if (route.activeShift) localStorage.setItem('activeShift', route.activeShift);
+      if (route.activeDirection) localStorage.setItem('activeDirection', route.activeDirection);
+    }
+    if (route.activeShift) setSelectedShift(route.activeShift);
+    if (route.activeDirection) setSelectedDirection(route.activeDirection);
+    toast({ title: "Retomando Viagem", description: "Continuando a rota em andamento." });
+    router.push('/driver/active');
+  }, [route, router, toast]);
+
+  const handleLogout = useCallback(async () => {
+    try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.clear();
+        localStorage.removeItem('mockUserId');
+        localStorage.removeItem('activeRouteId');
+        localStorage.removeItem('activeShift');
+        localStorage.removeItem('activeDirection');
+      }
+      if (isFirestoreMode() && auth) {
+        await firebaseSignOut(auth);
+      }
+    } catch (err) {
+      console.error("[Guardian Driver] Erro ao sair:", err);
+    } finally {
+      window.location.href = '/login?logout=1';
+    }
+  }, [auth]);
 
   const performRouteOptimization = useCallback(async (currentRoute: Route | null, currentStops: Stop[], isManualStart: boolean = false) => {
     if (!currentRoute || !allStudents || !schools) return;
@@ -804,6 +843,18 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
             <div key="driver-setup-view" className="flex-1 flex flex-col min-h-0 h-full bg-background w-full relative overflow-hidden">
                 <div className="w-full bg-primary/10 pt-6 pb-4 px-6 flex flex-col items-center justify-center border-b shadow-sm relative overflow-hidden shrink-0">
                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
+
+                    {/* Botão Sair da Conta */}
+                    <button 
+                        type="button"
+                        onClick={handleLogout}
+                        className="absolute top-4 right-4 z-20 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-muted-foreground hover:text-destructive hover:bg-destructive/10 border border-border/40 bg-background/80 backdrop-blur-sm shadow-sm transition-all active:scale-95"
+                        title="Sair da Conta"
+                    >
+                        <LogOut className="h-3.5 w-3.5 text-destructive" />
+                        <span className="uppercase text-[10px] tracking-wider font-black">Sair</span>
+                    </button>
+
                     <div className="w-12 h-12 bg-background rounded-full flex items-center justify-center mb-2 border-4 border-primary/20 shadow-xl relative z-10 transition-transform active:scale-95">
                         <Bus className="text-primary h-6 w-6" />
                     </div>
@@ -820,7 +871,44 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                     </TabsList>
 
                     <TabsContent value="operacao" className="flex-1 overflow-y-auto min-h-0 m-0 p-0 relative">
-                        <div className="px-6 py-8 space-y-8 pb-48">
+                        <div className="px-6 py-6 space-y-6 pb-48">
+                            {/* ALERTA DE VIAGEM EM ANDAMENTO NO TOPO (NÃO FICA ATRÁS DE NADA) */}
+                            {route?.journeyStatus === 'em_rota' && (
+                                <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-2xl p-4 space-y-3 shadow-md animate-in fade-in duration-300">
+                                    <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-black text-xs uppercase tracking-wide">
+                                        <AlertTriangle className="h-5 w-5 shrink-0 animate-pulse text-amber-500" />
+                                        <span>Viagem em andamento detectada nesta rota</span>
+                                    </div>
+                                    <p className="text-[11px] text-muted-foreground font-bold leading-tight">
+                                        Esta rota já possui uma viagem iniciada anteriormente ({route.activeShift || 'Manhã'} • {route.activeDirection || 'ida'}). Você pode continuar de onde parou ou resetar para começar uma nova operação limpa.
+                                    </p>
+                                    <div className="grid grid-cols-2 gap-2 pt-1">
+                                        <Button 
+                                            type="button"
+                                            className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs h-12 shadow"
+                                            onClick={handleResumeTrip}
+                                        >
+                                            <Play className="h-4 w-4 mr-1 fill-current" /> Retomar Viagem
+                                        </Button>
+                                        <Button 
+                                            type="button"
+                                            variant="outline"
+                                            disabled={isEndingRoute}
+                                            className="border-destructive/40 text-destructive hover:bg-destructive/10 font-black text-xs h-12"
+                                            onClick={handleEndRoute}
+                                        >
+                                            {isEndingRoute ? (
+                                                <Loader2 className="h-4 w-4 animate-spin" />
+                                            ) : (
+                                                <>
+                                                    <RotateCcw className="h-4 w-4 mr-1" /> Resetar Rota
+                                                </>
+                                            )}
+                                        </Button>
+                                    </div>
+                                </div>
+                            )}
+
                             <div className="space-y-3">
                                     <RawLabel className="font-black uppercase text-xs tracking-widest text-primary flex items-center gap-2"><Navigation className="h-4 w-4"/> Rota Operacional</RawLabel>
                                     <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
@@ -889,73 +977,57 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                     </div>
                                 </div>
 
-                                {route?.journeyStatus === 'em_rota' && (
-                                    <div className="bg-amber-500/10 border-2 border-amber-500/30 rounded-2xl p-4 space-y-3 shadow-md animate-in fade-in duration-300">
-                                        <div className="flex items-center gap-2 text-amber-600 dark:text-amber-400 font-black text-xs uppercase tracking-wide">
-                                            <AlertTriangle className="h-5 w-5 shrink-0 animate-pulse text-amber-500" />
-                                            <span>Viagem em andamento detectada nesta rota</span>
-                                        </div>
-                                        <p className="text-[11px] text-muted-foreground font-bold leading-tight">
-                                            Esta rota já possui uma viagem iniciada anteriormente ({route.activeShift || 'Manhã'} • {route.activeDirection || 'ida'}). Você pode continuar de onde parou ou resetar para começar uma nova operação limpa.
-                                        </p>
-                                        <div className="grid grid-cols-2 gap-2 pt-1">
-                                            <Button 
-                                                type="button"
-                                                className="bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs h-12 shadow"
-                                                onClick={() => {
-                                                    setActiveRouteId(route.id);
-                                                    if (typeof window !== 'undefined') {
-                                                        sessionStorage.setItem('activeRouteId', route.id);
-                                                        if (route.activeShift) sessionStorage.setItem('activeShift', route.activeShift);
-                                                        if (route.activeDirection) sessionStorage.setItem('activeDirection', route.activeDirection);
-                                                    }
-                                                    if (route.activeShift) setSelectedShift(route.activeShift);
-                                                    if (route.activeDirection) setSelectedDirection(route.activeDirection);
-                                                    toast({ title: "Retomando Viagem", description: "Continuando a rota em andamento." });
-                                                    router.push('/driver/active');
-                                                }}
-                                            >
-                                                <Play className="h-4 w-4 mr-1 fill-current" /> Retomar Viagem
-                                            </Button>
-                                            <Button 
-                                                type="button"
-                                                variant="outline"
-                                                className="border-destructive/40 text-destructive hover:bg-destructive/10 font-black text-xs h-12"
-                                                onClick={handleEndRoute}
-                                            >
-                                                <RotateCcw className="h-4 w-4 mr-1" /> Resetar Rota
-                                            </Button>
-                                        </div>
-                                    </div>
-                                )}
-
                         </div>
                     </TabsContent>
                 </Tabs>
             </div>
 
-            {/* BOTÃO FIXO DE INICIAR - SEMPRE VISÍVEL NO MOBILE */}
+            {/* BOTÃO FIXO DE INICIAR / RETOMAR - SEMPRE VISÍVEL NO MOBILE */}
             <div className="w-full p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-background border-t shadow-[0_-8px_30px_rgb(0,0,0,0.12)] shrink-0 z-50">
-                <Button 
-                    className="w-full h-16 font-black text-lg shadow-xl bg-primary hover:bg-primary/90 text-white rounded-xl relative overflow-hidden group" 
-                    onClick={handleStartRoute} 
-                    disabled={isOptimizing}
-                >
-                    <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
-                    {isOptimizing ? (
-                        <div className="flex flex-col items-center relative z-10">
-                            <div className="flex items-center gap-2">
-                                <Loader2 className="h-5 w-5 animate-spin"/> 
-                                <span>{optimizationStep === 'routing' ? 'OTIMIZANDO...' : optimizationStep === 'polyline' ? 'MAPA...' : 'INICIANDO...'}</span>
+                {route?.journeyStatus === 'em_rota' ? (
+                    <div className="space-y-2">
+                        <Button 
+                            className="w-full h-16 font-black text-base shadow-xl bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl relative overflow-hidden group animate-in fade-in" 
+                            onClick={handleResumeTrip}
+                        >
+                            <span className="flex items-center justify-center relative z-10">
+                                <Play className="mr-2 h-6 w-6 fill-current animate-pulse" /> 
+                                <span className="uppercase tracking-widest">RETOMAR VIAGEM EM ANDAMENTO</span>
+                            </span>
+                        </Button>
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            type="button"
+                            className="w-full text-xs font-bold text-destructive hover:bg-destructive/10"
+                            onClick={handleEndRoute}
+                            disabled={isEndingRoute}
+                        >
+                            <RotateCcw className="h-3.5 w-3.5 mr-1" /> Resetar Rota e Iniciar do Zero
+                        </Button>
+                    </div>
+                ) : (
+                    <Button 
+                        className="w-full h-16 font-black text-lg shadow-xl bg-primary hover:bg-primary/90 text-white rounded-xl relative overflow-hidden group" 
+                        onClick={handleStartRoute} 
+                        disabled={isOptimizing}
+                    >
+                        <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform duration-300 ease-out"></div>
+                        {isOptimizing ? (
+                            <div className="flex flex-col items-center relative z-10">
+                                <div className="flex items-center gap-2">
+                                    <Loader2 className="h-5 w-5 animate-spin"/> 
+                                    <span>{optimizationStep === 'routing' ? 'OTIMIZANDO...' : optimizationStep === 'polyline' ? 'MAPA...' : 'INICIANDO...'}</span>
+                                </div>
                             </div>
-                        </div>
-                    ) : (
-                        <span className="flex items-center justify-center relative z-10">
-                            <Play className="mr-3 h-6 w-6 fill-current" /> 
-                            <span className="uppercase tracking-widest text-base">INICIAR OPERAÇÃO</span>
-                        </span>
-                    )}
-                </Button>
+                        ) : (
+                            <span className="flex items-center justify-center relative z-10">
+                                <Play className="mr-3 h-6 w-6 fill-current" /> 
+                                <span className="uppercase tracking-widest text-base">INICIAR OPERAÇÃO</span>
+                            </span>
+                        )}
+                    </Button>
+                )}
             </div>
         </div>
         ) : (
