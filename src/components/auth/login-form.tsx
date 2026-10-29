@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { maskCPF, unmask } from "@/lib/masks";
 import { useAuthProvider } from "@/hooks/use-auth-provider";
-import { useData, isFirestoreMode } from '@/hooks/use-data';
+import { useData, useDataCollection, isFirestoreMode } from '@/hooks/use-data';
 
 const formSchema = z.object({
   identifier: z.string().min(1, { message: "Digite seu CPF ou E-mail." }),
@@ -49,6 +49,7 @@ export function LoginForm() {
   const auth = useAuth();
   const { forceScenario } = useData();
   const { login, isLoading } = useAuthProvider();
+  const { data: users } = useDataCollection('users');
 
   useEffect(() => {
     setIsMounted(true);
@@ -73,8 +74,40 @@ export function LoginForm() {
         window.location.href = '/login';
       };
       performSilentClear();
+      return;
     }
-  }, []);
+
+    // Auto-redirecionamento se já houver sessão ativa
+    const isExplicitLogout = typeof window !== 'undefined' && (
+      window.location.search.includes('logout') || 
+      window.location.search.includes('clear-cache')
+    );
+    if (!isExplicitLogout && typeof window !== 'undefined') {
+      const storedUserId = sessionStorage.getItem('mockUserId') || localStorage.getItem('mockUserId');
+      const currentUid = auth?.currentUser?.uid || storedUserId;
+      if (currentUid && Array.isArray(users)) {
+        const matchedUser = users.find((u: any) => u.id === currentUid || u.userId === currentUid);
+        if (matchedUser?.profile) {
+          switch (matchedUser.profile) {
+            case 'motorista': {
+              const activeRouteId = sessionStorage.getItem('activeRouteId') || localStorage.getItem('activeRouteId');
+              router.replace(activeRouteId ? '/driver/active' : '/driver/route-plan');
+              break;
+            }
+            case 'gestor':
+              router.replace('/dashboard');
+              break;
+            case 'pai':
+              router.replace('/parent/tracking');
+              break;
+            case 'monitor':
+              router.replace('/monitor');
+              break;
+          }
+        }
+      }
+    }
+  }, [auth?.currentUser?.uid, users, router]);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

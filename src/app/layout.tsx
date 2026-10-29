@@ -40,11 +40,15 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
-              // Recuperação automática de erro de versão desatualizada (ChunkLoadError)
+              // Recuperação automática de erro de versão desatualizada (ChunkLoadError) com cooldown de 30s
               window.addEventListener('error', function(e) {
                 if (e.message && (e.message.includes('ChunkLoadError') || e.message.includes('Loading chunk') || e.message.includes('Failed to fetch dynamically imported module'))) {
-                  console.warn('Versão desatualizada detectada. Recarregando com versão mais recente...');
-                  window.location.reload();
+                  var lastReload = Number(sessionStorage.getItem('last_chunk_reload') || 0);
+                  if (Date.now() - lastReload > 30000) {
+                    sessionStorage.setItem('last_chunk_reload', String(Date.now()));
+                    console.warn('Versão desatualizada detectada. Recarregando com versão mais recente...');
+                    window.location.reload();
+                  }
                 }
               });
 

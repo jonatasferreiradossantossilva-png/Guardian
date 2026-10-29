@@ -1065,21 +1065,31 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
                                             </div>
                                             <CardTitle className="text-3xl font-black text-green-600 uppercase tracking-tighter mb-2">Rota Concluída!</CardTitle>
                                             <CardDescription className="text-sm font-bold text-green-700/80 mb-8">Todas as {progressData.total} paradas foram finalizadas com sucesso.</CardDescription>
-                                            <Button 
-                                                variant="default" 
-                                                disabled={isEndingRoute}
-                                                className="w-full h-14 text-sm font-black shadow-xl bg-green-600 hover:bg-green-700 text-white" 
-                                                onClick={handleEndRoute}
-                                            >
-                                                {isEndingRoute ? (
-                                                    <>
-                                                        <Loader2 className="mr-2 h-5 w-5 animate-spin" />
-                                                        FINALIZANDO OPERAÇÃO...
-                                                    </>
-                                                ) : (
-                                                    "FINALIZAR OPERAÇÃO"
-                                                )}
-                                            </Button>
+                                            <div className="space-y-3">
+                                                <Button 
+                                                    variant="default" 
+                                                    disabled={isEndingRoute}
+                                                    className="w-full h-14 text-sm font-black shadow-xl bg-green-600 hover:bg-green-700 text-white" 
+                                                    onClick={handleEndRoute}
+                                                >
+                                                    {isEndingRoute ? (
+                                                        <>
+                                                            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+                                                            FINALIZANDO OPERAÇÃO...
+                                                        </>
+                                                    ) : (
+                                                        "FINALIZAR OPERAÇÃO E VOLTAR AO INÍCIO"
+                                                    )}
+                                                </Button>
+                                                <Button
+                                                    variant="ghost"
+                                                    disabled={isEndingRoute}
+                                                    className="w-full font-bold text-xs text-muted-foreground hover:text-foreground"
+                                                    onClick={handleEndRoute}
+                                                >
+                                                    Ir para a Central de Operações
+                                                </Button>
+                                            </div>
                                         </Card>
                                     </div>
                                 ) : activeStop?.type === 'student' ? (
