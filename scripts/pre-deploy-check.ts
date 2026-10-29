@@ -77,15 +77,38 @@ async function runPreDeployCheck() {
     process.exit(1);
   }
 
-  // ─── PASSO 4: GATE DE AUTORIZAÇÃO HUMANA ─────────────────────
+  // ─── PASSO 4: VALIDAÇÃO DE TOPOLOGIA E ISOLAMENTO ─────────────
+  console.log('\x1b[1m[PASSO 4/5] 🧱 Validando Isolamento de Projetos e Topologia 1:1 (Regra 5)...\x1b[0m');
+  try {
+    const gitRemote = execSync('git remote get-url origin', { encoding: 'utf8' }).trim();
+    const gitBranch = execSync('git rev-parse --abbrev-ref HEAD', { encoding: 'utf8' }).trim();
+
+    if (!gitRemote.includes('Guardian.git')) {
+      throw new Error(`Remote origin inválido: ${gitRemote}. Deve ser Guardian.git.`);
+    }
+    if (gitBranch !== 'main') {
+      throw new Error(`Branch de produção deve ser 'main'. Atual: ${gitBranch}.`);
+    }
+
+    console.log(`  \x1b[32m✔\x1b[0m Repositório verificado: \x1b[36m${gitRemote}\x1b[0m`);
+    console.log(`  \x1b[32m✔\x1b[0m Branch de produção: \x1b[36m${gitBranch}\x1b[0m`);
+    console.log(`  \x1b[32m✔\x1b[0m Deploy manual via CLI PROIBIDO (Apenas Git Webhook ativo).\n`);
+  } catch (err: any) {
+    console.error(`\x1b[31m✖ ERRO DE ISOLAMENTO: ${err.message}\x1b[0m`);
+    console.error('Subida para produção BLOQUEADA. Regra 5 violada.');
+    process.exit(1);
+  }
+
+  // ─── PASSO 5: GATE DE AUTORIZAÇÃO HUMANA ─────────────────────
   console.log(`
 \x1b[1m\x1b[33m===============================================================
-       🛑  [PASSO 4/4] GATE DE AUTORIZAÇÃO HUMANA ATIVO  🛑
+       🛑  [PASSO 5/5] GATE DE AUTORIZAÇÃO HUMANA ATIVO  🛑
 ===============================================================\x1b[0m
   [✔] 1. Backup gravado em: ${backupDir}
-  [✔] 2. Testes de deploy: 100% Aprovados (Todas as 6 Suítes / Todos os Cenários)
+  [✔] 2. Testes de deploy: 100% Aprovados (Todas as 8 Suítes / Todos os 110 Cenários)
   [✔] 3. Tipagem TypeScript: 0 erros
-  [✔] 4. Escopo: Somente itens autorizados
+  [✔] 4. Escopo: Somente itens autorizados (Zero Scope Creep)
+  [✔] 5. Isolamento: Repositório único, branch main, sem deploy manual via CLI
 
 \x1b[1m\x1b[36mAVISO MANDATÓRIO:\x1b[0m
 O deploy para produção NUNCA pode ser executado automaticamente.

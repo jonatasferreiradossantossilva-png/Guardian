@@ -49,3 +49,29 @@ Antes de qualquer subida para produção, o pipeline de verificação obrigatór
 2. **Pergunta Explícita de Autorização**: A IA deve formular a pergunta direta:
    > *"Todos os testes passaram e o backup foi realizado. Você autoriza a subida para produção agora?"*
 3. **Aguardar Confirmação**: É expressamente proibido disparar comandos de deploy (ex: Vercel deploy, Firebase deploy, Docker push, scripts de servidor) sem o comando afirmativo e nominal do usuário (ex: "sim", "autorizado", "pode subir").
+
+---
+
+## 🧱 REGRA 5: ISOLAMENTO ESTRITO DE PROJETOS & SINGLE SOURCE OF TRUTH (ZERO CROSS-DEPLOY)
+> **NUNCA executar deploy manual via terminal e NUNCA misturar projetos ou domínios na nuvem.**
+
+1. **Proibição Total de Deploy Manual via CLI (`vercel deploy` / `npx vercel`)**:
+   - É terminantemente PROIBIDO rodar comandos de deploy manual direto pelo terminal que peçam seleção de projeto interativo.
+   - Todo deploy para produção DEVE ocorrer **exclusivamente via Git Webhook** acionado por `git push origin main`.
+   - Essa trava impede 100% que código de um projeto (ex: Guardian) seja enviado acidentalmente para outro projeto (ex: Sanitix).
+
+2. **Topologia 1:1 Obrigatória (1 Repositório = 1 Projeto na Nuvem = 1 Domínio Oficial)**:
+   - Todo projeto deve manter uma relação estrita de 1 para 1:
+     - **Repositório Git Único**: `jonatasferreiradossantossilva-png/Guardian.git`
+     - **Branch Única de Produção**: `main`
+     - **Projeto Único na Vercel**: `guardian`
+     - **Domínio Oficial Imutável**: `https://vanguardian-pwa-prod.vercel.app`
+   - É expressamente proibido criar projetos clones, links paralelos de homologação desvinculados do Git ou projetos manuais na Vercel.
+
+3. **Isolamento de Diretórios de Trabalho**:
+   - Cada projeto no disco local (`Guardian`, `Banheiro Quimico Novo`, etc.) é um ecossistema isolado.
+   - É proibido misturar arquivos, dependências, variáveis de ambiente ou credenciais entre pastas distintas.
+
+4. **Auditoria de Domínio Pré-Deploy**:
+   - O pipeline de deploy deve sempre conferir que o domínio oficial de produção está ativo e apontando para o commit correto da branch `main`.
+
