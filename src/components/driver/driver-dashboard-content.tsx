@@ -801,7 +801,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
         {!isOnline && <div className="bg-destructive text-destructive-foreground text-center p-2 text-sm z-[2000] shrink-0"><WifiOff className="h-4 w-4 inline mr-2" />Offline.</div>}
         
         {!showActiveTrip ? (
-            <div key="driver-setup-view" className="flex-1 flex flex-col bg-background w-full relative">
+            <div key="driver-setup-view" className="flex-1 flex flex-col min-h-0 h-full bg-background w-full relative overflow-hidden">
                 <div className="w-full bg-primary/10 pt-6 pb-4 px-6 flex flex-col items-center justify-center border-b shadow-sm relative overflow-hidden shrink-0">
                     <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary/5 rounded-full blur-3xl"></div>
                     <div className="w-12 h-12 bg-background rounded-full flex items-center justify-center mb-2 border-4 border-primary/20 shadow-xl relative z-10 transition-transform active:scale-95">
@@ -935,7 +935,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
             </div>
 
             {/* BOTÃO FIXO DE INICIAR - SEMPRE VISÍVEL NO MOBILE */}
-            <div className="w-full p-4 bg-background border-t shadow-[0_-8px_30px_rgb(0,0,0,0.12)] shrink-0 z-50">
+            <div className="w-full p-4 pb-[max(1rem,env(safe-area-inset-bottom))] bg-background border-t shadow-[0_-8px_30px_rgb(0,0,0,0.12)] shrink-0 z-50">
                 <Button 
                     className="w-full h-16 font-black text-lg shadow-xl bg-primary hover:bg-primary/90 text-white rounded-xl relative overflow-hidden group" 
                     onClick={handleStartRoute} 
