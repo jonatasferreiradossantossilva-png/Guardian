@@ -531,33 +531,21 @@ export function MockDataProvider({ children }: { children: React.ReactNode }) {
  * Normaliza o valor de NEXT_PUBLIC_DATA_MODE removendo espaços, quebras de linha e aspas acidentais.
  */
 export function normalizeDataMode(mode?: string): 'firestore' | 'mock' {
-  // 1. Se estiver rodando no navegador em domínio de produção, força firestore
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname.toLowerCase();
-    if (host.includes('-prod') || host.includes('production') || host.includes('guardian.app')) {
-      return 'firestore';
-    }
-  }
-
-  // 2. Normaliza valor da variável de ambiente
-  if (!mode) return 'mock';
+  if (!mode) return 'firestore';
   const clean = mode.trim().replace(/^["']|["']$/g, '').trim().toLowerCase();
-  return clean === 'firestore' ? 'firestore' : 'mock';
+  return clean === 'mock' ? 'mock' : 'firestore';
 }
 
 export function isFirestoreMode(): boolean {
-  if (typeof process === 'undefined') return false;
+  if (typeof process === 'undefined') return true;
 
-  // 1. Prioridade máxima para hostname de produção (ex: vanguardan-pwa-prod.vercel.app)
-  if (typeof window !== 'undefined') {
-    const host = window.location.hostname.toLowerCase();
-    if (host.includes('-prod') || host.includes('production') || host.includes('guardian.app')) {
-      return true;
-    }
+  // Se explicitamente setado como mock via variável de ambiente, permite
+  if (process.env.NEXT_PUBLIC_DATA_MODE === 'mock') {
+    return false;
   }
 
-  // 2. Resolução padrão via NEXT_PUBLIC_DATA_MODE
-  return normalizeDataMode(process.env.NEXT_PUBLIC_DATA_MODE) === 'firestore';
+  // Padrão do sistema: 100% Produção Real (Firestore)
+  return true;
 }
 
 export const useMockData = () => {

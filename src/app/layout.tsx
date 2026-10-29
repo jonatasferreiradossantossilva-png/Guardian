@@ -78,9 +78,6 @@ export default function RootLayout({
           <FirebaseClientProvider>
             <DataProvider>
               {children}
-              <ClientOnly>
-                {process.env.NEXT_PUBLIC_DATA_MODE !== 'firestore' && <DemoOrchestrator />}
-              </ClientOnly>
             </DataProvider>
           </FirebaseClientProvider>
         </ErrorBoundary>
