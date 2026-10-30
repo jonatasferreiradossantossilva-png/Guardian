@@ -15,13 +15,5 @@ const MonitorDashboardContent = dynamic(() => import('@/components/monitor/monit
 });
 
 export default function MonitorPage() {
-  const [isMounted, setIsMounted] = useState(false);
-  
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
-
-  if (!isMounted) return null;
-
   return <MonitorDashboardContent />;
 }

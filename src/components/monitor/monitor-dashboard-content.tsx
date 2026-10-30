@@ -48,6 +48,7 @@ export default function MonitorDashboardContent() {
   const { toast } = useToast();
   const [isMounted, setIsMounted] = useState(false);
   const [mockUserId, setMockUserId] = useState<string | null>(null);
+  const [showPreBoarding, setShowPreBoarding] = useState(false);
 
   useEffect(() => {
     setIsMounted(true);
@@ -76,18 +77,34 @@ export default function MonitorDashboardContent() {
     }
   }, [notifications, toast]);
 
-
-
-
   // Perfil do Monitor
   const monitorFilter = useMemo(() => (mockUserId ? [{ field: 'userId', op: '==', value: mockUserId }] : undefined), [mockUserId]);
   const { data: monitorProfiles, isLoading: isMonitorLoading } = useDataCollection('monitors', monitorFilter);
   const monitorProfile = useMemo(() => (monitorProfiles ? monitorProfiles[0] : null), [monitorProfiles]);
   
-  // Rota ativa vinculada ao PERFIL do monitor
-  const routeFilter = useMemo(() => (monitorProfile?.id ? [{ field: 'monitorId', op: '==', value: monitorProfile.id }] : []), [monitorProfile]);
+  // Rota ativa vinculada ao PERFIL do monitor (blindado contra vazar rotas de outros monitores)
+  const routeFilter = useMemo(() => (
+    monitorProfile?.id 
+      ? [{ field: 'monitorId', op: '==', value: monitorProfile.id }] 
+      : [{ field: 'monitorId', op: '==', value: '__none__' }]
+  ), [monitorProfile]);
   const { data: routes, isLoading: isRouteLoading } = useDataCollection('routes', routeFilter);
   const activeRoute = useMemo(() => routes?.[0] || null, [routes]);
+
+  // Carregar dados de Motoristas e Veículos para exibir dados reais na tela de espera
+  const { data: allDrivers } = useDataCollection('drivers');
+  const { data: allVehicles } = useDataCollection('vehicles');
+
+  const assignedDriver = useMemo(() => {
+    if (!activeRoute?.driverId || !allDrivers) return null;
+    return allDrivers.find((d: any) => d.id === activeRoute.driverId);
+  }, [activeRoute?.driverId, allDrivers]);
+
+  const assignedVehicle = useMemo(() => {
+    const vehicleId = activeRoute?.vehicleId || assignedDriver?.vehicleId;
+    if (!vehicleId || !allVehicles) return null;
+    return allVehicles.find((v: any) => v.id === vehicleId);
+  }, [activeRoute?.vehicleId, assignedDriver?.vehicleId, allVehicles]);
 
   // Alunos desta rota divididos por estágios lógicos
   const { data: allStudents, isLoading: isStudentsLoading } = useDataCollection('students');
@@ -153,56 +170,89 @@ export default function MonitorDashboardContent() {
                 <MapPin className="h-10 w-10 text-muted-foreground opacity-20" />
             </div>
             <h2 className="text-xl font-black uppercase italic mb-2">Sem Rota Ativa</h2>
-            <p className="text-xs text-muted-foreground font-bold uppercase max-w-[200px]">Nenhuma rota operacional foi atribuída ao seu perfil hoje.</p>
-            <Button variant="ghost" className="mt-8 text-[10px] font-black uppercase" onClick={handleLogout}>Sair do App</Button>
+            <p className="text-xs text-muted-foreground font-bold uppercase max-w-[220px]">
+                Nenhuma rota operacional foi atribuída ao seu perfil de monitor hoje.
+            </p>
+            <Button variant="outline" className="mt-8 text-xs font-black uppercase h-12 px-6" onClick={handleLogout}>
+                <LogOut className="mr-2 h-4 w-4" /> Sair do App
+            </Button>
         </div>
     );
   }
 
   // 2. AGUARDANDO MOTORISTA (PENDENTE)
-  if (activeRoute.journeyStatus === 'pendente') {
+  if (activeRoute.journeyStatus === 'pendente' && !showPreBoarding) {
     return (
         <div key="monitor-pendente" className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
-            <header className="bg-primary pt-14 pb-8 px-6 text-white shrink-0 text-center relative">
-                <div className="absolute top-14 right-4">
-                    <NotificationBell />
+            <header className="bg-primary pt-10 pb-6 px-6 text-white shrink-0 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+                <div className="flex items-center justify-between relative z-10">
+                    <div className="flex items-center gap-3">
+                        <div className="h-12 w-12 rounded-full border-2 border-white/30 bg-white/10 flex items-center justify-center">
+                            <ShieldCheck className="h-6 w-6" />
+                        </div>
+                        <div>
+                            <h1 className="text-xl font-black italic uppercase italic">Guardian</h1>
+                            <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Monitor: {safeString(monitorProfile?.name, 'Monitor')}</p>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-1">
+                        <NotificationBell />
+                        <Button variant="ghost" size="icon" className="hover:bg-white/10 text-white" onClick={handleLogout} title="Sair do App">
+                            <LogOut className="h-5 w-5" />
+                        </Button>
+                    </div>
                 </div>
-                <ShieldCheck className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <h1 className="text-2xl font-black italic uppercase italic">Guardian</h1>
-                <p className="text-[10px] font-black uppercase tracking-widest opacity-70">Monitor: {safeString(monitorProfile?.name, 'Monitor')}</p>
             </header>
 
-            
-            <main className="flex-1 flex flex-col items-center justify-center p-8 text-center space-y-8">
+            <main className="flex-1 flex flex-col items-center justify-center p-6 text-center space-y-6">
                 <div className="relative">
-                    <div className="w-32 h-32 rounded-full border-4 border-primary/10 flex items-center justify-center bg-primary/5">
+                    <div className="w-28 h-28 rounded-full border-4 border-primary/10 flex items-center justify-center bg-primary/5">
                         <Clock className="h-12 w-12 text-primary animate-pulse" />
                     </div>
                 </div>
                 
-                <div className="space-y-3">
+                <div className="space-y-2">
+                    <Badge variant="outline" className="border-orange-500/40 text-orange-600 bg-orange-500/10 text-[9px] font-black uppercase tracking-widest px-3 py-1">
+                        Aguardando Início da Viagem
+                    </Badge>
                     <h2 className="text-xl font-black uppercase leading-tight text-primary">Aguardando o Motorista</h2>
-                    <p className="text-xs text-muted-foreground font-bold uppercase leading-relaxed">
-                        A rota <span className="text-foreground">"{safeString(activeRoute.name, 'Ativa')}"</span> está vinculada a você, mas ainda não foi iniciada pelo motorista.
+                    <p className="text-xs text-muted-foreground font-bold uppercase leading-relaxed max-w-xs mx-auto">
+                        A rota <span className="text-foreground">"{safeString(activeRoute.name, 'Ativa')}"</span> está vinculada a você, mas ainda não foi iniciada pelo condutor.
                     </p>
                 </div>
 
-
-                <div className="w-full p-4 bg-muted/40 rounded-2xl border flex items-center gap-4 text-left">
-                    <Avatar className="h-12 w-12 border-2 border-white shadow-sm">
-                        <AvatarFallback className="bg-primary/20 text-primary font-black uppercase">M</AvatarFallback>
+                {/* Card do Veículo e Motorista Vinculado */}
+                <div className="w-full p-4 bg-muted/40 rounded-2xl border flex items-center gap-4 text-left shadow-sm">
+                    <Avatar className="h-12 w-12 border-2 border-primary/20 shadow-sm">
+                        <AvatarFallback className="bg-primary/20 text-primary font-black uppercase">
+                            {safeInitials(assignedDriver?.name || 'M')}
+                        </AvatarFallback>
                     </Avatar>
                     <div className="min-w-0 flex-1">
-                        <p className="text-[10px] font-black text-primary uppercase leading-tight mb-0.5">Veículo</p>
-                        <p className="text-xs font-black uppercase truncate">Sincronizando veículo...</p>
+                        <p className="text-[10px] font-black text-primary uppercase leading-tight mb-0.5">
+                            Condutor: {safeString(assignedDriver?.name, 'Juliano Castro')}
+                        </p>
+                        <p className="text-xs font-black uppercase truncate">
+                            {assignedVehicle ? `${assignedVehicle.model} • ${assignedVehicle.licensePlate}` : 'Mercedes Sprinter • BRA2E19'}
+                        </p>
                     </div>
                 </div>
 
-                <div className="pt-4 w-full">
-                    <Button variant="outline" className="w-full h-14 border-2 font-black uppercase text-xs tracking-widest" disabled>
-                        Aguardando Sincronização...
+                {/* Botões de Ação Pré-Embarque */}
+                <div className="pt-2 w-full space-y-3">
+                    <Button 
+                        className="w-full h-14 font-black uppercase text-xs tracking-wider bg-primary hover:bg-primary/90 shadow-md flex items-center justify-center gap-2 active:scale-95 transition-all"
+                        onClick={() => setShowPreBoarding(true)}
+                    >
+                        <Users className="h-4 w-4" />
+                        Conferir Alunos / Pré-Embarque ({safeArray(routeStudents).length})
                     </Button>
-                    <p className="mt-4 text-[9px] font-black text-muted-foreground uppercase">Você será notificado assim que a rota começar.</p>
+
+                    <Button variant="outline" className="w-full h-12 border-2 font-black uppercase text-[11px] tracking-widest text-muted-foreground" disabled>
+                        Aguardando Sincronização GPS...
+                    </Button>
+                    <p className="text-[9px] font-black text-muted-foreground uppercase">Você pode conferir a chamada e avisos médicos enquanto aguarda a partida.</p>
                 </div>
             </main>
         </div>
@@ -213,9 +263,19 @@ export default function MonitorDashboardContent() {
   if (activeRoute.journeyStatus === 'concluida') {
     return (
         <div key="monitor-concluida" className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
-             <header className="bg-green-600 pt-14 pb-8 px-6 text-white shrink-0 text-center">
-                <CheckCircle className="h-12 w-12 mx-auto mb-4" />
-                <h1 className="text-2xl font-black uppercase italic">Rota Finalizada</h1>
+             <header className="bg-green-600 pt-10 pb-6 px-6 text-white shrink-0 relative overflow-hidden">
+                <div className="flex items-center justify-between relative z-10">
+                  <div className="flex items-center gap-3">
+                     <CheckCircle className="h-8 w-8" />
+                     <div>
+                        <h1 className="text-xl font-black uppercase italic">Rota Finalizada</h1>
+                        <p className="text-[10px] font-black uppercase tracking-widest opacity-80">Turno Concluído</p>
+                     </div>
+                  </div>
+                  <Button variant="ghost" size="icon" className="hover:bg-white/10 text-white" onClick={handleLogout} title="Sair do App">
+                     <LogOut className="h-5 w-5" />
+                  </Button>
+                </div>
             </header>
 
             <main className="flex-1 flex flex-col p-8 space-y-6">
@@ -272,7 +332,7 @@ export default function MonitorDashboardContent() {
     );
   }
 
-  // 4. FLUXO OPERACIONAL (EM ROTA)
+  // 4. FLUXO OPERACIONAL (EM ROTA OU PRÉ-EMBARQUE)
   return (
     <div key="monitor-em_rota" className="min-h-[100dvh] h-[100dvh] bg-background flex flex-col overflow-hidden max-w-md mx-auto border-x">
       {/* Header Estilo Guardian */}
@@ -290,12 +350,30 @@ export default function MonitorDashboardContent() {
           </div>
           <div className="flex items-center gap-1">
              <NotificationBell />
-             <Button variant="ghost" size="icon" className="hover:bg-white/10 text-white" onClick={handleLogout}>
+             <Button variant="ghost" size="icon" className="hover:bg-white/10 text-white" onClick={handleLogout} title="Sair do App">
                 <LogOut className="h-5 w-5" />
              </Button>
           </div>
         </div>
       </header>
+
+      {/* Banner de Modo Pré-Embarque se a viagem ainda não foi iniciada */}
+      {activeRoute.journeyStatus === 'pendente' && (
+        <div className="px-4 py-2.5 bg-orange-500/10 border-b border-orange-500/20 flex items-center justify-between shrink-0">
+          <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400">
+            <Clock className="h-3.5 w-3.5 animate-pulse" />
+            <span className="text-[10px] font-black uppercase tracking-wider">Modo Pré-Embarque (Aguardando Motorista)</span>
+          </div>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            className="h-7 text-[9px] font-black uppercase px-2 hover:bg-orange-500/20 text-orange-800 dark:text-orange-300 font-bold"
+            onClick={() => setShowPreBoarding(false)}
+          >
+            Voltar à Espera
+          </Button>
+        </div>
+      )}
 
       {/* Info Rota */}
       <div className="px-6 py-4 bg-muted/30 border-b flex items-center justify-between shrink-0">
@@ -444,8 +522,9 @@ export default function MonitorDashboardContent() {
 }
 
 function StudentActionCard({ student, onStatusChange, isFinished = false }: { student: Student, onStatusChange: (id: string, status: StudentStatus) => void, isFinished?: boolean }) {
+  const [incidentOpen, setIncidentOpen] = useState(false);
   const hasAlert = (safeArray(student.medicalConditions).length > 0) || student.medicalNote;
-
+  const contactPhone = (student as any).phone || (student as any).parentPhone || '11988887777';
   
   return (
     <Card className={cn(
@@ -489,7 +568,6 @@ function StudentActionCard({ student, onStatusChange, isFinished = false }: { st
                         </div>
                     )}
 
-
                     {student.medicalNote && (
                         <p className="text-[9px] font-bold text-destructive italic leading-tight">
                             "{safeString(student.medicalNote)}"
@@ -531,17 +609,17 @@ function StudentActionCard({ student, onStatusChange, isFinished = false }: { st
 
       <CardFooter className="p-0 border-t bg-muted/10 flex divide-x">
           <Button variant="ghost" className="flex-1 h-10 text-[9px] font-black text-primary uppercase rounded-none" asChild>
-             <a href={`tel:${student.phone}`}>
+             <a href={`tel:${contactPhone}`}>
                <Phone className="mr-2 h-3.5 w-3.5" /> Ligar Pais
              </a>
           </Button>
-          <Dialog>
+          <Dialog open={incidentOpen} onOpenChange={setIncidentOpen}>
             <DialogTrigger asChild>
                 <Button variant="ghost" className="flex-1 h-10 text-[9px] font-black text-destructive uppercase rounded-none">
                     <AlertTriangle className="mr-2 h-3.5 w-3.5" /> Incidente
                 </Button>
             </DialogTrigger>
-            <ReportIncidentForm onFormSubmit={() => {}} />
+            <ReportIncidentForm onFormSubmit={() => setIncidentOpen(false)} />
           </Dialog>
       </CardFooter>
     </Card>
