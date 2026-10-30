@@ -32,7 +32,7 @@ export function RoutePlanningClient() {
 
   const { addDoc, updateDoc, deleteDoc } = useData();
 
-  // ─── Modo de Visualização (Tio da Van vs Avançado) ────────────
+  // ─── Modo de Visualização (Rápido vs Avançado) ────────────
   const [viewMode, setViewMode] = useState<'easy' | 'advanced'>('easy');
   const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
   const [quickAddSearch, setQuickAddSearch] = useState('');
@@ -175,7 +175,7 @@ export function RoutePlanningClient() {
     return null;
   }, [availableRoutes, selectedVehicleId]);
 
-  // Auto-seleção inteligente de van e rota para o Tio da Van
+  // Auto-seleção inteligente de van e rota para o Modo Rápido
   useEffect(() => {
     if (vehicles && vehicles.length === 1 && selectedVehicleId === 'all') {
       setSelectedVehicleId(vehicles[0].id);
@@ -591,7 +591,7 @@ export function RoutePlanningClient() {
     return school ? school.name : 'Escola não encontrada';
   };
 
-  // ─── MODO TIO DA VAN: Helpers e Ações Rápidas ─────────────────
+  // ─── MODO RÁPIDO: Helpers e Ações Rápidas ─────────────────
   const isSelectedDateToday = useMemo(() => {
     const todayStr = format(new Date(), 'yyyy-MM-dd');
     return dateStr === todayStr;
@@ -1045,7 +1045,7 @@ export function RoutePlanningClient() {
           </h1>
           <p className="text-muted-foreground text-xs sm:text-sm mt-1">
             {viewMode === 'easy' 
-              ? 'Modo rápido e prático para o Tio da Van conferir quem vai hoje.'
+              ? 'Visualização rápida e prática para conferência dos passageiros de hoje.'
               : 'Painel gerencial avançado para orquestração de múltiplos manifestos.'}
           </p>
         </div>
@@ -1065,7 +1065,7 @@ export function RoutePlanningClient() {
             )}
           >
             <Bus className="w-3.5 h-3.5 mr-1.5" />
-            Modo Tio da Van
+            Modo Rápido
           </Button>
           <Button
             type="button"
