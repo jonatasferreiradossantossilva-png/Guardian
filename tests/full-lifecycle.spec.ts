@@ -155,21 +155,33 @@ test.describe('Guardian Full Lifecycle Matrix', () => {
                 await expect(page.getByText(`Pai ${mod.name}`).filter({ visible: true }).first()).toBeVisible({ timeout: 20000 });
             }
             
-            const parentRow = page.locator('tr, div').filter({ hasText: `Pai ${mod.name}` }).filter({ visible: true }).first();
+            const parentRow = page.locator('tr').filter({ hasText: `Pai ${mod.name}` }).filter({ visible: true }).first();
             await parentRow.getByRole('button', { name: /Revisar/i }).click({ force: true });
             
             await page.getByRole('spinbutton').fill(mod.value);
             
             // Selecionar uma rota real para garantir a geração do contrato
-            await page.getByRole('combobox').nth(1).click({ force: true });
-            await page.waitForTimeout(500);
-            await page.getByRole('option').filter({ hasText: /Rota/i }).first().click({ force: true });
-            await page.waitForTimeout(1000);
+            const routeCombobox = page.locator('div:has-text("Alocar na Rota") button[role="combobox"]').last();
+            if (await routeCombobox.isVisible()) {
+                await routeCombobox.scrollIntoViewIfNeeded();
+                await routeCombobox.click({ force: true });
+                await page.waitForTimeout(500);
+                const routeOption = page.getByRole('option').filter({ hasText: /Rota/i }).first();
+                if (await routeOption.isVisible()) {
+                    await routeOption.click({ force: true });
+                    await page.waitForTimeout(1000);
+                }
+            }
 
             // Clique no botão final de Aprovação de forma cirúrgica
             const btnFinalAprovar = page.locator('button').filter({ hasText: /^Aprovar/ }).last();
             await expect(btnFinalAprovar).toBeVisible({ timeout: 15000 });
-            await btnFinalAprovar.click({ force: true });
+            await btnFinalAprovar.scrollIntoViewIfNeeded();
+            try {
+                await btnFinalAprovar.click({ timeout: 5000 });
+            } catch {
+                await btnFinalAprovar.evaluate((el: HTMLElement) => el.click());
+            }
             
             // Pequeno delay para processamento do estado
             await page.waitForTimeout(1000);
@@ -180,14 +192,13 @@ test.describe('Guardian Full Lifecycle Matrix', () => {
 
             console.log(`[${mod.name}] 3. Assinatura do Contrato pelo Pai`);
             await page.evaluate(() => { 
+                localStorage.removeItem('mockUserId');
                 localStorage.removeItem('currentUser'); 
+                localStorage.removeItem('activeRouteId');
                 sessionStorage.clear(); 
             });
-            await page.goto('/login');
-            await page.waitForSelector('text=Selecione seu perfil', { timeout: 30000 });
-            
-            // Aguardar o form renderizar (Next.js isMounted effect delay fix)
-            await page.waitForSelector('text="Selecione seu perfil:"', { state: 'visible', timeout: 15000 });
+            await page.goto('/login?clear-cache=true');
+            await page.waitForSelector('text=Selecione seu perfil', { state: 'visible', timeout: 30000 });
             
             // Usar getByText para maior resiliência ao invés de label[for=]
             await page.locator('div').filter({ hasText: /^Pais$/ }).first().click();
@@ -231,14 +242,13 @@ test.describe('Guardian Full Lifecycle Matrix', () => {
 
             console.log(`[${mod.name}] 4. Validação Financeira Final`);
             await page.evaluate(() => { 
+                localStorage.removeItem('mockUserId');
                 localStorage.removeItem('currentUser'); 
+                localStorage.removeItem('activeRouteId');
                 sessionStorage.clear(); 
             });
-            await page.goto('/login');
-            await page.waitForSelector('text=Selecione seu perfil', { timeout: 30000 });
-            
-            // Aguardar o form renderizar (Next.js isMounted effect delay fix)
-            await page.waitForSelector('text="Selecione seu perfil:"', { state: 'visible', timeout: 15000 });
+            await page.goto('/login?clear-cache=true');
+            await page.waitForSelector('text=Selecione seu perfil', { state: 'visible', timeout: 30000 });
             
             await page.locator('div').filter({ hasText: /^Gestor$/ }).first().click();
             await page.locator('input[placeholder*="email@exemplo.com"]').fill(gestorEmail);

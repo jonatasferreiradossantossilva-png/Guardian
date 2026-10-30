@@ -2,15 +2,21 @@ import { test, expect } from '@playwright/test';
 
 test.describe('Jornada Real do Motorista — Embarque Sequencial no Navegador', () => {
   test('deve iniciar viagem, clicar em EMBARCOU, avançar parada no DOM e listar Alunos a Bordo', async ({ page }) => {
+    // 0. Suprimir modal de instalação no iOS para não bloquear os botões
+    await page.addInitScript(() => {
+      localStorage.setItem('hide-ios-prompt', 'true');
+      sessionStorage.setItem('hide-ios-prompt', 'true');
+    });
+
     // 1. Acessar tela do motorista em modo teste
     await page.goto('/driver/route-plan?mockUserId=user-motorista-4&isTesting=true');
     await page.waitForLoadState('networkidle');
 
-    // 2. Se a tela estiver na tela de prontidão (não iniciada), clicar em "INICIAR OPERAÇÃO"
-    const startBtn = page.locator('button:has-text("INICIAR OPERAÇÃO"), button:has-text("INICIAR VIAGEM")').first();
+    // 2. Se a tela estiver na tela de prontidão (não iniciada), clicar em "INICIAR OPERAÇÃO" ou "RETOMAR VIAGEM"
+    const startBtn = page.locator('button:has-text("INICIAR OPERAÇÃO"), button:has-text("INICIAR VIAGEM"), button:has-text("RETOMAR VIAGEM")').first();
     if (await startBtn.isVisible({ timeout: 5000 }).catch(() => false)) {
       await startBtn.click();
-      await page.waitForTimeout(2000);
+      await page.waitForTimeout(3000);
     }
 
     // 3. Verificar que a parada atual está visível

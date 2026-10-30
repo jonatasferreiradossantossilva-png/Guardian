@@ -285,17 +285,13 @@ export function RoutePlanningClient() {
 
   // Calculate routes for the selected vehicle
   const vehicleRoutes = useMemo(() => {
-    console.log("PLANNER DEBUG - vehicleRoutes hook:", { selectedVehicleId, routesCount: routes?.length, driversCount: drivers?.length });
     if (selectedVehicleId === 'all') return [];
     const driverIds = (drivers || []).filter(d => d && d.vehicleId === selectedVehicleId).map(d => d.id);
-    const filtered = (routes || []).filter(r => r && driverIds.includes(r.driverId));
-    console.log("PLANNER DEBUG - vehicleRoutes filtered:", filtered.map(r => r.name));
-    return filtered;
+    return (routes || []).filter(r => r && driverIds.includes(r.driverId));
   }, [routes, selectedVehicleId, drivers]);
 
   // Calculate students inside this selected vehicle's routes
   const vehicleStudents = useMemo(() => {
-    console.log("PLANNER DEBUG - vehicleStudents hook:", { selectedVehicleId, vehicleRoutesCount: vehicleRoutes.length });
     if (selectedVehicleId === 'all') return [];
     const studentsList: Student[] = [];
     vehicleRoutes.forEach(r => {
@@ -304,7 +300,6 @@ export function RoutePlanningClient() {
         m && m.routeId === r.id && getSafeDateStr(m.date) === dateStr && m.direction === selectedDirection
       );
       const studentIds = manifest ? manifest.studentIds : (r.baseStudentIds || r.studentIds || []);
-      console.log(`PLANNER DEBUG - vehicleStudents processing route ${r.name}:`, { manifestId, hasManifest: !!manifest, studentIds });
       studentIds.forEach(id => {
         const student = (students || []).find(s => s && s.id === id);
         if (student && !studentsList.some(s => s.id === student.id)) {
@@ -312,7 +307,6 @@ export function RoutePlanningClient() {
         }
       });
     });
-    console.log("PLANNER DEBUG - vehicleStudents resolved list:", studentsList.map(s => s.name));
     return studentsList;
   }, [vehicleRoutes, students, localManifests, routeManifests, dateStr, selectedDirection]);
 
@@ -513,10 +507,12 @@ export function RoutePlanningClient() {
 
   const removeStudentsFromRoute = () => {
     if (!activeManifestData || selectedRouteStudentIds.length === 0) return;
+    const count = selectedRouteStudentIds.length;
     const newIds = (activeManifestData.manifest.studentIds || []).filter(id => !selectedRouteStudentIds.includes(id));
     
     updateLocalManifest(newIds);
     setSelectedRouteStudentIds([]);
+    setToastMessage(`${count} ${count === 1 ? 'aluno removido' : 'alunos removidos'} da rota.`);
   };
 
   const discardChanges = () => {
@@ -1280,7 +1276,11 @@ export function RoutePlanningClient() {
                           return (
                             <SafeRow key={student.id} name={`extra-student-${student.id}`}>
                               <div className={cn("p-4 flex items-center gap-4 bg-card hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
-                                <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                                <Checkbox 
+                                  checked={selectedRouteStudentIds.includes(student.id)} 
+                                  onCheckedChange={() => toggleRouteStudent(student.id)} 
+                                  onClick={(e) => e.stopPropagation()} 
+                                />
                                 <div className="flex-1 min-w-0">
                                   <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{safeString(student.name)}</p>
                                   <p className="text-xs text-muted-foreground mt-0.5">Manifesto Extra • {getSchoolName(student.schoolId)}</p>
@@ -1311,7 +1311,11 @@ export function RoutePlanningClient() {
                           return (
                             <SafeRow key={student.id} name={`fixed-student-${student.id}`}>
                               <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleRouteStudent(student.id)}>
-                                <Checkbox checked={selectedRouteStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                                <Checkbox 
+                                  checked={selectedRouteStudentIds.includes(student.id)} 
+                                  onCheckedChange={() => toggleRouteStudent(student.id)} 
+                                  onClick={(e) => e.stopPropagation()} 
+                                />
                                 <div className="flex-1 min-w-0">
                                   <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{safeString(student.name)}</p>
                                   <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>
@@ -1411,6 +1415,9 @@ export function RoutePlanningClient() {
                             {r.name}
                           </SelectItem>
                         ))}
+                        {(availableRoutes || []).length === 0 && (
+                          <div className="p-3 text-xs text-muted-foreground text-center">Nenhuma rota disponível</div>
+                        )}
                       </SelectContent>
                     </Select>
                   )
@@ -1436,7 +1443,11 @@ export function RoutePlanningClient() {
                       return (
                         <SafeRow key={student.id} name={`available-extra-${student.id}`}>
                           <div className={cn("p-4 flex items-center gap-4 hover:bg-muted/50 cursor-pointer transition-colors", isAbsent && "opacity-50")} onClick={() => toggleExtraStudent(student.id)}>
-                            <Checkbox checked={selectedExtraStudentIds.includes(student.id)} onCheckedChange={() => {}} />
+                            <Checkbox 
+                              checked={selectedExtraStudentIds.includes(student.id)} 
+                              onCheckedChange={() => toggleExtraStudent(student.id)} 
+                              onClick={(e) => e.stopPropagation()} 
+                            />
                             <div className="flex-1 min-w-0">
                               <p className={cn("text-sm font-medium", isAbsent && "line-through")}>{safeString(student.name)}</p>
                               <p className="text-xs text-muted-foreground mt-0.5">{student.shift} • {getSchoolName(student.schoolId)}</p>

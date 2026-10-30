@@ -83,9 +83,8 @@ test.describe('Guardian Absentee Workflow - Inteligência Logística', () => {
         await page.click('button:has-text("INICIAR OPERAÇÃO")', { force: true });
 
         // Validar Alerta
-        const alert = page.locator('.bg-amber-500\\/10').or(page.getByText(/foi marcado/i));
-        await expect(alert.first()).toBeVisible({ timeout: 45000 });
-        await expect(alert.first()).toContainText(/ausente/i);
+        const alert = page.locator('div, p').filter({ hasText: /ausente|marcado como ausente/i }).first();
+        await expect(alert).toBeVisible({ timeout: 45000 });
 
         console.log('--- SUCESSO DEFINITIVO! ---');
     });

@@ -84,14 +84,14 @@ export function MonitorForm({
   onFormSubmit,
 }: MonitorFormProps) {
   const { toast } = useToast();
-  const { addDoc, updateDoc } = useData();
+  const { addDoc, updateDoc, db } = useData();
   const [isFetchingCep, setIsFetchingCep] = useState(false);
 
   const form = useForm<MonitorFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       name: '',
-      pin: '',
+      pin: '123456',
       email: '',
       phone: '',
       cpf: '',
@@ -148,9 +148,15 @@ export function MonitorForm({
 
   useEffect(() => {
     if (monitor) {
+      const matchedUser = (db?.users || []).find((u: any) => 
+        (monitor.userId && u.id === monitor.userId) || 
+        (monitor.cpf && u.cpf === monitor.cpf)
+      );
+      const resolvedPin = (monitor as any).pin || matchedUser?.pin || '123456';
+
       form.reset({
         name: monitor.name || '',
-        pin: (monitor as any).pin || '',
+        pin: resolvedPin,
         email: monitor.email || '',
         phone: monitor.phone || '',
         cpf: monitor.cpf || '',
@@ -167,33 +173,99 @@ export function MonitorForm({
         active: monitor.active ?? true,
       });
     } else {
-      form.reset();
+      form.reset({
+        name: '',
+        pin: '123456',
+        email: '',
+        phone: '',
+        cpf: '',
+        rg: '',
+        zipCode: '',
+        street: '',
+        number: '',
+        complement: '',
+        neighborhood: '',
+        city: '',
+        state: '',
+        status: 'inativo',
+        vehicleId: '',
+        active: true,
+      });
     }
-  }, [monitor, form]);
+  }, [monitor, form, db?.users]);
 
   const onSubmit = (data: MonitorFormValues) => {
-    const monitorData = { 
-      ...data,
-      userId: monitor?.userId || `user-mon-${unmask(data.cpf || '') || Date.now()}`
-    };
-    if (!monitorData.vehicleId || monitorData.vehicleId === 'none') {
-        delete (monitorData as Partial<typeof monitorData>).vehicleId;
-    }
-    
-    if (monitor) {
-      updateDoc('monitors', monitor.id, monitorData);
+    try {
+      const finalUserId = monitor?.userId || `user-mon-${unmask(data.cpf || '') || Date.now()}`;
+      const monitorData = { 
+        ...data,
+        pin: data.pin || '123456',
+        userId: finalUserId
+      };
+      if (!monitorData.vehicleId || monitorData.vehicleId === 'none') {
+          delete (monitorData as Partial<typeof monitorData>).vehicleId;
+      }
+      
+      if (monitor) {
+        updateDoc('monitors', monitor.id, monitorData);
+        toast({
+          title: 'Monitor atualizado!',
+          description: `Os dados de ${data.name} foram atualizados.`,
+        });
+      } else {
+        addDoc('monitors', monitorData);
+        toast({
+          title: 'Monitor adicionado!',
+          description: `${data.name} foi adicionado ao sistema.`,
+        });
+      }
+
+      // Sincronizar simultaneamente com a coleção 'users' para viabilizar login e seleção em rotas
+      const matchedUser = (db?.users || []).find((u: any) => 
+        u.id === finalUserId || (data.cpf && u.cpf === data.cpf)
+      );
+      if (matchedUser) {
+        updateDoc('users', matchedUser.id, {
+          name: data.name,
+          email: data.email || matchedUser.email || '',
+          cpf: data.cpf || matchedUser.cpf || '',
+          pin: data.pin || matchedUser.pin || '123456',
+          profile: 'monitor',
+          active: data.active
+        });
+      } else {
+        addDoc('users', {
+          id: finalUserId,
+          name: data.name,
+          email: data.email || '',
+          cpf: data.cpf || '',
+          pin: data.pin || '123456',
+          profile: 'monitor',
+          active: data.active
+        });
+      }
+
+      onFormSubmit();
+    } catch (err: any) {
+      console.error('[MONITOR_SUBMIT_ERROR]', err);
       toast({
-        title: 'Monitor atualizado!',
-        description: `Os dados de ${data.name} foram atualizados.`,
-      });
-    } else {
-      addDoc('monitors', monitorData);
-      toast({
-        title: 'Monitor adicionado!',
-        description: `${data.name} foi adicionado ao sistema.`,
+        title: 'Erro ao salvar monitor',
+        description: err?.message || 'Ocorreu uma falha ao salvar os dados.',
+        variant: 'destructive',
       });
     }
-    onFormSubmit();
+  };
+
+  const onError = (errors: any) => {
+    const errorKeys = Object.keys(errors);
+    if (errorKeys.length > 0) {
+      const firstError = errors[errorKeys[0]];
+      toast({
+        title: 'Verifique os campos obrigatórios',
+        description: firstError?.message || 'Por favor, confira os dados preenchidos no formulário.',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -208,7 +280,7 @@ export function MonitorForm({
       <ScrollArea className="flex-1">
         <div className="px-6 py-4">
           <Form {...form}>
-            <form id="monitor-form" onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <form id="monitor-form" onSubmit={form.handleSubmit(onSubmit, onError)} className="space-y-4">
               <FormField
                 control={form.control}
                 name="name"

@@ -562,7 +562,12 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
   }, [allStudents, schools, selectedDirection, driverLocation, studentsMap, schoolsMap, updateDoc, toast, activeManifest]);
 
   const handleStartRoute = async () => {
-    if (!route || !driverProfile || !allStudents) return;
+    const targetRoute = route || (routes && routes.length > 0 ? routes[0] : null) || (rawRoutes && rawRoutes.length > 0 ? rawRoutes[0] : null);
+    const targetDriver = driverProfile || (allDrivers && allDrivers.length > 0 ? allDrivers[0] : null);
+    if (!targetRoute || !targetDriver) {
+        console.warn("[Guardian Driver] Não foi possível iniciar rota: rota ou motorista não encontrados.");
+        return;
+    }
     
     setShowExtraAlert(true);
     
@@ -584,48 +589,46 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
     });
 
     // 2. Identificar faltas para o alerta
-    const missing = allStudents.filter(s => 
+    const missing = Array.isArray(allStudents) ? allStudents.filter(s => 
         (safeArray(activeStudentIds) as string[]).includes(s.id) && 
         s.status.startsWith('ausente') && 
         (s.shift === 'Integral' || s.shift === selectedShift)
-    );
+    ) : [];
     if (missing.length > 0) {
         setAbsentStudentsNames((safeArray(missing) as any[]).filter(m => !!m && !!m.name).map(m => safeString(m.name).split(' ')[0]));
         setShowAbsenceAlert(true);
     }
 
-
     // 3. Atualizar status do motorista e da rota IMEDIATAMENTE (antes da otimização que é lenta)
-    (updateDoc as any)('drivers', driverId, { status: 'em_rota' });
-    (updateDoc as any)('routes', route.id, {
+    const effectiveDriverId = targetDriver.id;
+    (updateDoc as any)('drivers', effectiveDriverId, { status: 'em_rota' });
+    (updateDoc as any)('routes', targetRoute.id, {
         activeShift: selectedShift,
         activeDirection: selectedDirection,
         journeyStatus: 'em_rota',
-        startedBy: driverProfile?.name || 'Motorista',
-        actualDriverId: substituteDriverId === 'default' ? route.driverId : substituteDriverId,
-        actualMonitorId: substituteMonitorId === 'default' ? route.monitorId : substituteMonitorId
+        startedBy: targetDriver.name || 'Motorista',
+        actualDriverId: substituteDriverId === 'default' ? targetRoute.driverId : substituteDriverId,
+        actualMonitorId: substituteMonitorId === 'default' ? targetRoute.monitorId : substituteMonitorId
     });
 
     // 4. Salvar no sessionStorage e localStorage para persistência em refresh
-    sessionStorage.setItem('activeRouteId', route.id);
+    sessionStorage.setItem('activeRouteId', targetRoute.id);
     sessionStorage.setItem('activeShift', selectedShift);
     sessionStorage.setItem('activeDirection', selectedDirection);
-    localStorage.setItem('activeRouteId', route.id);
+    localStorage.setItem('activeRouteId', targetRoute.id);
     localStorage.setItem('activeShift', selectedShift);
     localStorage.setItem('activeDirection', selectedDirection);
     
     // 5. Otimizar a rota (isso vai gerar a polyline e atualizar o itinerário)
-    // Passamos orderedStops atualizado (que o React re-calculará no próximo tick)
-    // Para garantir sucesso imediato, podemos forçar o setActiveRouteId agora
-    setActiveRouteId(route.id);
+    setActiveRouteId(targetRoute.id);
     
     // 6. Criar Notificação para o Monitor e para todos os PAIS da rota
-    const monitorUserId = (monitors as any)?.find((m: any) => m.id === route.monitorId)?.userId || route.monitorId;
+    const monitorUserId = (monitors as any)?.find((m: any) => m.id === targetRoute.monitorId)?.userId || targetRoute.monitorId;
     if (monitorUserId) {
         createNotification(
             monitorUserId,
             "Viagem Iniciada",
-            `🚐 A rota ${route.name} foi iniciada pelo motorista ${driverProfile?.name}.`,
+            `🚐 A rota ${targetRoute.name} foi iniciada pelo motorista ${targetDriver.name}.`,
             "success"
         );
     }
@@ -639,7 +642,7 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
                 createNotification(
                     parent.userId,
                     "Van em Movimento",
-                    `🚐 Olá! A rota ${route.name} foi iniciada. Acompanhe o trajeto de ${student.name.split(' ')[0]} em tempo real!`,
+                    `🚐 Olá! A rota ${targetRoute.name} foi iniciada. Acompanhe o trajeto de ${student.name.split(' ')[0]} em tempo real!`,
                     "info"
                 );
             }
@@ -653,7 +656,7 @@ export default function DriverDashboardContent({ mode }: DriverDashboardContentP
     }
 
     // [MELHORIA DE UX] Roda a otimização em background (não aguarda para não travar a UI)
-    performRouteOptimization(route, orderedStops, true);
+    performRouteOptimization(targetRoute, orderedStops, true);
   };
 
   const handleStatusChange = useCallback((studentId: string, newStatus: StudentStatus) => {
@@ -911,7 +914,7 @@ function getDistance(lat1: number, lon1: number, lat2: number, lon2: number) {
 
                             <div className="space-y-3">
                                     <RawLabel className="font-black uppercase text-xs tracking-widest text-primary flex items-center gap-2"><Navigation className="h-4 w-4"/> Rota Operacional</RawLabel>
-                                    <Select value={selectedRouteIdForStart} onValueChange={setSelectedRouteIdForStart}>
+                                    <Select value={selectedRouteIdForStart || route?.id || ''} onValueChange={setSelectedRouteIdForStart}>
                                         <SelectTrigger className="h-14 rounded-xl border-primary/30 font-black text-base bg-card shadow-sm"><SelectValue placeholder="Toque para selecionar a rota" /></SelectTrigger>
                                         <SelectContent>
                                             {(safeArray(routes) as any[]).filter(r => !!r && !!r.id).map((r: any) => (

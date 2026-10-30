@@ -144,6 +144,10 @@ export class DriverActionController {
     this.selectedDirection = direction;
   }
 
+  public getSessionItem(key: string): string | null {
+    return this.session[key] || null;
+  }
+
   public getRoute(): Route | undefined {
     return this.db.routes.find(r => r.id === this.routeId);
   }
@@ -264,6 +268,40 @@ export class DriverActionController {
       success: true,
       toasts: [{ title: 'Viagem Iniciada!' }],
       data: { route, driver, activeStop: this.getActiveStop() }
+    };
+  }
+
+  /**
+   * Executa a ação do botão dinâmico "RETOMAR VIAGEM EM ANDAMENTO"
+   */
+  public clickResumeTrip(): ActionResult {
+    const route = this.getRoute();
+    const driver = this.getDriver();
+    if (!route || route.journeyStatus !== 'em_rota') {
+      return { success: false, message: 'Não há viagem em andamento para retomar nesta rota.' };
+    }
+
+    this.session['activeRouteId'] = route.id;
+    if (route.activeShift) this.session['activeShift'] = route.activeShift;
+    if (route.activeDirection) this.session['activeDirection'] = route.activeDirection;
+
+    return {
+      success: true,
+      toasts: [{ title: 'Retomando Viagem', description: 'Continuando a rota em andamento.' }],
+      redirectUrl: '/driver/active',
+      data: { route, driver, activeStop: this.getActiveStop() }
+    };
+  }
+
+  /**
+   * Executa a ação do botão "SAIR" do cabeçalho da Central de Operações
+   */
+  public clickLogout(): ActionResult {
+    this.session = {};
+    return {
+      success: true,
+      redirectUrl: '/login?logout=1',
+      toasts: [{ title: 'Sessão Encerrada' }]
     };
   }
 

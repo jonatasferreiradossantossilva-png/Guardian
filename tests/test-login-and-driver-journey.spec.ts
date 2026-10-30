@@ -53,15 +53,14 @@ test('Jornada do Motorista: Login -> Iniciar Operação -> Finalizar Operação 
     console.log('--- 6. VERIFICANDO BOTÃO DE FINALIZAR OPERAÇÃO ---');
     // Pode ser o botão no cabeçalho ou o botão de encerramento antecipado
     const endEarlyBtn = page.getByRole('button', { name: /Finalizar Operação Agora/i });
-    const endHeaderBtn = page.locator('button[title="Reiniciar/Encerrar Rota"]');
+    const endHeaderBtn = page.getByRole('button', { name: /Reiniciar\/Encerrar Rota/i });
 
     if (await endEarlyBtn.isVisible()) {
         await endEarlyBtn.click();
     } else if (await endHeaderBtn.isVisible()) {
         await endHeaderBtn.click();
     } else {
-        // Tentar encontrar qualquer botão de finalizar
-        await page.click('text=Finalizar Operação Agora');
+        await page.locator('button:has-text("Reiniciar/Encerrar Rota"), button:has-text("Encerrar")').first().click();
     }
 
     console.log('--- 7. VERIFICANDO DESTINO APÓS FINALIZAR OPERAÇÃO ---');

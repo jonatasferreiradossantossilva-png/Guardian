@@ -59,5 +59,8 @@ export default defineConfig({
     url: 'http://localhost:9002',
     reuseExistingServer: !process.env.CI,
     timeout: 180000,
+    env: {
+      NEXT_PUBLIC_DATA_MODE: 'mock',
+    },
   },
 });

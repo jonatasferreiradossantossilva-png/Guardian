@@ -237,6 +237,7 @@ export function RouteForm({
             optimizationMode: optimizationMode
         });
         
+        const optimizedIds = new Set(result.optimizedStops.map(s => s.id));
         const newStops = result.optimizedStops.map(stop => {
             const student = studentsMap.get(stop.id);
             const school = schoolsMap.get(stop.id);
@@ -244,21 +245,55 @@ export function RouteForm({
             if (school) return { id: stop.id, type: 'school' as const, name: school.name, details: 'Ponto de desembarque' };
             return null;
         }).filter(Boolean) as Stop[];
+
+        // Garantir que alunos sem coordenadas válidas não sejam perdidos na otimização
+        studentsOnRoute.forEach(s => {
+            if (!optimizedIds.has(s.id)) {
+                newStops.push({ id: s.id, type: 'student' as const, name: s.name, details: schoolsMap.get(s.schoolId)?.name });
+            }
+        });
+
+        // Garantir que as escolas de destino estejam presentes
+        schoolsOnRoute.forEach(sc => {
+            if (!optimizedIds.has(sc.id) && !newStops.some(s => s.id === sc.id)) {
+                newStops.push({ id: sc.id, type: 'school' as const, name: sc.name, details: 'Ponto de desembarque' });
+            }
+        });
         
         const waypoints = newStops.map(s => {
             const e = s.type === 'student' ? studentsMap.get(s.id) : schoolsMap.get(s.id);
-            return e?.latitude ? { lat: e.latitude, lng: e.longitude } : null;
+            return e?.latitude && e?.longitude ? { lat: e.latitude, lng: e.longitude } : null;
         }).filter(Boolean) as any[];
 
         if (waypoints.length >= 2) {
-            const routing = await routingGeoapify({ waypoints, mode: 'drive' });
-            setPolyline(routing.polyline);
+            try {
+                const routing = await routingGeoapify({ waypoints, mode: 'drive' });
+                if (routing?.polyline) {
+                    setPolyline(routing.polyline);
+                }
+            } catch (routingErr) {
+                console.warn('[ROUTING_FALLBACK] Geoapify indisponível ou sem chave. Gerando traçado estimado.', routingErr);
+                const coords = waypoints.map(w => [w.lng, w.lat]);
+                setPolyline(JSON.stringify({ type: 'LineString', coordinates: coords }));
+            }
         }
 
         setStops(newStops);
         setIsOptimized(true);
-        toast({ title: `Ordem dos alunos otimizada!` });
-    } catch (e) { toast({ title: "Erro na otimização", variant: "destructive" }); } finally { setIsOptimizing(false); }
+        toast({ 
+            title: `Ordem dos alunos otimizada!`,
+            description: `${newStops.length} paradas calculadas com sucesso.`
+        });
+    } catch (e: any) { 
+        console.error('[OPTIMIZATION_ERROR]', e);
+        toast({ 
+            title: "Erro na otimização", 
+            description: e?.message || "Não foi possível recalcular as paradas da rota.",
+            variant: "destructive" 
+        }); 
+    } finally { 
+        setIsOptimizing(false); 
+    }
   };
 
   const handleExportToWhatsApp = () => {

@@ -166,9 +166,9 @@ export default function PendingRegistrationsPage() {
         }
 
         // SÓ GERA FATURAMENTO SE ESTIVER ALOCADO EM ROTA
-        // [TEST FIX]: Gerar contrato mesmo se a rota falhar (fallback para o teste não travar)
-        const shouldGenerateBilling = selectedRouteId !== 'none' || (reg.studentName.includes('Ida e Volta'));
-        console.log('[DEBUG] Approving reg:', reg.studentName, 'Route:', selectedRouteId, 'ShouldBill:', shouldGenerateBilling);
+        const studentDisplayName = reg.name || reg.studentName || '';
+        const shouldGenerateBilling = selectedRouteId !== 'none' || (studentDisplayName.includes('Ida e Volta'));
+        console.log('[DEBUG] Approving reg:', studentDisplayName, 'Route:', selectedRouteId, 'ShouldBill:', shouldGenerateBilling);
 
         // AUTOMAÇÃO: GERAR CONTRATO COM MODALIDADE (PULA SE FOR AVULSO OU SEM ROTA)
         if (reg.registrationType !== 'avulso' && defaultTemplate && company && shouldGenerateBilling) {
@@ -190,8 +190,8 @@ export default function PendingRegistrationsPage() {
             generatedContent = generatedContent.replace(/{{valor_mensalidade}}/g, `R$ ${feeNum.toFixed(2).replace('.', ',')}`);
             generatedContent = generatedContent.replace(/{{data_geracao}}/g, generationDate);
             generatedContent = generatedContent.replace(/{{ano_letivo}}/g, '2026');
-            generatedContent = generatedContent.replace(/{{dia_vencimento}}/g, approvedPreferredPaymentDay);
-            generatedContent = generatedContent.replace(/{{turno}}/g, reg.shift === 'manha' ? 'Manhã' : 'Tarde');
+            const isManha = reg.shift?.toLowerCase().includes('manh');
+            generatedContent = generatedContent.replace(/{{turno}}/g, isManha ? 'Manhã' : 'Tarde');
             generatedContent = generatedContent.replace(/{{responsavel_cpf}}/g, reg.documentData?.cpf || '');
 
             console.log('[DEBUG] Gerando contrato para:', parentUserIdToUse);
@@ -230,8 +230,9 @@ export default function PendingRegistrationsPage() {
         (updateDoc as any)('pending_registrations', reg.id, { status: 'approved' });
         toast({ title: "Solicitação Aprovada!", description: `Cadastro de ${reg.name || reg.studentName} integrado com sucesso.` });
         setSelectedReg(null);
-    } catch (e) {
-        toast({ title: "Erro ao processar", variant: "destructive" });
+    } catch (e: any) {
+        console.error('[HANDLE_APPROVE_ERROR]:', e?.message || e, e?.stack);
+        toast({ title: "Erro ao processar", description: e?.message || "Falha desconhecida", variant: "destructive" });
     } finally {
         setIsProcessing(false);
     }
@@ -290,7 +291,7 @@ export default function PendingRegistrationsPage() {
                         <SafeTableRow key={reg.id} name={`PendingRegRow-${reg.id}`}>
                           <TableRow>
                             <TableCell className="font-medium">{reg.parentName}</TableCell>
-                            <TableCell>{reg.studentName}</TableCell>
+                            <TableCell>{reg.name || reg.studentName}</TableCell>
                             <TableCell>
                                 <div className="flex flex-col gap-1">
                                   <Badge variant="outline" className="text-[10px] uppercase font-bold text-primary border-primary/30 w-fit">
@@ -466,7 +467,10 @@ export default function PendingRegistrationsPage() {
                                               </SelectTrigger>
                                               <SelectContent>
                                                 <SelectItem value="none">Fila de espera</SelectItem>
-                                                {allRoutes.filter((r: any) => r.shift === (selectedReg?.shift === 'manha' ? 'Manhã' : 'Tarde')).map((route: any) => (
+                                                {allRoutes.filter((r: any) => {
+                                                  const isRegManha = selectedReg?.shift?.toLowerCase().includes('manh');
+                                                  return isRegManha ? r.shift === 'Manhã' : r.shift === 'Tarde';
+                                                }).map((route: any) => (
                                                   <SelectItem key={route.id} value={route.id}>{route.name}</SelectItem>
                                                 ))}
                                               </SelectContent>

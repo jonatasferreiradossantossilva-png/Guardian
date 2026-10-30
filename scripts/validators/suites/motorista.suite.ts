@@ -542,6 +542,53 @@ export async function runMotoristaSuite() {
       });
     });
 
+    // CENÁRIO 19: Detecção de Viagem Ativa e Acionamento do Botão Dinâmico "Retomar Viagem"
+    await runner.scenario('MOT-19', 'Detecção de Viagem Ativa e Acionamento do Botão Dinâmico "Retomar Viagem"', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const route = state.routes[0];
+      const controller = new DriverActionController(state, route.id, 'Manhã', 'ida');
+
+      // Colocar rota em andamento previamente
+      route.journeyStatus = 'em_rota';
+      route.activeShift = 'Manhã';
+      route.activeDirection = 'ida';
+
+      await runner.step('Detectar status "em_rota" na rota selecionada e validar disponibilidade de retomada', () => {
+        expect(route.journeyStatus).toBe('em_rota');
+      });
+
+      await runner.step('Acionar botão dinâmico "RETOMAR VIAGEM EM ANDAMENTO" e redirecionar para /driver/active', () => {
+        const result = controller.clickResumeTrip();
+        expect(result.success).toBe(true);
+        expect(result.redirectUrl).toBe('/driver/active');
+        expect(result.toasts?.[0]?.title).toBe('Retomando Viagem');
+        expect(controller.getSessionItem('activeRouteId')).toBe(route.id);
+      });
+    });
+
+    // CENÁRIO 20: Encerramento de Sessão Seguro pelo Motorista (Botão "Sair")
+    await runner.scenario('MOT-20', 'Encerramento de Sessão Seguro pelo Motorista (Botão Sair com Proteção contra Auto-Login)', async () => {
+      const state = JSON.parse(JSON.stringify(initialMockData));
+      const route = state.routes[0];
+      const controller = new DriverActionController(state, route.id, 'Manhã', 'ida');
+
+      // Simular motorista autenticado com sessão
+      controller.clickStartRoute();
+      expect(controller.getSessionItem('activeRouteId')).toBe(route.id);
+
+      await runner.step('Motorista clica no botão "SAIR" no cabeçalho da Central de Operações', () => {
+        const logoutResult = controller.clickLogout();
+        expect(logoutResult.success).toBe(true);
+        expect(logoutResult.redirectUrl).toBe('/login?logout=1');
+      });
+
+      await runner.step('Garantir que chaves de sessão e rotas em andamento sejam purgadas da memória', () => {
+        expect(controller.getSessionItem('activeRouteId')).toBeNull();
+        expect(controller.getSessionItem('mockUserId')).toBeNull();
+      });
+    });
+
   });
 }
+
 

@@ -77,10 +77,15 @@ export function MonitorsList({ initialMonitors, initialVehicles }: { initialMoni
 
   const { data: liveMonitors, isLoading: areMonitorsLoading } = useDataCollection<Monitor>('monitors');
   const { data: liveVehicles } = useDataCollection<Vehicle>('vehicles');
+  const { data: liveUsers } = useDataCollection<any>('users');
 
   const monitors = liveMonitors ?? initialMonitors;
   const vehicles = liveVehicles ?? initialVehicles ?? [];
   const isLoading = areMonitorsLoading;
+
+  const usersMap = useMemo(() => {
+    return new Map((liveUsers || []).map((u: any) => [u.id, u]));
+  }, [liveUsers]);
 
   const vehiclesMap = useMemo(() => {
     if (!vehicles) return new Map();
@@ -186,7 +191,7 @@ export function MonitorsList({ initialMonitors, initialVehicles }: { initialMoni
                             <p className="font-medium">{safeString(monitor.name, 'N/A')}</p>
                             <div className="flex gap-2 text-[10px] text-muted-foreground font-mono">
                                 <span>CPF: {monitor.cpf || "N/A"}</span>
-                                <span>PIN: { (monitor as any).pin || "••••" }</span>
+                                <span>PIN: { (monitor as any).pin || usersMap.get(monitor.userId)?.pin || "••••" }</span>
                             </div>
                           </div>
                         </div>
@@ -271,7 +276,7 @@ export function MonitorsList({ initialMonitors, initialVehicles }: { initialMoni
                               <p className="font-medium">{safeString(monitor.name, 'N/A')}</p>
                               <div className="flex gap-2 text-[10px] text-muted-foreground font-mono">
                                   <span>CPF: {monitor.cpf || "---"}</span>
-                                  <span>PIN: {(monitor as any).pin || "••••"}</span>
+                                  <span>PIN: {(monitor as any).pin || usersMap.get(monitor.userId)?.pin || "••••"}</span>
                               </div>
                               </div>
                           </div>
