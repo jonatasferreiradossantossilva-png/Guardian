@@ -5,7 +5,7 @@ import { Route, Student, RouteManifest, TripRequest, Driver } from '@/types/mock
 import { useData, useDataCollection } from '@/hooks/use-data';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import { CalendarIcon, Bus, User as UserIcon, ArrowRightLeft, School, UserPlus, Truck, Info, CheckSquare, Users, Plus, Search, ArrowLeft, History, Loader2, Trash2 } from 'lucide-react';
+import { CalendarIcon, Bus, User as UserIcon, ArrowRightLeft, School, UserPlus, Truck, Info, CheckSquare, Users, Plus, Search, ArrowLeft, History, Loader2, Trash2, Check, X, Sun, Moon, SlidersHorizontal, Sparkles, MapPin } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -32,6 +32,11 @@ export function RoutePlanningClient() {
 
   const { addDoc, updateDoc, deleteDoc } = useData();
 
+  // ─── Modo de Visualização (Tio da Van vs Avançado) ────────────
+  const [viewMode, setViewMode] = useState<'easy' | 'advanced'>('easy');
+  const [isQuickAddOpen, setIsQuickAddOpen] = useState(false);
+  const [quickAddSearch, setQuickAddSearch] = useState('');
+
   // ─── Gate / Landing View States ───────────────────────────────
   const [isPlanningActive, setIsPlanningActive] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -44,11 +49,27 @@ export function RoutePlanningClient() {
   const [wizardRouteId, setWizardRouteId] = useState<string>('none');
   const [wizardDriverId, setWizardDriverId] = useState<string>('');
 
-  // ─── Workspace States ─────────────────────────────────────────
-  const [selectedDate, setSelectedDate] = useState<Date>(new Date());
+  // ─── Workspace States com Inicialização Inteligente pelo Horário ────────
+  const [selectedDate, setSelectedDate] = useState<Date>(() => {
+    const now = new Date();
+    // Se passar das 18h, o tio da van já está planejando o dia seguinte!
+    if (now.getHours() >= 18) {
+      return new Date(now.getTime() + 24 * 60 * 60 * 1000);
+    }
+    return now;
+  });
+
   const [selectedSchoolId, setSelectedSchoolId] = useState<string>('all');
-  const [selectedShift, setSelectedShift] = useState<'Manhã' | 'Tarde' | 'Integral'>('Manhã');
-  const [selectedDirection, setSelectedDirection] = useState<'ida' | 'volta'>('ida');
+  const [selectedShift, setSelectedShift] = useState<'Manhã' | 'Tarde' | 'Integral'>(() => {
+    const h = new Date().getHours();
+    return (h >= 12 && h < 18) ? 'Tarde' : 'Manhã';
+  });
+
+  const [selectedDirection, setSelectedDirection] = useState<'ida' | 'volta'>(() => {
+    const h = new Date().getHours();
+    return (h >= 11 && h < 14) || h >= 16 ? 'volta' : 'ida';
+  });
+
   const [selectedVehicleId, setSelectedVehicleId] = useState<string>('all');
   const [selectedRouteId, setSelectedRouteId] = useState<string>('none');
   
@@ -154,19 +175,25 @@ export function RoutePlanningClient() {
     return null;
   }, [availableRoutes, selectedVehicleId]);
 
-  // Auto-select first route ONLY if selectedRouteId is empty and they haven't explicitly chosen 'none'
+  // Auto-seleção inteligente de van e rota para o Tio da Van
   useEffect(() => {
-    if (selectedRouteId === 'none') return;
-    
-    const exists = (availableRoutes || []).some(r => r.id === selectedRouteId);
-    if (!exists) {
-      if ((availableRoutes || []).length > 0) {
-        setSelectedRouteId(availableRoutes[0].id);
-      } else {
-        setSelectedRouteId('none');
+    if (vehicles && vehicles.length === 1 && selectedVehicleId === 'all') {
+      setSelectedVehicleId(vehicles[0].id);
+    }
+  }, [vehicles, selectedVehicleId]);
+
+  useEffect(() => {
+    if (availableRoutes && availableRoutes.length > 0) {
+      const exists = availableRoutes.some(r => r.id === selectedRouteId);
+      if (!exists) {
+        if (availableRoutes.length === 1 || selectedVehicleId !== 'all' || viewMode === 'easy') {
+          setSelectedRouteId(availableRoutes[0].id);
+        } else if (selectedRouteId !== 'none') {
+          setSelectedRouteId('none');
+        }
       }
     }
-  }, [availableRoutes, selectedRouteId]);
+  }, [availableRoutes, selectedRouteId, selectedVehicleId, viewMode]);
 
   // Dynamic Route summary tracking in the sticky bottom save bar
   const modifiedRoutesList = useMemo(() => {
@@ -544,9 +571,11 @@ export function RoutePlanningClient() {
       setSelectedExtraStudentIds([]);
       setToastMessage("Itinerários publicados com sucesso!");
       
-      // Smoothly redirect back to landing page after 1.2 seconds
+      // Smoothly redirect back to landing page after 1.2 seconds if in advanced mode
       setTimeout(() => {
-        setIsPlanningActive(false);
+        if (viewMode === 'advanced') {
+          setIsPlanningActive(false);
+        }
         setIsPublishing(false);
       }, 1200);
     } catch (error) {
@@ -560,6 +589,110 @@ export function RoutePlanningClient() {
     if (!schoolId) return 'Sem Escola';
     const school = (schools || []).find(s => s && s.id === schoolId);
     return school ? school.name : 'Escola não encontrada';
+  };
+
+  // ─── MODO TIO DA VAN: Helpers e Ações Rápidas ─────────────────
+  const isSelectedDateToday = useMemo(() => {
+    const todayStr = format(new Date(), 'yyyy-MM-dd');
+    return dateStr === todayStr;
+  }, [dateStr]);
+
+  const isSelectedDateTomorrow = useMemo(() => {
+    const tomorrow = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const tomorrowStr = format(tomorrow, 'yyyy-MM-dd');
+    return dateStr === tomorrowStr;
+  }, [dateStr]);
+
+  const setDateToday = () => {
+    setSelectedDate(new Date());
+  };
+
+  const setDateTomorrow = () => {
+    setSelectedDate(new Date(Date.now() + 24 * 60 * 60 * 1000));
+  };
+
+  // Motorista ativo da van/rota
+  const activeDriver = useMemo(() => {
+    if (activeManifestData && drivers) {
+      const driverId = activeManifestData.route.driverId;
+      const found = drivers.find(d => d.id === driverId);
+      if (found) return found;
+    }
+    if (selectedVehicleId !== 'all' && drivers) {
+      const found = drivers.find(d => d.vehicleId === selectedVehicleId);
+      if (found) return found;
+    }
+    return (drivers || [])[0] || null;
+  }, [activeManifestData, selectedVehicleId, drivers]);
+
+  // Lista consolidada de alunos para o Checklist do Tio da Van
+  const easyModeStudents = useMemo(() => {
+    if (!activeManifestData) {
+      if (selectedVehicleId !== 'all' && vehicleStudents.length > 0) {
+        return vehicleStudents;
+      }
+      return [];
+    }
+    const baseIds = activeManifestData.route.baseStudentIds || activeManifestData.route.studentIds || [];
+    const manifestIds = activeManifestData.manifest.studentIds || [];
+    
+    // União sem duplicatas de todos os alunos associados a esta rota hoje
+    const allIds = Array.from(new Set([...baseIds, ...manifestIds]));
+    
+    return allIds
+      .map(id => (students || []).find(s => s && s.id === id))
+      .filter(Boolean) as Student[];
+  }, [activeManifestData, students, selectedVehicleId, vehicleStudents]);
+
+  // Contagem de passageiros e lotação
+  const easyModeConfirmedCount = useMemo(() => {
+    return (activeManifestData?.manifest?.studentIds || []).length;
+  }, [activeManifestData]);
+
+  const maxCapacity = activeVehicle?.capacity || 15;
+  const easyModeAvailableSeats = Math.max(0, maxCapacity - easyModeConfirmedCount);
+  const easyModeCapacityPercent = Math.min(100, Math.round((easyModeConfirmedCount / maxCapacity) * 100));
+
+  // Ação de 1 toque: Alternar presença do aluno na van hoje
+  const handleToggleStudentPresence = (student: Student) => {
+    if (!activeManifestData) return;
+    const currentIds = activeManifestData.manifest.studentIds || [];
+    const isCurrentlyIn = currentIds.includes(student.id);
+    
+    let nextIds: string[];
+    if (isCurrentlyIn) {
+      nextIds = currentIds.filter(id => id !== student.id);
+      setToastMessage(`${student.name} marcado como não vai nesta viagem.`);
+    } else {
+      nextIds = [...currentIds, student.id];
+      setToastMessage(`${student.name} confirmado na van!`);
+    }
+    updateLocalManifest(nextIds);
+  };
+
+  // Alunos filtrados para encaixe rápido
+  const quickAddFilteredStudents = useMemo(() => {
+    const list = availableExtras || [];
+    if (!quickAddSearch.trim()) return list.slice(0, 15);
+    const q = quickAddSearch.toLowerCase();
+    return list.filter(st => {
+      const matchName = safeString(st.name).toLowerCase().includes(q);
+      const matchSchool = getSchoolName(st.schoolId).toLowerCase().includes(q);
+      return matchName || matchSchool;
+    }).slice(0, 15);
+  }, [availableExtras, quickAddSearch, schools]);
+
+  // Ação de encaixar aluno rápido
+  const handleQuickAddStudent = (studentId: string) => {
+    const targetRouteId = hasActiveRoute ? selectedRouteId : ((availableRoutes || [])[0]?.id || '');
+    if (!targetRouteId) {
+      setToastMessage("Selecione uma rota para adicionar o aluno.");
+      return;
+    }
+    pullMultipleStudentsToRoute([studentId], targetRouteId);
+    setToastMessage("Aluno encaixado na van com sucesso!");
+    setIsQuickAddOpen(false);
+    setQuickAddSearch('');
   };
 
   // ─── Gate / Landing Helpers ───────────────────────────────────
@@ -842,8 +975,607 @@ export function RoutePlanningClient() {
         </DialogContent>
       </Dialog>
 
-      {/* ═══════════════════ LANDING / GATE VIEW ═══════════════════ */}
-      {!isPlanningActive ? (
+      {/* ═══════════════════ DIALOG: ENCAIXAR ALUNO RÁPIDO ═══════════════════ */}
+      <Dialog open={isQuickAddOpen} onOpenChange={setIsQuickAddOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-bold flex items-center gap-2 text-foreground">
+              <UserPlus className="w-5 h-5 text-orange-500" />
+              Encaixar Aluno na Van
+            </DialogTitle>
+            <DialogDescription>
+              Pesquise pelo nome ou escola da criança para adicioná-la à viagem de hoje.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-3 text-muted-foreground" />
+              <Input
+                placeholder="Buscar por nome do aluno ou escola..."
+                value={quickAddSearch}
+                onChange={(e) => setQuickAddSearch(e.target.value)}
+                className="pl-9 h-10 text-sm rounded-xl"
+                autoFocus
+              />
+            </div>
+
+            <div className="max-h-[300px] overflow-y-auto divide-y divide-border/60 -mx-1 px-1">
+              {quickAddFilteredStudents.length === 0 ? (
+                <div className="py-8 text-center text-muted-foreground text-xs">
+                  Nenhum aluno disponível encontrado para este filtro.
+                </div>
+              ) : (
+                quickAddFilteredStudents.map(st => (
+                  <div key={st.id} className="py-2.5 flex items-center justify-between gap-2">
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-bold text-foreground truncate">{safeString(st.name)}</p>
+                      <p className="text-xs text-muted-foreground truncate">{st.shift} • {getSchoolName(st.schoolId)}</p>
+                    </div>
+                    <Button
+                      size="sm"
+                      onClick={() => handleQuickAddStudent(st.id)}
+                      className="h-8 px-3 text-xs font-bold bg-orange-500 hover:bg-orange-600 text-white rounded-lg flex-shrink-0"
+                    >
+                      <Plus className="w-3.5 h-3.5 mr-1" />
+                      Puxar
+                    </Button>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setIsQuickAddOpen(false)}>
+              Fechar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ═══════════════════ TOP HEADER & VIEW MODE SELECTOR ═══════════════════ */}
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6 bg-card border border-border/50 p-4 rounded-2xl shadow-sm">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2.5 text-foreground">
+            <div className="w-10 h-10 rounded-xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500">
+              <Bus className="w-5 h-5" />
+            </div>
+            Planejamento da Van
+          </h1>
+          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+            {viewMode === 'easy' 
+              ? 'Modo rápido e prático para o Tio da Van conferir quem vai hoje.'
+              : 'Painel gerencial avançado para orquestração de múltiplos manifestos.'}
+          </p>
+        </div>
+
+        {/* View Mode Toggle */}
+        <div className="flex items-center gap-1 bg-muted/70 p-1 rounded-xl border border-border/40 w-full sm:w-auto">
+          <Button
+            type="button"
+            variant={viewMode === 'easy' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('easy')}
+            className={cn(
+              "flex-1 sm:flex-none h-9 text-xs font-bold rounded-lg transition-all",
+              viewMode === 'easy'
+                ? "bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <Bus className="w-3.5 h-3.5 mr-1.5" />
+            Modo Tio da Van
+          </Button>
+          <Button
+            type="button"
+            variant={viewMode === 'advanced' ? 'default' : 'ghost'}
+            size="sm"
+            onClick={() => setViewMode('advanced')}
+            className={cn(
+              "flex-1 sm:flex-none h-9 text-xs font-bold rounded-lg transition-all",
+              viewMode === 'advanced'
+                ? "bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            )}
+          >
+            <SlidersHorizontal className="w-3.5 h-3.5 mr-1.5" />
+            Modo Avançado
+          </Button>
+        </div>
+      </div>
+
+      {viewMode === 'easy' ? (
+        /* ═══════════════════ MODO TIO DA VAN (EASY / MOBILE FIRST) ═══════════════════ */
+        <div className="space-y-4">
+          {/* Visual Switcher / Controls Card */}
+          <Card className="border border-border/60 shadow-sm bg-card overflow-hidden">
+            <CardContent className="p-4 space-y-4">
+              {/* Date Selector Pills */}
+              <div className="space-y-1.5">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <CalendarIcon className="w-3.5 h-3.5 text-orange-500" />
+                  Dia da Viagem
+                </label>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant={isSelectedDateToday ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={setDateToday}
+                    className={cn(
+                      "h-9 px-4 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all",
+                      isSelectedDateToday
+                        ? "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20"
+                        : "border-border text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <Sun className="w-3.5 h-3.5" />
+                    Hoje ({format(new Date(), 'EEE, dd/MM', { locale: ptBR })})
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={isSelectedDateTomorrow ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={setDateTomorrow}
+                    className={cn(
+                      "h-9 px-4 rounded-xl font-bold text-xs flex items-center gap-1.5 transition-all",
+                      isSelectedDateTomorrow
+                        ? "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20"
+                        : "border-border text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <Moon className="w-3.5 h-3.5" />
+                    Amanhã ({format(new Date(Date.now() + 86400000), 'EEE, dd/MM', { locale: ptBR })})
+                  </Button>
+
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant={!isSelectedDateToday && !isSelectedDateTomorrow ? 'default' : 'outline'}
+                        size="sm"
+                        className={cn(
+                          "h-9 px-3 rounded-xl text-xs font-medium",
+                          !isSelectedDateToday && !isSelectedDateTomorrow
+                            ? "bg-orange-500 text-white"
+                            : "text-muted-foreground"
+                        )}
+                      >
+                        <CalendarIcon className="w-3.5 h-3.5 mr-1" />
+                        {!isSelectedDateToday && !isSelectedDateTomorrow
+                          ? format(selectedDate, 'dd/MM/yyyy')
+                          : 'Outra Data'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0" align="start">
+                      <Calendar
+                        mode="single"
+                        selected={selectedDate}
+                        onSelect={(d) => d && setSelectedDate(d)}
+                        initialFocus
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
+              </div>
+
+              {/* Direction & Shift Switcher */}
+              <div className="space-y-1.5 pt-2 border-t border-border/40">
+                <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                  <Truck className="w-3.5 h-3.5 text-orange-500" />
+                  Sentido da Viagem
+                </label>
+                <div className="grid grid-cols-2 gap-2">
+                  <Button
+                    type="button"
+                    variant={selectedDirection === 'ida' ? 'default' : 'outline'}
+                    onClick={() => setSelectedDirection('ida')}
+                    className={cn(
+                      "h-11 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all",
+                      selectedDirection === 'ida'
+                        ? "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20"
+                        : "border-border text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <Bus className="w-4 h-4" />
+                    <span>Ida (Casa ➔ Escola)</span>
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={selectedDirection === 'volta' ? 'default' : 'outline'}
+                    onClick={() => setSelectedDirection('volta')}
+                    className={cn(
+                      "h-11 rounded-xl text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all",
+                      selectedDirection === 'volta'
+                        ? "bg-orange-500 hover:bg-orange-600 text-white shadow-md shadow-orange-500/20"
+                        : "border-border text-foreground hover:bg-muted"
+                    )}
+                  >
+                    <ArrowRightLeft className="w-4 h-4" />
+                    <span>Volta (Escola ➔ Casa)</span>
+                  </Button>
+                </div>
+                
+                {/* Turno toggle */}
+                <div className="flex items-center gap-2 pt-1">
+                  <span className="text-xs text-muted-foreground font-medium">Turno:</span>
+                  <Button
+                    type="button"
+                    variant={selectedShift === 'Manhã' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setSelectedShift('Manhã')}
+                    className={cn(
+                      "h-7 px-3 text-xs rounded-full font-bold",
+                      selectedShift === 'Manhã' ? "bg-orange-500 text-white" : "text-muted-foreground"
+                    )}
+                  >
+                    ☀️ Manhã
+                  </Button>
+                  <Button
+                    type="button"
+                    variant={selectedShift === 'Tarde' ? 'default' : 'ghost'}
+                    size="sm"
+                    onClick={() => setSelectedShift('Tarde')}
+                    className={cn(
+                      "h-7 px-3 text-xs rounded-full font-bold",
+                      selectedShift === 'Tarde' ? "bg-orange-500 text-white" : "text-muted-foreground"
+                    )}
+                  >
+                    ⛅ Tarde
+                  </Button>
+                </div>
+              </div>
+
+              {/* Multi-Van Selector (only if > 1 vehicle) */}
+              {(vehicles || []).length > 1 && (
+                <div className="space-y-1.5 pt-2 border-t border-border/40">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Bus className="w-3.5 h-3.5 text-orange-500" />
+                    Escolha a Van
+                  </label>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                    {(vehicles || []).map((v: any) => {
+                      const isSelected = selectedVehicleId === v.id;
+                      return (
+                        <button
+                          key={v.id}
+                          type="button"
+                          onClick={() => {
+                            setSelectedVehicleId(v.id);
+                          }}
+                          className={cn(
+                            "flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold transition-all border whitespace-nowrap flex-shrink-0",
+                            isSelected
+                              ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                              : "bg-muted/40 hover:bg-muted text-foreground border-border/60"
+                          )}
+                        >
+                          <Bus className="w-4 h-4" />
+                          <span>{v.model || 'Van'}</span>
+                          {v.plate && <span className="opacity-80 text-[10px]">({v.plate})</span>}
+                        </button>
+                      );
+                    })}
+                    <button
+                      type="button"
+                      onClick={() => setSelectedVehicleId('all')}
+                      className={cn(
+                        "px-3 py-2.5 rounded-xl text-xs font-semibold transition-all border whitespace-nowrap flex-shrink-0",
+                        selectedVehicleId === 'all'
+                          ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                          : "bg-muted/40 hover:bg-muted text-muted-foreground border-border/60"
+                      )}
+                    >
+                      Todas as Vans
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {/* Multi-Route Selector (if vehicle has multiple routes in this shift) */}
+              {(availableRoutes || []).length > 1 && (
+                <div className="space-y-1.5 pt-2 border-t border-border/40">
+                  <label className="text-xs font-bold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <Truck className="w-3.5 h-3.5 text-orange-500" />
+                    Rota / Linha da Van
+                  </label>
+                  <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none">
+                    {(availableRoutes || []).map(r => {
+                      const isSelected = selectedRouteId === r.id;
+                      return (
+                        <button
+                          key={r.id}
+                          type="button"
+                          onClick={() => setSelectedRouteId(r.id)}
+                          className={cn(
+                            "flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all border whitespace-nowrap flex-shrink-0",
+                            isSelected
+                              ? "bg-orange-500 text-white border-orange-500 shadow-sm"
+                              : "bg-muted/40 hover:bg-muted text-foreground border-border/60"
+                          )}
+                        >
+                          <span>{r.name}</span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Van Capacity Banner */}
+          <Card className="border border-orange-500/30 bg-gradient-to-r from-orange-500/10 via-amber-500/5 to-transparent overflow-hidden">
+            <CardContent className="p-4">
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 rounded-2xl bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 flex-shrink-0">
+                    <Bus className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h3 className="text-base font-bold text-foreground">
+                        {activeVehicle?.model || activeManifestData?.route?.name || 'Van Escolar'}
+                      </h3>
+                      {activeVehicle?.plate && (
+                        <Badge variant="outline" className="text-[10px] font-mono border-border">
+                          {activeVehicle.plate}
+                        </Badge>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {activeDriver ? `Motorista: ${activeDriver.name}` : 'Condutor padrão'} • {selectedShift} ({selectedDirection === 'ida' ? 'Ida' : 'Volta'})
+                    </p>
+                  </div>
+                </div>
+
+                <div className="w-full sm:w-auto flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-0 border-border/40">
+                  <div className="text-left sm:text-right">
+                    <p className="text-xs text-muted-foreground">Lotação</p>
+                    <p className="text-sm font-bold text-foreground">
+                      <span className="text-orange-500 text-base">{easyModeConfirmedCount}</span> / {maxCapacity} lugares
+                    </p>
+                  </div>
+                  {easyModeAvailableSeats > 0 ? (
+                    <Badge className="bg-emerald-600/10 text-emerald-500 border border-emerald-600/30 font-bold px-2.5 py-1 text-xs">
+                      {easyModeAvailableSeats} {easyModeAvailableSeats === 1 ? 'vaga livre' : 'vagas livres'}
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="font-bold px-2.5 py-1 text-xs">
+                      ⚠️ Van Lotada
+                    </Badge>
+                  )}
+                </div>
+              </div>
+
+              {/* Visual Progress Bar */}
+              <div className="w-full h-2 bg-muted/60 rounded-full mt-3 overflow-hidden">
+                <div 
+                  className={cn(
+                    "h-full transition-all duration-300 rounded-full",
+                    easyModeCapacityPercent >= 100 
+                      ? "bg-rose-500" 
+                      : easyModeCapacityPercent > 80 
+                        ? "bg-amber-500" 
+                        : "bg-emerald-500"
+                  )}
+                  style={{ width: `${Math.min(100, easyModeCapacityPercent)}%` }}
+                />
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Section Header: Checklist de Alunos */}
+          <div className="flex items-center justify-between pt-2">
+            <div>
+              <h2 className="text-lg font-bold text-foreground flex items-center gap-2">
+                <span>Passageiros da Viagem</span>
+                <Badge variant="secondary" className="font-bold">
+                  {easyModeStudents.length}
+                </Badge>
+              </h2>
+              <p className="text-xs text-muted-foreground">
+                Toque no botão ao lado do nome para confirmar quem vai ou tirar quem avisou falta.
+              </p>
+            </div>
+            <Button
+              type="button"
+              size="sm"
+              onClick={() => setIsQuickAddOpen(true)}
+              className="bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs h-9 px-3 rounded-xl shadow-sm"
+            >
+              <Plus className="w-4 h-4 mr-1" />
+              Encaixar Aluno
+            </Button>
+          </div>
+
+          {/* Checklist de Alunos Cards */}
+          {easyModeStudents.length === 0 ? (
+            <Card className="p-10 text-center border-dashed border-border/80 bg-muted/10">
+              <Info className="w-10 h-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-sm font-bold text-foreground">Nenhum aluno alocado nesta van para este turno.</p>
+              <p className="text-xs text-muted-foreground mt-1 max-w-sm mx-auto">
+                Toque no botão abaixo para puxar alunos cadastrados e montar a lista de hoje em 1 toque.
+              </p>
+              <Button
+                type="button"
+                onClick={() => setIsQuickAddOpen(true)}
+                className="mt-4 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-xl"
+              >
+                <UserPlus className="w-4 h-4 mr-1.5" />
+                Encaixar Primeiro Aluno
+              </Button>
+            </Card>
+          ) : (
+            <div className="space-y-2.5">
+              {easyModeStudents.map((student) => {
+                const isConfirmed = (activeManifestData?.manifest?.studentIds || []).includes(student.id);
+                const isAbsentByParent = isStudentAbsent(student);
+                const isExtraApproved = hasApprovedTripRequestToday(student.id);
+                const schoolName = getSchoolName(student.schoolId);
+
+                return (
+                  <Card
+                    key={student.id}
+                    className={cn(
+                      "border transition-all duration-200 overflow-hidden",
+                      isConfirmed
+                        ? "bg-card border-border/80 shadow-sm"
+                        : "bg-muted/20 border-border/40 opacity-70"
+                    )}
+                  >
+                    <div className="p-3.5 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                      <div className="flex items-start gap-3">
+                        {/* Initials Avatar */}
+                        <div className={cn(
+                          "w-11 h-11 rounded-2xl flex items-center justify-center font-bold text-sm flex-shrink-0 transition-colors",
+                          isConfirmed 
+                            ? "bg-orange-500/10 text-orange-500 border border-orange-500/20" 
+                            : "bg-muted text-muted-foreground"
+                        )}>
+                          {safeString(student.name).substring(0, 2).toUpperCase()}
+                        </div>
+
+                        <div className="min-w-0 flex-1">
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            <p className={cn(
+                              "text-base font-bold text-foreground leading-tight",
+                              !isConfirmed && "line-through text-muted-foreground"
+                            )}>
+                              {safeString(student.name)}
+                            </p>
+                            {isAbsentByParent && (
+                              <Badge variant="destructive" className="text-[10px] font-bold px-1.5 py-0.5">
+                                🚫 Pai avisou falta no app
+                              </Badge>
+                            )}
+                            {isExtraApproved && (
+                              <Badge className="bg-amber-500/10 text-amber-500 border border-amber-500/30 text-[10px] font-bold px-1.5 py-0.5">
+                                ✨ Avulso
+                              </Badge>
+                            )}
+                          </div>
+
+                          <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
+                            <School className="w-3 h-3 text-muted-foreground/70" />
+                            <span>{schoolName}</span>
+                            <span className="opacity-40">•</span>
+                            <span>{student.shift}</span>
+                          </p>
+
+                          {student.address && (
+                            <p className="text-[11px] text-muted-foreground/80 mt-0.5 truncate flex items-center gap-1">
+                              <MapPin className="w-3 h-3 text-muted-foreground/70" />
+                              <span>{student.address}</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* 1-Tap Action Button */}
+                      <div className="flex items-center justify-end">
+                        {isConfirmed ? (
+                          <Button
+                            type="button"
+                            onClick={() => handleToggleStudentPresence(student)}
+                            className="w-full sm:w-auto h-11 px-5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-xl flex items-center justify-center gap-2 shadow-sm transition-transform active:scale-95"
+                          >
+                            <Check className="w-4 h-4 stroke-[3]" />
+                            <span>Vai na Van</span>
+                          </Button>
+                        ) : (
+                          <Button
+                            type="button"
+                            variant="outline"
+                            onClick={() => handleToggleStudentPresence(student)}
+                            className="w-full sm:w-auto h-11 px-5 border-rose-500/40 text-rose-500 hover:bg-rose-500/10 font-bold text-sm rounded-xl flex items-center justify-center gap-2 transition-transform active:scale-95"
+                          >
+                            <X className="w-4 h-4 stroke-[2.5]" />
+                            <span>Não Vai Hoje</span>
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })}
+            </div>
+          )}
+
+          {/* Big Action: Encaixar Aluno Button */}
+          <Button
+            type="button"
+            onClick={() => setIsQuickAddOpen(true)}
+            variant="outline"
+            className="w-full h-12 border-2 border-dashed border-orange-500/40 bg-orange-500/5 hover:bg-orange-500/10 text-orange-500 font-bold text-sm rounded-2xl flex items-center justify-center gap-2 transition-all mt-4"
+          >
+            <UserPlus className="w-5 h-5" />
+            <span>➕ Encaixar Aluno / Carona nesta Viagem</span>
+          </Button>
+
+          {/* Sticky Bottom Bar for Tio da Van */}
+          <div className="sticky bottom-4 z-40 bg-zinc-950/95 backdrop-blur-md border border-orange-500/30 rounded-2xl p-4 shadow-2xl flex flex-col sm:flex-row items-center justify-between gap-3 mt-6">
+            <div className="flex items-center gap-3 w-full sm:w-auto">
+              <div className="w-10 h-10 rounded-xl bg-orange-500/10 flex items-center justify-center text-orange-500 flex-shrink-0">
+                <Bus className="w-5 h-5" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <span className="text-sm font-bold text-white">
+                    {easyModeConfirmedCount} {easyModeConfirmedCount === 1 ? 'passageiro confirmado' : 'passageiros confirmados'}
+                  </span>
+                  {easyModeAvailableSeats > 0 ? (
+                    <Badge variant="outline" className="text-[10px] border-emerald-500/40 text-emerald-400 bg-emerald-500/10 font-bold">
+                      {easyModeAvailableSeats} vagas livres
+                    </Badge>
+                  ) : (
+                    <Badge variant="destructive" className="text-[10px] font-bold">
+                      Van Lotada
+                    </Badge>
+                  )}
+                </div>
+                <p className="text-xs text-zinc-400">
+                  {isDirty ? 'Alterações não salvas na memória local.' : 'Manifesto sincronizado e pronto.'}
+                </p>
+              </div>
+            </div>
+
+            <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
+              {isDirty && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={discardChanges}
+                  disabled={isPublishing}
+                  className="h-10 px-4 text-xs font-semibold text-zinc-300 border-zinc-700 hover:bg-zinc-800 rounded-xl"
+                >
+                  Descartar
+                </Button>
+              )}
+              <Button
+                size="sm"
+                onClick={publishItinerary}
+                disabled={isPublishing}
+                className="h-10 px-6 text-sm font-bold bg-orange-500 hover:bg-orange-600 text-white shadow-lg shadow-orange-500/20 rounded-xl flex items-center justify-center gap-2 w-full sm:w-auto"
+              >
+                {isPublishing ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    Salvando Rota...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-4 h-4 stroke-[3]" />
+                    Confirmar e Salvar Rota
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* ═══════════════════ MODO AVANÇADO (GESTOR DE FROTA) ═══════════════════ */
+        !isPlanningActive ? (
         <div className="space-y-6">
           {/* Landing Header */}
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -1530,7 +2262,7 @@ export function RoutePlanningClient() {
             </div>
           )}
         </>
-      )}
+      ))}
     </div>
   );
 }
